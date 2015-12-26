@@ -9,7 +9,10 @@ case ${UID} in
 esac
 PROMPT2='%_> '
 SPROMPT='zsh: correct '%R' to '%r' [nyae]?'
-# RPROMPT=\[`date '+%F %T'`\]
+precmd()
+{
+	RPROMPT=\[`date '+%F %T'`\]
+}
 setopt share_history
 setopt hist_ignore_dups
 setopt hist_save_nodups
