@@ -65,7 +65,7 @@ usage()
 
 [Examples]
 	For Raspberry pi2
-	# $0 -p /opt/cross -t armv7l-linux-gnueabihf -a arm -j 8 binutils_ver=2.25 kernel_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 cross
+	# $0 -p /toolchains -t armv7l-linux-gnueabihf -a arm -j 8 binutils_ver=2.25 kernel_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 cross
 
 EOF
 }
@@ -106,6 +106,7 @@ set_variables()
 	gcc_bld_dir_2nd=${gcc_src_base}/${target}-${gcc_name}-2nd
 	gcc_bld_dir_3rd=${gcc_src_base}/${target}-${gcc_name}-3rd
 	gcc_bld_dir_final=${gcc_src_base}/${target}-${gcc_name}-final
+	gcc_bld_dir_crs_ntv=${gcc_src_base}/${target}-${gcc_name}-crs-ntv
 
 	grep -q ${prefix}/bin <<EOF || PATH=${prefix}/bin:${PATH}
 ${PATH}
@@ -131,6 +132,25 @@ install_prerequisites()
 		;;
 	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1 ;;
 	esac
+}
+
+download_gmp_mpfr_mpc()
+{
+	: ${mpfr:=mpfr-3.1.3}
+	: ${gmp:=gmp-6.1.0}
+	: ${mpc:=mpc-1.0.3}
+
+	wget -nv http://www.mpfr.org/${mpfr}/${mpfr}.tar.gz || return 1
+	tar xzvf ${mpfr}.tar.gz || return 1
+	ln -sf ${mpfr} mpfr || return 1
+
+	wget -nv http://ftp.gnu.org/gnu/gmp/${gmp}.tar.bz2 || return 1
+	tar xjvf ${gmp}.tar.bz2  || return 1
+	ln -sf ${gmp} gmp || return 1
+
+	wget -nv http://ftp.gnu.org/gnu/mpc/${mpc}.tar.gz || return 1
+	tar xzvf ${mpc}.tar.gz || return 1
+	ln -sf ${mpc} mpc || return 1
 }
 
 prepare_binutils_source()
@@ -210,10 +230,12 @@ install_native_gcc()
 	install_prerequisites || return 1
 	prepare_gcc_source || return 1
 	make_symbolic_links || return 1
+	[ -d ${gcc_org_src_dir} ] || \
+		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir}
 	[ -f ${gcc_bld_dir}/Makefile ] || \
 		(cd ${gcc_bld_dir}
-		 ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} \
+		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} \
 			 --enable-languages=c,c++,go --enable-multilib) || return 1
 	make -C ${gcc_bld_dir} -j${jobs} || return 1
 	make -C ${gcc_bld_dir} -j${jobs} install-strip || return 1
@@ -256,7 +278,7 @@ install_glibc_headers()
 	mkdir -p ${glibc_bld_dir_hdr}
 	[ -f ${glibc_bld_dir_hdr}/Makefile ] || \
 		(cd ${glibc_bld_dir_hdr}
-		 ${glibc_src_dir_hdr}/configure --prefix=/usr --build=${build} --host=${target} \
+		${glibc_src_dir_hdr}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-headers=${sysroot}/usr/include \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes \
 		) || return 1
@@ -292,7 +314,7 @@ install_1st_glibc()
 	mkdir -p ${glibc_bld_dir_1st}
 	[ -f ${glibc_bld_dir_1st}/Makefile ] || \
 		(cd ${glibc_bld_dir_1st}
-		 ${glibc_src_dir_1st}/configure --prefix=/usr --build=${build} --host=${target} \
+		${glibc_src_dir_1st}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-headers=${sysroot}/usr/include \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes \
 		) || return 1
@@ -321,7 +343,7 @@ install_2nd_glibc()
 	mkdir -p ${glibc_bld_dir_2nd}
 	[ -f ${glibc_bld_dir_2nd}/Makefile ] || \
 		(cd ${glibc_bld_dir_2nd}
-		 ${glibc_src_dir_2nd}/configure --prefix=/usr --build=${build} --host=${target} \
+		${glibc_src_dir_2nd}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-headers=${sysroot}/usr/include) || return 1
 	make -C ${glibc_bld_dir_2nd} -j${jobs} DESTDIR=${sysroot} || return 1
 	make -C ${glibc_bld_dir_2nd} -j${jobs} DESTDIR=${sysroot} install || return 1
@@ -337,32 +359,48 @@ install_complete_gcc()
 	export LDFLAGS
 	[ -f ${gcc_bld_dir_final}/Makefile ] || \
 		(cd ${gcc_bld_dir_final}
-		 ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
+		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--enable-languages=c,c++,go --with-sysroot=${sysroot}) || return 1
 	make -C ${gcc_bld_dir_final} -j${jobs} || return 1
 	make -C ${gcc_bld_dir_final} -j${jobs} install-strip || return 1
 }
 
-install_native_gcc_for_target()
+install_native_binutils_for_target()
 {
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_native} ] || \
 		(tar xzvf ${binutils_org_src_dir}.tar.gz -C ${binutils_src_base} && \
 			mv ${binutils_org_src_dir} ${binutils_src_dir_native}) || return 1
-
-	CC=${target}-gcc
-
 	[ -f ${binutils_src_dir_native}/Makefile ] || \
 		(cd ${binutils_src_dir_native} 
-		./configure --prefix=${prefix} --target=${target} --with-sysroot=${sysroot}) || return 1
-
-# --prefix=/
-# --target => --host
-# with-sysroot=/
-# make DESTDIR忘れずに！！！
-		
+		./configure --prefix=/usr --host=${target} --with-sysroot=/) || return 1
 	make -C ${binutils_src_dir_native} -j${jobs} || return 1
-	make -C ${binutils_src_dir_native} -j${jobs} install-strip || return 1
+	make -C ${binutils_src_dir_native} -j${jobs} DESTDIR=${sysroot} install-strip || return 1
+}
+
+install_native_gcc_for_target()
+{
+	(cd /tmp; download_gmp_mpfr_mpc) || return 1
+	(cd /tmp/gmp
+	./configure --prefix=/usr --host=${target} --with-sysroot=/ &&
+		make -j${jobs} && make -j${jobs} DESTDIR=${sysroot} install) || return 1
+	(cd /tmp/mpfr
+	./configure --prefix=/usr --host=${target} --with-sysroot=/ --with-gmp=${sysroot}/usr &&
+		make -j${jobs} && make -j${jobs} DESTDIR=${sysroot} install) || return 1
+	(cd /tmp/mpc
+	./configure --prefix=/usr --host=${target} --with-sysroot=/ --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr &&
+		make -j${jobs} && make -j${jobs} DESTDIR=${sysroot} install) || return 1
+
+	prepare_gcc_source || return 1
+	[ -d ${gcc_org_src_dir} ] || \
+		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
+	mkdir -p ${gcc_bld_dir_crs_ntv}
+	[ -f ${gcc_bld_dir_crs_ntv}/Makefile ] || \
+		(cd ${gcc_bld_dir_crs_ntv}
+		${gcc_org_src_dir}/configure --prefix=/usr --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
+			 --enable-languages=c,c++,go --with-sysroot=/ --without-isl) || return 1
+	make -C ${gcc_bld_dir_crs_ntv} -j${jobs} || return 1
+	make -C ${gcc_bld_dir_crs_ntv} -j${jobs} DESTDIR=${sysroot} install-strip || return 1
 }
 
 install_cross_gcc()
@@ -402,12 +440,11 @@ list()
 
 cleanup_working_directories()
 {
-	rm -rf ${binutils_org_src_dir} ${binutils_src_dir} \
+	rm -rf ${binutils_org_src_dir} ${binutils_src_dir} ${binutils_src_dir_native} \
 		${kernel_org_src_dir} ${kernel_src_dir} \
 		${glibc_org_src_dir} ${glibc_bld_dir_hdr} ${glibc_bld_dir_1st} ${glibc_bld_dir_2nd} \
 		${glibc_src_dir_hdr} ${glibc_src_dir_1st} ${glibc_src_dir_2nd} \
-		${gcc_org_src_dir} ${gcc_bld_dir} ${gcc_bld_dir_1st} ${gcc_bld_dir_2nd} ${gcc_bld_dir_3rd} ${gcc_bld_dir_final} \
-		${binutils_src_dir_native}
+		${gcc_org_src_dir} ${gcc_bld_dir} ${gcc_bld_dir_1st} ${gcc_bld_dir_2nd} ${gcc_bld_dir_3rd} ${gcc_bld_dir_final} ${gcc_bld_dir_crs_ntv}
 }
 
 clean()
