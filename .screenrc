@@ -1,0 +1,6 @@
+escape ^z^z
+altscreen on
+shell -${SHELL}
+startup_message off
+vbell off
+scrollback 4096
