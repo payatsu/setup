@@ -355,6 +355,11 @@ install_native_gcc_for_target()
 	[ -f ${binutils_src_dir_native}/Makefile ] || \
 		(cd ${binutils_src_dir_native} 
 		./configure --prefix=${prefix} --target=${target} --with-sysroot=${sysroot}) || return 1
+
+# --prefix=/
+# --target => --host
+# with-sysroot=/
+# make DESTDIR忘れずに！！！
 		
 	make -C ${binutils_src_dir_native} -j${jobs} || return 1
 	make -C ${binutils_src_dir_native} -j${jobs} install-strip || return 1
