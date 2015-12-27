@@ -1,13 +1,14 @@
 #!/bin/sh -e
 
 # [TODO] gcc 1st stage, gcc 2nd stageのconfigureオプションを色々変えてみて試す。
-# [TODO] libgcc_s.soが見つからないのでgoコンパイラが作れない問題を解決する。
-#        ->gccビルドのfinalステージを実装する
+#        -> libgcc_s.soが見つからないのでgoコンパイラが作れない問題を解決する。
+#          -> gccビルドのfinalステージを実装する
 # [TODO] microblazeを指定するとglibc-1stでSYSCALL_CANCELが見つからずにコケる問題を解決する。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] ネイティブ/クロス用のGDB入れる機能作る。
 #        発展系としてGNU Toolchain一式を入れる機能作る。
+# [TODO] ディレクトリあるか調べてtarする手続きを関数化する。
 
 : ${binutils_ver:=2.25}
 : ${kernel_ver:=3.18.13}
@@ -54,6 +55,12 @@ help()
 		Specify the version of Linux kernel, currently '${kernel_ver}'.
 	glibc_ver
 		Specify the version of GNU C Library, currently '${glibc_ver}'.
+	gmp_ver
+		Specify the version of GNU MP Bignum Library, currently '${gmp_ver}'.
+	mpfr_ver
+		Specify the version of GNU MPFR Library, currently '${mpfr_ver}'.
+	mpc_ver
+		Specify the version of GNU MPC Library, currently '${mpc_ver}'.
 	gcc_ver
 		Specify the version of GNU Compiler Collection, currently '${gcc_ver}'.
 
@@ -62,14 +69,12 @@ help()
 		Install GNU C/C++/Go native compiler(running on/compiles for '${build}').
 	cross
 		Install GNU C/C++ cross compiler(running on '${build}', compiles for '${target}').
-	clean
-		Delete working directories.
 	debug
 		Enter debug(interactive) mode.
 
 [Examples]
 	For Raspberry pi2
-	# $0 -p /toolchains -t armv7l-linux-gnueabihf -a arm -j 8 binutils_ver=2.25 kernel_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 cross
+	# $0 -p /toolchains -t armv7l-linux-gnueabihf -a arm -j 8 binutils_ver=2.25 kernel_ver=3.18.13 glibc_ver=2.22 gmp_ver=6.1.0 mpfr_ver=3.1.3 mpc_ver=1.0.3 gcc_ver=5.3.0 cross
 
 EOF
 }
@@ -280,7 +285,7 @@ make_symbolic_links()
 	esac
 }
 
-install_native_gcc()
+native()
 {
 	install_prerequisites || return 1
 	install_native_gmp_mpfr_mpc || return 1
@@ -297,6 +302,7 @@ install_native_gcc()
 	make -C ${gcc_bld_dir_ntv} -j${jobs} install-strip || return 1
 	echo ${prefix}/lib64/ > /etc/ld.so.conf.d/${gcc_name}.conf
 	ldconfig
+	clean
 }
 
 install_cross_binutils()
@@ -407,7 +413,7 @@ install_cross_gcc_with_c_cxx_functionality()
 	make -C ${gcc_bld_dir_crs_3rd} -j${jobs} install-strip || return 1
 }
 
-install_cross_gcc()
+cross()
 {
 	install_prerequisites || return 1
 	install_cross_binutils || return 1
@@ -419,6 +425,7 @@ install_cross_gcc()
 	install_cross_gcc_with_glibc_headers || return 1
 	install_1st_glibc || return 1
 	install_cross_gcc_with_c_cxx_functionality || return 1
+	clean
 }
 
 install_2nd_glibc()
@@ -453,7 +460,7 @@ install_complete_gcc()
 
 install_full_functional_cross_gcc()
 {
-	install_cross_gcc || return 1
+	cross || return 1
 	install_2nd_glibc || return 1
 	install_complete_gcc
 }
@@ -537,7 +544,7 @@ list()
 	list_all
 }
 
-cleanup_working_directories()
+clean()
 {
 	rm -rf ${binutils_org_src_dir} ${binutils_src_dir_ntv} ${binutils_src_dir_crs} ${binutils_src_dir_crs_ntv} \
 		${kernel_org_src_dir} ${kernel_src_dir} \
@@ -545,11 +552,6 @@ cleanup_working_directories()
 		${glibc_src_dir_hdr} ${glibc_src_dir_1st} ${glibc_src_dir_2nd} \
 		${gmp_src_dir_ntv} ${gmp_src_dir_crs_ntv} ${mpfr_src_dir_ntv} ${mpfr_src_dir_crs_ntv} ${mpc_src_dir_ntv} ${mpc_src_dir_crs_ntv} \
 		${gcc_org_src_dir} ${gcc_bld_dir_ntv} ${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} ${gcc_bld_dir_final} ${gcc_bld_dir_crs_ntv}
-}
-
-clean()
-{
-	cleanup_working_directories
 }
 
 while getopts p:t:a:j:h arg; do
@@ -568,12 +570,10 @@ set_variables
 
 while [ $# -gt 0 ]; do
 	case $1 in
-	native) install_native_gcc; cleanup_working_directories;;
-	cross)  install_cross_gcc; cleanup_working_directories;;
-	clean)  cleanup_working_directories;;
-	*=*)    eval $1; set_variables;;
-	debug)  shift; [ $# -eq 0 ] && while true ;do read -p 'debug> ' cmd; eval ${cmd} || true; done; eval $1;;
-	*)      echo "Unknown tag: $1" >&2; help; exit 1;;
+	native|cross) $1;;
+	*=*)   eval $1; set_variables;;
+	debug) shift; [ $# -eq 0 ] && while true ;do read -p 'debug> ' cmd; eval ${cmd} || true; done; eval $1;;
+	*)     echo "Unknown tag: $1" >&2; help; exit 1;;
 	esac
 	shift
 done
