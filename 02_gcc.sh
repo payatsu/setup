@@ -21,7 +21,8 @@
 : ${target:=`uname -m`-linux}
 : ${linux_arch:=`uname -m`}
 
-help()
+usage()
+# Show usage.
 {
 	cat <<EOF
 [Usage]
@@ -46,8 +47,18 @@ help()
 		The number of process run simultaneously by 'make', currently '${jobs}'.
 		Recommended not to be more than the number of CPU cores.
 	-h
-		Show this help.
+		Show detailed help.
 
+EOF
+	list_major_tags
+	echo
+}
+
+help()
+# Show detailed help.
+{
+	usage
+	cat <<EOF
 [Environmental variables]
 	binutils_ver
 		Specify the version of GNU Binutils, currently '${binutils_ver}'.
@@ -64,19 +75,74 @@ help()
 	gcc_ver
 		Specify the version of GNU Compiler Collection, currently '${gcc_ver}'.
 
-[Available tags]
-	native
-		Install GNU C/C++/Go native compiler(running on/compiles for '${build}').
-	cross
-		Install GNU C/C++ cross compiler(running on '${build}', compiles for '${target}').
-	debug
-		Enter debug(interactive) mode.
-
 [Examples]
 	For Raspberry pi2
 	# $0 -p /toolchains -t armv7l-linux-gnueabihf -a arm -j 8 binutils_ver=2.25 kernel_ver=3.18.13 glibc_ver=2.22 gmp_ver=6.1.0 mpfr_ver=3.1.3 mpc_ver=1.0.3 gcc_ver=5.3.0 cross
 
 EOF
+}
+
+native()
+# Install GNU C/C++/Go native compiler(running on and compiles for '${build}').
+{
+	install_prerequisites || return 1
+	install_native_gmp_mpfr_mpc || return 1
+	prepare_gcc_source || return 1
+	make_symbolic_links || return 1
+	[ -d ${gcc_org_src_dir} ] ||
+		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
+	mkdir -p ${gcc_bld_dir_ntv}
+	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
+		(cd ${gcc_bld_dir_ntv}
+		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
+			 --enable-languages=c,c++,go --enable-multilib --without-isl) || return 1
+	make -C ${gcc_bld_dir_ntv} -j${jobs} || return 1
+	make -C ${gcc_bld_dir_ntv} -j${jobs} install-strip || return 1
+	echo ${prefix}/lib64/ > /etc/ld.so.conf.d/${gcc_name}.conf
+	ldconfig
+	clean
+}
+
+cross()
+# Install GNU C/C++ cross compiler(running on '${build}', compiles for '${target}').
+{
+	install_prerequisites || return 1
+	install_cross_binutils || return 1
+	install_native_gmp_mpfr_mpc || return 1
+	prepare_gcc_source || return 1
+	install_cross_gcc_without_headers || return 1
+	install_kernel_header || return 1
+	install_glibc_headers || return 1
+	install_cross_gcc_with_glibc_headers || return 1
+	install_1st_glibc || return 1
+	install_cross_gcc_with_c_cxx_functionality || return 1
+	clean
+}
+
+clean()
+# Delete no longer required source trees.
+{
+	rm -rf ${binutils_org_src_dir} ${binutils_src_dir_ntv} ${binutils_src_dir_crs} ${binutils_src_dir_crs_ntv} \
+		${kernel_org_src_dir} ${kernel_src_dir} \
+		${glibc_org_src_dir} ${glibc_bld_dir_hdr} ${glibc_bld_dir_1st} ${glibc_bld_dir_2nd} \
+		${glibc_src_dir_hdr} ${glibc_src_dir_1st} ${glibc_src_dir_2nd} \
+		${gmp_src_dir_ntv} ${gmp_src_dir_crs_ntv} ${mpfr_src_dir_ntv} ${mpfr_src_dir_crs_ntv} ${mpc_src_dir_ntv} ${mpc_src_dir_crs_ntv} \
+		${gcc_org_src_dir} ${gcc_bld_dir_ntv} ${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} ${gcc_bld_dir_final} ${gcc_bld_dir_crs_ntv}
+}
+
+list()
+# List all tags.
+{
+	list_all
+}
+
+list_major_tags()
+{
+	cat <<EOF
+[Available tags]
+EOF
+	eval "`grep -A 1 -e '^[[:alpha:]]\+()$' $0 |
+		sed -e '/^--$/d; /^{$/d; s/()$//; s/^# /\t/; s/^/\t/; 1s/^/echo "/; $s/$/"/'`"
 }
 
 set_variables()
@@ -285,26 +351,6 @@ make_symbolic_links()
 	esac
 }
 
-native()
-{
-	install_prerequisites || return 1
-	install_native_gmp_mpfr_mpc || return 1
-	prepare_gcc_source || return 1
-	make_symbolic_links || return 1
-	[ -d ${gcc_org_src_dir} ] ||
-		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
-	mkdir -p ${gcc_bld_dir_ntv}
-	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
-		(cd ${gcc_bld_dir_ntv}
-		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			 --enable-languages=c,c++,go --enable-multilib --without-isl) || return 1
-	make -C ${gcc_bld_dir_ntv} -j${jobs} || return 1
-	make -C ${gcc_bld_dir_ntv} -j${jobs} install-strip || return 1
-	echo ${prefix}/lib64/ > /etc/ld.so.conf.d/${gcc_name}.conf
-	ldconfig
-	clean
-}
-
 install_cross_binutils()
 {
 	install_prerequisites || return 1
@@ -413,21 +459,6 @@ install_cross_gcc_with_c_cxx_functionality()
 	make -C ${gcc_bld_dir_crs_3rd} -j${jobs} install-strip || return 1
 }
 
-cross()
-{
-	install_prerequisites || return 1
-	install_cross_binutils || return 1
-	install_native_gmp_mpfr_mpc || return 1
-	prepare_gcc_source || return 1
-	install_cross_gcc_without_headers || return 1
-	install_kernel_header || return 1
-	install_glibc_headers || return 1
-	install_cross_gcc_with_glibc_headers || return 1
-	install_1st_glibc || return 1
-	install_cross_gcc_with_c_cxx_functionality || return 1
-	clean
-}
-
 install_2nd_glibc()
 {
 	[ -d ${glibc_src_dir_2nd} ] ||
@@ -529,29 +560,13 @@ install_crossed_native_gcc()
 	make -C ${gcc_bld_dir_crs_ntv} -j${jobs} DESTDIR=${sysroot} install-strip || return 1
 }
 
-list_install()
-{
-	grep -e '^install_.\+()$' $0 | sed -e 's/^/\t- /;s/()//'
-}
-
 list_all()
 {
-	grep -e '[[:alpha:]]\+()$' $0 | sed -e 's/^/\t- /;s/()//'
-}
-
-list()
-{
-	list_all
-}
-
-clean()
-{
-	rm -rf ${binutils_org_src_dir} ${binutils_src_dir_ntv} ${binutils_src_dir_crs} ${binutils_src_dir_crs_ntv} \
-		${kernel_org_src_dir} ${kernel_src_dir} \
-		${glibc_org_src_dir} ${glibc_bld_dir_hdr} ${glibc_bld_dir_1st} ${glibc_bld_dir_2nd} \
-		${glibc_src_dir_hdr} ${glibc_src_dir_1st} ${glibc_src_dir_2nd} \
-		${gmp_src_dir_ntv} ${gmp_src_dir_crs_ntv} ${mpfr_src_dir_ntv} ${mpfr_src_dir_crs_ntv} ${mpc_src_dir_ntv} ${mpc_src_dir_crs_ntv} \
-		${gcc_org_src_dir} ${gcc_bld_dir_ntv} ${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} ${gcc_bld_dir_final} ${gcc_bld_dir_crs_ntv}
+	cat <<EOF
+[All tags]
+*: major tags, -: internal tags(for debugging)
+EOF
+	grep -e '^[_[:alpha:]]*[[:alpha:]]\+()$' $0 | sed -e 's/^/\t- /; s/()$//; s/- \([[:alpha:]]\+\)$/# \1/'
 }
 
 while getopts p:t:a:j:h arg; do
@@ -561,19 +576,20 @@ while getopts p:t:a:j:h arg; do
 	a)  linux_arch=${OPTARG};;
 	j)  jobs=${OPTARG};;
 	h)  set_variables; help; exit 0;;
-	\?) set_variables; help >&2; exit 1;;
+	\?) set_variables; usage >&2; exit 1;;
 	esac
 done
 shift `expr ${OPTIND} - 1`
 
 set_variables
 
+[ $# -eq 0 ] && usage && exit 0
+
 while [ $# -gt 0 ]; do
 	case $1 in
-	native|cross) $1;;
+	debug) shift; [ $# -eq 0 ] && while true; do read -p 'debug> ' cmd; eval ${cmd} || true; done; eval $1;;
 	*=*)   eval $1; set_variables;;
-	debug) shift; [ $# -eq 0 ] && while true ;do read -p 'debug> ' cmd; eval ${cmd} || true; done; eval $1;;
-	*)     echo "Unknown tag: $1" >&2; help; exit 1;;
+	*)     $1 || exit 1;;
 	esac
 	shift
 done
