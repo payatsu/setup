@@ -116,7 +116,15 @@ cross()
 	install_cross_gcc_with_glibc_headers || return 1
 	install_1st_glibc || return 1
 	install_cross_gcc_with_c_cxx_functionality || return 1
-	clean
+# clean
+}
+
+all()
+# Install all of the above.
+{
+	install_native_binutils
+	native
+	cross
 }
 
 clean()
@@ -127,11 +135,11 @@ clean()
 		${glibc_org_src_dir} ${glibc_bld_dir_hdr} ${glibc_bld_dir_1st} ${glibc_bld_dir_2nd} \
 		${glibc_src_dir_hdr} ${glibc_src_dir_1st} ${glibc_src_dir_2nd} \
 		${gmp_src_dir_ntv} ${gmp_src_dir_crs_ntv} ${mpfr_src_dir_ntv} ${mpfr_src_dir_crs_ntv} ${mpc_src_dir_ntv} ${mpc_src_dir_crs_ntv} \
-		${gcc_org_src_dir} ${gcc_bld_dir_ntv} ${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} ${gcc_bld_dir_final} ${gcc_bld_dir_crs_ntv}
+		${gcc_org_src_dir} ${gcc_bld_dir_ntv} ${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} ${gcc_bld_dir_crs_fin} ${gcc_bld_dir_crs_ntv}
 }
 
 list()
-# List all tags.
+# List all tags, which include the ones not listed here.
 {
 	list_all
 }
@@ -141,8 +149,17 @@ list_major_tags()
 	cat <<EOF
 [Available tags]
 EOF
-	eval "`grep -A 1 -e '^[[:alpha:]]\+()$' $0 |
+	eval "`grep -A 1 -e '^[[:alnum:]]\+()$' $0 |
 		sed -e '/^--$/d; /^{$/d; s/()$//; s/^# /\t/; s/^/\t/; 1s/^/echo "/; $s/$/"/'`"
+}
+
+list_all()
+{
+	cat <<EOF
+[All tags]
+#: major tags, -: internal tags(for debugging use)
+EOF
+	grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/\t- /; s/()$//; s/- \([[:alnum:]]\+\)$/# \1/'
 }
 
 set_variables()
@@ -199,7 +216,7 @@ set_variables()
 	gcc_bld_dir_crs_1st=${gcc_src_base}/${target}-${gcc_name}-1st
 	gcc_bld_dir_crs_2nd=${gcc_src_base}/${target}-${gcc_name}-2nd
 	gcc_bld_dir_crs_3rd=${gcc_src_base}/${target}-${gcc_name}-3rd
-	gcc_bld_dir_final=${gcc_src_base}/${target}-${gcc_name}-final
+	gcc_bld_dir_crs_fin=${gcc_src_base}/${target}-${gcc_name}-final
 	gcc_bld_dir_crs_ntv=${gcc_src_base}/${target}-${gcc_name}-crs-ntv
 
 	grep -q ${prefix}/bin <<EOF || PATH=${prefix}/bin:${PATH}
@@ -477,16 +494,16 @@ install_complete_gcc()
 {
 	[ -d ${gcc_org_src_dir} ] ||
 		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
-	mkdir -p ${gcc_bld_dir_final}
+	mkdir -p ${gcc_bld_dir_crs_fin}
 # LDFLAGS="-Wl,-rpath ${binutils_src_dir_crs}/libiberty -Wl,-rpath /usr/local/lib64 -L/usr/local/lib64"
-	LDFLAGS="-Wl,-rpath ${binutils_src_dir_crs}/libiberty -Wl,-rpath ${prefix}/${target}/lib -L${prefix}/${target}/lib"
-	export LDFLAGS
-	[ -f ${gcc_bld_dir_final}/Makefile ] ||
-		(cd ${gcc_bld_dir_final}
+# LDFLAGS="-Wl,-rpath ${binutils_src_dir_crs}/libiberty -Wl,-rpath ${prefix}/${target}/lib -L${prefix}/${target}/lib"
+# export LDFLAGS
+	[ -f ${gcc_bld_dir_crs_fin}/Makefile ] ||
+		(cd ${gcc_bld_dir_crs_fin}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
 			--enable-languages=c,c++,go --with-sysroot=${sysroot}) || return 1
-	make -C ${gcc_bld_dir_final} -j${jobs} || return 1
-	make -C ${gcc_bld_dir_final} -j${jobs} install-strip || return 1
+	make -C ${gcc_bld_dir_crs_fin} -j${jobs} || return 1
+	make -C ${gcc_bld_dir_crs_fin} -j${jobs} install-strip || return 1
 }
 
 install_full_functional_cross_gcc()
@@ -552,21 +569,15 @@ install_crossed_native_gcc()
 	[ -d ${gcc_org_src_dir} ] ||
 		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_crs_ntv}
+
+	export CC=${prefix}/bin/${target}-gcc
+	
 	[ -f ${gcc_bld_dir_crs_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_ntv}
 		${gcc_org_src_dir}/configure --prefix=/usr --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
 			 --enable-languages=c,c++,go --with-sysroot=/ --without-isl) || return 1
 	make -C ${gcc_bld_dir_crs_ntv} -j${jobs} || return 1
 	make -C ${gcc_bld_dir_crs_ntv} -j${jobs} DESTDIR=${sysroot} install-strip || return 1
-}
-
-list_all()
-{
-	cat <<EOF
-[All tags]
-*: major tags, -: internal tags(for debugging)
-EOF
-	grep -e '^[_[:alpha:]]*[[:alpha:]]\+()$' $0 | sed -e 's/^/\t- /; s/()$//; s/- \([[:alpha:]]\+\)$/# \1/'
 }
 
 while getopts p:t:a:j:h arg; do
@@ -583,13 +594,13 @@ shift `expr ${OPTIND} - 1`
 
 set_variables
 
-[ $# -eq 0 ] && usage && exit 0
-
+count=0
 while [ $# -gt 0 ]; do
 	case $1 in
 	debug) shift; [ $# -eq 0 ] && while true; do read -p 'debug> ' cmd; eval ${cmd} || true; done; eval $1;;
 	*=*)   eval $1; set_variables;;
-	*)     $1 || exit 1;;
+	*)     $1 || exit 1; count=`expr ${count} + 1`;;
 	esac
 	shift
 done
+[ ${count} -eq 0 ] && usage && exit 0

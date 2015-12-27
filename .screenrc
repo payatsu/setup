@@ -3,4 +3,20 @@ altscreen on
 shell -${SHELL}
 startup_message off
 vbell off
-scrollback 4096
+bind ^G
+defscrollback 4096
+bind N colon 'number '
+bind j focus down
+bind ^J focus down
+bind k focus up
+bind ^K focus up
+bind t focus top
+bind b focus bottom
+bind r eval 'command -c cresize'
+bind -c cresize j eval 'resize +1' 'command -c cresize'
+bind -c cresize k eval 'resize -1' 'command -c cresize'
+bind -c cresize J eval 'resize +10' 'command -c cresie'
+bind -c cresize K eval 'resize -10' 'command -c cresize'
+bind -c cresize = eval 'resize =' 'command -c cresize'
+bind -c cresize n eval 'resize min' 'command -c cresize'
+bind -c cresize x eval 'resize max' 'command -c cresize'
