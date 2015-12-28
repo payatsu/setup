@@ -1,14 +1,10 @@
 #!/bin/sh -e
 
-# [TODO] gcc 1st stage, gcc 2nd stageのconfigureオプションを色々変えてみて試す。
-#        -> libgcc_s.soが見つからないのでgoコンパイラが作れない問題を解決する。
-#          -> gccビルドのfinalステージを実装する
 # [TODO] microblazeを指定するとglibc-1stでSYSCALL_CANCELが見つからずにコケる問題を解決する。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] ネイティブ/クロス用のGDB入れる機能作る。
 #        発展系としてGNU Toolchain一式を入れる機能作る。
-# [TODO] ディレクトリあるか調べてtarする手続きを関数化する。
 
 : ${binutils_ver:=2.25}
 : ${kernel_ver:=3.18.13}
@@ -26,7 +22,7 @@ usage()
 {
 	cat <<EOF
 [Usage]
-	$0 [-p prefix] [-t target] [-a arch] [-j jobs] [-h] [variable=value]... tags...
+	$0 [-p prefix] [-t target] [-j jobs] [-h] [variable=value]... tags...
 
 [Options]
 	-p prefix
@@ -38,11 +34,6 @@ usage()
 			x86_64-linux-gnu
 			i686-unknown-linux
 			microblaze-none-linux
-	-a arch
-		Target architecture of Linux kernel, currently '${linux_arch}'.
-		ex. arm
-			x86
-			microblaze
 	-j jobs
 		The number of process run simultaneously by 'make', currently '${jobs}'.
 		Recommended not to be more than the number of CPU cores.
@@ -77,7 +68,7 @@ help()
 
 [Examples]
 	For Raspberry pi2
-	# $0 -p /toolchains -t armv7l-linux-gnueabihf -a arm -j 8 binutils_ver=2.25 kernel_ver=3.18.13 glibc_ver=2.22 gmp_ver=6.1.0 mpfr_ver=3.1.3 mpc_ver=1.0.3 gcc_ver=5.3.0 cross
+	# $0 -p /toolchains -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 kernel_ver=3.18.13 glibc_ver=2.22 gmp_ver=6.1.0 mpfr_ver=3.1.3 mpc_ver=1.0.3 gcc_ver=5.3.0 cross
 
 EOF
 }
@@ -104,7 +95,7 @@ native()
 }
 
 cross()
-# Install GNU C/C++ cross compiler(running on '${build}', compiles for '${target}').
+# Install GNU C/C++/Go cross compiler(running on '${build}', compiles for '${target}').
 {
 	install_prerequisites || return 1
 	install_cross_binutils || return 1
@@ -168,6 +159,13 @@ set_variables()
 	: ${jobs:=`grep -e processor /proc/cpuinfo | wc -l`}
 	build=`uname -m`-linux
 	os=`head -1 /etc/issue | cut -d ' ' -f 1`
+
+	case ${target} in
+	arm*)        linux_arch=arm;;
+	x86*)        linux_arch=x86;;
+	microblaze*) linux_arch=microblaze;;
+	*) echo Unknown architecture >&2; return 1;;
+	esac
 
 	binutils_name=binutils-${binutils_ver}
 	binutils_src_base=${prefix}/src/binutils
@@ -294,15 +292,6 @@ prepare_gcc_source()
 	[ -f ${gcc_org_src_dir}.tar.gz ] ||
 		wget -nv -O ${gcc_org_src_dir}.tar.gz \
 			http://ftp.tsukuba.wide.ad.jp/software/gcc/releases/${gcc_name}/${gcc_name}.tar.gz || return 1
-}
-
-prepare_all_source()
-{
-	prepare_binutils_source || return 1
-	prepare_kernel_source || return 1 
-	prepare_glibc_source || return 1
-	prepare_gmp_mpfr_mpc_source || return 1
-	prepare_gcc_source || return 1
 }
 
 install_native_binutils()
@@ -540,14 +529,13 @@ install_crossed_native_gcc()
 	make -C ${gcc_bld_dir_crs_ntv} -j${jobs} DESTDIR=${sysroot} install-strip || return 1
 }
 
-while getopts p:t:a:j:h arg; do
+while getopts p:t:j:h arg; do
 	case ${arg} in
 	p)  prefix=${OPTARG};;
 	t)  target=${OPTARG};;
-	a)  linux_arch=${OPTARG};;
 	j)  jobs=${OPTARG};;
-	h)  set_variables; help; exit 0;;
-	\?) set_variables; usage >&2; exit 1;;
+	h)  set_variables || true; help; exit 0;;
+	\?) set_variables || true; usage >&2; exit 1;;
 	esac
 done
 shift `expr ${OPTIND} - 1`
@@ -563,4 +551,4 @@ while [ $# -gt 0 ]; do
 	esac
 	shift
 done
-[ ${count} -eq 0 ] && usage && exit 0
+[ ${count} -eq 0 ] && usage
