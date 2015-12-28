@@ -115,8 +115,8 @@ cross()
 	install_glibc_headers || return 1
 	install_cross_gcc_with_glibc_headers || return 1
 	install_1st_glibc || return 1
-	install_cross_gcc_with_c_cxx_functionality || return 1
-# clean
+	install_cross_gcc_with_c_cxx_go_functionality || return 1
+	clean
 }
 
 all()
@@ -132,10 +132,10 @@ clean()
 {
 	rm -rf ${binutils_org_src_dir} ${binutils_src_dir_ntv} ${binutils_src_dir_crs} ${binutils_src_dir_crs_ntv} \
 		${kernel_org_src_dir} ${kernel_src_dir} \
-		${glibc_org_src_dir} ${glibc_bld_dir_hdr} ${glibc_bld_dir_1st} ${glibc_bld_dir_2nd} \
-		${glibc_src_dir_hdr} ${glibc_src_dir_1st} ${glibc_src_dir_2nd} \
+		${glibc_org_src_dir} ${glibc_bld_dir_hdr} ${glibc_bld_dir_1st} \
+		${glibc_src_dir_hdr} ${glibc_src_dir_1st} \
 		${gmp_src_dir_ntv} ${gmp_src_dir_crs_ntv} ${mpfr_src_dir_ntv} ${mpfr_src_dir_crs_ntv} ${mpc_src_dir_ntv} ${mpc_src_dir_crs_ntv} \
-		${gcc_org_src_dir} ${gcc_bld_dir_ntv} ${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} ${gcc_bld_dir_crs_fin} ${gcc_bld_dir_crs_ntv}
+		${gcc_org_src_dir} ${gcc_bld_dir_ntv} ${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} ${gcc_bld_dir_crs_ntv}
 }
 
 list()
@@ -186,10 +186,8 @@ set_variables()
 	glibc_org_src_dir=${glibc_src_base}/${glibc_name}
 	glibc_bld_dir_hdr=${glibc_src_base}/${target}-${glibc_name}-header
 	glibc_bld_dir_1st=${glibc_src_base}/${target}-${glibc_name}-1st
-	glibc_bld_dir_2nd=${glibc_src_base}/${target}-${glibc_name}-2nd
 	glibc_src_dir_hdr=${glibc_src_base}/${target}-${glibc_name}-header-src
 	glibc_src_dir_1st=${glibc_src_base}/${target}-${glibc_name}-1st-src
-	glibc_src_dir_2nd=${glibc_src_base}/${target}-${glibc_name}-2nd-src
 
 	gmp_name=gmp-${gmp_ver}
 	gmp_src_base=${prefix}/src/gmp
@@ -216,7 +214,6 @@ set_variables()
 	gcc_bld_dir_crs_1st=${gcc_src_base}/${target}-${gcc_name}-1st
 	gcc_bld_dir_crs_2nd=${gcc_src_base}/${target}-${gcc_name}-2nd
 	gcc_bld_dir_crs_3rd=${gcc_src_base}/${target}-${gcc_name}-3rd
-	gcc_bld_dir_crs_fin=${gcc_src_base}/${target}-${gcc_name}-final
 	gcc_bld_dir_crs_ntv=${gcc_src_base}/${target}-${gcc_name}-crs-ntv
 
 	grep -q ${prefix}/bin <<EOF || PATH=${prefix}/bin:${PATH}
@@ -463,7 +460,7 @@ install_1st_glibc()
 	make -C ${glibc_bld_dir_1st} -j${jobs} DESTDIR=${sysroot} install || return 1
 }
 
-install_cross_gcc_with_c_cxx_functionality()
+install_cross_gcc_with_c_cxx_go_functionality()
 {
 	[ -d ${gcc_org_src_dir} ] ||
 		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
@@ -474,41 +471,6 @@ install_cross_gcc_with_c_cxx_functionality()
 			--enable-languages=c,c++ --with-sysroot=${sysroot}) || return 1
 	make -C ${gcc_bld_dir_crs_3rd} -j${jobs} || return 1
 	make -C ${gcc_bld_dir_crs_3rd} -j${jobs} install-strip || return 1
-}
-
-install_2nd_glibc()
-{
-	[ -d ${glibc_src_dir_2nd} ] ||
-		(tar xzvf ${glibc_org_src_dir}.tar.gz -C ${glibc_src_base} &&
-			mv ${glibc_org_src_dir} ${glibc_src_dir_2nd}) || return 1
-	mkdir -p ${glibc_bld_dir_2nd}
-	[ -f ${glibc_bld_dir_2nd}/Makefile ] ||
-		(cd ${glibc_bld_dir_2nd}
-		${glibc_src_dir_2nd}/configure --prefix=/usr --build=${build} --host=${target} \
-			--with-headers=${sysroot}/usr/include) || return 1
-	make -C ${glibc_bld_dir_2nd} -j${jobs} DESTDIR=${sysroot} || return 1
-	make -C ${glibc_bld_dir_2nd} -j${jobs} DESTDIR=${sysroot} install || return 1
-}
-
-install_complete_gcc()
-{
-	[ -d ${gcc_org_src_dir} ] ||
-		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
-	mkdir -p ${gcc_bld_dir_crs_fin}
-	export LIBS=-lgcc_s
-	[ -f ${gcc_bld_dir_crs_fin}/Makefile ] ||
-		(cd ${gcc_bld_dir_crs_fin}
-		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			--enable-languages=c,c++,go --with-sysroot=${sysroot}) || return 1
-	make -C ${gcc_bld_dir_crs_fin} -j${jobs} || return 1
-	make -C ${gcc_bld_dir_crs_fin} -j${jobs} install || return 1
-}
-
-install_full_functional_cross_gcc()
-{
-	cross || return 1
-	install_2nd_glibc || return 1
-	install_complete_gcc
 }
 
 install_crossed_native_binutils()
