@@ -495,15 +495,13 @@ install_complete_gcc()
 	[ -d ${gcc_org_src_dir} ] ||
 		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_crs_fin}
-# LDFLAGS="-Wl,-rpath ${binutils_src_dir_crs}/libiberty -Wl,-rpath /usr/local/lib64 -L/usr/local/lib64"
-# LDFLAGS="-Wl,-rpath ${binutils_src_dir_crs}/libiberty -Wl,-rpath ${prefix}/${target}/lib -L${prefix}/${target}/lib"
-# export LDFLAGS
+	export LIBS=-lgcc_s
 	[ -f ${gcc_bld_dir_crs_fin}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_fin}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
 			--enable-languages=c,c++,go --with-sysroot=${sysroot}) || return 1
 	make -C ${gcc_bld_dir_crs_fin} -j${jobs} || return 1
-	make -C ${gcc_bld_dir_crs_fin} -j${jobs} install-strip || return 1
+	make -C ${gcc_bld_dir_crs_fin} -j${jobs} install || return 1
 }
 
 install_full_functional_cross_gcc()
