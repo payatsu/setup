@@ -70,6 +70,9 @@ help()
 	For Raspberry pi2
 	# $0 -p /toolchains -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 kernel_ver=3.18.13 glibc_ver=2.22 gmp_ver=6.1.0 mpfr_ver=3.1.3 mpc_ver=1.0.3 gcc_ver=5.3.0 cross
 
+	For microblaze
+	# $0 -p /toolchains -t microblaze-linux-gnu -j 8 binutils_ver=2.25 kernel_ver=4.3.3 glibc_ver=2.22 gmp_ver=6.1.0 mpfr_ver=3.1.3 mpc_ver=1.0.3 gcc_ver=5.3.0 cross
+
 EOF
 }
 
@@ -438,6 +441,32 @@ install_1st_glibc()
 	[ -d ${glibc_src_dir_1st} ] ||
 		(tar xzvf ${glibc_org_src_dir}.tar.gz -C ${glibc_src_base} &&
 			mv ${glibc_org_src_dir} ${glibc_src_dir_1st}) || return 1
+
+	[ ${linux_arch} = microblaze ] && (patch -d ${glibc_src_dir_1st} <<EOF || return 1
+--- ./sysdeps/unix/sysv/linux/microblaze/sysdep.h
++++ ./sysdeps/unix/sysv/linux/microblaze/sysdep.h
+@@ -16,8 +16,11 @@
+    License along with the GNU C Library; if not, see
+    <http://www.gnu.org/licenses/>.  */
+ 
++#ifndef _LINUX_MICROBLAZE_SYSDEP_H
++#define _LINUX_MICROBLAZE_SYSDEP_H 1
++
++#include <sysdeps/unix/sysdep.h>
+ #include <sysdeps/microblaze/sysdep.h>
+-#include <sys/syscall.h>
+ 
+ /* Defines RTLD_PRIVATE_ERRNO.  */
+ #include <dl-sysdep>
+@@ -305,3 +308,5 @@
+ # define PTR_DEMANGLE(var) (void) (var)
+ 
+ #endif /* not __ASSEMBLER__ */
++
++#endif /* _LINUX_MICROBLAZE_SYSDEP_H */
+EOF
+)
+
 	mkdir -p ${glibc_bld_dir_1st}
 	[ -f ${glibc_bld_dir_1st}/Makefile ] ||
 		(cd ${glibc_bld_dir_1st}
