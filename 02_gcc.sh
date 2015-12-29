@@ -1,10 +1,15 @@
 #!/bin/sh -e
 
-# [TODO] microblazeを指定するとglibc-1stでSYSCALL_CANCELが見つからずにコケる問題を解決する。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] ネイティブ/クロス用のGDB入れる機能作る。
 #        発展系としてGNU Toolchain一式を入れる機能作る。
+# [TODO] binutils -> check, installcheck
+#        gcc -> check, installcheck
+#        linux -> headers_check
+#        gmp -> check, installcheck
+#        mpc -> check, installcheck
+#        mpfr -> check, installcheck
 
 : ${binutils_ver:=2.25}
 : ${kernel_ver:=3.18.13}
