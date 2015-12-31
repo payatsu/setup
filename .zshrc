@@ -33,7 +33,7 @@ setopt listpacked
 setopt nolistbeep
 LISTMAX=0
 autoload predict-on
-predict-on
+# predict-on
 autoload colors
 colors
 zstyle ':completion:*' list-colors ''
