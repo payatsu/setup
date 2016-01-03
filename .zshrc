@@ -46,7 +46,7 @@ fi
 export WORDCHARS=''
 setopt complete_aliases
 [ "${TERM}" != dumb ] && alias ls='ls --color=auto'
-alias l='ls -l'
+alias l='ls -lh'
 alias ll='ls -l'
 alias la='ls -a'
 alias lla='ls -la'
