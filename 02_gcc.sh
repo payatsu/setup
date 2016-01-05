@@ -22,6 +22,10 @@
 : ${target:=`uname -m`-linux}
 : ${linux_arch:=`uname -m`}
 
+: ${zlib_ver:=1.2.8}
+: ${libpng_ver:=1.6.20}
+: ${libtiff_ver:=4.0.6}
+
 usage()
 # Show usage.
 {
@@ -97,7 +101,7 @@ native()
 			 --enable-languages=c,c++,go --enable-multilib --without-isl) || return 1
 	make -C ${gcc_bld_dir_ntv} -j${jobs} || return 1
 	make -C ${gcc_bld_dir_ntv} -j${jobs} install-strip || return 1
-	echo ${prefix}/lib64/ > /etc/ld.so.conf.d/${gcc_name}.conf
+	echo "${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/${target}-${gcc_name}.conf
 	ldconfig
 	clean
 }
@@ -134,7 +138,8 @@ clean()
 		${glibc_org_src_dir} ${glibc_bld_dir_hdr} ${glibc_bld_dir_1st} \
 		${glibc_src_dir_hdr} ${glibc_src_dir_1st} \
 		${gmp_src_dir_ntv} ${gmp_src_dir_crs_ntv} ${mpfr_src_dir_ntv} ${mpfr_src_dir_crs_ntv} ${mpc_src_dir_ntv} ${mpc_src_dir_crs_ntv} \
-		${gcc_org_src_dir} ${gcc_bld_dir_ntv} ${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} ${gcc_bld_dir_crs_ntv}
+		${gcc_org_src_dir} ${gcc_bld_dir_ntv} ${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} ${gcc_bld_dir_crs_ntv} \
+		${zlib_org_src_dir} ${libpng_org_src_dir} ${libtiff_org_src_dir}
 }
 
 list()
@@ -222,6 +227,18 @@ set_variables()
 	gcc_bld_dir_crs_3rd=${gcc_src_base}/${target}-${gcc_name}-3rd
 	gcc_bld_dir_crs_ntv=${gcc_src_base}/${target}-${gcc_name}-crs-ntv
 
+	zlib_name=zlib-${zlib_ver}
+	zlib_src_base=${prefix}/src/zlib
+	zlib_org_src_dir=${zlib_src_base}/${zlib_name}
+
+	libpng_name=libpng-${libpng_ver}
+	libpng_src_base=${prefix}/src/libpng
+	libpng_org_src_dir=${libpng_src_base}/${libpng_name}
+
+	libtiff_name=tiff-${libtiff_ver}
+	libtiff_src_base=${prefix}/src/libtiff
+	libtiff_org_src_dir=${libtiff_src_base}/${libtiff_name}
+
 	grep -q ${prefix}/bin <<EOF || PATH=${prefix}/bin:${PATH}
 ${PATH}
 EOF
@@ -300,6 +317,22 @@ prepare_gcc_source()
 	[ -f ${gcc_org_src_dir}.tar.gz ] ||
 		wget -nv -O ${gcc_org_src_dir}.tar.gz \
 			http://ftp.tsukuba.wide.ad.jp/software/gcc/releases/${gcc_name}/${gcc_name}.tar.gz || return 1
+}
+
+prepare_zlib_libpng_libtiff()
+{
+	mkdir -p ${zlib_src_base}
+	[ -f ${zlib_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${zlib_org_src_dir}.tar.gz \
+			http://zlib.net/${zlib_name}.tar.gz || return 1
+	mkdir -p ${libpng_src_base}
+	[ -f ${libpng_org_src_dir}.tar.gz ] ||
+		wget --trust-server-names -nv -O ${libpng_org_src_dir}.tar.gz \
+			http://download.sourceforge.net/libpng/${libpng_name}.tar.gz || return 1
+	mkdir -p ${libtiff_src_base}
+	[ -f ${libtiff_org_src_dir}.zip ] ||
+		wget -nv -O ${libtiff_org_src_dir}.zip \
+			ftp://ftp.remotesensing.org/pub/libtiff/${libtiff_name}.zip || return 1
 }
 
 install_native_binutils()
@@ -561,6 +594,35 @@ install_crossed_native_gcc()
 			 --enable-languages=c,c++,go --with-sysroot=/ --without-isl) || return 1
 	make -C ${gcc_bld_dir_crs_ntv} -j${jobs} || return 1
 	make -C ${gcc_bld_dir_crs_ntv} -j${jobs} DESTDIR=${sysroot} install-strip || return 1
+}
+
+install_crossed_native_zlib_libpng_libtiff()
+{
+	prepare_zlib_libpng_libtiff || return 1
+	[ -d ${zlib_org_src_dir} ] ||
+		tar xzvf ${zlib_org_src_dir}.tar.gz -C ${zlib_src_base} || return 1
+	[ -d ${libpng_org_src_dir} ] ||
+		tar xzvf ${libpng_org_src_dir}.tar.gz -C ${libpng_src_base} || return 1
+	[ -d ${libtiff_org_src_dir} ] ||
+		unzip -d ${libtiff_src_base} ${libtiff_org_src_dir}.zip || return 1
+
+# [ -f ${zlib_org_src_dir}/Makefile ] ||
+		(cd ${zlib_org_src_dir}
+		CC=${target}-gcc ${zlib_org_src_dir}/configure --prefix=${sysroot}) || return 1
+	make -C ${zlib_org_src_dir} -j${jobs} || return 1
+	make -C ${zlib_org_src_dir} -j${jobs} install || return 1
+
+	[ -f ${libpng_org_src_dir}/Makefile ] ||
+		(cd ${libpng_org_src_dir}
+		${libpng_org_src_dir}/configure --prefix=${sysroot} --host=${target}) || return 1
+	C_INCLUDE_PATH=${sysroot}/include make -C ${libpng_org_src_dir} -j${jobs} || return 1
+	make -C ${libpng_org_src_dir} -j${jobs} install
+
+	[ -f ${libtiff_org_src_dir}/Makefile ] ||
+		(cd ${libtiff_org_src_dir}
+		CC=${target}-gcc CXX=${target}-g++ ${libtiff_org_src_dir}/configure --prefix=${sysroot} --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'`)
+	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_org_src_dir} -j${jobs}
+	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_org_src_dir} -j${jobs} install
 }
 
 while getopts p:t:j:h arg; do
