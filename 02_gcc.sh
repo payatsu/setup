@@ -18,6 +18,7 @@
 : ${mpfr_ver:=3.1.3}
 : ${mpc_ver:=1.0.3}
 : ${gcc_ver:=5.3.0}
+: ${gdb_ver:=7.10.1}
 : ${prefix:=/toolchains}
 : ${target:=`uname -m`-linux}
 : ${linux_arch:=`uname -m`}
@@ -74,6 +75,8 @@ help()
 		Specify the version of GNU MPC Library, currently '${mpc_ver}'.
 	gcc_ver
 		Specify the version of GNU Compiler Collection, currently '${gcc_ver}'.
+	gdb_ver
+		Specify the version of GNU Debugger, currently '${gdb_ver}'.
 
 [Examples]
 	For Raspberry pi2
@@ -86,9 +89,10 @@ EOF
 }
 
 native()
-# Install GNU C/C++/Go native compiler(running on and compiles for '${build}').
+# Install native GNU binutils, GNU C/C++/Go compiler, GDB(running on and compiles for '${build}').
 {
 	install_prerequisites || return 1
+	install_native_binutils || return 1
 	install_native_gmp_mpfr_mpc || return 1
 	prepare_gcc_source || return 1
 	make_symbolic_links || return 1
@@ -103,11 +107,12 @@ native()
 	make -C ${gcc_bld_dir_ntv} -j${jobs} install-strip || return 1
 	echo "${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/${target}-${gcc_name}.conf
 	ldconfig
+	install_native_gdb || return 1
 	clean
 }
 
 cross()
-# Install GNU C/C++/Go cross compiler(running on '${build}', compiles for '${target}').
+# Install cross GNU binutils, GNU C/C++/Go compiler, GDB(running on '${build}', compiles for '${target}').
 {
 	install_prerequisites || return 1
 	install_cross_binutils || return 1
@@ -119,13 +124,13 @@ cross()
 	install_cross_gcc_with_glibc_headers || return 1
 	install_1st_glibc || return 1
 	install_cross_gcc_with_c_cxx_go_functionality || return 1
+	install_cross_gdb || return 1
 	clean
 }
 
 all()
 # Install all of the above.
 {
-	install_native_binutils
 	native
 	cross
 }
@@ -139,6 +144,7 @@ clean()
 		${glibc_src_dir_hdr} ${glibc_src_dir_1st} \
 		${gmp_src_dir_ntv} ${gmp_src_dir_crs_ntv} ${mpfr_src_dir_ntv} ${mpfr_src_dir_crs_ntv} ${mpc_src_dir_ntv} ${mpc_src_dir_crs_ntv} \
 		${gcc_org_src_dir} ${gcc_bld_dir_ntv} ${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} ${gcc_bld_dir_crs_ntv} \
+		${gdb_org_src_dir} ${gdb_bld_dir_ntv} ${gdb_bld_dir_crs} \
 		${zlib_org_src_dir} ${libpng_org_src_dir} ${libtiff_org_src_dir}
 }
 
@@ -226,6 +232,12 @@ set_variables()
 	gcc_bld_dir_crs_2nd=${gcc_src_base}/${target}-${gcc_name}-2nd
 	gcc_bld_dir_crs_3rd=${gcc_src_base}/${target}-${gcc_name}-3rd
 	gcc_bld_dir_crs_ntv=${gcc_src_base}/${target}-${gcc_name}-crs-ntv
+
+	gdb_name=gdb-${gdb_ver}
+	gdb_src_base=${prefix}/src/gdb
+	gdb_org_src_dir=${gdb_src_base}/${gdb_name}
+	gdb_bld_dir_ntv=${gdb_src_base}/${target}-${gdb_name}-ntv
+	gdb_bld_dir_crs=${gdb_src_base}/${target}-${gdb_name}-crs
 
 	zlib_name=zlib-${zlib_ver}
 	zlib_src_base=${prefix}/src/zlib
@@ -319,6 +331,14 @@ prepare_gcc_source()
 			http://ftp.tsukuba.wide.ad.jp/software/gcc/releases/${gcc_name}/${gcc_name}.tar.gz || return 1
 }
 
+prepare_gdb_source()
+{
+	mkdir -p ${gdb_src_base}
+	[ -f ${gdb_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${gdb_org_src_dir}.tar.gz \
+			http://ftp.gnu.org/gnu/gdb/${gdb_name}.tar.gz || return 1
+}
+
 prepare_zlib_libpng_libtiff()
 {
 	mkdir -p ${zlib_src_base}
@@ -393,6 +413,20 @@ make_symbolic_links()
 		done
 		;;
 	esac
+}
+
+install_native_gdb()
+{
+	install_prerequisites || return 1
+	prepare_gdb_source || return 1
+	[ -d ${gdb_org_src_dir} ] ||
+		tar xzvf ${gdb_org_src_dir}.tar.gz -C ${gdb_src_base} || return 1
+	mkdir -p ${gdb_bld_dir_ntv}
+	[ -f ${gdb_bld_dir_ntv}/Makefile ] ||
+		(cd ${gdb_bld_dir_ntv}
+		${gdb_org_src_dir}/configure --prefix=${prefix} --enable-tui) || return 1
+	make -C ${gdb_bld_dir_ntv} -j${jobs} || return 1
+	make -C ${gdb_bld_dir_ntv} -j${jobs} install || return 1
 }
 
 install_cross_binutils()
@@ -529,6 +563,20 @@ install_cross_gcc_with_c_cxx_go_functionality()
 	make -C ${gcc_bld_dir_crs_3rd} -j${jobs} install-strip || return 1
 }
 
+install_cross_gdb()
+{
+	install_prerequisites || return 1
+	prepare_gdb_source || return 1
+	[ -d ${gdb_org_src_dir} ] ||
+		tar xzvf ${gdb_org_src_dir}.tar.gz -C ${gdb_src_base} || return 1
+	mkdir -p ${gdb_bld_dir_crs}
+	[ -f ${gdb_bld_dir_crs}/Makefile ] ||
+		(cd ${gdb_bld_dir_crs}
+		${gdb_org_src_dir}/configure --prefix=${prefix} --target=${target} --enable-tui --with-sysroot=${sysroot}) || return 1
+	make -C ${gdb_bld_dir_crs} -j${jobs} || return 1
+	make -C ${gdb_bld_dir_crs} -j${jobs} install || return 1
+}
+
 install_crossed_native_binutils()
 {
 	install_prerequisites || return 1
@@ -608,21 +656,21 @@ install_crossed_native_zlib_libpng_libtiff()
 
 # [ -f ${zlib_org_src_dir}/Makefile ] ||
 		(cd ${zlib_org_src_dir}
-		CC=${target}-gcc ${zlib_org_src_dir}/configure --prefix=${sysroot}) || return 1
+		CC=${target}-gcc ${zlib_org_src_dir}/configure --prefix=${sysroot}/usr) || return 1
 	make -C ${zlib_org_src_dir} -j${jobs} || return 1
 	make -C ${zlib_org_src_dir} -j${jobs} install || return 1
 
 	[ -f ${libpng_org_src_dir}/Makefile ] ||
 		(cd ${libpng_org_src_dir}
-		${libpng_org_src_dir}/configure --prefix=${sysroot} --host=${target}) || return 1
+		${libpng_org_src_dir}/configure --prefix=${sysroot}/usr --host=${target}) || return 1
 	C_INCLUDE_PATH=${sysroot}/include make -C ${libpng_org_src_dir} -j${jobs} || return 1
-	make -C ${libpng_org_src_dir} -j${jobs} install
+	make -C ${libpng_org_src_dir} -j${jobs} install || return 1
 
 	[ -f ${libtiff_org_src_dir}/Makefile ] ||
 		(cd ${libtiff_org_src_dir}
-		CC=${target}-gcc CXX=${target}-g++ ${libtiff_org_src_dir}/configure --prefix=${sysroot} --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'`)
-	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_org_src_dir} -j${jobs}
-	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_org_src_dir} -j${jobs} install
+		CC=${target}-gcc CXX=${target}-g++ ${libtiff_org_src_dir}/configure --prefix=${sysroot}/usr --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'`) || return 1
+	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_org_src_dir} -j${jobs} || return 1
+	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_org_src_dir} -j${jobs} install || return 1
 }
 
 while getopts p:t:j:h arg; do
