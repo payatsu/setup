@@ -2,8 +2,14 @@
 
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
-# [TODO] ネイティブ/クロス用のGDB入れる機能作る。
-#        発展系としてGNU Toolchain一式を入れる機能作る。
+# [TODO]
+#        bison
+#        sed, gawk, bash
+#        coreutils
+#        m4 processor
+#        autotools(autoconf, automake, libtool)
+#        screen
+#        zsh
 # [TODO] binutils -> check, installcheck
 #        gcc -> check, installcheck
 #        linux -> headers_check
@@ -11,6 +17,7 @@
 #        mpc -> check, installcheck
 #        mpfr -> check, installcheck
 
+: ${make_ver:=4.1}
 : ${binutils_ver:=2.25}
 : ${kernel_ver:=3.18.13}
 : ${glibc_ver:=2.22}
@@ -63,21 +70,23 @@ help()
 	cat <<EOF
 [Environmental variables]
 	binutils_ver
-		Specify the version of GNU Binutils, currently '${binutils_ver}'.
+		Specify the version of GNU Binutils you want, currently '${binutils_ver}'.
 	kernel_ver
-		Specify the version of Linux kernel, currently '${kernel_ver}'.
+		Specify the version of Linux kernel you want, currently '${kernel_ver}'.
 	glibc_ver
-		Specify the version of GNU C Library, currently '${glibc_ver}'.
+		Specify the version of GNU C Library you want, currently '${glibc_ver}'.
 	gmp_ver
-		Specify the version of GNU MP Bignum Library, currently '${gmp_ver}'.
+		Specify the version of GNU MP Bignum Library you want, currently '${gmp_ver}'.
 	mpfr_ver
-		Specify the version of GNU MPFR Library, currently '${mpfr_ver}'.
+		Specify the version of GNU MPFR Library you want, currently '${mpfr_ver}'.
 	mpc_ver
-		Specify the version of GNU MPC Library, currently '${mpc_ver}'.
+		Specify the version of GNU MPC Library you want, currently '${mpc_ver}'.
 	gcc_ver
-		Specify the version of GNU Compiler Collection, currently '${gcc_ver}'.
+		Specify the version of GNU Compiler Collection you want, currently '${gcc_ver}'.
 	gdb_ver
-		Specify the version of GNU Debugger, currently '${gdb_ver}'.
+		Specify the version of GNU Debugger you want, currently '${gdb_ver}'.
+	emacs_ver
+		Specify the version of GNU Emacs you want, currently '${emacs_ver}'.
 
 [Examples]
 	For Raspberry pi2
@@ -139,13 +148,16 @@ all()
 clean()
 # Delete no longer required source trees.
 {
-	rm -rf ${binutils_org_src_dir} ${binutils_src_dir_ntv} ${binutils_src_dir_crs} ${binutils_src_dir_crs_ntv} \
+	rm -rf \
+		${make_org_src_dir} \
+		${binutils_org_src_dir} ${binutils_src_dir_ntv} ${binutils_src_dir_crs} ${binutils_src_dir_crs_ntv} \
 		${kernel_org_src_dir} ${kernel_src_dir} \
 		${glibc_org_src_dir} ${glibc_bld_dir_hdr} ${glibc_bld_dir_1st} \
 		${glibc_src_dir_hdr} ${glibc_src_dir_1st} \
 		${gmp_src_dir_ntv} ${gmp_src_dir_crs_ntv} ${mpfr_src_dir_ntv} ${mpfr_src_dir_crs_ntv} ${mpc_src_dir_ntv} ${mpc_src_dir_crs_ntv} \
 		${gcc_org_src_dir} ${gcc_bld_dir_ntv} ${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} ${gcc_bld_dir_crs_ntv} \
 		${gdb_org_src_dir} ${gdb_bld_dir_ntv} ${gdb_bld_dir_crs} \
+		${emacs_org_src_dir} \
 		${zlib_org_src_dir} ${libpng_org_src_dir} ${libtiff_org_src_dir}
 }
 
@@ -186,6 +198,10 @@ set_variables()
 	microblaze*) linux_arch=microblaze;;
 	*) echo Unknown architecture >&2; return 1;;
 	esac
+
+	make_name=make-${make_ver}
+	make_src_base=${prefix}/src/make
+	make_org_src_dir=${make_src_base}/${make_name}
 
 	binutils_name=binutils-${binutils_ver}
 	binutils_src_base=${prefix}/src/binutils
@@ -284,6 +300,14 @@ install_prerequisites()
 	esac
 }
 
+prepare_make_source()
+{
+	mkdir -p ${make_src_base}
+	[ -f ${make_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${make_org_src_dir}.tar.gz \
+			http://ftpmirror.gnu.org/make/${make_name}.tar.gz || return 1
+}
+
 prepare_binutils_source()
 {
 	mkdir -p ${binutils_src_base}
@@ -350,7 +374,7 @@ prepare_emacs_source()
 {
 	mkdir -p ${emacs_src_base}
 	[ -f ${emacs_org_src_dir}.tar.gz ] ||
-		wget -O ${emacs_org_src_dir}.tar.gz \
+		wget -nv -O ${emacs_org_src_dir}.tar.gz \
 			http://ftpmirror.gnu.org/emacs/${emacs_name}.tar.gz || return 1
 }
 
@@ -368,6 +392,19 @@ prepare_zlib_libpng_libtiff()
 	[ -f ${libtiff_org_src_dir}.zip ] ||
 		wget -nv -O ${libtiff_org_src_dir}.zip \
 			ftp://ftp.remotesensing.org/pub/libtiff/${libtiff_name}.zip || return 1
+}
+
+install_native_make()
+{
+	install_prerequisites || return 1
+	prepare_make_source || return 1
+	[ -d ${make_org_src_dir} ] ||
+		tar xzvf ${make_org_src_dir}.tar.gz -C ${make_src_base} || return 1
+	[ -f ${make_org_src_dir}/Makefile ] ||
+		(cd ${make_org_src_dir}
+		${make_org_src_dir}/configure --prefix=${prefix}) || return 1
+	make -C ${make_org_src_dir} -j${jobs} || return 1
+	make -C ${make_org_src_dir} -j${jobs} install || return 1
 }
 
 install_native_binutils()
