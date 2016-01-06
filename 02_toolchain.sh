@@ -19,6 +19,7 @@
 : ${mpc_ver:=1.0.3}
 : ${gcc_ver:=5.3.0}
 : ${gdb_ver:=7.10.1}
+: ${emacs_ver:=24.5}
 : ${prefix:=/toolchains}
 : ${target:=`uname -m`-linux}
 : ${linux_arch:=`uname -m`}
@@ -239,6 +240,10 @@ set_variables()
 	gdb_bld_dir_ntv=${gdb_src_base}/${target}-${gdb_name}-ntv
 	gdb_bld_dir_crs=${gdb_src_base}/${target}-${gdb_name}-crs
 
+	emacs_name=emacs-${emacs_ver}
+	emacs_src_base=${prefix}/src/emacs
+	emacs_org_src_dir=${emacs_src_base}/${emacs_name}
+
 	zlib_name=zlib-${zlib_ver}
 	zlib_src_base=${prefix}/src/zlib
 	zlib_org_src_dir=${zlib_src_base}/${zlib_name}
@@ -261,10 +266,11 @@ install_prerequisites()
 	case ${os} in
 	Debian|Ubuntu)
 		apt-get install -y make gcc g++ texinfo
-		apt-get install -y libc6-dev-i386
-		[ ${build} != ${target} ] && apt-get install -y gawk gperf
-		apt-get install -y bison
-		apt-get install -y unifdef
+		apt-get install -y libc6-dev-i386 # for multilib(gcc)
+		[ ${build} != ${target} ] && apt-get install -y gawk gperf # for glibc
+		apt-get install -y bison # for ld.gold
+		apt-get install -y unifdef # for linux kernel
+		apt-get install -y libncurses-dev libgtk-3-dev libxpm-dev libgif-dev libtiff5-dev # for emacs
 		;;
 	Red|CentOS)
 		yum install -y make gcc gcc-c++ texinfo
@@ -272,6 +278,7 @@ install_prerequisites()
 		[ ${build} != ${target} ] && yum install -y gawk gperf
 		yum install -y bison
 		yum install -y unifdef
+		yum install -y ncurses-devel gtk3-devel libXpm-devel giflib-devel libtiff-devel libjpeg-devel
 		;;
 	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1 ;;
 	esac
@@ -337,6 +344,14 @@ prepare_gdb_source()
 	[ -f ${gdb_org_src_dir}.tar.gz ] ||
 		wget -nv -O ${gdb_org_src_dir}.tar.gz \
 			http://ftp.gnu.org/gnu/gdb/${gdb_name}.tar.gz || return 1
+}
+
+prepare_emacs_source()
+{
+	mkdir -p ${emacs_src_base}
+	[ -f ${emacs_org_src_dir}.tar.gz ] ||
+		wget -O ${emacs_org_src_dir}.tar.gz \
+			http://ftpmirror.gnu.org/emacs/${emacs_name}.tar.gz || return 1
 }
 
 prepare_zlib_libpng_libtiff()
@@ -427,6 +442,19 @@ install_native_gdb()
 		${gdb_org_src_dir}/configure --prefix=${prefix} --enable-tui) || return 1
 	make -C ${gdb_bld_dir_ntv} -j${jobs} || return 1
 	make -C ${gdb_bld_dir_ntv} -j${jobs} install || return 1
+}
+
+install_native_emacs()
+{
+	install_prerequisites || return 1
+	prepare_emacs_source || return 1
+	[ -d ${emacs_org_src_dir} ] ||
+		tar xzvf ${emacs_org_src_dir}.tar.gz -C ${emacs_src_base} || return 1
+	[ -f ${emacs_org_src_dir}/Makefile ] ||
+		(cd ${emacs_org_src_dir}
+		${emacs_org_src_dir}/configure --prefix=${prefix}) || return 1
+	make -C ${emacs_org_src_dir} -j${jobs} || return 1
+	make -C ${emacs_org_src_dir} -j${jobs} install-strip || return 1
 }
 
 install_cross_binutils()
