@@ -3,13 +3,9 @@
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO]
-#        bison
 #        sed, gawk, bash
-#        coreutils
 #        m4 processor
 #        autotools(autoconf, automake, libtool)
-#        screen
-#        zsh
 # [TODO] binutils -> check, installcheck
 #        gcc -> check, installcheck
 #        linux -> headers_check
@@ -17,6 +13,8 @@
 #        mpc -> check, installcheck
 #        mpfr -> check, installcheck
 
+: ${coreutils_ver:=8.24}
+: ${bison_ver:=3.0.4}
 : ${make_ver:=4.1}
 : ${binutils_ver:=2.25}
 : ${kernel_ver:=3.18.13}
@@ -27,6 +25,9 @@
 : ${gcc_ver:=5.3.0}
 : ${gdb_ver:=7.10.1}
 : ${emacs_ver:=24.5}
+: ${global_ver:=6.5.2}
+: ${screen_ver:=4.3.1}
+: ${zsh_ver:=5.2}
 : ${prefix:=/toolchains}
 : ${target:=`uname -m`-linux}
 : ${linux_arch:=`uname -m`}
@@ -69,6 +70,12 @@ help()
 	usage
 	cat <<EOF
 [Environmental variables]
+	coreutils_ver
+		Specify the version of GNU Coreutils you want, currently '${coreutils_ver}'.
+	bison_ver
+		Specify the version of GNU Bison you want, currently '${bison_ver}'.
+	make_ver
+		Specify the version of GNU Make you want, currently '${make_ver}'.
 	binutils_ver
 		Specify the version of GNU Binutils you want, currently '${binutils_ver}'.
 	kernel_ver
@@ -87,6 +94,12 @@ help()
 		Specify the version of GNU Debugger you want, currently '${gdb_ver}'.
 	emacs_ver
 		Specify the version of GNU Emacs you want, currently '${emacs_ver}'.
+	global_ver
+		Specify the version of GNU Global you want, currently '${global_ver}'.
+	screen_ver
+		Specify the version of GNU Screen you want, currently '${screen_ver}'.
+	zsh_ver
+		Specify the version of Zsh you want, currently '${zsh_ver}'.
 
 [Examples]
 	For Raspberry pi2
@@ -103,20 +116,7 @@ native()
 {
 	install_prerequisites || return 1
 	install_native_binutils || return 1
-	install_native_gmp_mpfr_mpc || return 1
-	prepare_gcc_source || return 1
-	make_symbolic_links || return 1
-	[ -d ${gcc_org_src_dir} ] ||
-		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
-	mkdir -p ${gcc_bld_dir_ntv}
-	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
-		(cd ${gcc_bld_dir_ntv}
-		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			 --enable-languages=c,c++,go --enable-multilib --without-isl) || return 1
-	make -C ${gcc_bld_dir_ntv} -j${jobs} || return 1
-	make -C ${gcc_bld_dir_ntv} -j${jobs} install-strip || return 1
-	echo "${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/${target}-${gcc_name}.conf
-	ldconfig
+	install_native_gcc || return 1
 	install_native_gdb || return 1
 	clean
 }
@@ -139,16 +139,47 @@ cross()
 }
 
 all()
-# Install all of the above.
+# Install native/cross GNU Toolchains.
 {
 	native
 	cross
+}
+
+full()
+# Install all of the software packages available.
+{
+	install_prerequisites || return 1
+	install_native_coreutils || return 1
+	install_native_bison || return 1
+	install_native_make || return 1
+	install_native_binutils || return 1
+	install_native_gmp_mpfr_mpc || return 1
+	install_native_gcc || return 1
+	install_native_gdb || return 1
+	install_native_emacs || return 1
+	install_native_screen || return 1
+	install_native_zsh || return 1
+	install_cross_binutils || return 1
+	install_cross_gcc_without_headers || return 1
+	install_kernel_header || return 1
+	install_glibc_headers || return 1
+	install_cross_gcc_with_glibc_header || return 1
+	install_1st_glibc || return 1
+	install_cross_gcc_with_c_cxx_go_functionality || return 1
+	install_cross_gdb || return 1
+	install_crossed_native_binutils || return 1
+	install_crossed_native_gmp_mpfr_mpc || return 1
+	install_crossed_native_gcc || return 1
+	install_crossed_native_zlib_libpng_libtiff || return 1
+	clean
 }
 
 clean()
 # Delete no longer required source trees.
 {
 	rm -rf \
+		${coreutils_org_src_dir} \
+		${bison_org_src_dir} \
 		${make_org_src_dir} \
 		${binutils_org_src_dir} ${binutils_src_dir_ntv} ${binutils_src_dir_crs} ${binutils_src_dir_crs_ntv} \
 		${kernel_org_src_dir} ${kernel_src_dir} \
@@ -158,6 +189,9 @@ clean()
 		${gcc_org_src_dir} ${gcc_bld_dir_ntv} ${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} ${gcc_bld_dir_crs_ntv} \
 		${gdb_org_src_dir} ${gdb_bld_dir_ntv} ${gdb_bld_dir_crs} \
 		${emacs_org_src_dir} \
+		${global_org_src_dir} \
+		${screen_org_src_dir} \
+		${zsh_org_src_dir} \
 		${zlib_org_src_dir} ${libpng_org_src_dir} ${libtiff_org_src_dir}
 }
 
@@ -198,6 +232,14 @@ set_variables()
 	microblaze*) linux_arch=microblaze;;
 	*) echo Unknown architecture >&2; return 1;;
 	esac
+
+	coreutils_name=coreutils-${coreutils_ver}
+	coreutils_src_base=${prefix}/src/coreutils
+	coreutils_org_src_dir=${coreutils_src_base}/${coreutils_name}
+
+	bison_name=bison-${bison_ver}
+	bison_src_base=${prefix}/src/bison
+	bison_org_src_dir=${bison_src_base}/${bison_name}
 
 	make_name=make-${make_ver}
 	make_src_base=${prefix}/src/make
@@ -260,9 +302,21 @@ set_variables()
 	emacs_src_base=${prefix}/src/emacs
 	emacs_org_src_dir=${emacs_src_base}/${emacs_name}
 
+	global_name=global-${global_ver}
+	global_src_base=${prefix}/src/global
+	global_org_src_dir=${global_src_base}/${global_name}
+
+	screen_name=screen-${screen_ver}
+	screen_src_base=${prefix}/src/screen
+	screen_org_src_dir=${screen_src_base}/${screen_name}
+
 	zlib_name=zlib-${zlib_ver}
 	zlib_src_base=${prefix}/src/zlib
 	zlib_org_src_dir=${zlib_src_base}/${zlib_name}
+
+	zsh_name=zsh-${zsh_ver}
+	zsh_src_base=${prefix}/src/zsh
+	zsh_org_src_dir=${zsh_src_base}/${zsh_name}
 
 	libpng_name=libpng-${libpng_ver}
 	libpng_src_base=${prefix}/src/libpng
@@ -298,6 +352,22 @@ install_prerequisites()
 		;;
 	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1 ;;
 	esac
+}
+
+prepare_coreutils_source()
+{
+	mkdir -p ${coreutils_src_base}
+	[ -f ${coreutils_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${coreutils_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/coreutils/${coreutils_name}.tar.xz || return 1
+}
+
+prepare_bison_source()
+{
+	mkdir -p ${bison_src_base}
+	[ -f ${bison_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${bison_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/bison/bison-3.0.4.tar.xz || return 1
 }
 
 prepare_make_source()
@@ -378,6 +448,30 @@ prepare_emacs_source()
 			http://ftpmirror.gnu.org/emacs/${emacs_name}.tar.gz || return 1
 }
 
+prepare_global_source()
+{
+	mkdir -p ${global_src_base}
+	[ -f ${global_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${global_org_src_dir}.tar.gz \
+			ftp://ftp.gnu.org/pub/gnu/global/${global_name}.tar.gz || return 1
+}
+
+prepare_screen_source()
+{
+	mkdir -p ${screen_src_base}
+	[ -f ${screen_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${screen_org_src_dir}.tar.gz \
+			http://ftp.gnu.org/gnu/screen/${screen_name}.tar.gz || return 1
+}
+
+prepare_zsh_source()
+{
+	mkdir -p ${zsh_src_base}
+	[ -f ${zsh_org_src_dir}.tar.gz ] ||
+		wget -nv --trust-server-names -O ${zsh_org_src_dir}.tar.gz \
+			http://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.gz/download
+}
+
 prepare_zlib_libpng_libtiff()
 {
 	mkdir -p ${zlib_src_base}
@@ -392,6 +486,32 @@ prepare_zlib_libpng_libtiff()
 	[ -f ${libtiff_org_src_dir}.zip ] ||
 		wget -nv -O ${libtiff_org_src_dir}.zip \
 			ftp://ftp.remotesensing.org/pub/libtiff/${libtiff_name}.zip || return 1
+}
+
+install_native_coreutils()
+{
+	install_prerequisites || return 1
+	prepare_coreutils_source || return 1
+	[ -d ${coreutils_org_src_dir} ] ||
+		tar xJvf ${coreutils_org_src_dir}.tar.xz -C ${coreutils_src_base} || return 1
+	[ -f ${coreutils_org_src_dir}/Makefile ] ||
+		(cd ${coreutils_org_src_dir}
+		FORCE_UNSAFE_CONFIGURE=1 ${coreutils_org_src_dir}/configure --prefix=${prefix} --build=${build}) || return 1
+	make -C ${coreutils_org_src_dir} -j${jobs} || return 1
+	make -C ${coreutils_org_src_dir} -j${jobs} install || return 1
+}
+
+install_native_bison()
+{
+	install_prerequisites || return 1
+	prepare_bison_source || return 1
+	[ -d ${bison_org_src_dir} ] ||
+		tar xJvf ${bison_org_src_dir}.tar.xz -C ${bison_src_base} || return 1
+	[ -f ${bison_org_src_dir}/Makefile ] ||
+		(cd ${bison_org_src_dir}
+		${bison_org_src_dir}/configure --prefix=${prefix}) || return 1
+	make -C ${bison_org_src_dir} -j${jobs} || return 1
+	make -C ${bison_org_src_dir} -j${jobs} install || return 1
 }
 
 install_native_make()
@@ -467,6 +587,24 @@ make_symbolic_links()
 	esac
 }
 
+install_native_gcc()
+{
+	install_native_gmp_mpfr_mpc || return 1
+	prepare_gcc_source || return 1
+	make_symbolic_links || return 1
+	[ -d ${gcc_org_src_dir} ] ||
+		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
+	mkdir -p ${gcc_bld_dir_ntv}
+	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
+		(cd ${gcc_bld_dir_ntv}
+		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
+			 --enable-languages=c,c++,go --enable-multilib --without-isl) || return 1
+	make -C ${gcc_bld_dir_ntv} -j${jobs} || return 1
+	make -C ${gcc_bld_dir_ntv} -j${jobs} install-strip || return 1
+	echo "${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/${target}-${gcc_name}.conf
+	ldconfig
+}
+
 install_native_gdb()
 {
 	install_prerequisites || return 1
@@ -492,6 +630,45 @@ install_native_emacs()
 		${emacs_org_src_dir}/configure --prefix=${prefix}) || return 1
 	make -C ${emacs_org_src_dir} -j${jobs} || return 1
 	make -C ${emacs_org_src_dir} -j${jobs} install-strip || return 1
+}
+
+install_native_global()
+{
+	install_prerequisites || return 1
+	prepare_global_source || return 1
+	[ -d ${global_org_src_dir} ] ||
+		tar xzvf ${global_org_src_dir}.tar.gz -C ${global_src_base} || return 1
+	[ -f ${global_org_src_dir}/Makefile ] ||
+		(cd ${global_org_src_dir}
+		${global_org_src_dir}/configure --prefix=${prefix}) || return 1
+	make -C ${global_org_src_dir} -j${jobs} || return 1
+	make -C ${global_org_src_dir} -j${jobs} install || return 1
+}
+
+install_native_screen()
+{
+	install_prerequisites || return 1
+	prepare_screen_source || return 1
+	[ -d ${screen_org_src_dir} ] ||
+		tar xzvf ${screen_org_src_dir}.tar.gz -C ${screen_src_base} || return 1
+	[ -f ${screen_org_src_dir}/Makefile ] ||
+		(cd ${screen_org_src_dir}
+		${screen_org_src_dir}/configure --prefix=${prefix} --enable-color256 --enable-rxvt_osc)
+	make -C ${screen_org_src_dir} -j${jobs} || return 1
+	make -C ${screen_org_src_dir} -j${jobs} install || return 1
+}
+
+install_native_zsh()
+{
+	install_prerequisites || return 1
+	prepare_zsh_source || return 1
+	[ -d ${zsh_org_src_dir} ] ||
+		tar xzvf ${zsh_org_src_dir}.tar.gz -C ${zsh_src_base} || return 1
+	[ -f ${zsh_org_src_dir}/Makefile ] ||
+		(cd ${zsh_org_src_dir}
+		${zsh_org_src_dir}/configure --prefix=${prefix} --host=${build})
+	make -C ${zsh_org_src_dir} -j${jobs} || return 1
+	make -C ${zsh_org_src_dir} -j${jobs} install || return 1
 }
 
 install_cross_binutils()
