@@ -992,12 +992,9 @@ install_crossed_native_gcc()
 	[ -d ${gcc_org_src_dir} ] ||
 		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_crs_ntv}
-
-# export CC=
 	export CC_FOR_TARGET=${prefix}/bin/${target}-gcc
 	export CXX_FOR_TARGET=${prefix}/bin/${target}-g++
 	export GOC_FOR_TARGET=${prefix}/bin/${target}-gccgo
-	
 	[ -f ${gcc_bld_dir_crs_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_ntv}
 		${gcc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
