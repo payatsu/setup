@@ -4,19 +4,16 @@
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO]
 #        sed, gawk, bash
-#        m4 processor
 #        autotools(autoconf, automake, libtool)
-# [TODO] binutils -> check, installcheck
-#        gcc -> check, installcheck
-#        linux -> headers_check
-#        gmp -> check, installcheck
-#        mpc -> check, installcheck
-#        mpfr -> check, installcheck
 
 : ${coreutils_ver:=8.24}
+: ${m4_ver:=1.4.17}
+: ${autoconf_ver:=2.69}
+: ${automake_ver:=1.15}
+: ${libtool_ver:=2.4.6}
 : ${bison_ver:=3.0.4}
 : ${make_ver:=4.1}
-: ${binutils_ver:=2.25}
+: ${binutils_ver:=2.25.1}
 : ${kernel_ver:=3.18.13}
 : ${glibc_ver:=2.22}
 : ${gmp_ver:=6.1.0}
@@ -72,6 +69,14 @@ help()
 [Environmental variables]
 	coreutils_ver
 		Specify the version of GNU Coreutils you want, currently '${coreutils_ver}'.
+	m4_ver
+		Specify the version of GNU M4 you want, currently '${m4_ver}'.
+	autoconf_ver
+		Specify the version of GNU Autoconf you want, currently '${autoconf_ver}'.
+	automake_ver
+		Specify the version of GNU Automake you want, currently '${automake_ver}'.
+	libtool_ver
+		Specify the version of GNU Libtool you want, currently '${libtool_ver}'.
 	bison_ver
 		Specify the version of GNU Bison you want, currently '${bison_ver}'.
 	make_ver
@@ -150,6 +155,10 @@ full()
 {
 	install_prerequisites || return 1
 	install_native_coreutils || return 1
+	install_native_m4 || return 1
+	install_native_autoconf || return 1
+	install_native_automake || return 1
+	install_native_libtool || return 1
 	install_native_bison || return 1
 	install_native_make || return 1
 	install_native_binutils || return 1
@@ -163,7 +172,7 @@ full()
 	install_cross_gcc_without_headers || return 1
 	install_kernel_header || return 1
 	install_glibc_headers || return 1
-	install_cross_gcc_with_glibc_header || return 1
+	install_cross_gcc_with_glibc_headers || return 1
 	install_1st_glibc || return 1
 	install_cross_gcc_with_c_cxx_go_functionality || return 1
 	install_cross_gdb || return 1
@@ -179,6 +188,10 @@ clean()
 {
 	rm -rf \
 		${coreutils_org_src_dir} \
+		${m4_org_src_dir} \
+		${autoconf_org_src_dir} \
+		${automake_org_src_dir} \
+		${libtool_org_src_dir} \
 		${bison_org_src_dir} \
 		${make_org_src_dir} \
 		${binutils_org_src_dir} ${binutils_src_dir_ntv} ${binutils_src_dir_crs} ${binutils_src_dir_crs_ntv} \
@@ -237,6 +250,22 @@ set_variables()
 	coreutils_name=coreutils-${coreutils_ver}
 	coreutils_src_base=${prefix}/src/coreutils
 	coreutils_org_src_dir=${coreutils_src_base}/${coreutils_name}
+
+	m4_name=m4-${m4_ver}
+	m4_src_base=${prefix}/src/m4
+	m4_org_src_dir=${m4_src_base}/${m4_name}
+
+	autoconf_name=autoconf-${autoconf_ver}
+	autoconf_src_base=${prefix}/src/autoconf
+	autoconf_org_src_dir=${autoconf_src_base}/${autoconf_name}
+
+	automake_name=automake-${automake_ver}
+	automake_src_base=${prefix}/src/automake
+	automake_org_src_dir=${automake_src_base}/${automake_name}
+
+	libtool_name=libtool-${libtool_ver}
+	libtool_src_base=${prefix}/src/libtool
+	libtool_org_src_dir=${libtool_src_base}/${libtool_name}
 
 	bison_name=bison-${bison_ver}
 	bison_src_base=${prefix}/src/bison
@@ -334,6 +363,7 @@ EOF
 
 install_prerequisites()
 {
+	[ -n ${prerequisites_have_been_already_installed} ] && return 0
 	case ${os} in
 	Debian|Ubuntu)
 		apt-get install -y make gcc g++ texinfo
@@ -353,6 +383,7 @@ install_prerequisites()
 		;;
 	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1 ;;
 	esac
+	prerequisites_have_been_already_installed=true
 }
 
 prepare_coreutils_source()
@@ -363,12 +394,44 @@ prepare_coreutils_source()
 			http://ftp.gnu.org/gnu/coreutils/${coreutils_name}.tar.xz || return 1
 }
 
+prepare_m4_source()
+{
+	mkdir -p ${m4_src_base}
+	[ -f ${m4_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${m4_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/m4/${m4_name}.tar.xz || return 1
+}
+
+prepare_autoconf_source()
+{
+	mkdir -p ${autoconf_src_base}
+	[ -f ${autoconf_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${autoconf_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/autoconf/${autoconf_name}.tar.xz || return 1
+}
+
+prepare_automake_source()
+{
+	mkdir -p ${automake_src_base}
+	[ -f ${automake_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${automake_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/automake/${automake_name}.tar.xz || return 1
+}
+
+prepare_libtool_source()
+{
+	mkdir -p ${libtool_src_base}
+	[ -f ${libtool_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${libtool_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/libtool/${libtool_name}.tar.xz || return 1
+}
+
 prepare_bison_source()
 {
 	mkdir -p ${bison_src_base}
 	[ -f ${bison_org_src_dir}.tar.xz ] ||
 		wget -nv -O ${bison_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/bison/bison-3.0.4.tar.xz || return 1
+			http://ftp.gnu.org/gnu/bison/${bison_name}.tar.xz || return 1
 }
 
 prepare_make_source()
@@ -396,17 +459,17 @@ prepare_kernel_source()
 		*)   echo unsupported kernel version >&2; return 1;;
 	esac
 	mkdir -p ${kernel_src_base}
-	[ -f ${kernel_org_src_dir}.tar.gz ] ||
-		wget -nv -O ${kernel_org_src_dir}.tar.gz \
-			https://www.kernel.org/pub/linux/kernel/${dir}/${kernel_name}.tar.gz || return 1
+	[ -f ${kernel_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${kernel_org_src_dir}.tar.xz \
+			https://www.kernel.org/pub/linux/kernel/${dir}/${kernel_name}.tar.xz || return 1
 }
 
 prepare_glibc_source()
 {
 	mkdir -p ${glibc_src_base}
-	[ -f ${glibc_org_src_dir}.tar.gz ] ||
-		wget -nv -O ${glibc_org_src_dir}.tar.gz \
-			http://ftp.gnu.org/gnu/glibc/${glibc_name}.tar.gz || return 1
+	[ -f ${glibc_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${glibc_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/glibc/${glibc_name}.tar.xz || return 1
 }
 
 prepare_gmp_mpfr_mpc_source()
@@ -430,23 +493,23 @@ prepare_gcc_source()
 	mkdir -p ${gcc_src_base}
 	[ -f ${gcc_org_src_dir}.tar.gz ] ||
 		wget -nv -O ${gcc_org_src_dir}.tar.gz \
-			http://ftp.tsukuba.wide.ad.jp/software/gcc/releases/${gcc_name}/${gcc_name}.tar.gz || return 1
+			http://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.gz || return 1
 }
 
 prepare_gdb_source()
 {
 	mkdir -p ${gdb_src_base}
-	[ -f ${gdb_org_src_dir}.tar.gz ] ||
-		wget -nv -O ${gdb_org_src_dir}.tar.gz \
-			http://ftp.gnu.org/gnu/gdb/${gdb_name}.tar.gz || return 1
+	[ -f ${gdb_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${gdb_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/gdb/${gdb_name}.tar.xz || return 1
 }
 
 prepare_emacs_source()
 {
 	mkdir -p ${emacs_src_base}
-	[ -f ${emacs_org_src_dir}.tar.gz ] ||
-		wget -nv -O ${emacs_org_src_dir}.tar.gz \
-			http://ftpmirror.gnu.org/emacs/${emacs_name}.tar.gz || return 1
+	[ -f ${emacs_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${emacs_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/emacs/${emacs_name}.tar.xz || return 1
 }
 
 prepare_global_source()
@@ -454,7 +517,7 @@ prepare_global_source()
 	mkdir -p ${global_src_base}
 	[ -f ${global_org_src_dir}.tar.gz ] ||
 		wget -nv -O ${global_org_src_dir}.tar.gz \
-			ftp://ftp.gnu.org/pub/gnu/global/${global_name}.tar.gz || return 1
+			http://ftp.gnu.org/gnu/global/${global_name}.tar.gz || return 1
 }
 
 prepare_screen_source()
@@ -486,7 +549,7 @@ prepare_zlib_libpng_libtiff()
 	mkdir -p ${libtiff_src_base}
 	[ -f ${libtiff_org_src_dir}.zip ] ||
 		wget -nv -O ${libtiff_org_src_dir}.zip \
-			ftp://ftp.remotesensing.org/pub/libtiff/${libtiff_name}.zip || return 1
+			http://ftp.remotesensing.org/pub/libtiff/${libtiff_name}.zip || return 1
 }
 
 install_native_coreutils()
@@ -499,7 +562,59 @@ install_native_coreutils()
 		(cd ${coreutils_org_src_dir}
 		FORCE_UNSAFE_CONFIGURE=1 ${coreutils_org_src_dir}/configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${coreutils_org_src_dir} -j${jobs} || return 1
-	make -C ${coreutils_org_src_dir} -j${jobs} install || return 1
+	make -C ${coreutils_org_src_dir} -j${jobs} install-strip || return 1
+}
+
+install_native_m4()
+{
+	install_prerequisites || return 1
+	prepare_m4_source || return 1
+	[ -d ${m4_org_src_dir} ] ||
+		tar xJvf ${m4_org_src_dir}.tar.xz -C ${m4_src_base} || return 1
+	[ -f ${m4_org_src_dir}/Makefile ] ||
+		(cd ${m4_org_src_dir}
+		${m4_org_src_dir}/configure --prefix=${prefix}) || return 1
+	make -C ${m4_org_src_dir} -j${jobs} || return 1
+	make -C ${m4_org_src_dir} -j${jobs} install-strip || return 1
+}
+
+install_native_autoconf()
+{
+	install_prerequisites || return 1
+	prepare_autoconf_source || return 1
+	[ -d ${autoconf_org_src_dir} ] ||
+		tar xJvf ${autoconf_org_src_dir}.tar.xz -C ${autoconf_src_base} || return 1
+	[ -f ${autoconf_org_src_dir}/Makefile ] ||
+		(cd ${autoconf_org_src_dir}
+		 ${autoconf_org_src_dir}/configure --prefix=${prefix}) || return 1
+	make -C ${autoconf_org_src_dir} -j${jobs} || return 1
+	make -C ${autoconf_org_src_dir} -j${jobs} install || return 1
+}
+
+install_native_automake()
+{
+	install_prerequisites || return 1
+	prepare_automake_source || return 1
+	[ -d ${automake_org_src_dir} ] ||
+		tar xJvf ${automake_org_src_dir}.tar.xz -C ${automake_src_base} || return 1
+	[ -f ${automake_org_src_dir}/Makefile ] ||
+		(cd ${automake_org_src_dir}
+		 ${automake_org_src_dir}/configure --prefix=${prefix}) || return 1
+	make -C ${automake_org_src_dir} -j${jobs} || return 1
+	make -C ${automake_org_src_dir} -j${jobs} install || return 1
+}
+
+install_native_libtool()
+{
+	install_prerequisites || return 1
+	prepare_libtool_source || return 1
+	[ -d ${libtool_org_src_dir} ] ||
+		tar xJvf ${libtool_org_src_dir}.tar.xz -C ${libtool_src_base} || return 1
+	[ -f ${libtool_org_src_dir}/Makefile ] ||
+		(cd ${libtool_org_src_dir}
+		 ${libtool_org_src_dir}/configure --prefix=${prefix}) || return 1
+	make -C ${libtool_org_src_dir} -j${jobs} || return 1
+	make -C ${libtool_org_src_dir} -j${jobs} install || return 1
 }
 
 install_native_bison()
@@ -512,7 +627,7 @@ install_native_bison()
 		(cd ${bison_org_src_dir}
 		${bison_org_src_dir}/configure --prefix=${prefix}) || return 1
 	make -C ${bison_org_src_dir} -j${jobs} || return 1
-	make -C ${bison_org_src_dir} -j${jobs} install || return 1
+	make -C ${bison_org_src_dir} -j${jobs} install-strip || return 1
 }
 
 install_native_make()
@@ -525,7 +640,7 @@ install_native_make()
 		(cd ${make_org_src_dir}
 		${make_org_src_dir}/configure --prefix=${prefix}) || return 1
 	make -C ${make_org_src_dir} -j${jobs} || return 1
-	make -C ${make_org_src_dir} -j${jobs} install || return 1
+	make -C ${make_org_src_dir} -j${jobs} install-strip || return 1
 }
 
 install_native_binutils()
@@ -611,13 +726,13 @@ install_native_gdb()
 	install_prerequisites || return 1
 	prepare_gdb_source || return 1
 	[ -d ${gdb_org_src_dir} ] ||
-		tar xzvf ${gdb_org_src_dir}.tar.gz -C ${gdb_src_base} || return 1
+		tar xJvf ${gdb_org_src_dir}.tar.xz -C ${gdb_src_base} || return 1
 	mkdir -p ${gdb_bld_dir_ntv}
 	[ -f ${gdb_bld_dir_ntv}/Makefile ] ||
 		(cd ${gdb_bld_dir_ntv}
 		${gdb_org_src_dir}/configure --prefix=${prefix} --enable-tui) || return 1
 	make -C ${gdb_bld_dir_ntv} -j${jobs} || return 1
-	make -C ${gdb_bld_dir_ntv} -j${jobs} install || return 1
+	make -C ${gdb_bld_dir_ntv} -j${jobs} install install-strip-host install-strip-target || return 1
 }
 
 install_native_emacs()
@@ -625,7 +740,7 @@ install_native_emacs()
 	install_prerequisites || return 1
 	prepare_emacs_source || return 1
 	[ -d ${emacs_org_src_dir} ] ||
-		tar xzvf ${emacs_org_src_dir}.tar.gz -C ${emacs_src_base} || return 1
+		tar xJvf ${emacs_org_src_dir}.tar.xz -C ${emacs_src_base} || return 1
 	[ -f ${emacs_org_src_dir}/Makefile ] ||
 		(cd ${emacs_org_src_dir}
 		${emacs_org_src_dir}/configure --prefix=${prefix}) || return 1
@@ -707,7 +822,7 @@ install_kernel_header()
 {
 	prepare_kernel_source || return 1
 	[ -d ${kernel_src_dir} ] ||
-		(tar xzvf ${kernel_org_src_dir}.tar.gz -C ${kernel_src_base} &&
+		(tar xJvf ${kernel_org_src_dir}.tar.xz -C ${kernel_src_base} &&
 			mv ${kernel_org_src_dir} ${kernel_src_dir}) || return 1
 	make -C ${kernel_src_dir} -j${jobs} mrproper || return 1
 	make -C ${kernel_src_dir} -j${jobs} \
@@ -718,7 +833,7 @@ install_glibc_headers()
 {
 	prepare_glibc_source || return 1
 	[ -d ${glibc_src_dir_hdr} ] ||
-		(tar xzvf ${glibc_org_src_dir}.tar.gz -C ${glibc_src_base} &&
+		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
 			mv ${glibc_org_src_dir} ${glibc_src_dir_hdr}) || return 1
 	mkdir -p ${glibc_bld_dir_hdr}
 	[ -f ${glibc_bld_dir_hdr}/Makefile ] ||
@@ -754,7 +869,7 @@ install_cross_gcc_with_glibc_headers()
 install_1st_glibc()
 {
 	[ -d ${glibc_src_dir_1st} ] ||
-		(tar xzvf ${glibc_org_src_dir}.tar.gz -C ${glibc_src_base} &&
+		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
 			mv ${glibc_org_src_dir} ${glibc_src_dir_1st}) || return 1
 
 	[ ${linux_arch} = microblaze ] && (patch -d ${glibc_src_dir_1st} <<EOF || return 1
@@ -811,13 +926,13 @@ install_cross_gdb()
 	install_prerequisites || return 1
 	prepare_gdb_source || return 1
 	[ -d ${gdb_org_src_dir} ] ||
-		tar xzvf ${gdb_org_src_dir}.tar.gz -C ${gdb_src_base} || return 1
+		tar xJvf ${gdb_org_src_dir}.tar.xz -C ${gdb_src_base} || return 1
 	mkdir -p ${gdb_bld_dir_crs}
 	[ -f ${gdb_bld_dir_crs}/Makefile ] ||
 		(cd ${gdb_bld_dir_crs}
 		${gdb_org_src_dir}/configure --prefix=${prefix} --target=${target} --enable-tui --with-sysroot=${sysroot}) || return 1
 	make -C ${gdb_bld_dir_crs} -j${jobs} || return 1
-	make -C ${gdb_bld_dir_crs} -j${jobs} install || return 1
+	make -C ${gdb_bld_dir_crs} -j${jobs} install install-strip-host install-strip-target || return 1
 }
 
 install_crossed_native_binutils()
@@ -877,11 +992,13 @@ install_crossed_native_gcc()
 		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_crs_ntv}
 
-	export CC=${prefix}/bin/${target}-gcc
+# export CC=
+	export CC_FOR_TARGET=${prefix}/bin/${target}-gcc
+	export CXX_FOR_TARGET=${prefix}/bin/${target}-g++
 	
 	[ -f ${gcc_bld_dir_crs_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_ntv}
-		${gcc_org_src_dir}/configure --prefix=/usr --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
+		${gcc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
 			 --enable-languages=c,c++,go --with-sysroot=/ --without-isl) || return 1
 	make -C ${gcc_bld_dir_crs_ntv} -j${jobs} || return 1
 	make -C ${gcc_bld_dir_crs_ntv} -j${jobs} DESTDIR=${sysroot} install-strip || return 1
