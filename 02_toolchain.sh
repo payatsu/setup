@@ -228,8 +228,9 @@ set_variables()
 
 	case ${target} in
 	arm*)        linux_arch=arm;;
-	x86*)        linux_arch=x86;;
+	i?86*)       linux_arch=x86;;
 	microblaze*) linux_arch=microblaze;;
+	x86_64*)     linux_arch=x86;;
 	*) echo Unknown architecture >&2; return 1;;
 	esac
 
@@ -375,7 +376,7 @@ prepare_make_source()
 	mkdir -p ${make_src_base}
 	[ -f ${make_org_src_dir}.tar.gz ] ||
 		wget -nv -O ${make_org_src_dir}.tar.gz \
-			http://ftpmirror.gnu.org/make/${make_name}.tar.gz || return 1
+			http://ftp.gnu.org/gnu/make/${make_name}.tar.gz || return 1
 }
 
 prepare_binutils_source()
