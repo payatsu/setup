@@ -913,12 +913,13 @@ install_cross_gcc_with_c_cxx_go_functionality()
 	[ -d ${gcc_org_src_dir} ] ||
 		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_crs_3rd}
+	export LIBS=-lgcc_s
 	[ -f ${gcc_bld_dir_crs_3rd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_3rd}
 		 ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			--enable-languages=c,c++ --with-sysroot=${sysroot}) || return 1
+			--enable-languages=c,c++,go --with-sysroot=${sysroot}) || return 1
 	make -C ${gcc_bld_dir_crs_3rd} -j${jobs} || return 1
-	make -C ${gcc_bld_dir_crs_3rd} -j${jobs} install-strip || return 1
+	make -C ${gcc_bld_dir_crs_3rd} -j${jobs} install || return 1
 }
 
 install_cross_gdb()
@@ -995,6 +996,7 @@ install_crossed_native_gcc()
 # export CC=
 	export CC_FOR_TARGET=${prefix}/bin/${target}-gcc
 	export CXX_FOR_TARGET=${prefix}/bin/${target}-g++
+	export GOC_FOR_TARGET=${prefix}/bin/${target}-gccgo
 	
 	[ -f ${gcc_bld_dir_crs_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_ntv}
