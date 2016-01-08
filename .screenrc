@@ -5,6 +5,8 @@ startup_message off
 vbell off
 bind ^G
 defscrollback 4096
+bind w windowlist -b
+bind ^w windowlist -b
 bind N colon 'number '
 bind j focus down
 bind ^J focus down
