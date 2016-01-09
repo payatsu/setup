@@ -8,6 +8,10 @@ defscrollback 4096
 bind  w windowlist -b
 bind ^W windowlist -b
 bind N colon 'number '
+windowlist title  '%{u .g}Num Flags Title%=[0-9] select the number [movement] j,C-n:Down k,C-p:Up (C-)f:PageDown (C-)b:PageUp'
+windowlist string '%{.g}%3n %{.y}%f%09=%{dg} %t %='
+caption always '%?%F%{= gW}%:%{= Kk}%?%2n%f%07=%t%='
+hardstatus alwayslastline '%m/%d %02c:%s %{= .g}%H%{-} %L=%-w%45L>%{=u g.}%n %t%{-}%+w %-17<%=%{= .y}(%l)'
 
 bind  j focus down
 bind ^J focus down
@@ -39,8 +43,8 @@ bind -c resize X eval 'command -c resize' 'resize -h max' 'echo "Resizing window
 bind q eval 'command -c layout' 'layout show'
 bind -c layout  q eval  'command -c layout' 'layout show'
 bind -c layout  c eval  'command -c layout' 'layout new'    'layout show'
-bind -c layout  x eval  'command -c layout' 'layout remove' 'layout show'
-bind -c layout  T colon 'layout title '
+bind -c layout  X eval  'command -c layout' 'layout remove' 'layout show'
+bind -c layout  A colon 'layout title '
 bind -c layout  N colon 'layout number '
 bind -c layout  n eval  'layout next' 'layout show'
 bind -c layout  p eval  'layout prev' 'layout show'
@@ -75,3 +79,8 @@ bind -c save_layout 6 eval 'layout save 6' 'echo "save to 6"'
 bind -c save_layout 7 eval 'layout save 7' 'echo "save to 7"'
 bind -c save_layout 8 eval 'layout save 8' 'echo "save to 8"'
 bind -c save_layout 9 eval 'layout save 9' 'echo "save to 9"'
+
+layout new 0:default
+layout new 1:layout1
+layout new 2:layout2
+layout select 0
