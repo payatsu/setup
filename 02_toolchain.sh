@@ -4,7 +4,10 @@
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO]
 #        sed, gawk, bash
-#        autotools(autoconf, automake, libtool)
+#        tar
+#        wget
+#        diff, patch
+#        find
 
 : ${coreutils_ver:=8.24}
 : ${m4_ver:=1.4.17}
@@ -549,7 +552,7 @@ prepare_zlib_libpng_libtiff()
 	mkdir -p ${libtiff_src_base}
 	[ -f ${libtiff_org_src_dir}.zip ] ||
 		wget -nv -O ${libtiff_org_src_dir}.zip \
-			http://ftp.remotesensing.org/pub/libtiff/${libtiff_name}.zip || return 1
+			ftp://ftp.remotesensing.org/pub/libtiff/${libtiff_name}.zip || return 1
 }
 
 install_native_coreutils()
@@ -638,7 +641,7 @@ install_native_make()
 		tar xzvf ${make_org_src_dir}.tar.gz -C ${make_src_base} || return 1
 	[ -f ${make_org_src_dir}/Makefile ] ||
 		(cd ${make_org_src_dir}
-		${make_org_src_dir}/configure --prefix=${prefix}) || return 1
+		${make_org_src_dir}/configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${make_org_src_dir} -j${jobs} || return 1
 	make -C ${make_org_src_dir} -j${jobs} install-strip || return 1
 }
@@ -652,7 +655,7 @@ install_native_binutils()
 			mv ${binutils_org_src_dir} ${binutils_src_dir_ntv}) || return 1
 	[ -f ${binutils_src_dir_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_ntv} 
-		./configure --prefix=${prefix} --with-sysroot=/ --enable-gold) || return 1
+		./configure --prefix=${prefix} --build=${build} --with-sysroot=/ --enable-gold) || return 1
 	make -C ${binutils_src_dir_ntv} -j${jobs} || return 1
 	make -C ${binutils_src_dir_ntv} -j${jobs} install-strip || return 1
 }
@@ -732,7 +735,7 @@ install_native_gdb()
 		(cd ${gdb_bld_dir_ntv}
 		${gdb_org_src_dir}/configure --prefix=${prefix} --enable-tui) || return 1
 	make -C ${gdb_bld_dir_ntv} -j${jobs} || return 1
-	make -C ${gdb_bld_dir_ntv} -j${jobs} install install-strip-host install-strip-target || return 1
+	make -C ${gdb_bld_dir_ntv} -j${jobs} install || return 1
 }
 
 install_native_emacs()
@@ -933,7 +936,7 @@ install_cross_gdb()
 		(cd ${gdb_bld_dir_crs}
 		${gdb_org_src_dir}/configure --prefix=${prefix} --target=${target} --enable-tui --with-sysroot=${sysroot}) || return 1
 	make -C ${gdb_bld_dir_crs} -j${jobs} || return 1
-	make -C ${gdb_bld_dir_crs} -j${jobs} install install-strip-host install-strip-target || return 1
+	make -C ${gdb_bld_dir_crs} -j${jobs} install || return 1
 }
 
 install_crossed_native_binutils()
