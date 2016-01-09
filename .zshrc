@@ -46,11 +46,8 @@ fi
 export WORDCHARS=''
 setopt complete_aliases
 [ "${TERM}" != dumb ] && alias ls='ls --color=auto'
-alias l='ls -lh'
-alias ll='ls -l'
-alias la='ls -a'
-alias lla='ls -la'
-alias grep='grep --color=auto'
+[ "${TERM}" != dumb ] && alias grep='grep --color=auto'
+alias l='ls -FGlhp'
 alias less='less -R'
 alias lv='lv -c'
 alias tgif='tgif -geometry 960x1000'
@@ -60,3 +57,4 @@ alias -s txt=view
 alias -s tar.gz='tar xzf'
 alias -s tgz='tar xzf'
 alias -s tar.bz2='tar xjf'
+alias -s tar.xz='tar xJf'
