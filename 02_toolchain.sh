@@ -875,9 +875,9 @@ install_1st_glibc()
 		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
 			mv ${glibc_org_src_dir} ${glibc_src_dir_1st}) || return 1
 
-	[ ${linux_arch} = microblaze ] && (patch -d ${glibc_src_dir_1st} <<EOF || return 1
---- ./sysdeps/unix/sysv/linux/microblaze/sysdep.h
-+++ ./sysdeps/unix/sysv/linux/microblaze/sysdep.h
+	[ ${linux_arch} = microblaze ] && (cd ${glibc_src_dir_1st}; patch -p0 -d ${glibc_src_dir_1st} <<EOF || return 1
+--- sysdeps/unix/sysv/linux/microblaze/sysdep.h
++++ sysdeps/unix/sysv/linux/microblaze/sysdep.h
 @@ -16,8 +16,11 @@
     License along with the GNU C Library; if not, see
     <http://www.gnu.org/licenses/>.  */
