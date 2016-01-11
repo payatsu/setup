@@ -3,9 +3,11 @@
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO]
-#        sed, gawk, bash
-#        tar
 #        wget
+#        sed, gawk, bash
+#        flex
+#        tar
+#        git
 #        diff, patch
 #        find
 
@@ -654,7 +656,7 @@ install_native_binutils()
 		(tar xzvf ${binutils_org_src_dir}.tar.gz -C ${binutils_src_base} &&
 			mv ${binutils_org_src_dir} ${binutils_src_dir_ntv}) || return 1
 	[ -f ${binutils_src_dir_ntv}/Makefile ] ||
-		(cd ${binutils_src_dir_ntv} 
+		(cd ${binutils_src_dir_ntv}
 		./configure --prefix=${prefix} --build=${build} --with-sysroot=/ --enable-gold) || return 1
 	make -C ${binutils_src_dir_ntv} -j${jobs} || return 1
 	make -C ${binutils_src_dir_ntv} -j${jobs} install-strip || return 1
@@ -798,7 +800,7 @@ install_cross_binutils()
 		(tar xzvf ${binutils_org_src_dir}.tar.gz -C ${binutils_src_base} &&
 			mv ${binutils_org_src_dir} ${binutils_src_dir_crs}) || return 1
 	[ -f ${binutils_src_dir_crs}/Makefile ] ||
-		(cd ${binutils_src_dir_crs} 
+		(cd ${binutils_src_dir_crs}
 		./configure --prefix=${prefix} --target=${target} --with-sysroot=${sysroot} --enable-gold) || return 1
 	make -C ${binutils_src_dir_crs} -j${jobs} || return 1
 	make -C ${binutils_src_dir_crs} -j${jobs} install-strip || return 1
@@ -947,7 +949,7 @@ install_crossed_native_binutils()
 		(tar xzvf ${binutils_org_src_dir}.tar.gz -C ${binutils_src_base} &&
 			mv ${binutils_org_src_dir} ${binutils_src_dir_crs_ntv}) || return 1
 	[ -f ${binutils_src_dir_crs_ntv}/Makefile ] ||
-		(cd ${binutils_src_dir_crs_ntv} 
+		(cd ${binutils_src_dir_crs_ntv}
 		./configure --prefix=/usr --host=${target} --with-sysroot=/) || return 1
 	make -C ${binutils_src_dir_crs_ntv} -j${jobs} || return 1
 	make -C ${binutils_src_dir_crs_ntv} -j${jobs} DESTDIR=${sysroot} install-strip || return 1
