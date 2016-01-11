@@ -287,14 +287,14 @@
 									(newline-mark 10 [8595 10])
 									(tab-mark 9 [187 9] [92 9])))
 (set-face-attribute 'whitespace-space nil
-					:background bgcolor)
+					:background "none")
 (set-face-attribute 'whitespace-tab nil
-					:background bgcolor)
+					:background "none")
 (set-face-attribute 'whitespace-newline nil
 					:foreground "SeaGreen1")
 (set-face-attribute 'whitespace-line nil
 					:foreground "red"
-					:background bgcolor
+					:background "none"
 					:underline t)
 
 ; *** Semantic-mode ***
