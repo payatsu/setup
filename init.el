@@ -351,6 +351,9 @@
 	 (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
 	 (add-hook 'c-mode-common-hook 'irony-mode)))
 
+; *** flycheck-mode ***
+(global-flycheck-mode 1)
+
 ; *** Flymake-mode ***
 ; (list "-Wall" "-Wextra" "-Weffc++" "-Wcast-qual" "-Wcast-align" "-Wfloat-equal" "-Wshadow" "-Woverloaded-virtual" "-Wpointer-arith" "-Wwrite-strings" "-Wformat=2" "-fsyntax-only")
 
