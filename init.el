@@ -19,7 +19,7 @@
 					 '(t())) "*Face used by hl-line." :group 'hl-line)
 (set-face-background 'region regioncolor)
 (add-to-list 'default-frame-alist (cons 'mouse-color mousecolor))
-;(if window-system (add-to-list 'default-frame-alist '(alpha . 80)))
+(if window-system (add-to-list 'default-frame-alist '(alpha . 80)))
 ;(set-face-foreground 'modeline "white")
 ;(set-face-background 'modeline "forest green")
 
