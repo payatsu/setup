@@ -309,12 +309,15 @@
 (add-to-list 'semantic-default-submodes 'global-semantic-idle-completions-mode)
 (add-to-list 'semantic-default-submodes 'global-semantic-idle-summary-mode)
 (setq semantic-stickyfunc-sticky-classes '(function type variable include package))
-;(require 'semantic/ia)
-;(require 'semantic/bovine/gcc)
+(require 'semantic/ia)
+(require 'semantic/bovine/gcc)
 
 ; *** company-mode ***
 (autoload 'company-mode "company" nil t)
 (global-company-mode 1)
+(setq company-idle-delay 0)
+(setq company-minimum-prefix-length 2)
+(setq company-selection-wrap-around t)
 (global-set-key (kbd "C-M-i") 'company-complete)
 (define-key company-active-map (kbd "C-n") 'company-select-next)
 (define-key company-active-map (kbd "C-p") 'company-select-previous)
@@ -322,19 +325,19 @@
 (define-key company-search-map (kbd "C-p") 'company-select-previous)
 (define-key company-active-map (kbd "<tab>") 'company-complete-selection)
 (set-face-attribute 'company-tooltip nil
-                     :foreground "black" :background "lightgrey")
+					:foreground "black" :background "lightgrey")
 (set-face-attribute 'company-tooltip-common nil
-                     :foreground "black" :background "lightgrey")
+					:foreground "black" :background "lightgrey")
 (set-face-attribute 'company-tooltip-common-selection nil
-                     :foreground "white" :background "steelblue")
+					:foreground "white" :background "steelblue")
 (set-face-attribute 'company-tooltip-selection nil
-                     :foreground "black" :background "steelblue")
+					:foreground "black" :background "steelblue")
 (set-face-attribute 'company-preview-common nil
-                     :background nil :foreground "lightgrey" :underline t)
+					:background nil :foreground "lightgrey" :underline t)
 (set-face-attribute 'company-scrollbar-fg nil
-                     :background "orange")
+					:background "orange")
 (set-face-attribute 'company-scrollbar-bg nil
-                     :background "gray40")
+					:background "gray40")
 
 ; *** yasnippet-mode ***
 (yas-global-mode t)
@@ -344,6 +347,7 @@
 	 (yas-global-mode 1)))
 
 ; *** irony-mode ***
+(require 'irony)
 (eval-after-load "irony"
  '(progn
 	 (custom-set-variables '(irony-additional-clang-options '("-std=c++11")))
