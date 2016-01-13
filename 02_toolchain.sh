@@ -2,6 +2,7 @@
 
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
+# [TODO] gdbに--with-python=hogeのオプションを追加する。
 # [TODO]
 #        wget
 #        sed, gawk, bash
