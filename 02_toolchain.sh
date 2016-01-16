@@ -185,7 +185,7 @@ full()
 }
 
 experimental()
-# Install experimental packages
+# Install some packages experimentally.
 {
 	install_crossed_native_binutils || return 1
 	install_crossed_native_gmp_mpfr_mpc || return 1
@@ -402,10 +402,10 @@ install_prerequisites()
 	case ${os} in
 	Debian|Ubuntu)
 		apt-get install -y make gcc g++ texinfo
-		apt-get install -y libc6-dev-i386 # for multilib(gcc)
 		[ ${build} != ${target} ] && apt-get install -y gawk gperf # for glibc
 		apt-get install -y unifdef # for linux kernel
 		apt-get install -y libncurses-dev libgtk-3-dev libxpm-dev libgif-dev libtiff5-dev # for emacs
+		apt-get install -y xsltproc libxml2-utils # for git
 		;;
 	Red|CentOS|\\S)
 		yum install -y make gcc gcc-c++ texinfo
@@ -793,6 +793,7 @@ make_symbolic_links()
 
 install_native_gcc()
 {
+	install_prerequisites || return 1
 	install_native_gmp_mpfr_mpc || return 1
 	prepare_gcc_source || return 1
 	make_symbolic_links || return 1
@@ -802,7 +803,7 @@ install_native_gcc()
 	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_ntv}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			 --enable-languages=c,c++,go --enable-multilib --without-isl) || return 1
+			 --enable-languages=c,c++,go --disable-multilib --without-isl --with-system-zlib) || return 1
 	make -C ${gcc_bld_dir_ntv} -j${jobs} || return 1
 	make -C ${gcc_bld_dir_ntv} -j${jobs} install-strip || return 1
 	echo "${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/${target}-${gcc_name}.conf
