@@ -8,7 +8,6 @@
 #        sed, gawk, bash
 #        flex
 #        tar
-#        git
 #        diff, patch
 #        find
 
@@ -31,9 +30,11 @@
 : ${global_ver:=6.5.2}
 : ${screen_ver:=4.3.1}
 : ${zsh_ver:=5.2}
+: ${curl_ver:=7.46.0}
+: ${asciidoc_ver:=8.6.9}
+: ${git_ver:=2.7.0}
 : ${prefix:=/toolchains}
-: ${target:=`uname -m`-linux}
-: ${linux_arch:=`uname -m`}
+: ${target:=`uname -m`-linux-gnu}
 
 : ${zlib_ver:=1.2.8}
 : ${libpng_ver:=1.6.20}
@@ -111,6 +112,12 @@ help()
 		Specify the version of GNU Screen you want, currently '${screen_ver}'.
 	zsh_ver
 		Specify the version of Zsh you want, currently '${zsh_ver}'.
+	curl_ver
+		Specify the version of Curl you want, currently '${libcur_ver}'.
+	asciidoc_ver
+		Specify the version of asciidoc you want, currently ''${asciidoc_ver}.
+	git_ver
+		Specify the version of Git you want, currently '${git_ver}'.
 
 [Examples]
 	For Raspberry pi2
@@ -174,6 +181,7 @@ full()
 	install_native_emacs || return 1
 	install_native_screen || return 1
 	install_native_zsh || return 1
+	install_native_git || return 1
 	install_cross_binutils || return 1
 	install_cross_gcc_without_headers || return 1
 	install_kernel_header || return 1
@@ -211,7 +219,10 @@ clean()
 		${global_org_src_dir} \
 		${screen_org_src_dir} \
 		${zsh_org_src_dir} \
-		${zlib_org_src_dir} ${libpng_org_src_dir} ${libtiff_org_src_dir}
+		${zlib_org_src_dir} ${libpng_org_src_dir} ${libtiff_org_src_dir} \
+		${curl_org_src_dir} \
+		${asciidoc_org_src_dir} \
+		${git_org_src_dir}
 }
 
 list()
@@ -242,7 +253,7 @@ set_variables()
 {
 	: ${sysroot:=${prefix}/${target}/sysroot}
 	: ${jobs:=`grep -e processor /proc/cpuinfo | wc -l`}
-	build=`uname -m`-linux
+	build=`uname -m`-linux-gnu
 	os=`head -1 /etc/issue | cut -d ' ' -f 1`
 
 	case ${target} in
@@ -346,13 +357,25 @@ set_variables()
 	screen_src_base=${prefix}/src/screen
 	screen_org_src_dir=${screen_src_base}/${screen_name}
 
-	zlib_name=zlib-${zlib_ver}
-	zlib_src_base=${prefix}/src/zlib
-	zlib_org_src_dir=${zlib_src_base}/${zlib_name}
-
 	zsh_name=zsh-${zsh_ver}
 	zsh_src_base=${prefix}/src/zsh
 	zsh_org_src_dir=${zsh_src_base}/${zsh_name}
+
+	curl_name=curl-${curl_ver}
+	curl_src_base=${prefix}/src/curl
+	curl_org_src_dir=${curl_src_base}/${curl_name}
+
+	asciidoc_name=asciidoc-${asciidoc_ver}
+	asciidoc_src_base=${prefix}/src/asciidoc
+	asciidoc_org_src_dir=${asciidoc_src_base}/${asciidoc_name}
+
+	git_name=git-${git_ver}
+	git_src_base=${prefix}/src/git
+	git_org_src_dir=${git_src_base}/${git_name}
+
+	zlib_name=zlib-${zlib_ver}
+	zlib_src_base=${prefix}/src/zlib
+	zlib_org_src_dir=${zlib_src_base}/${zlib_name}
 
 	libpng_name=libpng-${libpng_ver}
 	libpng_src_base=${prefix}/src/libpng
@@ -539,7 +562,31 @@ prepare_zsh_source()
 	mkdir -p ${zsh_src_base}
 	[ -f ${zsh_org_src_dir}.tar.gz ] ||
 		wget -nv --trust-server-names -O ${zsh_org_src_dir}.tar.gz \
-			http://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.gz/download
+			http://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.gz/download || return 1
+}
+
+prepare_curl_source()
+{
+	mkdir -p ${curl_src_base}
+	[ -f ${curl_org_src_dir}.tar.bz2 ] ||
+		wget -nv -O ${curl_org_src_dir}.tar.bz2 \
+			http://curl.haxx.se/download/${curl_name}.tar.bz2 || return 1
+}
+
+prepare_asciidoc_source()
+{
+	mkdir -p ${asciidoc_src_base}
+	[ -f ${asciidoc_org_src_dir}.zip ] ||
+		wget -nv -O ${asciidoc_org_src_dir}.zip \
+			http://downloads.sourceforge.net/project/asciidoc/asciidoc/${asciidoc_ver}/${asciidoc_name}.zip?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fasciidoc%2F&ts=1452901281&use_mirror=jaist || return 1
+}
+
+prepare_git_source()
+{
+	mkdir -p ${git_src_base}
+	[ -f ${git_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${git_org_src_dir}.tar.xz \
+			https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return 1
 }
 
 prepare_zlib_libpng_libtiff()
@@ -734,9 +781,10 @@ install_native_gdb()
 	[ -d ${gdb_org_src_dir} ] ||
 		tar xJvf ${gdb_org_src_dir}.tar.xz -C ${gdb_src_base} || return 1
 	mkdir -p ${gdb_bld_dir_ntv}
+# for lib in /usr/lib/${build}/libpython*; do ln -sf `echo ${lib} | sed -e 's+/usr/lib+.+;'` `echo ${lib} | sed -e s+${build}/++`; done
 	[ -f ${gdb_bld_dir_ntv}/Makefile ] ||
 		(cd ${gdb_bld_dir_ntv}
-		${gdb_org_src_dir}/configure --prefix=${prefix} --enable-tui) || return 1
+		${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} --enable-tui) || return 1
 	make -C ${gdb_bld_dir_ntv} -j${jobs} || return 1
 	make -C ${gdb_bld_dir_ntv} -j${jobs} install || return 1
 }
@@ -775,7 +823,7 @@ install_native_screen()
 		tar xzvf ${screen_org_src_dir}.tar.gz -C ${screen_src_base} || return 1
 	[ -f ${screen_org_src_dir}/Makefile ] ||
 		(cd ${screen_org_src_dir}
-		${screen_org_src_dir}/configure --prefix=${prefix} --enable-color256 --enable-rxvt_osc)
+		${screen_org_src_dir}/configure --prefix=${prefix} --enable-color256 --enable-rxvt_osc) || return 1
 	make -C ${screen_org_src_dir} -j${jobs} || return 1
 	make -C ${screen_org_src_dir} -j${jobs} install || return 1
 }
@@ -788,9 +836,50 @@ install_native_zsh()
 		tar xzvf ${zsh_org_src_dir}.tar.gz -C ${zsh_src_base} || return 1
 	[ -f ${zsh_org_src_dir}/Makefile ] ||
 		(cd ${zsh_org_src_dir}
-		${zsh_org_src_dir}/configure --prefix=${prefix} --host=${build})
+		${zsh_org_src_dir}/configure --prefix=${prefix} --host=${build}) || return 1
 	make -C ${zsh_org_src_dir} -j${jobs} || return 1
 	make -C ${zsh_org_src_dir} -j${jobs} install || return 1
+}
+
+install_native_curl()
+{
+	install_prerequisites || return 1
+	prepare_curl_source || return 1
+	[ -d ${curl_org_src_dir} ] ||
+		tar xjvf ${curl_org_src_dir}.tar.bz2 -C ${curl_src_base} || return 1
+	[ -f ${curl_org_src_dir}/Makefile ] ||
+		(cd ${curl_org_src_dir}
+		${curl_org_src_dir}/configure --prefix=${prefix}) || return 1
+	make -C ${curl_org_src_dir} -j${jobs} || return 1
+	make -C ${curl_org_src_dir} -j${jobs} install || return 1
+}
+
+install_native_asciidoc()
+{
+	install_prerequisites || return 1
+	prepare_asciidoc_source || return 1
+	[ -d ${asciidoc_org_src_dir} ] ||
+		unzip -d ${asciidoc_src_base} ${asciidoc_org_src_dir}.zip || return 1
+	[ -f ${asciidoc_org_src_dir}/Makefile ] ||
+		(cd ${asciidoc_org_src_dir}
+		${asciidoc_org_src_dir}/configure --prefix=${prefix}) || return 1
+	make -C ${asciidoc_org_src_dir} -j${jobs} || return 1
+	make -C ${asciidoc_org_src_dir} -j${jobs} install || return 1
+}
+
+install_native_git()
+{
+	install_prerequisites || return 1
+	install_native_curl || return 1
+	install_native_asciidoc || return 1
+	prepare_git_source || return 1
+	[ -d ${git_org_src_dir} ] ||
+		tar xJvf ${git_org_src_dir}.tar.xz -C ${git_src_base} || return 1
+	make -C ${git_org_src_dir} -j${jobs} configure || return 1
+	(cd ${git_org_src_dir}
+	${git_org_src_dir}/configure --prefix=${prefix}) || return 1
+	make -C ${git_org_src_dir} -j${jobs} all doc || return 1
+	make -C ${git_org_src_dir} -j${jobs} install install-doc install-html || return 1
 }
 
 install_cross_binutils()
