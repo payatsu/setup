@@ -15,7 +15,7 @@ case ${os} in
 		apt-get install --yes python3
 		apt-get install --yes doxygen graphviz
 		;;
-	Red|CentOS)
+	Red|CentOS|\\S)
 		yum update
 		yum install -y emacs vim
 		yum install -y zsh

@@ -6,16 +6,17 @@
 # [TODO]
 #        wget
 #        sed, gawk, bash
-#        flex
 #        tar
 #        diff, patch
 #        find
+#        xsltproc
 
 : ${coreutils_ver:=8.24}
 : ${m4_ver:=1.4.17}
 : ${autoconf_ver:=2.69}
 : ${automake_ver:=1.15}
 : ${libtool_ver:=2.4.6}
+: ${flex_ver:=2.6.0}
 : ${bison_ver:=3.0.4}
 : ${make_ver:=4.1}
 : ${binutils_ver:=2.25.1}
@@ -32,6 +33,7 @@
 : ${zsh_ver:=5.2}
 : ${curl_ver:=7.46.0}
 : ${asciidoc_ver:=8.6.9}
+: ${xmlto_ver:=0.0.28}
 : ${git_ver:=2.7.0}
 : ${prefix:=/toolchains}
 : ${target:=`uname -m`-linux-gnu}
@@ -84,6 +86,8 @@ help()
 		Specify the version of GNU Automake you want, currently '${automake_ver}'.
 	libtool_ver
 		Specify the version of GNU Libtool you want, currently '${libtool_ver}'.
+	flex_ver
+		Specify the version of flex you want, currently '${flex_ver}'.
 	bison_ver
 		Specify the version of GNU Bison you want, currently '${bison_ver}'.
 	make_ver
@@ -115,7 +119,9 @@ help()
 	curl_ver
 		Specify the version of Curl you want, currently '${libcur_ver}'.
 	asciidoc_ver
-		Specify the version of asciidoc you want, currently ''${asciidoc_ver}.
+		Specify the version of asciidoc you want, currently '${asciidoc_ver}'.
+	xmlto_ver
+		Specify the version of xmlto you want, currently '${xmlto_ver}'.
 	git_ver
 		Specify the version of Git you want, currently '${git_ver}'.
 
@@ -172,6 +178,7 @@ full()
 	install_native_autoconf || return 1
 	install_native_automake || return 1
 	install_native_libtool || return 1
+	install_native_flex || return 1
 	install_native_bison || return 1
 	install_native_make || return 1
 	install_native_binutils || return 1
@@ -206,6 +213,7 @@ clean()
 		${autoconf_org_src_dir} \
 		${automake_org_src_dir} \
 		${libtool_org_src_dir} \
+		${flex_org_src_dir} \
 		${bison_org_src_dir} \
 		${make_org_src_dir} \
 		${binutils_org_src_dir} ${binutils_src_dir_ntv} ${binutils_src_dir_crs} ${binutils_src_dir_crs_ntv} \
@@ -222,6 +230,7 @@ clean()
 		${zlib_org_src_dir} ${libpng_org_src_dir} ${libtiff_org_src_dir} \
 		${curl_org_src_dir} \
 		${asciidoc_org_src_dir} \
+		${xmlto_org_src_dir} \
 		${git_org_src_dir}
 }
 
@@ -283,6 +292,10 @@ set_variables()
 	libtool_name=libtool-${libtool_ver}
 	libtool_src_base=${prefix}/src/libtool
 	libtool_org_src_dir=${libtool_src_base}/${libtool_name}
+
+	flex_name=flex-${flex_ver}
+	flex_src_base=${prefix}/src/flex
+	flex_org_src_dir=${flex_src_base}/${flex_name}
 
 	bison_name=bison-${bison_ver}
 	bison_src_base=${prefix}/src/bison
@@ -369,6 +382,10 @@ set_variables()
 	asciidoc_src_base=${prefix}/src/asciidoc
 	asciidoc_org_src_dir=${asciidoc_src_base}/${asciidoc_name}
 
+	xmlto_name=xmlto-${xmlto_ver}
+	xmlto_src_base=${prefix}/src/xmlto
+	xmlto_org_src_dir=${xmlto_src_base}/${xmlto_name}
+
 	git_name=git-${git_ver}
 	git_src_base=${prefix}/src/git
 	git_org_src_dir=${git_src_base}/${git_name}
@@ -402,7 +419,7 @@ install_prerequisites()
 		apt-get install -y unifdef # for linux kernel
 		apt-get install -y libncurses-dev libgtk-3-dev libxpm-dev libgif-dev libtiff5-dev # for emacs
 		;;
-	Red|CentOS)
+	Red|CentOS|\\S)
 		yum install -y make gcc gcc-c++ texinfo
 		yum install -y glibc-devel.i686 libstdc++-devel.i686
 		[ ${build} != ${target} ] && yum install -y gawk gperf
@@ -453,6 +470,14 @@ prepare_libtool_source()
 	[ -f ${libtool_org_src_dir}.tar.xz ] ||
 		wget -nv -O ${libtool_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/libtool/${libtool_name}.tar.xz || return 1
+}
+
+prepare_flex_source()
+{
+	mkdir -p ${flex_src_base}
+	[ -f ${flex_org_src_dir}.tar.xz ] ||
+		wget -nv --trust-server-names -O ${flex_org_src_dir}.tar.xz \
+			http://sourceforge.net/projects/flex/files/${flex_name}.tar.xz/download || return 1
 }
 
 prepare_bison_source()
@@ -578,7 +603,15 @@ prepare_asciidoc_source()
 	mkdir -p ${asciidoc_src_base}
 	[ -f ${asciidoc_org_src_dir}.zip ] ||
 		wget -nv -O ${asciidoc_org_src_dir}.zip \
-			http://downloads.sourceforge.net/project/asciidoc/asciidoc/${asciidoc_ver}/${asciidoc_name}.zip?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fasciidoc%2F&ts=1452901281&use_mirror=jaist || return 1
+			http://sourceforge.net/projects/asciidoc/files/asciidoc/${asciidoc_ver}/${asciidoc_name}.zip/download || return 1
+}
+
+prepare_xmlto_source()
+{
+	mkdir -p ${xmlto_src_base}
+	[ -f ${xmlto_org_src_dir}.tar.bz2 ] ||
+		wget -nv -O ${xmlto_org_src_dir}.tar.bz2 \
+			https://fedorahosted.org/releases/x/m/xmlto/${xmlto_name}.tar.bz2 || return 1
 }
 
 prepare_git_source()
@@ -668,6 +701,19 @@ install_native_libtool()
 		 ${libtool_org_src_dir}/configure --prefix=${prefix}) || return 1
 	make -C ${libtool_org_src_dir} -j${jobs} || return 1
 	make -C ${libtool_org_src_dir} -j${jobs} install || return 1
+}
+
+install_native_flex()
+{
+	install_prerequisites || return 1
+	prepare_flex_source || return 1
+	[ -d ${flex_org_src_dir} ] ||
+		tar xJvf ${flex_org_src_dir}.tar.xz -C ${flex_src_base} || return 1
+	[ -f ${flex_org_src_dir}/Makefile ] ||
+		(cd ${flex_org_src_dir}
+		${flex_org_src_dir}/configure --prefix=${prefix}) || return 1
+	make -C ${flex_org_src_dir} -j${jobs} || return 1
+	make -C ${flex_org_src_dir} -j${jobs} install-strip install-man install-info || return 1
 }
 
 install_native_bison()
@@ -812,7 +858,7 @@ install_native_global()
 		(cd ${global_org_src_dir}
 		${global_org_src_dir}/configure --prefix=${prefix}) || return 1
 	make -C ${global_org_src_dir} -j${jobs} || return 1
-	make -C ${global_org_src_dir} -j${jobs} install || return 1
+	make -C ${global_org_src_dir} -j${jobs} install-strip || return 1
 }
 
 install_native_screen()
@@ -867,11 +913,25 @@ install_native_asciidoc()
 	make -C ${asciidoc_org_src_dir} -j${jobs} install || return 1
 }
 
+install_native_xmlto()
+{
+	install_prerequisites || return 1
+	prepare_xmlto_source || return 1
+	[ -d ${xmlto_org_src_dir} ] ||
+		tar xjvf ${xmlto_org_src_dir}.tar.bz2 -C ${xmlto_src_base} || return 1
+	[ -f ${xmlto_org_src_dir}/Makefile ] ||
+		(cd ${xmlto_org_src_dir}
+		${xmlto_org_src_dir}/configure --prefix=${prefix}) || return 1
+	make -C ${xmlto_org_src_dir} -j${jobs} || return 1
+	make -C ${xmlto_org_src_dir} -j${jobs} install || return 1
+}
+
 install_native_git()
 {
 	install_prerequisites || return 1
 	install_native_curl || return 1
 	install_native_asciidoc || return 1
+	install_native_xmlto || return 1
 	prepare_git_source || return 1
 	[ -d ${git_org_src_dir} ] ||
 		tar xJvf ${git_org_src_dir}.tar.xz -C ${git_src_base} || return 1
