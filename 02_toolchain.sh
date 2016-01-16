@@ -149,15 +149,7 @@ cross()
 # Install cross GNU binutils, GNU C/C++/Go compiler, GDB(running on '${build}', compiles for '${target}').
 {
 	install_prerequisites || return 1
-	install_cross_binutils || return 1
-	install_native_gmp_mpfr_mpc || return 1
-	prepare_gcc_source || return 1
-	install_cross_gcc_without_headers || return 1
-	install_kernel_header || return 1
-	install_glibc_headers || return 1
-	install_cross_gcc_with_glibc_headers || return 1
-	install_1st_glibc || return 1
-	install_cross_gcc_with_c_cxx_go_functionality || return 1
+	install_cross_gcc || return 1
 	install_cross_gdb || return 1
 	clean
 }
@@ -170,7 +162,7 @@ all()
 }
 
 full()
-# Install all of the software packages available.
+# Install all of the available software packages.
 {
 	install_prerequisites || return 1
 	install_native_coreutils || return 1
@@ -179,29 +171,26 @@ full()
 	install_native_automake || return 1
 	install_native_libtool || return 1
 	install_native_flex || return 1
-	install_native_bison || return 1
 	install_native_make || return 1
 	install_native_binutils || return 1
-	install_native_gmp_mpfr_mpc || return 1
 	install_native_gcc || return 1
 	install_native_gdb || return 1
 	install_native_emacs || return 1
 	install_native_screen || return 1
 	install_native_zsh || return 1
 	install_native_git || return 1
-	install_cross_binutils || return 1
-	install_cross_gcc_without_headers || return 1
-	install_kernel_header || return 1
-	install_glibc_headers || return 1
-	install_cross_gcc_with_glibc_headers || return 1
-	install_1st_glibc || return 1
-	install_cross_gcc_with_c_cxx_go_functionality || return 1
+	install_cross_gcc || return 1
 	install_cross_gdb || return 1
+	clean
+}
+
+experimental()
+# Install experimental packages
+{
 	install_crossed_native_binutils || return 1
 	install_crossed_native_gmp_mpfr_mpc || return 1
 	install_crossed_native_gcc || return 1
 	install_crossed_native_zlib_libpng_libtiff || return 1
-	clean
 }
 
 clean()
@@ -409,13 +398,12 @@ EOF
 
 install_prerequisites()
 {
-	[ -n ${prerequisites_have_been_already_installed} ] && return 0
+	[ -n "${prerequisites_have_been_already_installed}" ] && return 0
 	case ${os} in
 	Debian|Ubuntu)
 		apt-get install -y make gcc g++ texinfo
 		apt-get install -y libc6-dev-i386 # for multilib(gcc)
 		[ ${build} != ${target} ] && apt-get install -y gawk gperf # for glibc
-		apt-get install -y bison # for ld.gold
 		apt-get install -y unifdef # for linux kernel
 		apt-get install -y libncurses-dev libgtk-3-dev libxpm-dev libgif-dev libtiff5-dev # for emacs
 		;;
@@ -713,7 +701,7 @@ install_native_flex()
 		(cd ${flex_org_src_dir}
 		${flex_org_src_dir}/configure --prefix=${prefix}) || return 1
 	make -C ${flex_org_src_dir} -j${jobs} || return 1
-	make -C ${flex_org_src_dir} -j${jobs} install-strip install-man install-info || return 1
+	make -C ${flex_org_src_dir} -j${jobs} install-strip install-man || return 1
 }
 
 install_native_bison()
@@ -745,6 +733,7 @@ install_native_make()
 install_native_binutils()
 {
 	install_prerequisites || return 1
+	install_native_bison || return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_ntv} ] ||
 		(tar xzvf ${binutils_org_src_dir}.tar.gz -C ${binutils_src_base} &&
@@ -1075,6 +1064,19 @@ install_cross_gcc_with_c_cxx_go_functionality()
 			--enable-languages=c,c++,go --with-sysroot=${sysroot}) || return 1
 	make -C ${gcc_bld_dir_crs_3rd} -j${jobs} || return 1
 	make -C ${gcc_bld_dir_crs_3rd} -j${jobs} install || return 1
+}
+
+install_cross_gcc()
+{
+	install_cross_binutils || return 1
+	install_native_gmp_mpfr_mpc || return 1
+	prepare_gcc_source || return 1
+	install_cross_gcc_without_headers || return 1
+	install_kernel_header || return 1
+	install_glibc_headers || return 1
+	install_cross_gcc_with_glibc_headers || return 1
+	install_1st_glibc || return 1
+	install_cross_gcc_with_c_cxx_go_functionality || return 1
 }
 
 install_cross_gdb()
