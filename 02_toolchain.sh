@@ -165,20 +165,7 @@ full()
 # Install all of the available software packages.
 {
 	install_prerequisites || return 1
-	install_native_coreutils || return 1
-	install_native_m4 || return 1
-	install_native_autoconf || return 1
-	install_native_automake || return 1
-	install_native_libtool || return 1
-	install_native_flex || return 1
-	install_native_make || return 1
-	install_native_binutils || return 1
-	install_native_gcc || return 1
-	install_native_gdb || return 1
-	install_native_emacs || return 1
-	install_native_screen || return 1
-	install_native_zsh || return 1
-	install_native_git || return 1
+	full_native || return 1
 	install_cross_gcc || return 1
 	install_cross_gdb || return 1
 	clean
@@ -930,6 +917,24 @@ install_native_git()
 	${git_org_src_dir}/configure --prefix=${prefix}) || return 1
 	make -C ${git_org_src_dir} -j${jobs} all doc || return 1
 	make -C ${git_org_src_dir} -j${jobs} install install-doc install-html || return 1
+}
+
+full_native()
+{
+	install_native_coreutils || return 1
+	install_native_m4 || return 1
+	install_native_autoconf || return 1
+	install_native_automake || return 1
+	install_native_libtool || return 1
+	install_native_flex || return 1
+	install_native_make || return 1
+	install_native_binutils || return 1
+	install_native_gcc || return 1
+	install_native_gdb || return 1
+	install_native_emacs || return 1
+	install_native_screen || return 1
+	install_native_zsh || return 1
+	install_native_git || return 1
 }
 
 install_cross_binutils()
