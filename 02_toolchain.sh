@@ -31,12 +31,12 @@
 : ${asciidoc_ver:=8.6.9}
 : ${xmlto_ver:=0.0.28}
 : ${git_ver:=2.7.0}
-: ${prefix:=/toolchains}
-: ${target:=`uname -m`-linux-gnu}
-
 : ${zlib_ver:=1.2.8}
 : ${libpng_ver:=1.6.20}
 : ${libtiff_ver:=4.0.6}
+
+: ${prefix:=/toolchains}
+: ${target:=`uname -m`-linux-gnu}
 
 usage()
 # Show usage.
@@ -298,7 +298,7 @@ set_variables()
 	binutils_name=binutils-${binutils_ver}
 	binutils_src_base=${prefix}/src/binutils
 	binutils_org_src_dir=${binutils_src_base}/${binutils_name}
-	binutils_src_dir_ntv=${binutils_src_base}/${target}-${binutils_name}-ntv
+	binutils_src_dir_ntv=${binutils_src_base}/${binutils_name}-ntv
 	binutils_src_dir_crs=${binutils_src_base}/${target}-${binutils_name}-crs
 	binutils_src_dir_crs_ntv=${binutils_src_base}/${target}-${binutils_name}-crs-ntv
 
@@ -349,7 +349,7 @@ set_variables()
 	gdb_name=gdb-${gdb_ver}
 	gdb_src_base=${prefix}/src/gdb
 	gdb_org_src_dir=${gdb_src_base}/${gdb_name}
-	gdb_bld_dir_ntv=${gdb_src_base}/${target}-${gdb_name}-ntv
+	gdb_bld_dir_ntv=${gdb_src_base}/${gdb_name}-ntv
 	gdb_bld_dir_crs=${gdb_src_base}/${target}-${gdb_name}-crs
 
 	emacs_name=emacs-${emacs_ver}
@@ -388,19 +388,19 @@ set_variables()
 	zlib_src_base=${prefix}/src/zlib
 	zlib_org_src_dir=${zlib_src_base}/${zlib_name}
 	zlib_src_dir_ntv=${zlib_src_base}/${zlib_name}-ntv
-	zlib_src_dir_crs_ntv=${zlib_src_base}/${zlib_name}-crs-ntv
+	zlib_src_dir_crs_ntv=${zlib_src_base}/${target}-${zlib_name}-crs-ntv
 
 	libpng_name=libpng-${libpng_ver}
 	libpng_src_base=${prefix}/src/libpng
 	libpng_org_src_dir=${libpng_src_base}/${libpng_name}
 	libpng_src_dir_ntv=${libpng_src_base}/${libpng_name}-ntv
-	libpng_src_dir_crs_ntv=${libpng_src_base}/${libpng_name}-crs-ntv
+	libpng_src_dir_crs_ntv=${libpng_src_base}/${target}-${libpng_name}-crs-ntv
 
 	libtiff_name=tiff-${libtiff_ver}
 	libtiff_src_base=${prefix}/src/libtiff
 	libtiff_org_src_dir=${libtiff_src_base}/${libtiff_name}
 	libtiff_src_dir_ntv=${libtiff_src_base}/${libtiff_name}-ntv
-	libtiff_src_dir_crs_ntv=${libtiff_src_base}/${libtiff_name}-crs-ntv
+	libtiff_src_dir_crs_ntv=${libtiff_src_base}/${target}-${libtiff_name}-crs-ntv
 
 	echo ${PATH} | grep -q ${prefix}/bin || PATH=${prefix}/bin:${PATH}
 }
