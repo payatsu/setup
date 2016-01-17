@@ -2,14 +2,7 @@
 
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
-# [TODO] gdbに--with-python=hogeのオプションを追加する。
-# [TODO]
-#        wget
-#        sed, gawk, bash
-#        tar
-#        diff, patch
-#        find
-#        xsltproc
+# [TODO] wget, bash, tar, diff, patch, find, xsltproc
 
 : ${coreutils_ver:=8.24}
 : ${bison_ver:=3.0.4}
@@ -18,9 +11,12 @@
 : ${autoconf_ver:=2.69}
 : ${automake_ver:=1.15}
 : ${libtool_ver:=2.4.6}
+: ${sed_ver:=4.2.2}
+: ${gawk_ver:=4.1.3}
 : ${make_ver:=4.1}
 : ${binutils_ver:=2.25.1}
 : ${kernel_ver:=3.18.13}
+: ${gperf_ver:=3.0.4}
 : ${glibc_ver:=2.22}
 : ${gmp_ver:=6.1.0}
 : ${mpfr_ver:=3.1.3}
@@ -90,12 +86,18 @@ help()
 		Specify the version of GNU Automake you want, currently '${automake_ver}'.
 	libtool_ver
 		Specify the version of GNU Libtool you want, currently '${libtool_ver}'.
+	sed_ver
+		Specify the version of GNU sed you want, currently '${sed_ver}'.
+	gawk_ver
+		Specify the version of GNU awk you want, currently '${gawk_ver}'.
 	make_ver
 		Specify the version of GNU Make you want, currently '${make_ver}'.
 	binutils_ver
 		Specify the version of GNU Binutils you want, currently '${binutils_ver}'.
 	kernel_ver
 		Specify the version of Linux kernel you want, currently '${kernel_ver}'.
+	gperf_ver
+		Specify the version of gperf you want, currently '${gperf_ver}'.
 	glibc_ver
 		Specify the version of GNU C Library you want, currently '${glibc_ver}'.
 	gmp_ver
@@ -127,10 +129,10 @@ help()
 
 [Examples]
 	For Raspberry pi2
-	# $0 -p /toolchains -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 kernel_ver=3.18.13 glibc_ver=2.22 gmp_ver=6.1.0 mpfr_ver=3.1.3 mpc_ver=1.0.3 gcc_ver=5.3.0 cross
+	# $0 -p /toolchains -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 kernel_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 cross
 
 	For microblaze
-	# $0 -p /toolchains -t microblaze-linux-gnu -j 8 binutils_ver=2.25 kernel_ver=4.3.3 glibc_ver=2.22 gmp_ver=6.1.0 mpfr_ver=3.1.3 mpc_ver=1.0.3 gcc_ver=5.3.0 cross
+	# $0 -p /toolchains -t microblaze-linux-gnu -j 8 binutils_ver=2.25 kernel_ver=4.3.3 glibc_ver=2.22 gcc_ver=5.3.0 cross
 
 EOF
 }
@@ -157,8 +159,10 @@ cross()
 all()
 # Install native/cross GNU Toolchains.
 {
+	install_prerequisites || return 1
 	native
 	cross
+	clean
 }
 
 full()
@@ -166,8 +170,7 @@ full()
 {
 	install_prerequisites || return 1
 	full_native || return 1
-	install_cross_gcc || return 1
-	install_cross_gdb || return 1
+	full_cross || return 1
 	clean
 }
 
@@ -191,9 +194,12 @@ clean()
 		${autoconf_org_src_dir} \
 		${automake_org_src_dir} \
 		${libtool_org_src_dir} \
+		${sed_org_src_dir} \
+		${gawk_org_src_dir} \
 		${make_org_src_dir} \
 		${binutils_org_src_dir} ${binutils_src_dir_ntv} ${binutils_src_dir_crs} ${binutils_src_dir_crs_ntv} \
 		${kernel_org_src_dir} ${kernel_src_dir} \
+		${gperf_org_src_dir} \
 		${glibc_org_src_dir} ${glibc_bld_dir_hdr} ${glibc_bld_dir_1st} \
 		${glibc_src_dir_hdr} ${glibc_src_dir_1st} \
 		${gmp_src_dir_ntv} ${gmp_src_dir_crs_ntv} ${mpfr_src_dir_ntv} ${mpfr_src_dir_crs_ntv} ${mpc_src_dir_ntv} ${mpc_src_dir_crs_ntv} \
@@ -203,7 +209,9 @@ clean()
 		${global_org_src_dir} \
 		${screen_org_src_dir} \
 		${zsh_org_src_dir} \
-		${zlib_org_src_dir} ${libpng_org_src_dir} ${libtiff_org_src_dir} \
+		${zlib_src_dir_ntv} ${zlib_src_dir_crs_ntv} \
+	   	${libpng_src_dir_ntv} ${libpng_src_dir_crs_ntv} \
+		${libtiff_src_dir_ntv} ${libtiff_src_dir_crs_ntv} \
 		${curl_org_src_dir} \
 		${asciidoc_org_src_dir} \
 		${xmlto_org_src_dir} \
@@ -218,9 +226,7 @@ list()
 
 list_major_tags()
 {
-	cat <<EOF
-[Available tags]
-EOF
+	echo '[Available tags]'
 	eval "`grep -A 1 -e '^[[:alnum:]]\+()$' $0 |
 		sed -e '/^--$/d; /^{$/d; s/()$//; s/^# /\t/; s/^/\t/; 1s/^/echo "/; $s/$/"/'`"
 }
@@ -246,7 +252,7 @@ set_variables()
 	i?86*)       linux_arch=x86;;
 	microblaze*) linux_arch=microblaze;;
 	x86_64*)     linux_arch=x86;;
-	*) echo Unknown architecture >&2; return 1;;
+	*) echo Unknown architecture: ${target} >&2; return 1;;
 	esac
 
 	coreutils_name=coreutils-${coreutils_ver}
@@ -277,6 +283,14 @@ set_variables()
 	libtool_src_base=${prefix}/src/libtool
 	libtool_org_src_dir=${libtool_src_base}/${libtool_name}
 
+	sed_name=sed-${sed_ver}
+	sed_src_base=${prefix}/src/sed
+	sed_org_src_dir=${sed_src_base}/${sed_name}
+
+	gawk_name=gawk-${gawk_ver}
+	gawk_src_base=${prefix}/src/gawk
+	gawk_org_src_dir=${gawk_src_base}/${gawk_name}
+
 	make_name=make-${make_ver}
 	make_src_base=${prefix}/src/make
 	make_org_src_dir=${make_src_base}/${make_name}
@@ -292,6 +306,10 @@ set_variables()
 	kernel_src_base=${prefix}/src/linux
 	kernel_org_src_dir=${kernel_src_base}/${kernel_name}
 	kernel_src_dir=${kernel_src_base}/${target}-${kernel_name}
+
+	gperf_name=gperf-${gperf_ver}
+	gperf_src_base=${prefix}/src/gperf
+	gperf_org_src_dir=${gperf_src_base}/${gperf_name}
 
 	glibc_name=glibc-${glibc_ver}
 	glibc_src_base=${prefix}/src/glibc
@@ -369,18 +387,22 @@ set_variables()
 	zlib_name=zlib-${zlib_ver}
 	zlib_src_base=${prefix}/src/zlib
 	zlib_org_src_dir=${zlib_src_base}/${zlib_name}
+	zlib_src_dir_ntv=${zlib_src_base}/${zlib_name}-ntv
+	zlib_src_dir_crs_ntv=${zlib_src_base}/${zlib_name}-crs-ntv
 
 	libpng_name=libpng-${libpng_ver}
 	libpng_src_base=${prefix}/src/libpng
 	libpng_org_src_dir=${libpng_src_base}/${libpng_name}
+	libpng_src_dir_ntv=${libpng_src_base}/${libpng_name}-ntv
+	libpng_src_dir_crs_ntv=${libpng_src_base}/${libpng_name}-crs-ntv
 
 	libtiff_name=tiff-${libtiff_ver}
 	libtiff_src_base=${prefix}/src/libtiff
 	libtiff_org_src_dir=${libtiff_src_base}/${libtiff_name}
+	libtiff_src_dir_ntv=${libtiff_src_base}/${libtiff_name}-ntv
+	libtiff_src_dir_crs_ntv=${libtiff_src_base}/${libtiff_name}-crs-ntv
 
-	grep -q ${prefix}/bin <<EOF || PATH=${prefix}/bin:${PATH}
-${PATH}
-EOF
+	echo ${PATH} | grep -q ${prefix}/bin || PATH=${prefix}/bin:${PATH}
 }
 
 install_prerequisites()
@@ -389,18 +411,16 @@ install_prerequisites()
 	case ${os} in
 	Debian|Ubuntu)
 		apt-get install -y make gcc g++ texinfo
-		[ ${build} != ${target} ] && apt-get install -y gawk gperf # for glibc
 		apt-get install -y unifdef # for linux kernel
-		apt-get install -y libncurses-dev libgtk-3-dev libxpm-dev libgif-dev libtiff5-dev # for emacs
+		apt-get install -y libncurses-dev libgtk-3-dev libxpm-dev libgif-dev # for emacs
+		apt-get install -y python3.4-dev # for gdb
 		apt-get install -y xsltproc libxml2-utils # for git
 		;;
 	Red|CentOS|\\S)
 		yum install -y make gcc gcc-c++ texinfo
 		yum install -y glibc-devel.i686 libstdc++-devel.i686
-		[ ${build} != ${target} ] && yum install -y gawk gperf
-		yum install -y bison
 		yum install -y unifdef
-		yum install -y ncurses-devel gtk3-devel libXpm-devel giflib-devel libtiff-devel libjpeg-devel
+		yum install -y ncurses-devel gtk3-devel libXpm-devel giflib-devel libjpeg-devel
 		;;
 	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1 ;;
 	esac
@@ -463,6 +483,22 @@ prepare_libtool_source()
 			http://ftp.gnu.org/gnu/libtool/${libtool_name}.tar.xz || return 1
 }
 
+prepare_sed_source()
+{
+	mkdir -p ${sed_src_base}
+	[ -f ${sed_org_src_dir}.tar.bz2 ] ||
+		wget -nv -O ${sed_org_src_dir}.tar.bz2 \
+			https://ftp.gnu.org/gnu/sed/${sed_name}.tar.bz2 || return 1
+}
+
+prepare_gawk_source()
+{
+	mkdir -p ${gawk_src_base}
+	[ -f ${gawk_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${gawk_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/gawk/${gawk_name}.tar.xz || return 1
+}
+
 prepare_make_source()
 {
 	mkdir -p ${make_src_base}
@@ -491,6 +527,14 @@ prepare_kernel_source()
 	[ -f ${kernel_org_src_dir}.tar.xz ] ||
 		wget -nv -O ${kernel_org_src_dir}.tar.xz \
 			https://www.kernel.org/pub/linux/kernel/${dir}/${kernel_name}.tar.xz || return 1
+}
+
+prepare_gperf_source()
+{
+	mkdir -p ${gperf_src_base}
+	[ -f ${gperf_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${gperf_org_src_dir}.tar.gz \
+			https://ftp.gnu.org/pub/gnu/gperf/${gperf_name}.tar.gz || return 1
 }
 
 prepare_glibc_source()
@@ -651,6 +695,8 @@ install_native_flex()
 		./configure --prefix=${prefix}) || return 1
 	make -C ${flex_org_src_dir} -j ${jobs} || return 1
 	make -C ${flex_org_src_dir} -j ${jobs} install-strip install-man || return 1
+	echo ${prefix}/lib > /etc/ld.so.conf.d/libfl.conf
+	ldconfig
 }
 
 install_native_m4()
@@ -703,7 +749,33 @@ install_native_libtool()
 		(cd ${libtool_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
 	make -C ${libtool_org_src_dir} -j ${jobs} || return 1
-	LD_LIBRARY_PATH=${prefix}/lib make -C ${libtool_org_src_dir} -j ${jobs} install || return 1
+	make -C ${libtool_org_src_dir} -j ${jobs} install || return 1
+}
+
+install_native_sed()
+{
+	install_prerequisites || return 1
+	prepare_sed_source || return 1
+	[ -d ${sed_org_src_dir} ] ||
+		tar xjvf ${sed_org_src_dir}.tar.bz2 -C ${sed_src_base} || return 1
+	[ -f ${sed_org_src_dir}/Makefile ] ||
+		(cd ${sed_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${sed_org_src_dir} -j ${jobs} || return 1
+	make -C ${sed_org_src_dir} -j ${jobs} install || return 1
+}
+
+install_native_gawk()
+{
+	install_prerequisites || return 1
+	prepare_gawk_source || return 1
+	[ -d ${gawk_org_src_dir} ] ||
+		tar xJvf ${gawk_org_src_dir}.tar.xz -C ${gawk_src_base} || return 1
+	[ -f ${gawk_org_src_dir}/Makefile ] ||
+		(cd ${gawk_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${gawk_org_src_dir} -j ${jobs} || return 1
+	make -C ${gawk_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_make()
@@ -732,6 +804,19 @@ install_native_binutils()
 		./configure --prefix=${prefix} --build=${build} --with-sysroot=/ --enable-gold) || return 1
 	make -C ${binutils_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${binutils_src_dir_ntv} -j ${jobs} install-strip || return 1
+}
+
+install_native_gperf()
+{
+	install_prerequisites || return 1
+	prepare_gperf_source || return 1
+	[ -d ${gperf_org_src_dir} ] ||
+		tar xzvf ${gperf_org_src_dir}.tar.gz -C ${gperf_src_base} || return 1
+	[ -f ${gperf_org_src_dir}/Makefile ] ||
+		(cd ${gperf_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${gperf_org_src_dir} -j ${jobs} || return 1
+	make -C ${gperf_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_gmp_mpfr_mpc()
@@ -806,17 +891,49 @@ install_native_gdb()
 	[ -d ${gdb_org_src_dir} ] ||
 		tar xJvf ${gdb_org_src_dir}.tar.xz -C ${gdb_src_base} || return 1
 	mkdir -p ${gdb_bld_dir_ntv}
-# for lib in /usr/lib/${build}/libpython*; do ln -sf `echo ${lib} | sed -e 's+/usr/lib+.+;'` `echo ${lib} | sed -e s+${build}/++`; done
 	[ -f ${gdb_bld_dir_ntv}/Makefile ] ||
 		(cd ${gdb_bld_dir_ntv}
-		${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} --enable-tui) || return 1
+		${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} --enable-tui --with-python) || return 1
 	make -C ${gdb_bld_dir_ntv} -j ${jobs} || return 1
 	make -C ${gdb_bld_dir_ntv} -j ${jobs} install || return 1
+}
+
+install_native_zlib_libpng_libtiff()
+{
+	install_prerequisites || return 1
+	prepare_zlib_libpng_libtiff || return 1
+	[ -d ${zlib_src_dir_ntv} ] ||
+		(tar xzvf ${zlib_org_src_dir}.tar.gz -C ${zlib_src_base} &&
+			mv ${zlib_org_src_dir} ${zlib_src_dir_ntv}) || return 1
+	[ -d ${libpng_src_dir_ntv} ] ||
+		(tar xzvf ${libpng_org_src_dir}.tar.gz -C ${libpng_src_base} &&
+		 	mv ${libpng_org_src_dir} ${libpng_src_dir_ntv}) || return 1
+	[ -d ${libtiff_src_dir_ntv} ] ||
+		(unzip -d ${libtiff_src_base} ${libtiff_org_src_dir}.zip &&
+		 	mv ${libtiff_org_src_dir} ${libtiff_src_dir_ntv}) || return 1
+
+	(cd ${zlib_src_dir_ntv}
+	./configure --prefix=${prefix}) || return 1
+	make -C ${zlib_src_dir_ntv} -j ${jobs} || return 1
+	make -C ${zlib_src_dir_ntv} -j ${jobs} install || return 1
+
+	[ -f ${libpng_src_dir_ntv}/Makefile ] ||
+		(cd ${libpng_src_dir_ntv}
+		./configure --prefix=${prefix} --host=${build}) || return 1
+	make -C ${libpng_src_dir_ntv} -j ${jobs} || return 1
+	make -C ${libpng_src_dir_ntv} -j ${jobs} install || return 1
+
+	[ -f ${libtiff_src_dir_ntv}/Makefile ] ||
+		(cd ${libtiff_src_dir_ntv}
+		./configure --prefix=${prefix} --host=${build}) || return 1
+	make -C ${libtiff_src_dir_ntv} -j ${jobs} || return 1
+	make -C ${libtiff_src_dir_ntv} -j ${jobs} install || return 1
 }
 
 install_native_emacs()
 {
 	install_prerequisites || return 1
+	install_native_zlib_libpng_libtiff || return 1
 	prepare_emacs_source || return 1
 	[ -d ${emacs_org_src_dir} ] ||
 		tar xJvf ${emacs_org_src_dir}.tar.xz -C ${emacs_src_base} || return 1
@@ -928,7 +1045,6 @@ full_native()
 	install_native_autoconf || return 1
 	install_native_automake || return 1
 	install_native_libtool || return 1
-	install_native_flex || return 1
 	install_native_make || return 1
 	install_native_binutils || return 1
 	install_native_gcc || return 1
@@ -983,6 +1099,8 @@ install_kernel_header()
 
 install_glibc_headers()
 {
+	install_native_gawk || return 1
+	install_native_gperf || return 1
 	prepare_glibc_source || return 1
 	[ -d ${glibc_src_dir_hdr} ] ||
 		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
@@ -1096,9 +1214,15 @@ install_cross_gdb()
 	mkdir -p ${gdb_bld_dir_crs}
 	[ -f ${gdb_bld_dir_crs}/Makefile ] ||
 		(cd ${gdb_bld_dir_crs}
-		${gdb_org_src_dir}/configure --prefix=${prefix} --target=${target} --enable-tui --with-sysroot=${sysroot}) || return 1
+		${gdb_org_src_dir}/configure --prefix=${prefix} --target=${target} --enable-tui --with-python --with-sysroot=${sysroot}) || return 1
 	make -C ${gdb_bld_dir_crs} -j ${jobs} || return 1
 	make -C ${gdb_bld_dir_crs} -j ${jobs} install || return 1
+}
+
+full_cross()
+{
+	install_cross_gcc || return 1
+	install_cross_gdb || return 1
 }
 
 install_crossed_native_binutils()
@@ -1171,29 +1295,32 @@ install_crossed_native_gcc()
 install_crossed_native_zlib_libpng_libtiff()
 {
 	prepare_zlib_libpng_libtiff || return 1
-	[ -d ${zlib_org_src_dir} ] ||
-		tar xzvf ${zlib_org_src_dir}.tar.gz -C ${zlib_src_base} || return 1
-	[ -d ${libpng_org_src_dir} ] ||
-		tar xzvf ${libpng_org_src_dir}.tar.gz -C ${libpng_src_base} || return 1
-	[ -d ${libtiff_org_src_dir} ] ||
-		unzip -d ${libtiff_src_base} ${libtiff_org_src_dir}.zip || return 1
+	[ -d ${zlib_src_dir_crs_ntv} ] ||
+		(tar xzvf ${zlib_org_src_dir}.tar.gz -C ${zlib_src_base} &&
+			mv ${zlib_org_src_dir} ${zlib_src_dir_crs_ntv}) || return 1
+	[ -d ${libpng_src_dir_crs_ntv} ] ||
+		(tar xzvf ${libpng_org_src_dir}.tar.gz -C ${libpng_src_base} &&
+		 	mv ${libpng_org_src_dir} ${libpng_src_dir_crs_ntv}) || return 1
+	[ -d ${libtiff_src_dir_crs_ntv} ] ||
+		(unzip -d ${libtiff_src_base} ${libtiff_org_src_dir}.zip &&
+		 	mv ${libtiff_org_src_dir} ${libtiff_src_dir_crs_ntv}) || return 1
 
-	(cd ${zlib_org_src_dir}
+	(cd ${zlib_src_dir_crs_ntv}
 	CC=${target}-gcc ./configure --prefix=${sysroot}/usr) || return 1
-	make -C ${zlib_org_src_dir} -j ${jobs} || return 1
-	make -C ${zlib_org_src_dir} -j ${jobs} install || return 1
+	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} || return 1
+	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} install || return 1
 
-	[ -f ${libpng_org_src_dir}/Makefile ] ||
-		(cd ${libpng_org_src_dir}
+	[ -f ${libpng_src_dir_crs_ntv}/Makefile ] ||
+		(cd ${libpng_src_dir_crs_ntv}
 		./configure --prefix=${sysroot}/usr --host=${target}) || return 1
-	C_INCLUDE_PATH=${sysroot}/include make -C ${libpng_org_src_dir} -j ${jobs} || return 1
-	make -C ${libpng_org_src_dir} -j ${jobs} install || return 1
+	C_INCLUDE_PATH=${sysroot}/include make -C ${libpng_src_dir_crs_ntv} -j ${jobs} || return 1
+	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} install || return 1
 
-	[ -f ${libtiff_org_src_dir}/Makefile ] ||
-		(cd ${libtiff_org_src_dir}
+	[ -f ${libtiff_src_dir_crs_ntv}/Makefile ] ||
+		(cd ${libtiff_src_dir_crs_ntv}
 		CC=${target}-gcc CXX=${target}-g++ ./configure --prefix=${sysroot}/usr --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'`) || return 1
-	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_org_src_dir} -j ${jobs} || return 1
-	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_org_src_dir} -j ${jobs} install || return 1
+	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_src_dir_crs_ntv} -j ${jobs} || return 1
+	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_src_dir_crs_ntv} -j ${jobs} install || return 1
 }
 
 while getopts p:t:j:h arg; do
@@ -1214,7 +1341,7 @@ while [ $# -gt 0 ]; do
 	case $1 in
 	debug) shift; [ $# -eq 0 ] && while true; do read -p 'debug> ' cmd; eval ${cmd} || true; done; eval $1;;
 	*=*)   eval $1; set_variables;;
-	*)     $1 || exit 1; count=`expr ${count} + 1`;;
+	*)     eval $1 || exit 1; count=`expr ${count} + 1`;;
 	esac
 	shift
 done
