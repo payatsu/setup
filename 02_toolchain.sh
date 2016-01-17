@@ -3,6 +3,8 @@
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] wget, bash, tar, diff, patch, find, xsltproc
+# [TODO] gettext #for git
+# [TODO] コンパイラのバージョンによってはncursesをコンパイルできない問題の解明。
 
 : ${coreutils_ver:=8.24}
 : ${bison_ver:=3.0.4}
@@ -22,6 +24,7 @@
 : ${mpfr_ver:=3.1.3}
 : ${mpc_ver:=1.0.3}
 : ${gcc_ver:=5.3.0}
+: ${ncurses_ver:=6.0}
 : ${gdb_ver:=7.10.1}
 : ${emacs_ver:=24.5}
 : ${global_ver:=6.5.2}
@@ -108,6 +111,8 @@ help()
 		Specify the version of GNU MPC Library you want, currently '${mpc_ver}'.
 	gcc_ver
 		Specify the version of GNU Compiler Collection you want, currently '${gcc_ver}'.
+	ncurses_ver
+		Specify the version of ncurses you want, currently '${ncurses_ver}'.
 	gdb_ver
 		Specify the version of GNU Debugger you want, currently '${gdb_ver}'.
 	emacs_ver
@@ -180,7 +185,9 @@ experimental()
 	install_crossed_native_binutils || return 1
 	install_crossed_native_gmp_mpfr_mpc || return 1
 	install_crossed_native_gcc || return 1
-	install_crossed_native_zlib_libpng_libtiff || return 1
+	install_crossed_native_zlib || return 1
+	install_crossed_native_libpng || return 1
+	install_crossed_native_libtiff || return 1
 }
 
 clean()
@@ -204,6 +211,7 @@ clean()
 		${glibc_src_dir_hdr} ${glibc_src_dir_1st} \
 		${gmp_src_dir_ntv} ${gmp_src_dir_crs_ntv} ${mpfr_src_dir_ntv} ${mpfr_src_dir_crs_ntv} ${mpc_src_dir_ntv} ${mpc_src_dir_crs_ntv} \
 		${gcc_org_src_dir} ${gcc_bld_dir_ntv} ${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} ${gcc_bld_dir_crs_ntv} \
+		${ncurses_org_src_dir} \
 		${gdb_org_src_dir} ${gdb_bld_dir_ntv} ${gdb_bld_dir_crs} \
 		${emacs_org_src_dir} \
 		${global_org_src_dir} \
@@ -346,6 +354,10 @@ set_variables()
 	gcc_bld_dir_crs_3rd=${gcc_src_base}/${target}-${gcc_name}-3rd
 	gcc_bld_dir_crs_ntv=${gcc_src_base}/${target}-${gcc_name}-crs-ntv
 
+	ncurses_name=ncurses-${ncurses_ver}
+	ncurses_src_base=${prefix}/src/ncurses
+	ncurses_org_src_dir=${ncurses_src_base}/${ncurses_name}
+
 	gdb_name=gdb-${gdb_ver}
 	gdb_src_base=${prefix}/src/gdb
 	gdb_org_src_dir=${gdb_src_base}/${gdb_name}
@@ -413,7 +425,7 @@ install_prerequisites()
 		apt-get install -y make gcc g++ texinfo
 		apt-get install -y unifdef # for linux kernel
 		apt-get install -y libncurses-dev libgtk-3-dev libxpm-dev libgif-dev # for emacs
-		apt-get install -y python3.4-dev # for gdb
+		apt-get install -y python2.7-dev # for gdb
 		apt-get install -y xsltproc libxml2-utils # for git
 		;;
 	Red|CentOS|\\S)
@@ -569,6 +581,14 @@ prepare_gcc_source()
 			http://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.gz || return 1
 }
 
+prepare_ncurses_source()
+{
+	mkdir -p ${ncurses_src_base}
+	[ -f ${ncurses_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${ncurses_org_src_dir}.tar.gz \
+			http://ftp.gnu.org/gnu/ncurses/${ncurses_name}.tar.gz || return 1
+}
+
 prepare_gdb_source()
 {
 	mkdir -p ${gdb_src_base}
@@ -641,16 +661,24 @@ prepare_git_source()
 			https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return 1
 }
 
-prepare_zlib_libpng_libtiff()
+prepare_zlib_source()
 {
 	mkdir -p ${zlib_src_base}
 	[ -f ${zlib_org_src_dir}.tar.gz ] ||
 		wget -nv -O ${zlib_org_src_dir}.tar.gz \
 			http://zlib.net/${zlib_name}.tar.gz || return 1
+}
+
+prepare_libpng_source()
+{
 	mkdir -p ${libpng_src_base}
 	[ -f ${libpng_org_src_dir}.tar.gz ] ||
 		wget --trust-server-names -nv -O ${libpng_org_src_dir}.tar.gz \
 			http://download.sourceforge.net/libpng/${libpng_name}.tar.gz || return 1
+}
+
+prepare_libtiff_source()
+{
 	mkdir -p ${libtiff_src_base}
 	[ -f ${libtiff_org_src_dir}.zip ] ||
 		wget -nv -O ${libtiff_org_src_dir}.zip \
@@ -868,6 +896,7 @@ make_symbolic_links()
 install_native_gcc()
 {
 	install_prerequisites || return 1
+	install_native_zlib || return 1
 	install_native_gmp_mpfr_mpc || return 1
 	prepare_gcc_source || return 1
 	make_symbolic_links || return 1
@@ -884,6 +913,19 @@ install_native_gcc()
 	ldconfig
 }
 
+install_native_ncurses()
+{
+	install_prerequisites || return 1
+	prepare_ncurses_source || return 1
+	[ -d ${ncurses_org_src_dir} ] ||
+		tar xzvf ${ncurses_org_src_dir}.tar.gz -C ${ncurses_src_base} || return 1
+	[ -f ${ncurses_org_src_dir}/Makefile ] ||
+		(cd ${ncurses_org_src_dir}
+		./configure --prefix=${prefix} --with-shared --with-cxx-shared --enable-widec) || return 1
+	make -C ${ncurses_org_src_dir} -j ${jobs} || return 1
+	make -C ${ncurses_org_src_dir} -j ${jobs} install || return 1
+}
+
 install_native_gdb()
 {
 	install_prerequisites || return 1
@@ -898,30 +940,41 @@ install_native_gdb()
 	make -C ${gdb_bld_dir_ntv} -j ${jobs} install || return 1
 }
 
-install_native_zlib_libpng_libtiff()
+install_native_zlib()
 {
 	install_prerequisites || return 1
-	prepare_zlib_libpng_libtiff || return 1
+	prepare_zlib_source || return 1
 	[ -d ${zlib_src_dir_ntv} ] ||
 		(tar xzvf ${zlib_org_src_dir}.tar.gz -C ${zlib_src_base} &&
 			mv ${zlib_org_src_dir} ${zlib_src_dir_ntv}) || return 1
-	[ -d ${libpng_src_dir_ntv} ] ||
-		(tar xzvf ${libpng_org_src_dir}.tar.gz -C ${libpng_src_base} &&
-		 	mv ${libpng_org_src_dir} ${libpng_src_dir_ntv}) || return 1
-	[ -d ${libtiff_src_dir_ntv} ] ||
-		(unzip -d ${libtiff_src_base} ${libtiff_org_src_dir}.zip &&
-		 	mv ${libtiff_org_src_dir} ${libtiff_src_dir_ntv}) || return 1
-
 	(cd ${zlib_src_dir_ntv}
 	./configure --prefix=${prefix}) || return 1
 	make -C ${zlib_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${zlib_src_dir_ntv} -j ${jobs} install || return 1
+}
 
+install_native_libpng()
+{
+	install_prerequisites || return 1
+	install_native_zlib || return 1
+	prepare_libpng_source || return 1
+	[ -d ${libpng_src_dir_ntv} ] ||
+		(tar xzvf ${libpng_org_src_dir}.tar.gz -C ${libpng_src_base} &&
+		 	mv ${libpng_org_src_dir} ${libpng_src_dir_ntv}) || return 1
 	[ -f ${libpng_src_dir_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_ntv}
 		./configure --prefix=${prefix} --host=${build}) || return 1
-	make -C ${libpng_src_dir_ntv} -j ${jobs} || return 1
+	C_INCLUDE_PATH=${prefix}/include make -C ${libpng_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${libpng_src_dir_ntv} -j ${jobs} install || return 1
+}
+
+install_native_libtiff()
+{
+	install_prerequisites || return 1
+	prepare_libtiff_source || return 1
+	[ -d ${libtiff_src_dir_ntv} ] ||
+		(unzip -d ${libtiff_src_base} ${libtiff_org_src_dir}.zip &&
+		 	mv ${libtiff_org_src_dir} ${libtiff_src_dir_ntv}) || return 1
 
 	[ -f ${libtiff_src_dir_ntv}/Makefile ] ||
 		(cd ${libtiff_src_dir_ntv}
@@ -933,7 +986,9 @@ install_native_zlib_libpng_libtiff()
 install_native_emacs()
 {
 	install_prerequisites || return 1
-	install_native_zlib_libpng_libtiff || return 1
+	install_native_zlib || return 1
+	install_native_libpng || return 1
+	install_native_libtiff || return 1
 	prepare_emacs_source || return 1
 	[ -d ${emacs_org_src_dir} ] ||
 		tar xJvf ${emacs_org_src_dir}.tar.xz -C ${emacs_src_base} || return 1
@@ -1292,30 +1347,41 @@ install_crossed_native_gcc()
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 }
 
-install_crossed_native_zlib_libpng_libtiff()
+install_crossed_native_zlib()
 {
-	prepare_zlib_libpng_libtiff || return 1
+	install_prerequisites || return 1
+	prepare_zlib_source || return 1
 	[ -d ${zlib_src_dir_crs_ntv} ] ||
 		(tar xzvf ${zlib_org_src_dir}.tar.gz -C ${zlib_src_base} &&
 			mv ${zlib_org_src_dir} ${zlib_src_dir_crs_ntv}) || return 1
-	[ -d ${libpng_src_dir_crs_ntv} ] ||
-		(tar xzvf ${libpng_org_src_dir}.tar.gz -C ${libpng_src_base} &&
-		 	mv ${libpng_org_src_dir} ${libpng_src_dir_crs_ntv}) || return 1
-	[ -d ${libtiff_src_dir_crs_ntv} ] ||
-		(unzip -d ${libtiff_src_base} ${libtiff_org_src_dir}.zip &&
-		 	mv ${libtiff_org_src_dir} ${libtiff_src_dir_crs_ntv}) || return 1
-
 	(cd ${zlib_src_dir_crs_ntv}
 	CC=${target}-gcc ./configure --prefix=${sysroot}/usr) || return 1
 	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} install || return 1
+}
 
+install_crossed_native_libpng()
+{
+	install_prerequisites || return 1
+	install_crossed_native_zlib || return 1
+	prepare_libpng_source || return 1
+	[ -d ${libpng_src_dir_crs_ntv} ] ||
+		(tar xzvf ${libpng_org_src_dir}.tar.gz -C ${libpng_src_base} &&
+		 	mv ${libpng_org_src_dir} ${libpng_src_dir_crs_ntv}) || return 1
 	[ -f ${libpng_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_crs_ntv}
 		./configure --prefix=${sysroot}/usr --host=${target}) || return 1
 	C_INCLUDE_PATH=${sysroot}/include make -C ${libpng_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} install || return 1
+}
 
+install_crossed_native_libtiff()
+{
+	install_prerequisites || return 1
+	prepare_libtiff_source || return 1
+	[ -d ${libtiff_src_dir_crs_ntv} ] ||
+		(unzip -d ${libtiff_src_base} ${libtiff_org_src_dir}.zip &&
+		 	mv ${libtiff_org_src_dir} ${libtiff_src_dir_crs_ntv}) || return 1
 	[ -f ${libtiff_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${libtiff_src_dir_crs_ntv}
 		CC=${target}-gcc CXX=${target}-g++ ./configure --prefix=${sysroot}/usr --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'`) || return 1
