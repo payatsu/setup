@@ -12,12 +12,12 @@
 #        xsltproc
 
 : ${coreutils_ver:=8.24}
+: ${bison_ver:=3.0.4}
+: ${flex_ver:=2.6.0}
 : ${m4_ver:=1.4.17}
 : ${autoconf_ver:=2.69}
 : ${automake_ver:=1.15}
 : ${libtool_ver:=2.4.6}
-: ${flex_ver:=2.6.0}
-: ${bison_ver:=3.0.4}
 : ${make_ver:=4.1}
 : ${binutils_ver:=2.25.1}
 : ${kernel_ver:=3.18.13}
@@ -78,6 +78,10 @@ help()
 [Environmental variables]
 	coreutils_ver
 		Specify the version of GNU Coreutils you want, currently '${coreutils_ver}'.
+	bison_ver
+		Specify the version of GNU Bison you want, currently '${bison_ver}'.
+	flex_ver
+		Specify the version of flex you want, currently '${flex_ver}'.
 	m4_ver
 		Specify the version of GNU M4 you want, currently '${m4_ver}'.
 	autoconf_ver
@@ -86,10 +90,6 @@ help()
 		Specify the version of GNU Automake you want, currently '${automake_ver}'.
 	libtool_ver
 		Specify the version of GNU Libtool you want, currently '${libtool_ver}'.
-	flex_ver
-		Specify the version of flex you want, currently '${flex_ver}'.
-	bison_ver
-		Specify the version of GNU Bison you want, currently '${bison_ver}'.
 	make_ver
 		Specify the version of GNU Make you want, currently '${make_ver}'.
 	binutils_ver
@@ -185,12 +185,12 @@ clean()
 {
 	rm -rf \
 		${coreutils_org_src_dir} \
+		${bison_org_src_dir} \
+		${flex_org_src_dir} \
 		${m4_org_src_dir} \
 		${autoconf_org_src_dir} \
 		${automake_org_src_dir} \
 		${libtool_org_src_dir} \
-		${flex_org_src_dir} \
-		${bison_org_src_dir} \
 		${make_org_src_dir} \
 		${binutils_org_src_dir} ${binutils_src_dir_ntv} ${binutils_src_dir_crs} ${binutils_src_dir_crs_ntv} \
 		${kernel_org_src_dir} ${kernel_src_dir} \
@@ -253,6 +253,14 @@ set_variables()
 	coreutils_src_base=${prefix}/src/coreutils
 	coreutils_org_src_dir=${coreutils_src_base}/${coreutils_name}
 
+	bison_name=bison-${bison_ver}
+	bison_src_base=${prefix}/src/bison
+	bison_org_src_dir=${bison_src_base}/${bison_name}
+
+	flex_name=flex-${flex_ver}
+	flex_src_base=${prefix}/src/flex
+	flex_org_src_dir=${flex_src_base}/${flex_name}
+
 	m4_name=m4-${m4_ver}
 	m4_src_base=${prefix}/src/m4
 	m4_org_src_dir=${m4_src_base}/${m4_name}
@@ -268,14 +276,6 @@ set_variables()
 	libtool_name=libtool-${libtool_ver}
 	libtool_src_base=${prefix}/src/libtool
 	libtool_org_src_dir=${libtool_src_base}/${libtool_name}
-
-	flex_name=flex-${flex_ver}
-	flex_src_base=${prefix}/src/flex
-	flex_org_src_dir=${flex_src_base}/${flex_name}
-
-	bison_name=bison-${bison_ver}
-	bison_src_base=${prefix}/src/bison
-	bison_org_src_dir=${bison_src_base}/${bison_name}
 
 	make_name=make-${make_ver}
 	make_src_base=${prefix}/src/make
@@ -415,6 +415,22 @@ prepare_coreutils_source()
 			http://ftp.gnu.org/gnu/coreutils/${coreutils_name}.tar.xz || return 1
 }
 
+prepare_bison_source()
+{
+	mkdir -p ${bison_src_base}
+	[ -f ${bison_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${bison_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/bison/${bison_name}.tar.xz || return 1
+}
+
+prepare_flex_source()
+{
+	mkdir -p ${flex_src_base}
+	[ -f ${flex_org_src_dir}.tar.xz ] ||
+		wget -nv --trust-server-names -O ${flex_org_src_dir}.tar.xz \
+			http://sourceforge.net/projects/flex/files/${flex_name}.tar.xz/download || return 1
+}
+
 prepare_m4_source()
 {
 	mkdir -p ${m4_src_base}
@@ -445,22 +461,6 @@ prepare_libtool_source()
 	[ -f ${libtool_org_src_dir}.tar.xz ] ||
 		wget -nv -O ${libtool_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/libtool/${libtool_name}.tar.xz || return 1
-}
-
-prepare_flex_source()
-{
-	mkdir -p ${flex_src_base}
-	[ -f ${flex_org_src_dir}.tar.xz ] ||
-		wget -nv --trust-server-names -O ${flex_org_src_dir}.tar.xz \
-			http://sourceforge.net/projects/flex/files/${flex_name}.tar.xz/download || return 1
-}
-
-prepare_bison_source()
-{
-	mkdir -p ${bison_src_base}
-	[ -f ${bison_org_src_dir}.tar.xz ] ||
-		wget -nv -O ${bison_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/bison/${bison_name}.tar.xz || return 1
 }
 
 prepare_make_source()
@@ -621,74 +621,9 @@ install_native_coreutils()
 		tar xJvf ${coreutils_org_src_dir}.tar.xz -C ${coreutils_src_base} || return 1
 	[ -f ${coreutils_org_src_dir}/Makefile ] ||
 		(cd ${coreutils_org_src_dir}
-		FORCE_UNSAFE_CONFIGURE=1 ${coreutils_org_src_dir}/configure --prefix=${prefix} --build=${build}) || return 1
-	make -C ${coreutils_org_src_dir} -j${jobs} || return 1
-	make -C ${coreutils_org_src_dir} -j${jobs} install-strip || return 1
-}
-
-install_native_m4()
-{
-	install_prerequisites || return 1
-	prepare_m4_source || return 1
-	[ -d ${m4_org_src_dir} ] ||
-		tar xJvf ${m4_org_src_dir}.tar.xz -C ${m4_src_base} || return 1
-	[ -f ${m4_org_src_dir}/Makefile ] ||
-		(cd ${m4_org_src_dir}
-		${m4_org_src_dir}/configure --prefix=${prefix}) || return 1
-	make -C ${m4_org_src_dir} -j${jobs} || return 1
-	make -C ${m4_org_src_dir} -j${jobs} install-strip || return 1
-}
-
-install_native_autoconf()
-{
-	install_prerequisites || return 1
-	prepare_autoconf_source || return 1
-	[ -d ${autoconf_org_src_dir} ] ||
-		tar xJvf ${autoconf_org_src_dir}.tar.xz -C ${autoconf_src_base} || return 1
-	[ -f ${autoconf_org_src_dir}/Makefile ] ||
-		(cd ${autoconf_org_src_dir}
-		 ${autoconf_org_src_dir}/configure --prefix=${prefix}) || return 1
-	make -C ${autoconf_org_src_dir} -j${jobs} || return 1
-	make -C ${autoconf_org_src_dir} -j${jobs} install || return 1
-}
-
-install_native_automake()
-{
-	install_prerequisites || return 1
-	prepare_automake_source || return 1
-	[ -d ${automake_org_src_dir} ] ||
-		tar xJvf ${automake_org_src_dir}.tar.xz -C ${automake_src_base} || return 1
-	[ -f ${automake_org_src_dir}/Makefile ] ||
-		(cd ${automake_org_src_dir}
-		 ${automake_org_src_dir}/configure --prefix=${prefix}) || return 1
-	make -C ${automake_org_src_dir} -j${jobs} || return 1
-	make -C ${automake_org_src_dir} -j${jobs} install || return 1
-}
-
-install_native_libtool()
-{
-	install_prerequisites || return 1
-	prepare_libtool_source || return 1
-	[ -d ${libtool_org_src_dir} ] ||
-		tar xJvf ${libtool_org_src_dir}.tar.xz -C ${libtool_src_base} || return 1
-	[ -f ${libtool_org_src_dir}/Makefile ] ||
-		(cd ${libtool_org_src_dir}
-		 ${libtool_org_src_dir}/configure --prefix=${prefix}) || return 1
-	make -C ${libtool_org_src_dir} -j${jobs} || return 1
-	make -C ${libtool_org_src_dir} -j${jobs} install || return 1
-}
-
-install_native_flex()
-{
-	install_prerequisites || return 1
-	prepare_flex_source || return 1
-	[ -d ${flex_org_src_dir} ] ||
-		tar xJvf ${flex_org_src_dir}.tar.xz -C ${flex_src_base} || return 1
-	[ -f ${flex_org_src_dir}/Makefile ] ||
-		(cd ${flex_org_src_dir}
-		${flex_org_src_dir}/configure --prefix=${prefix}) || return 1
-	make -C ${flex_org_src_dir} -j${jobs} || return 1
-	make -C ${flex_org_src_dir} -j${jobs} install-strip install-man || return 1
+		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} --build=${build}) || return 1
+	make -C ${coreutils_org_src_dir} -j ${jobs} || return 1
+	make -C ${coreutils_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
 install_native_bison()
@@ -699,9 +634,76 @@ install_native_bison()
 		tar xJvf ${bison_org_src_dir}.tar.xz -C ${bison_src_base} || return 1
 	[ -f ${bison_org_src_dir}/Makefile ] ||
 		(cd ${bison_org_src_dir}
-		${bison_org_src_dir}/configure --prefix=${prefix}) || return 1
-	make -C ${bison_org_src_dir} -j${jobs} || return 1
-	make -C ${bison_org_src_dir} -j${jobs} install-strip || return 1
+		./configure --prefix=${prefix}) || return 1
+	make -C ${bison_org_src_dir} -j ${jobs} || return 1
+	make -C ${bison_org_src_dir} -j ${jobs} install-strip || return 1
+}
+
+install_native_flex()
+{
+	install_prerequisites || return 1
+	install_native_bison || return 1
+	prepare_flex_source || return 1
+	[ -d ${flex_org_src_dir} ] ||
+		tar xJvf ${flex_org_src_dir}.tar.xz -C ${flex_src_base} || return 1
+	[ -f ${flex_org_src_dir}/Makefile ] ||
+		(cd ${flex_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${flex_org_src_dir} -j ${jobs} || return 1
+	make -C ${flex_org_src_dir} -j ${jobs} install-strip install-man || return 1
+}
+
+install_native_m4()
+{
+	install_prerequisites || return 1
+	prepare_m4_source || return 1
+	[ -d ${m4_org_src_dir} ] ||
+		tar xJvf ${m4_org_src_dir}.tar.xz -C ${m4_src_base} || return 1
+	[ -f ${m4_org_src_dir}/Makefile ] ||
+		(cd ${m4_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${m4_org_src_dir} -j ${jobs} || return 1
+	make -C ${m4_org_src_dir} -j ${jobs} install-strip || return 1
+}
+
+install_native_autoconf()
+{
+	install_prerequisites || return 1
+	prepare_autoconf_source || return 1
+	[ -d ${autoconf_org_src_dir} ] ||
+		tar xJvf ${autoconf_org_src_dir}.tar.xz -C ${autoconf_src_base} || return 1
+	[ -f ${autoconf_org_src_dir}/Makefile ] ||
+		(cd ${autoconf_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${autoconf_org_src_dir} -j ${jobs} || return 1
+	make -C ${autoconf_org_src_dir} -j ${jobs} install || return 1
+}
+
+install_native_automake()
+{
+	install_prerequisites || return 1
+	prepare_automake_source || return 1
+	[ -d ${automake_org_src_dir} ] ||
+		tar xJvf ${automake_org_src_dir}.tar.xz -C ${automake_src_base} || return 1
+	[ -f ${automake_org_src_dir}/Makefile ] ||
+		(cd ${automake_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${automake_org_src_dir} -j ${jobs} || return 1
+	make -C ${automake_org_src_dir} -j ${jobs} install || return 1
+}
+
+install_native_libtool()
+{
+	install_prerequisites || return 1
+	install_native_flex || return 1
+	prepare_libtool_source || return 1
+	[ -d ${libtool_org_src_dir} ] ||
+		tar xJvf ${libtool_org_src_dir}.tar.xz -C ${libtool_src_base} || return 1
+	[ -f ${libtool_org_src_dir}/Makefile ] ||
+		(cd ${libtool_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${libtool_org_src_dir} -j ${jobs} || return 1
+	LD_LIBRARY_PATH=${prefix}/lib make -C ${libtool_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_make()
@@ -712,9 +714,9 @@ install_native_make()
 		tar xzvf ${make_org_src_dir}.tar.gz -C ${make_src_base} || return 1
 	[ -f ${make_org_src_dir}/Makefile ] ||
 		(cd ${make_org_src_dir}
-		${make_org_src_dir}/configure --prefix=${prefix} --build=${build}) || return 1
-	make -C ${make_org_src_dir} -j${jobs} || return 1
-	make -C ${make_org_src_dir} -j${jobs} install-strip || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
+	make -C ${make_org_src_dir} -j ${jobs} || return 1
+	make -C ${make_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
 install_native_binutils()
@@ -728,8 +730,8 @@ install_native_binutils()
 	[ -f ${binutils_src_dir_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_ntv}
 		./configure --prefix=${prefix} --build=${build} --with-sysroot=/ --enable-gold) || return 1
-	make -C ${binutils_src_dir_ntv} -j${jobs} || return 1
-	make -C ${binutils_src_dir_ntv} -j${jobs} install-strip || return 1
+	make -C ${binutils_src_dir_ntv} -j ${jobs} || return 1
+	make -C ${binutils_src_dir_ntv} -j ${jobs} install-strip || return 1
 }
 
 install_native_gmp_mpfr_mpc()
@@ -741,27 +743,27 @@ install_native_gmp_mpfr_mpc()
 			mv ${gmp_org_src_dir} ${gmp_src_dir_ntv}) || return 1
 	[ -f ${gmp_src_dir_ntv}/Makefile ] ||
 		(cd ${gmp_src_dir_ntv}
-		 ${gmp_src_dir_ntv}/configure --prefix=${prefix}) || return 1
-	make -C ${gmp_src_dir_ntv} -j${jobs} || return 1
-	make -C ${gmp_src_dir_ntv} -j${jobs} install-strip || return 1
+		./configure --prefix=${prefix}) || return 1
+	make -C ${gmp_src_dir_ntv} -j ${jobs} || return 1
+	make -C ${gmp_src_dir_ntv} -j ${jobs} install-strip || return 1
 
 	[ -d ${mpfr_src_dir_ntv} ] ||
 		(tar xzvf ${mpfr_org_src_dir}.tar.gz -C ${mpfr_src_base} &&
 			mv ${mpfr_org_src_dir} ${mpfr_src_dir_ntv}) || return 1
 	[ -f ${mpfr_src_dir_ntv}/Makefile ] ||
 		(cd ${mpfr_src_dir_ntv}
-		 ${mpfr_src_dir_ntv}/configure --prefix=${prefix} --with-gmp=${prefix}) || return 1
-	make -C ${mpfr_src_dir_ntv} -j${jobs} || return 1
-	make -C ${mpfr_src_dir_ntv} -j${jobs} install-strip || return 1
+		./configure --prefix=${prefix} --with-gmp=${prefix}) || return 1
+	make -C ${mpfr_src_dir_ntv} -j ${jobs} || return 1
+	make -C ${mpfr_src_dir_ntv} -j ${jobs} install-strip || return 1
 
 	[ -d ${mpc_src_dir_ntv} ] ||
 		(tar xzvf ${mpc_org_src_dir}.tar.gz -C ${mpc_src_base} &&
 			mv ${mpc_org_src_dir} ${mpc_src_dir_ntv}) || return 1
 	[ -f ${mpc_src_dir_ntv}/Makefile ] ||
 		(cd ${mpc_src_dir_ntv}
-		${mpc_src_dir_ntv}/configure --prefix=${prefix} --with-gmp=${prefix} --with-mpfr=${prefix}) || return 1
-	make -C ${mpc_src_dir_ntv} -j${jobs} || return 1
-	make -C ${mpc_src_dir_ntv} -j${jobs} install-strip || return 1
+		./configure --prefix=${prefix} --with-gmp=${prefix} --with-mpfr=${prefix}) || return 1
+	make -C ${mpc_src_dir_ntv} -j ${jobs} || return 1
+	make -C ${mpc_src_dir_ntv} -j ${jobs} install-strip || return 1
 }
 
 make_symbolic_links()
@@ -791,8 +793,8 @@ install_native_gcc()
 		(cd ${gcc_bld_dir_ntv}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
 			 --enable-languages=c,c++,go --disable-multilib --without-isl --with-system-zlib) || return 1
-	make -C ${gcc_bld_dir_ntv} -j${jobs} || return 1
-	make -C ${gcc_bld_dir_ntv} -j${jobs} install-strip || return 1
+	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return 1
+	make -C ${gcc_bld_dir_ntv} -j ${jobs} install-strip || return 1
 	echo "${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/${target}-${gcc_name}.conf
 	ldconfig
 }
@@ -808,8 +810,8 @@ install_native_gdb()
 	[ -f ${gdb_bld_dir_ntv}/Makefile ] ||
 		(cd ${gdb_bld_dir_ntv}
 		${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} --enable-tui) || return 1
-	make -C ${gdb_bld_dir_ntv} -j${jobs} || return 1
-	make -C ${gdb_bld_dir_ntv} -j${jobs} install || return 1
+	make -C ${gdb_bld_dir_ntv} -j ${jobs} || return 1
+	make -C ${gdb_bld_dir_ntv} -j ${jobs} install || return 1
 }
 
 install_native_emacs()
@@ -820,9 +822,9 @@ install_native_emacs()
 		tar xJvf ${emacs_org_src_dir}.tar.xz -C ${emacs_src_base} || return 1
 	[ -f ${emacs_org_src_dir}/Makefile ] ||
 		(cd ${emacs_org_src_dir}
-		${emacs_org_src_dir}/configure --prefix=${prefix}) || return 1
-	make -C ${emacs_org_src_dir} -j${jobs} || return 1
-	make -C ${emacs_org_src_dir} -j${jobs} install-strip || return 1
+		./configure --prefix=${prefix}) || return 1
+	make -C ${emacs_org_src_dir} -j ${jobs} || return 1
+	make -C ${emacs_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
 install_native_global()
@@ -833,9 +835,9 @@ install_native_global()
 		tar xzvf ${global_org_src_dir}.tar.gz -C ${global_src_base} || return 1
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
-		${global_org_src_dir}/configure --prefix=${prefix}) || return 1
-	make -C ${global_org_src_dir} -j${jobs} || return 1
-	make -C ${global_org_src_dir} -j${jobs} install-strip || return 1
+		./configure --prefix=${prefix}) || return 1
+	make -C ${global_org_src_dir} -j ${jobs} || return 1
+	make -C ${global_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
 install_native_screen()
@@ -846,9 +848,9 @@ install_native_screen()
 		tar xzvf ${screen_org_src_dir}.tar.gz -C ${screen_src_base} || return 1
 	[ -f ${screen_org_src_dir}/Makefile ] ||
 		(cd ${screen_org_src_dir}
-		${screen_org_src_dir}/configure --prefix=${prefix} --enable-color256 --enable-rxvt_osc) || return 1
-	make -C ${screen_org_src_dir} -j${jobs} || return 1
-	make -C ${screen_org_src_dir} -j${jobs} install || return 1
+		./configure --prefix=${prefix} --enable-color256 --enable-rxvt_osc) || return 1
+	make -C ${screen_org_src_dir} -j ${jobs} || return 1
+	make -C ${screen_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_zsh()
@@ -859,9 +861,9 @@ install_native_zsh()
 		tar xzvf ${zsh_org_src_dir}.tar.gz -C ${zsh_src_base} || return 1
 	[ -f ${zsh_org_src_dir}/Makefile ] ||
 		(cd ${zsh_org_src_dir}
-		${zsh_org_src_dir}/configure --prefix=${prefix} --host=${build}) || return 1
-	make -C ${zsh_org_src_dir} -j${jobs} || return 1
-	make -C ${zsh_org_src_dir} -j${jobs} install || return 1
+		./configure --prefix=${prefix} --host=${build}) || return 1
+	make -C ${zsh_org_src_dir} -j ${jobs} || return 1
+	make -C ${zsh_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_curl()
@@ -872,9 +874,9 @@ install_native_curl()
 		tar xjvf ${curl_org_src_dir}.tar.bz2 -C ${curl_src_base} || return 1
 	[ -f ${curl_org_src_dir}/Makefile ] ||
 		(cd ${curl_org_src_dir}
-		${curl_org_src_dir}/configure --prefix=${prefix}) || return 1
-	make -C ${curl_org_src_dir} -j${jobs} || return 1
-	make -C ${curl_org_src_dir} -j${jobs} install || return 1
+		./configure --prefix=${prefix}) || return 1
+	make -C ${curl_org_src_dir} -j ${jobs} || return 1
+	make -C ${curl_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_asciidoc()
@@ -885,9 +887,9 @@ install_native_asciidoc()
 		unzip -d ${asciidoc_src_base} ${asciidoc_org_src_dir}.zip || return 1
 	[ -f ${asciidoc_org_src_dir}/Makefile ] ||
 		(cd ${asciidoc_org_src_dir}
-		${asciidoc_org_src_dir}/configure --prefix=${prefix}) || return 1
-	make -C ${asciidoc_org_src_dir} -j${jobs} || return 1
-	make -C ${asciidoc_org_src_dir} -j${jobs} install || return 1
+		./configure --prefix=${prefix}) || return 1
+	make -C ${asciidoc_org_src_dir} -j ${jobs} || return 1
+	make -C ${asciidoc_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_xmlto()
@@ -898,9 +900,9 @@ install_native_xmlto()
 		tar xjvf ${xmlto_org_src_dir}.tar.bz2 -C ${xmlto_src_base} || return 1
 	[ -f ${xmlto_org_src_dir}/Makefile ] ||
 		(cd ${xmlto_org_src_dir}
-		${xmlto_org_src_dir}/configure --prefix=${prefix}) || return 1
-	make -C ${xmlto_org_src_dir} -j${jobs} || return 1
-	make -C ${xmlto_org_src_dir} -j${jobs} install || return 1
+		./configure --prefix=${prefix}) || return 1
+	make -C ${xmlto_org_src_dir} -j ${jobs} || return 1
+	make -C ${xmlto_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_git()
@@ -912,11 +914,11 @@ install_native_git()
 	prepare_git_source || return 1
 	[ -d ${git_org_src_dir} ] ||
 		tar xJvf ${git_org_src_dir}.tar.xz -C ${git_src_base} || return 1
-	make -C ${git_org_src_dir} -j${jobs} configure || return 1
+	make -C ${git_org_src_dir} -j ${jobs} configure || return 1
 	(cd ${git_org_src_dir}
-	${git_org_src_dir}/configure --prefix=${prefix}) || return 1
-	make -C ${git_org_src_dir} -j${jobs} all doc || return 1
-	make -C ${git_org_src_dir} -j${jobs} install install-doc install-html || return 1
+	./configure --prefix=${prefix}) || return 1
+	make -C ${git_org_src_dir} -j ${jobs} all doc || return 1
+	make -C ${git_org_src_dir} -j ${jobs} install install-doc install-html || return 1
 }
 
 full_native()
@@ -947,8 +949,8 @@ install_cross_binutils()
 	[ -f ${binutils_src_dir_crs}/Makefile ] ||
 		(cd ${binutils_src_dir_crs}
 		./configure --prefix=${prefix} --target=${target} --with-sysroot=${sysroot} --enable-gold) || return 1
-	make -C ${binutils_src_dir_crs} -j${jobs} || return 1
-	make -C ${binutils_src_dir_crs} -j${jobs} install-strip || return 1
+	make -C ${binutils_src_dir_crs} -j ${jobs} || return 1
+	make -C ${binutils_src_dir_crs} -j ${jobs} install-strip || return 1
 }
 
 install_cross_gcc_without_headers()
@@ -964,8 +966,8 @@ install_cross_gcc_without_headers()
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
 			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
 		) || return 1
-	make -C ${gcc_bld_dir_crs_1st} -j${jobs} all-gcc || return 1
-	make -C ${gcc_bld_dir_crs_1st} -j${jobs} install-gcc || return 1
+	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} all-gcc || return 1
+	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-gcc || return 1
 }
 
 install_kernel_header()
@@ -974,8 +976,8 @@ install_kernel_header()
 	[ -d ${kernel_src_dir} ] ||
 		(tar xJvf ${kernel_org_src_dir}.tar.xz -C ${kernel_src_base} &&
 			mv ${kernel_org_src_dir} ${kernel_src_dir}) || return 1
-	make -C ${kernel_src_dir} -j${jobs} mrproper || return 1
-	make -C ${kernel_src_dir} -j${jobs} \
+	make -C ${kernel_src_dir} -j ${jobs} mrproper || return 1
+	make -C ${kernel_src_dir} -j ${jobs} \
 		ARCH=${linux_arch} INSTALL_HDR_PATH=${sysroot}/usr headers_install || return 1
 }
 
@@ -992,7 +994,7 @@ install_glibc_headers()
 			--with-headers=${sysroot}/usr/include \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes \
 		) || return 1
-	make -C ${glibc_bld_dir_hdr} -j${jobs} DESTDIR=${sysroot} install-headers || return 1
+	make -C ${glibc_bld_dir_hdr} -j ${jobs} DESTDIR=${sysroot} install-headers || return 1
 }
 
 install_cross_gcc_with_glibc_headers()
@@ -1008,12 +1010,12 @@ install_cross_gcc_with_glibc_headers()
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
 			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
 		) || return 1
-	make -C ${gcc_bld_dir_crs_2nd} -j${jobs} all-gcc || return 1
-	make -C ${gcc_bld_dir_crs_2nd} -j${jobs} install-gcc || return 1
+	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} all-gcc || return 1
+	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} install-gcc || return 1
 	touch ${sysroot}/usr/include/gnu/stubs.h
 	touch ${sysroot}/usr/include/gnu/stubs-soft.h
-	make -C ${gcc_bld_dir_crs_2nd} -j${jobs} all-target-libgcc || return 1
-	make -C ${gcc_bld_dir_crs_2nd} -j${jobs} install-target-libgcc || return 1
+	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} all-target-libgcc || return 1
+	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} install-target-libgcc || return 1
 }
 
 install_1st_glibc()
@@ -1054,8 +1056,8 @@ EOF
 			--with-headers=${sysroot}/usr/include \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes \
 		) || return 1
-	make -C ${glibc_bld_dir_1st} -j${jobs} DESTDIR=${sysroot} || return 1
-	make -C ${glibc_bld_dir_1st} -j${jobs} DESTDIR=${sysroot} install || return 1
+	make -C ${glibc_bld_dir_1st} -j ${jobs} DESTDIR=${sysroot} || return 1
+	make -C ${glibc_bld_dir_1st} -j ${jobs} DESTDIR=${sysroot} install || return 1
 }
 
 install_cross_gcc_with_c_cxx_go_functionality()
@@ -1068,8 +1070,8 @@ install_cross_gcc_with_c_cxx_go_functionality()
 		(cd ${gcc_bld_dir_crs_3rd}
 		 ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
 			--enable-languages=c,c++,go --with-sysroot=${sysroot}) || return 1
-	make -C ${gcc_bld_dir_crs_3rd} -j${jobs} || return 1
-	make -C ${gcc_bld_dir_crs_3rd} -j${jobs} install || return 1
+	make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} || return 1
+	make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} install || return 1
 }
 
 install_cross_gcc()
@@ -1095,8 +1097,8 @@ install_cross_gdb()
 	[ -f ${gdb_bld_dir_crs}/Makefile ] ||
 		(cd ${gdb_bld_dir_crs}
 		${gdb_org_src_dir}/configure --prefix=${prefix} --target=${target} --enable-tui --with-sysroot=${sysroot}) || return 1
-	make -C ${gdb_bld_dir_crs} -j${jobs} || return 1
-	make -C ${gdb_bld_dir_crs} -j${jobs} install || return 1
+	make -C ${gdb_bld_dir_crs} -j ${jobs} || return 1
+	make -C ${gdb_bld_dir_crs} -j ${jobs} install || return 1
 }
 
 install_crossed_native_binutils()
@@ -1109,8 +1111,8 @@ install_crossed_native_binutils()
 	[ -f ${binutils_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_crs_ntv}
 		./configure --prefix=/usr --host=${target} --with-sysroot=/) || return 1
-	make -C ${binutils_src_dir_crs_ntv} -j${jobs} || return 1
-	make -C ${binutils_src_dir_crs_ntv} -j${jobs} DESTDIR=${sysroot} install-strip || return 1
+	make -C ${binutils_src_dir_crs_ntv} -j ${jobs} || return 1
+	make -C ${binutils_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 }
 
 install_crossed_native_gmp_mpfr_mpc()
@@ -1122,9 +1124,9 @@ install_crossed_native_gmp_mpfr_mpc()
 			mv ${gmp_org_src_dir} ${gmp_src_dir_crs_ntv}) || return 1
 	[ -f ${gmp_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${gmp_src_dir_crs_ntv}
-		${gmp_src_dir_crs_ntv}/configure --prefix=/usr --host=${target}) || return 1
-	make -C ${gmp_src_dir_crs_ntv} -j${jobs} || return 1
-	make -C ${gmp_src_dir_crs_ntv} -j${jobs} DESTDIR=${sysroot} install-strip || return 1
+		./configure --prefix=/usr --host=${target}) || return 1
+	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} || return 1
+	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 
 # XXX クロス先のネイティブ環境用なので、with-gmp, --with-mpfrの指定が間違ってるかも。
 
@@ -1133,18 +1135,18 @@ install_crossed_native_gmp_mpfr_mpc()
 			mv ${mpfr_org_src_dir} ${mpfr_src_dir_crs_ntv}) || return 1
 	[ -f ${mpfr_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${mpfr_src_dir_crs_ntv}
-		${mpfr_src_dir_crs_ntv}/configure --prefix=/usr --host=${target} --with-gmp=${sysroot}/usr) || return 1
-	make -C ${mpfr_src_dir_crs_ntv} -j${jobs} || return 1
-	make -C ${mpfr_src_dir_crs_ntv} -j${jobs} DESTDIR=${sysroot} install-strip || return 1
+		./configure --prefix=/usr --host=${target} --with-gmp=${sysroot}/usr) || return 1
+	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} || return 1
+	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 
 	[ -d ${mpc_src_dir_crs_ntv} ] ||
 		(tar xzvf ${mpc_org_src_dir}.tar.gz -C ${mpc_src_base} &&
 			mv ${mpc_org_src_dir} ${mpc_src_dir_crs_ntv}) || return 1
 	[ -f ${mpc_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${mpc_src_dir_crs_ntv}
-		${mpc_src_dir_crs_ntv}/configure --prefix=/usr --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr) || return 1
-	make -C ${mpc_src_dir_crs_ntv} -j${jobs} || return 1
-	make -C ${mpc_src_dir_crs_ntv} -j${jobs} DESTDIR=${sysroot} install-strip || return 1
+		./configure --prefix=/usr --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr) || return 1
+	make -C ${mpc_src_dir_crs_ntv} -j ${jobs} || return 1
+	make -C ${mpc_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 }
 
 install_crossed_native_gcc()
@@ -1162,8 +1164,8 @@ install_crossed_native_gcc()
 		(cd ${gcc_bld_dir_crs_ntv}
 		${gcc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
 			 --enable-languages=c,c++,go --with-sysroot=/ --without-isl) || return 1
-	make -C ${gcc_bld_dir_crs_ntv} -j${jobs} || return 1
-	make -C ${gcc_bld_dir_crs_ntv} -j${jobs} DESTDIR=${sysroot} install-strip || return 1
+	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} || return 1
+	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 }
 
 install_crossed_native_zlib_libpng_libtiff()
@@ -1176,23 +1178,22 @@ install_crossed_native_zlib_libpng_libtiff()
 	[ -d ${libtiff_org_src_dir} ] ||
 		unzip -d ${libtiff_src_base} ${libtiff_org_src_dir}.zip || return 1
 
-# [ -f ${zlib_org_src_dir}/Makefile ] ||
-		(cd ${zlib_org_src_dir}
-		CC=${target}-gcc ${zlib_org_src_dir}/configure --prefix=${sysroot}/usr) || return 1
-	make -C ${zlib_org_src_dir} -j${jobs} || return 1
-	make -C ${zlib_org_src_dir} -j${jobs} install || return 1
+	(cd ${zlib_org_src_dir}
+	CC=${target}-gcc ./configure --prefix=${sysroot}/usr) || return 1
+	make -C ${zlib_org_src_dir} -j ${jobs} || return 1
+	make -C ${zlib_org_src_dir} -j ${jobs} install || return 1
 
 	[ -f ${libpng_org_src_dir}/Makefile ] ||
 		(cd ${libpng_org_src_dir}
-		${libpng_org_src_dir}/configure --prefix=${sysroot}/usr --host=${target}) || return 1
-	C_INCLUDE_PATH=${sysroot}/include make -C ${libpng_org_src_dir} -j${jobs} || return 1
-	make -C ${libpng_org_src_dir} -j${jobs} install || return 1
+		./configure --prefix=${sysroot}/usr --host=${target}) || return 1
+	C_INCLUDE_PATH=${sysroot}/include make -C ${libpng_org_src_dir} -j ${jobs} || return 1
+	make -C ${libpng_org_src_dir} -j ${jobs} install || return 1
 
 	[ -f ${libtiff_org_src_dir}/Makefile ] ||
 		(cd ${libtiff_org_src_dir}
-		CC=${target}-gcc CXX=${target}-g++ ${libtiff_org_src_dir}/configure --prefix=${sysroot}/usr --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'`) || return 1
-	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_org_src_dir} -j${jobs} || return 1
-	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_org_src_dir} -j${jobs} install || return 1
+		CC=${target}-gcc CXX=${target}-g++ ./configure --prefix=${sysroot}/usr --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'`) || return 1
+	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_org_src_dir} -j ${jobs} || return 1
+	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_org_src_dir} -j ${jobs} install || return 1
 }
 
 while getopts p:t:j:h arg; do
