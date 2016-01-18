@@ -4,6 +4,7 @@
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] wget, bash, tar, diff, patch, find
 # [TODO] gettext #for git
+# [TODO] install_native_xmltoのリファクタリング。
 
 : ${coreutils_ver:=8.24}
 : ${bison_ver:=3.0.4}
@@ -1205,6 +1206,10 @@ install_native_xmlto()
 		./configure --prefix=${prefix}) || return 1
 	make -C ${xmlto_org_src_dir} -j ${jobs} || return 1
 	make -C ${xmlto_org_src_dir} -j ${jobs} install || return 1
+
+	[ -d ${prefix}/share/docbook-xsl-1.79.1 ] || wget -nv --trust-server-names -O- http://sourceforge.net/projects/docbook/files/docbook-xsl/1.79.1/docbook-xsl-1.79.1.tar.bz2/download | tar xjvf - -C ${prefix}/share
+	[ -f ${prefix}/share/catalog.xml ] || (wget -nv -O /tmp/hoge.zip http://www.oasis-open.org/docbook/xml/4.2/docbook-xml-4.2.zip && unzip -d ${prefix}/share /tmp/hoge.zip)
+	export XML_CATALOG_FILES="${prefix}/share/catalog.xml ${prefix}/share/docbook-xsl-1.79.1/catalog.xml"
 }
 
 install_native_libxml2()
@@ -1239,6 +1244,8 @@ install_native_git()
 	install_native_curl || return 1
 	install_native_asciidoc || return 1
 	install_native_xmlto || return 1
+	install_native_libxml2 || return 1
+	install_native_libxslt || return 1
 	prepare_git_source || return 1
 	[ -d ${git_org_src_dir} ] ||
 		tar xJvf ${git_org_src_dir}.tar.xz -C ${git_src_base} || return 1
