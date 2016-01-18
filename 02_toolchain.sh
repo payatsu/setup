@@ -2,7 +2,7 @@
 
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
-# [TODO] wget, bash, tar, diff, patch, find, xsltproc, xmllint
+# [TODO] wget, bash, tar, diff, patch, find
 # [TODO] gettext #for git
 
 : ${coreutils_ver:=8.24}
@@ -465,13 +465,12 @@ install_prerequisites()
 		apt-get install -y unifdef # for linux kernel
 		apt-get install -y libgtk-3-dev libxpm-dev # for emacs
 		apt-get install -y python2.7-dev # for gdb
-		apt-get install -y xsltproc libxml2-utils # for git
 		;;
 	Red|CentOS|\\S)
 		yum install -y make gcc gcc-c++ texinfo
 		yum install -y glibc-devel.i686 libstdc++-devel.i686
 		yum install -y unifdef
-		yum install -y gtk3-devel libXpm-devel
+		yum install -y gtk3-devel
 		;;
 	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1 ;;
 	esac
@@ -1216,7 +1215,7 @@ install_native_libxml2()
 		tar xzvf ${libxml2_org_src_dir}.tar.gz -C ${libxml2_src_base} || return 1
 	[ -f ${libxml2_org_src_dir}/Makefile ] ||
 		(cd ${libxml2_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${libxml2_org_src_dir} -j ${jobs} || return 1
 	make -C ${libxml2_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1229,7 +1228,7 @@ install_native_libxslt()
 		tar xzvf ${libxslt_org_src_dir}.tar.gz -C ${libxslt_src_base} || return 1
 	[ -f ${libxslt_org_src_dir}/Makefile ] ||
 		(cd ${libxslt_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${libxslt_org_src_dir} -j ${jobs} || return 1
 	make -C ${libxslt_org_src_dir} -j ${jobs} install || return 1
 }
