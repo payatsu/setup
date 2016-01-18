@@ -208,6 +208,20 @@ experimental()
 	install_crossed_native_libtiff || return 1
 }
 
+prepare()
+# Prepare all sources
+{
+	for prepare_command in `grep -e '^prepare_.\+_source()$' $0 | sed -e 's/()$//'`; do ${prepare_command}; done
+}
+
+archive()
+# Archive all sources
+{
+	prepare
+	clean
+	tar cJvf src.tar.xz -C ${prefix} src
+}
+
 clean()
 # Delete no longer required source trees.
 {
@@ -1207,9 +1221,10 @@ install_native_xmlto()
 	make -C ${xmlto_org_src_dir} -j ${jobs} || return 1
 	make -C ${xmlto_org_src_dir} -j ${jobs} install || return 1
 
-	[ -d ${prefix}/share/docbook-xsl-1.79.1 ] || wget -nv --trust-server-names -O- http://sourceforge.net/projects/docbook/files/docbook-xsl/1.79.1/docbook-xsl-1.79.1.tar.bz2/download | tar xjvf - -C ${prefix}/share
-	[ -f ${prefix}/share/catalog.xml ] || (wget -nv -O /tmp/hoge.zip http://www.oasis-open.org/docbook/xml/4.2/docbook-xml-4.2.zip && unzip -d ${prefix}/share /tmp/hoge.zip)
-	export XML_CATALOG_FILES="${prefix}/share/catalog.xml ${prefix}/share/docbook-xsl-1.79.1/catalog.xml"
+# FIXME
+# [ -d ${prefix}/share/docbook-xsl-1.79.1 ] || wget -nv --trust-server-names -O- http://sourceforge.net/projects/docbook/files/docbook-xsl/1.79.1/docbook-xsl-1.79.1.tar.bz2/download | tar xjvf - -C ${prefix}/share
+# [ -f ${prefix}/share/catalog.xml ] || (wget -nv -O /tmp/hoge.zip http://www.oasis-open.org/docbook/xml/4.2/docbook-xml-4.2.zip && unzip -d ${prefix}/share /tmp/hoge.zip)
+# export XML_CATALOG_FILES="${prefix}/share/catalog.xml ${prefix}/share/docbook-xsl-1.79.1/catalog.xml"
 }
 
 install_native_libxml2()
