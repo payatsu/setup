@@ -33,6 +33,7 @@
 : ${asciidoc_ver:=8.6.9}
 : ${xmlto_ver:=0.0.28}
 : ${libxml2_ver:=2.9.3}
+: ${libxslt_ver:=1.1.28}
 : ${git_ver:=2.7.0}
 : ${zlib_ver:=1.2.8}
 : ${libpng_ver:=1.6.20}
@@ -133,6 +134,8 @@ help()
 		Specify the version of xmlto you want, currently '${xmlto_ver}'.
 	libxml2_ver
 		Specify the version of libxml2 you want, currently '${libxml2_ver}'.
+	libxslt_ver
+		Specify the version of libxslt you want, currently '${libxslt_ver}'.
 	git_ver
 		Specify the version of Git you want, currently '${git_ver}'.
 	zlib_ver
@@ -235,6 +238,7 @@ clean()
 		${asciidoc_org_src_dir} \
 		${xmlto_org_src_dir} \
 		${libxml2_org_src_dir} \
+		${libxslt_org_src_dir} \
 		${git_org_src_dir} \
 		${zlib_src_dir_ntv} ${zlib_src_dir_crs_ntv} \
 		${libpng_src_dir_ntv} ${libpng_src_dir_crs_ntv} \
@@ -412,6 +416,10 @@ set_variables()
 	libxml2_name=libxml2-${libxml2_ver}
 	libxml2_src_base=${prefix}/src/libxml2
 	libxml2_org_src_dir=${libxml2_src_base}/${libxml2_name}
+
+	libxslt_name=libxslt-${libxslt_ver}
+	libxslt_src_base=${prefix}/src/libxslt
+	libxslt_org_src_dir=${libxslt_src_base}/${libxslt_name}
 
 	git_name=git-${git_ver}
 	git_src_base=${prefix}/src/git
@@ -690,6 +698,14 @@ prepare_libxml2_source()
 	[ -f ${libxml2_org_src_dir}.tar.gz ] ||
 		wget -nv -O ${libxml2_org_src_dir}.tar.gz \
 			ftp://xmlsoft.org/libxml2/${libxml2_name}.tar.gz || return 1
+}
+
+prepare_libxslt_source()
+{
+	mkdir -p ${libxslt_src_base}
+	[ -f ${libxslt_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${libxslt_org_src_dir}.tar.gz \
+			ftp://xmlsoft.org/libxml2/${libxslt_name}.tar.gz || return 1
 }
 
 prepare_git_source()
@@ -1203,6 +1219,19 @@ install_native_libxml2()
 		./configure --prefix=${prefix}) || return 1
 	make -C ${libxml2_org_src_dir} -j ${jobs} || return 1
 	make -C ${libxml2_org_src_dir} -j ${jobs} install || return 1
+}
+
+install_native_libxslt()
+{
+	install_prerequisites || return 1
+	prepare_libxslt_source || return 1
+	[ -d ${libxslt_org_src_dir} ] ||
+		tar xzvf ${libxslt_org_src_dir}.tar.gz -C ${libxslt_src_base} || return 1
+	[ -f ${libxslt_org_src_dir}/Makefile ] ||
+		(cd ${libxslt_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${libxslt_org_src_dir} -j ${jobs} || return 1
+	make -C ${libxslt_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_git()
