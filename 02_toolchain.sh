@@ -2,9 +2,8 @@
 
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
-# [TODO] wget, bash, tar, diff, patch, find, xsltproc
+# [TODO] wget, bash, tar, diff, patch, find, xsltproc, libgif, libjpeg, libXpm
 # [TODO] gettext #for git
-# [TODO] コンパイラのバージョンによってはncursesをコンパイルできない問題の解明。
 
 : ${coreutils_ver:=8.24}
 : ${bison_ver:=3.0.4}
@@ -37,6 +36,8 @@
 : ${zlib_ver:=1.2.8}
 : ${libpng_ver:=1.6.20}
 : ${libtiff_ver:=4.0.6}
+: ${libjpeg_ver:=v9b}
+: ${giflib_ver:=5.1.2}
 
 : ${prefix:=/toolchains}
 : ${target:=`uname -m`-linux-gnu}
@@ -131,6 +132,16 @@ help()
 		Specify the version of xmlto you want, currently '${xmlto_ver}'.
 	git_ver
 		Specify the version of Git you want, currently '${git_ver}'.
+	zlib_ver
+		Specify the version of zlib you want, currently '${zlib_ver}'.
+	libpng_ver
+		Specify the version of libpng you want, currently '${libpng_ver}'.
+	libtiff_ver
+		Specify the version of libtiff you want, currently '${libtiff_ver}'.
+	libjpeg_ver
+		Specify the version of libjpeg you want, currently '${libjpeg_ver}'.
+	giflib_ver
+		Specify the version of giflib you want, currently '${giflib_ver}'.
 
 [Examples]
 	For Raspberry pi2
@@ -217,13 +228,15 @@ clean()
 		${global_org_src_dir} \
 		${screen_org_src_dir} \
 		${zsh_org_src_dir} \
-		${zlib_src_dir_ntv} ${zlib_src_dir_crs_ntv} \
-	   	${libpng_src_dir_ntv} ${libpng_src_dir_crs_ntv} \
-		${libtiff_src_dir_ntv} ${libtiff_src_dir_crs_ntv} \
 		${curl_org_src_dir} \
 		${asciidoc_org_src_dir} \
 		${xmlto_org_src_dir} \
-		${git_org_src_dir}
+		${git_org_src_dir} \
+		${zlib_src_dir_ntv} ${zlib_src_dir_crs_ntv} \
+		${libpng_src_dir_ntv} ${libpng_src_dir_crs_ntv} \
+		${libtiff_src_dir_ntv} ${libtiff_src_dir_crs_ntv} \
+		${libjpeg_src_dir_ntv} \
+		${giflib_src_dir_ntv}
 }
 
 list()
@@ -414,6 +427,16 @@ set_variables()
 	libtiff_src_dir_ntv=${libtiff_src_base}/${libtiff_name}-ntv
 	libtiff_src_dir_crs_ntv=${libtiff_src_base}/${target}-${libtiff_name}-crs-ntv
 
+	libjpeg_name=jpegsrc.${libjpeg_ver}
+	libjpeg_src_base=${prefix}/src/libjpeg
+	libjpeg_org_src_dir=${libjpeg_src_base}/jpeg-`echo ${libjpeg_ver} | sed -e s/^v//`
+	libjpeg_src_dir_ntv=${libjpeg_src_base}/jpeg-`echo ${libjpeg_ver} | sed -e s/^v//`-ntv
+
+	giflib_name=giflib-${giflib_ver}
+	giflib_src_base=${prefix}/src/giflib
+	giflib_org_src_dir=${giflib_src_base}/${giflib_name}
+	giflib_src_dir_ntv=${giflib_src_base}/${giflib_name}-ntv
+
 	echo ${PATH} | grep -q ${prefix}/bin || PATH=${prefix}/bin:${PATH}
 }
 
@@ -424,7 +447,7 @@ install_prerequisites()
 	Debian|Ubuntu)
 		apt-get install -y make gcc g++ texinfo
 		apt-get install -y unifdef # for linux kernel
-		apt-get install -y libncurses-dev libgtk-3-dev libxpm-dev libgif-dev # for emacs
+		apt-get install -y libgtk-3-dev libxpm-dev # for emacs
 		apt-get install -y python2.7-dev # for gdb
 		apt-get install -y xsltproc libxml2-utils # for git
 		;;
@@ -432,7 +455,7 @@ install_prerequisites()
 		yum install -y make gcc gcc-c++ texinfo
 		yum install -y glibc-devel.i686 libstdc++-devel.i686
 		yum install -y unifdef
-		yum install -y ncurses-devel gtk3-devel libXpm-devel giflib-devel libjpeg-devel
+		yum install -y gtk3-devel libXpm-devel
 		;;
 	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1 ;;
 	esac
@@ -546,7 +569,7 @@ prepare_gperf_source()
 	mkdir -p ${gperf_src_base}
 	[ -f ${gperf_org_src_dir}.tar.gz ] ||
 		wget -nv -O ${gperf_org_src_dir}.tar.gz \
-			https://ftp.gnu.org/pub/gnu/gperf/${gperf_name}.tar.gz || return 1
+			https://ftp.gnu.org/gnu/gperf/${gperf_name}.tar.gz || return 1
 }
 
 prepare_glibc_source()
@@ -673,7 +696,7 @@ prepare_libpng_source()
 {
 	mkdir -p ${libpng_src_base}
 	[ -f ${libpng_org_src_dir}.tar.gz ] ||
-		wget --trust-server-names -nv -O ${libpng_org_src_dir}.tar.gz \
+		wget -nv --trust-server-names -O ${libpng_org_src_dir}.tar.gz \
 			http://download.sourceforge.net/libpng/${libpng_name}.tar.gz || return 1
 }
 
@@ -683,6 +706,22 @@ prepare_libtiff_source()
 	[ -f ${libtiff_org_src_dir}.zip ] ||
 		wget -nv -O ${libtiff_org_src_dir}.zip \
 			ftp://ftp.remotesensing.org/pub/libtiff/${libtiff_name}.zip || return 1
+}
+
+prepare_libjpeg_source()
+{
+	mkdir -p ${libjpeg_src_base}
+	[ -f ${libjpeg_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${libjpeg_org_src_dir}.tar.gz \
+			http://www.ijg.org/files/${libjpeg_name}.tar.gz || return 1
+}
+
+prepare_giflib_source()
+{
+	mkdir -p ${giflib_src_base}
+	[ -f ${giflib_org_src_dir}.tar.bz2 ] ||
+		wget -nv --trust-server-names -O ${giflib_org_src_dir}.tar.bz2 \
+			http://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1
 }
 
 install_native_coreutils()
@@ -919,6 +958,36 @@ install_native_ncurses()
 	prepare_ncurses_source || return 1
 	[ -d ${ncurses_org_src_dir} ] ||
 		tar xzvf ${ncurses_org_src_dir}.tar.gz -C ${ncurses_src_base} || return 1
+
+	# workaround for GCC 5.x
+	patch -p0 -d ${ncurses_org_src_dir} <<EOF || return 1
+--- ncurses/base/MKlib_gen.sh
++++ ncurses/base/MKlib_gen.sh
+@@ -491,11 +491,18 @@
+ 	-e 's/gen_\$//' \\
+ 	-e 's/  / /g' >>\$TMP
+ 
++cat >\$ED1 <<EOF
++s/  / /g
++s/^ //
++s/ \$//
++s/P_NCURSES_BOOL/NCURSES_BOOL/g
++EOF
++
++sed -e 's/bool/P_NCURSES_BOOL/g' \$TMP > \$ED2
++cat \$ED2 >\$TMP
++
+ \$preprocessor \$TMP 2>/dev/null \\
+-| sed \\
+-	-e 's/  / /g' \\
+-	-e 's/^ //' \\
+-	-e 's/_Bool/NCURSES_BOOL/g' \\
++| sed -f \$ED1 \\
+ | \$AWK -f \$AW2 \\
+ | sed -f \$ED3 \\
+ | sed \\
+EOF
+
 	[ -f ${ncurses_org_src_dir}/Makefile ] ||
 		(cd ${ncurses_org_src_dir}
 		./configure --prefix=${prefix} --with-shared --with-cxx-shared --enable-widec) || return 1
@@ -929,6 +998,7 @@ install_native_ncurses()
 install_native_gdb()
 {
 	install_prerequisites || return 1
+	install_native_ncurses || return 1
 	prepare_gdb_source || return 1
 	[ -d ${gdb_org_src_dir} ] ||
 		tar xJvf ${gdb_org_src_dir}.tar.xz -C ${gdb_src_base} || return 1
@@ -960,10 +1030,10 @@ install_native_libpng()
 	prepare_libpng_source || return 1
 	[ -d ${libpng_src_dir_ntv} ] ||
 		(tar xzvf ${libpng_org_src_dir}.tar.gz -C ${libpng_src_base} &&
-		 	mv ${libpng_org_src_dir} ${libpng_src_dir_ntv}) || return 1
+			mv ${libpng_org_src_dir} ${libpng_src_dir_ntv}) || return 1
 	[ -f ${libpng_src_dir_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_ntv}
-		./configure --prefix=${prefix} --host=${build}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	C_INCLUDE_PATH=${prefix}/include make -C ${libpng_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${libpng_src_dir_ntv} -j ${jobs} install || return 1
 }
@@ -974,13 +1044,40 @@ install_native_libtiff()
 	prepare_libtiff_source || return 1
 	[ -d ${libtiff_src_dir_ntv} ] ||
 		(unzip -d ${libtiff_src_base} ${libtiff_org_src_dir}.zip &&
-		 	mv ${libtiff_org_src_dir} ${libtiff_src_dir_ntv}) || return 1
-
+			mv ${libtiff_org_src_dir} ${libtiff_src_dir_ntv}) || return 1
 	[ -f ${libtiff_src_dir_ntv}/Makefile ] ||
 		(cd ${libtiff_src_dir_ntv}
-		./configure --prefix=${prefix} --host=${build}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${libtiff_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${libtiff_src_dir_ntv} -j ${jobs} install || return 1
+}
+
+install_native_libjpeg()
+{
+	install_prerequisites || return 1
+	prepare_libjpeg_source || return 1
+	[ -d ${libjpeg_src_dir_ntv} ] ||
+		(tar xzvf ${libjpeg_org_src_dir}.tar.gz -C ${libjpeg_src_base} &&
+			mv ${libjpeg_org_src_dir} ${libjpeg_src_dir_ntv}) || return 1
+	[ -f ${libjpeg_src_dir_ntv}/Makefile ] ||
+		(cd ${libjpeg_src_dir_ntv}
+		./configure --prefix=${prefix} --build=${build}) || return 1
+	make -C ${libjpeg_src_dir_ntv} -j ${jobs} || return 1
+	make -C ${libjpeg_src_dir_ntv} -j ${jobs} install || return 1
+}
+
+install_native_giflib()
+{
+	install_prerequisites || return 1
+	prepare_giflib_source || return 1
+	[ -d ${giflib_src_dir_ntv} ] ||
+		(tar xjvf ${giflib_org_src_dir}.tar.bz2 -C ${giflib_src_base} &&
+			mv ${giflib_org_src_dir} ${giflib_src_dir_ntv}) || return 1
+	[ -f ${giflib_src_dir_ntv}/Makefile ] ||
+		(cd ${giflib_src_dir_ntv}
+		./configure --prefix=${prefix} --build=${build}) || return 1
+	make -C ${giflib_src_dir_ntv} -j ${jobs} || return 1
+	make -C ${giflib_src_dir_ntv} -j ${jobs} install || return 1
 }
 
 install_native_emacs()
@@ -994,7 +1091,7 @@ install_native_emacs()
 		tar xJvf ${emacs_org_src_dir}.tar.xz -C ${emacs_src_base} || return 1
 	[ -f ${emacs_org_src_dir}/Makefile ] ||
 		(cd ${emacs_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --without-xpm) || return 1
 	make -C ${emacs_org_src_dir} -j ${jobs} || return 1
 	make -C ${emacs_org_src_dir} -j ${jobs} install-strip || return 1
 }
@@ -1367,7 +1464,7 @@ install_crossed_native_libpng()
 	prepare_libpng_source || return 1
 	[ -d ${libpng_src_dir_crs_ntv} ] ||
 		(tar xzvf ${libpng_org_src_dir}.tar.gz -C ${libpng_src_base} &&
-		 	mv ${libpng_org_src_dir} ${libpng_src_dir_crs_ntv}) || return 1
+			mv ${libpng_org_src_dir} ${libpng_src_dir_crs_ntv}) || return 1
 	[ -f ${libpng_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_crs_ntv}
 		./configure --prefix=${sysroot}/usr --host=${target}) || return 1
@@ -1381,7 +1478,7 @@ install_crossed_native_libtiff()
 	prepare_libtiff_source || return 1
 	[ -d ${libtiff_src_dir_crs_ntv} ] ||
 		(unzip -d ${libtiff_src_base} ${libtiff_org_src_dir}.zip &&
-		 	mv ${libtiff_org_src_dir} ${libtiff_src_dir_crs_ntv}) || return 1
+			mv ${libtiff_org_src_dir} ${libtiff_src_dir_crs_ntv}) || return 1
 	[ -f ${libtiff_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${libtiff_src_dir_crs_ntv}
 		CC=${target}-gcc CXX=${target}-g++ ./configure --prefix=${sysroot}/usr --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'`) || return 1
