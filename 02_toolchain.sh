@@ -2,7 +2,7 @@
 
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
-# [TODO] wget, bash, tar, diff, patch, find, xsltproc, libgif, libjpeg, libXpm
+# [TODO] wget, bash, tar, diff, patch, find, xsltproc, xmllint
 # [TODO] gettext #for git
 
 : ${coreutils_ver:=8.24}
@@ -32,6 +32,7 @@
 : ${curl_ver:=7.46.0}
 : ${asciidoc_ver:=8.6.9}
 : ${xmlto_ver:=0.0.28}
+: ${libxml2_ver:=2.9.3}
 : ${git_ver:=2.7.0}
 : ${zlib_ver:=1.2.8}
 : ${libpng_ver:=1.6.20}
@@ -130,6 +131,8 @@ help()
 		Specify the version of asciidoc you want, currently '${asciidoc_ver}'.
 	xmlto_ver
 		Specify the version of xmlto you want, currently '${xmlto_ver}'.
+	libxml2_ver
+		Specify the version of libxml2 you want, currently '${libxml2_ver}'.
 	git_ver
 		Specify the version of Git you want, currently '${git_ver}'.
 	zlib_ver
@@ -231,6 +234,7 @@ clean()
 		${curl_org_src_dir} \
 		${asciidoc_org_src_dir} \
 		${xmlto_org_src_dir} \
+		${libxml2_org_src_dir} \
 		${git_org_src_dir} \
 		${zlib_src_dir_ntv} ${zlib_src_dir_crs_ntv} \
 		${libpng_src_dir_ntv} ${libpng_src_dir_crs_ntv} \
@@ -404,6 +408,10 @@ set_variables()
 	xmlto_name=xmlto-${xmlto_ver}
 	xmlto_src_base=${prefix}/src/xmlto
 	xmlto_org_src_dir=${xmlto_src_base}/${xmlto_name}
+
+	libxml2_name=libxml2-${libxml2_ver}
+	libxml2_src_base=${prefix}/src/libxml2
+	libxml2_org_src_dir=${libxml2_src_base}/${libxml2_name}
 
 	git_name=git-${git_ver}
 	git_src_base=${prefix}/src/git
@@ -674,6 +682,14 @@ prepare_xmlto_source()
 	[ -f ${xmlto_org_src_dir}.tar.bz2 ] ||
 		wget -nv -O ${xmlto_org_src_dir}.tar.bz2 \
 			https://fedorahosted.org/releases/x/m/xmlto/${xmlto_name}.tar.bz2 || return 1
+}
+
+prepare_libxml2_source()
+{
+	mkdir -p ${libxml2_src_base}
+	[ -f ${libxml2_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${libxml2_org_src_dir}.tar.gz \
+			ftp://xmlsoft.org/libxml2/${libxml2_name}.tar.gz || return 1
 }
 
 prepare_git_source()
@@ -1086,6 +1102,8 @@ install_native_emacs()
 	install_native_zlib || return 1
 	install_native_libpng || return 1
 	install_native_libtiff || return 1
+	install_native_libjpeg || return 1
+	install_native_giflib || return 1
 	prepare_emacs_source || return 1
 	[ -d ${emacs_org_src_dir} ] ||
 		tar xJvf ${emacs_org_src_dir}.tar.xz -C ${emacs_src_base} || return 1
@@ -1172,6 +1190,19 @@ install_native_xmlto()
 		./configure --prefix=${prefix}) || return 1
 	make -C ${xmlto_org_src_dir} -j ${jobs} || return 1
 	make -C ${xmlto_org_src_dir} -j ${jobs} install || return 1
+}
+
+install_native_libxml2()
+{
+	install_prerequisites || return 1
+	prepare_libxml2_source || return 1
+	[ -d ${libxml2_org_src_dir} ] ||
+		tar xzvf ${libxml2_org_src_dir}.tar.gz -C ${libxml2_src_base} || return 1
+	[ -f ${libxml2_org_src_dir}/Makefile ] ||
+		(cd ${libxml2_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${libxml2_org_src_dir} -j ${jobs} || return 1
+	make -C ${libxml2_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_git()
