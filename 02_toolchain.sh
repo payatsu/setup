@@ -219,7 +219,7 @@ archive()
 {
 	prepare
 	clean
-	tar cJvf src.tar.xz -C ${prefix} src
+	tar cJvf ${prefix}/src.tar.xz -C ${prefix} src
 }
 
 clean()
@@ -483,13 +483,12 @@ install_prerequisites()
 		;;
 	Red|CentOS|\\S)
 		yum install -y make gcc gcc-c++ texinfo
-		yum install -y glibc-devel.i686 libstdc++-devel.i686
 		yum install -y unifdef
 		yum install -y gtk3-devel
 		;;
 	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1 ;;
 	esac
-	prerequisites_have_been_already_installed=true
+	prerequisites_have_been_already_installed=yes
 }
 
 prepare_coreutils_source()
@@ -990,11 +989,12 @@ install_native_gcc()
 	mkdir -p ${gcc_bld_dir_ntv}
 	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_ntv}
-		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			 --enable-languages=c,c++,go --disable-multilib --without-isl --with-system-zlib) || return 1
+		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} \
+			--with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
+			--enable-languages=c,c++,go --disable-multilib --without-isl --with-system-zlib) || return 1
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return 1
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install-strip || return 1
-	echo "${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/${target}-${gcc_name}.conf
+	echo "${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/${gcc_name}.conf
 	ldconfig
 }
 
@@ -1081,7 +1081,7 @@ install_native_libpng()
 		(cd ${libpng_src_dir_ntv}
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	C_INCLUDE_PATH=${prefix}/include make -C ${libpng_src_dir_ntv} -j ${jobs} || return 1
-	make -C ${libpng_src_dir_ntv} -j ${jobs} install || return 1
+	make -C ${libpng_src_dir_ntv} -j ${jobs} install-strip || return 1
 }
 
 install_native_libtiff()
@@ -1095,7 +1095,7 @@ install_native_libtiff()
 		(cd ${libtiff_src_dir_ntv}
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${libtiff_src_dir_ntv} -j ${jobs} || return 1
-	make -C ${libtiff_src_dir_ntv} -j ${jobs} install || return 1
+	make -C ${libtiff_src_dir_ntv} -j ${jobs} install-strip || return 1
 }
 
 install_native_libjpeg()
@@ -1109,7 +1109,7 @@ install_native_libjpeg()
 		(cd ${libjpeg_src_dir_ntv}
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${libjpeg_src_dir_ntv} -j ${jobs} || return 1
-	make -C ${libjpeg_src_dir_ntv} -j ${jobs} install || return 1
+	make -C ${libjpeg_src_dir_ntv} -j ${jobs} install-strip || return 1
 }
 
 install_native_giflib()
@@ -1123,12 +1123,13 @@ install_native_giflib()
 		(cd ${giflib_src_dir_ntv}
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${giflib_src_dir_ntv} -j ${jobs} || return 1
-	make -C ${giflib_src_dir_ntv} -j ${jobs} install || return 1
+	make -C ${giflib_src_dir_ntv} -j ${jobs} install-strip|| return 1
 }
 
 install_native_emacs()
 {
 	install_prerequisites || return 1
+	install_native_ncurses || return 1
 	install_native_zlib || return 1
 	install_native_libpng || return 1
 	install_native_libtiff || return 1
@@ -1189,7 +1190,6 @@ install_native_curl()
 	prepare_curl_source || return 1
 	[ -d ${curl_org_src_dir} ] ||
 		tar xjvf ${curl_org_src_dir}.tar.bz2 -C ${curl_src_base} || return 1
-	[ -f ${curl_org_src_dir}/Makefile ] ||
 		(cd ${curl_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} || return 1
@@ -1237,7 +1237,7 @@ install_native_libxml2()
 		(cd ${libxml2_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${libxml2_org_src_dir} -j ${jobs} || return 1
-	make -C ${libxml2_org_src_dir} -j ${jobs} install || return 1
+	make -C ${libxml2_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
 install_native_libxslt()
@@ -1250,7 +1250,7 @@ install_native_libxslt()
 		(cd ${libxslt_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${libxslt_org_src_dir} -j ${jobs} || return 1
-	make -C ${libxslt_org_src_dir} -j ${jobs} install || return 1
+	make -C ${libxslt_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
 install_native_git()
@@ -1278,11 +1278,15 @@ full_native()
 	install_native_autoconf || return 1
 	install_native_automake || return 1
 	install_native_libtool || return 1
+	install_native_sed || return 1
+	install_native_gawk || return 1
 	install_native_make || return 1
 	install_native_binutils || return 1
+	install_native_gperf || return 1
 	install_native_gcc || return 1
 	install_native_gdb || return 1
 	install_native_emacs || return 1
+	install_native_global || return 1
 	install_native_screen || return 1
 	install_native_zsh || return 1
 	install_native_git || return 1
@@ -1550,7 +1554,7 @@ install_crossed_native_libpng()
 		(cd ${libpng_src_dir_crs_ntv}
 		./configure --prefix=${sysroot}/usr --host=${target}) || return 1
 	C_INCLUDE_PATH=${sysroot}/include make -C ${libpng_src_dir_crs_ntv} -j ${jobs} || return 1
-	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} install || return 1
+	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} install-strip || return 1
 }
 
 install_crossed_native_libtiff()
@@ -1564,7 +1568,7 @@ install_crossed_native_libtiff()
 		(cd ${libtiff_src_dir_crs_ntv}
 		CC=${target}-gcc CXX=${target}-g++ ./configure --prefix=${sysroot}/usr --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'`) || return 1
 	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_src_dir_crs_ntv} -j ${jobs} || return 1
-	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_src_dir_crs_ntv} -j ${jobs} install || return 1
+	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_src_dir_crs_ntv} -j ${jobs} install-strip || return 1
 }
 
 while getopts p:t:j:h arg; do
