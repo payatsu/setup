@@ -5,6 +5,7 @@
 # [TODO] wget, bash, tar, diff, patch, find
 # [TODO] gettext #for git
 # [TODO] install_native_xmltoのリファクタリング。
+# [TODO] libcurlでhttpsがnot supportedまたはdisabledになってる。
 
 : ${coreutils_ver:=8.24}
 : ${bison_ver:=3.0.4}
@@ -218,7 +219,7 @@ archive()
 # Archive related files.
 {
 	clean
-	tar cJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` ${prefix}
+	tar cJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` `basename ${prefix}`
 }
 
 clean()
@@ -1197,7 +1198,7 @@ install_native_curl()
 	[ -d ${curl_org_src_dir} ] ||
 		tar xjvf ${curl_org_src_dir}.tar.bz2 -C ${curl_src_base} || return 1
 		(cd ${curl_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build} --enable-optimize --enable-ipv6 --with-ssl) || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} install || return 1
 }
