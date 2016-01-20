@@ -5,7 +5,8 @@
 # [TODO] wget, bash, tar, diff, patch, find
 # [TODO] gettext #for git
 # [TODO] install_native_xmltoのリファクタリング。
-# [TODO] libcurlでhttpsがnot supportedまたはdisabledになってる。
+# [TODO] libcurlでhttpsがnot supportedまたはdisabledになってる。-> opensslをインストールできるようにする。
+# [TODO] deployを実装する。
 
 : ${coreutils_ver:=8.24}
 : ${bison_ver:=3.0.4}
@@ -184,8 +185,8 @@ all()
 # Install native/cross GNU Toolchains.
 {
 	install_prerequisites || return 1
-	native
-	cross
+	native || return 1
+	cross || return 1
 	clean
 }
 
@@ -219,7 +220,19 @@ archive()
 # Archive related files.
 {
 	clean
+	cp -f $0 ${prefix}/src
 	tar cJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` `basename ${prefix}`
+}
+
+deploy()
+# Deploy related files.
+{
+
+# tarする。
+
+	echo ${prefix}/lib > /etc/ld.so.conf.d/`basename ${prefix}`.conf
+	ldconfig
+	echo Please add ${prefix} to PATH
 }
 
 clean()
@@ -270,7 +283,7 @@ list()
 
 archive_source()
 {
-	prepare
+	prepare || return 1
 	clean
 	tar cJvf ${prefix}/src.tar.xz -C ${prefix} src
 }
@@ -1198,7 +1211,7 @@ install_native_curl()
 	[ -d ${curl_org_src_dir} ] ||
 		tar xjvf ${curl_org_src_dir}.tar.bz2 -C ${curl_src_base} || return 1
 		(cd ${curl_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --enable-optimize --enable-ipv6 --with-ssl) || return 1
+		./configure --prefix=${prefix} --build=${build} --host=${build} --enable-optimize --enable-ipv6 --with-ssl) || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} install || return 1
 }
