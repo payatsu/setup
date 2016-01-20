@@ -215,11 +215,10 @@ prepare()
 }
 
 archive()
-# Archive all sources
+# Archive related files.
 {
-	prepare
 	clean
-	tar cJvf ${prefix}/src.tar.xz -C ${prefix} src
+	tar cJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` ${prefix}
 }
 
 clean()
@@ -266,6 +265,13 @@ list()
 # List all tags, which include the ones not listed here.
 {
 	list_all
+}
+
+archive_source()
+{
+	prepare
+	clean
+	tar cJvf ${prefix}/src.tar.xz -C ${prefix} src
 }
 
 list_major_tags()
