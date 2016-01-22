@@ -6,7 +6,6 @@
 # [TODO] gettext #for git
 # [TODO] install_native_xmltoのリファクタリング。
 # [TODO] libcurlでhttpsがnot supportedまたはdisabledになってる。-> opensslをインストールできるようにする。
-# [TODO] deployを実装する。
 
 : ${coreutils_ver:=8.24}
 : ${bison_ver:=3.0.4}
@@ -32,6 +31,7 @@
 : ${global_ver:=6.5.2}
 : ${screen_ver:=4.3.1}
 : ${zsh_ver:=5.2}
+: ${openssl_ver:=1.0.2e}
 : ${curl_ver:=7.46.0}
 : ${asciidoc_ver:=8.6.9}
 : ${xmlto_ver:=0.0.28}
@@ -129,6 +129,8 @@ help()
 		Specify the version of GNU Screen you want, currently '${screen_ver}'.
 	zsh_ver
 		Specify the version of Zsh you want, currently '${zsh_ver}'.
+	openssl_ver
+		Specify the version of openssl you want, currently '${openssl_ver}'.
 	curl_ver
 		Specify the version of Curl you want, currently '${libcur_ver}'.
 	asciidoc_ver
@@ -213,25 +215,23 @@ experimental()
 prepare()
 # Prepare all sources
 {
-	for prepare_command in `grep -e '^prepare_.\+_source()$' $0 | sed -e 's/()$//'`; do ${prepare_command}; done
+	for prepare_command in `grep -e '^prepare_.\+_source()$' $0 | sed -e 's/()$//'`; do ${prepare_command} || return 1; done
 }
 
 archive()
 # Archive related files.
 {
 	clean
-	cp -f $0 ${prefix}/src
-	tar cJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` `basename ${prefix}`
+	cp -f $0 ${prefix}/src || return 1
+	tar cJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` `basename ${prefix}` || return 1
 }
 
 deploy()
 # Deploy related files.
 {
-
-# tarする。
-
-	echo ${prefix}/lib > /etc/ld.so.conf.d/`basename ${prefix}`.conf
-	ldconfig
+	tar xJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` || return 1
+	echo "${prefix}/lib\n${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return 1
+	ldconfig || return 1
 	echo Please add ${prefix} to PATH
 }
 
@@ -262,6 +262,7 @@ clean()
 		${global_org_src_dir} \
 		${screen_org_src_dir} \
 		${zsh_org_src_dir} \
+		${openssl_org_src_dir} \
 		${curl_org_src_dir} \
 		${asciidoc_org_src_dir} \
 		${xmlto_org_src_dir} \
@@ -436,6 +437,10 @@ set_variables()
 	zsh_src_base=${prefix}/src/zsh
 	zsh_org_src_dir=${zsh_src_base}/${zsh_name}
 
+	openssl_name=openssl-${openssl_ver}
+	openssl_src_base=${prefix}/src/openssl
+	openssl_org_src_dir=${openssl_src_base}/${openssl_name}
+
 	curl_name=curl-${curl_ver}
 	curl_src_base=${prefix}/src/curl
 	curl_org_src_dir=${curl_src_base}/${curl_name}
@@ -498,7 +503,7 @@ install_prerequisites()
 	Debian|Ubuntu)
 		apt-get install -y make gcc g++ texinfo
 		apt-get install -y unifdef # for linux kernel
-		apt-get install -y libgtk-3-dev libxpm-dev # for emacs
+		apt-get install -y libgtk-3-dev # for emacs
 		apt-get install -y python2.7-dev # for gdb
 		;;
 	Red|CentOS|\\S)
@@ -699,6 +704,14 @@ prepare_zsh_source()
 	[ -f ${zsh_org_src_dir}.tar.gz ] ||
 		wget -nv --trust-server-names -O ${zsh_org_src_dir}.tar.gz \
 			http://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.gz/download || return 1
+}
+
+prepare_openssl_source()
+{
+	mkdir -p ${openssl_src_base}
+	[ -f ${openssl_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${openssl_org_src_dir}.tar.gz \
+			https://www.openssl.org/source/${openssl_name}.tar.gz || return 1
 }
 
 prepare_curl_source()
@@ -1204,14 +1217,28 @@ install_native_zsh()
 	make -C ${zsh_org_src_dir} -j ${jobs} install || return 1
 }
 
+install_native_openssl()
+{
+	install_prerequisites || return 1
+	prepare_openssl_source || return 1
+	[ -d ${openssl_org_src_dir} ] ||
+		tar xzvf ${openssl_org_src_dir}.tar.gz -C ${openssl_src_base} || return 1
+	(cd ${openssl_org_src_dir}
+	./config --prefix=${prefix}) || return 1
+	make -C ${openssl_org_src_dir} -j ${jobs} || return 1
+	make -C ${openssl_org_src_dir} -j ${jobs} test || return 1
+	make -C ${openssl_org_src_dir} -j ${jobs} install || return 1
+}
+
 install_native_curl()
 {
 	install_prerequisites || return 1
+	install_native_openssl || return 1
 	prepare_curl_source || return 1
 	[ -d ${curl_org_src_dir} ] ||
 		tar xjvf ${curl_org_src_dir}.tar.bz2 -C ${curl_src_base} || return 1
-		(cd ${curl_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${build} --enable-optimize --enable-ipv6 --with-ssl) || return 1
+	(cd ${curl_org_src_dir}
+	./configure --prefix=${prefix} --build=${build} --host=${build} --enable-optimize --enable-ipv6 --with-ssl) || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} install || return 1
 }
