@@ -3,9 +3,7 @@
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] wget, bash, tar, diff, patch, find
-# [TODO] gettext #for git
 # [TODO] install_native_xmltoのリファクタリング。
-# [TODO] libcurlでhttpsがnot supportedまたはdisabledになってる。-> opensslをインストールできるようにする。
 
 : ${coreutils_ver:=8.24}
 : ${bison_ver:=3.0.4}
@@ -37,6 +35,7 @@
 : ${xmlto_ver:=0.0.28}
 : ${libxml2_ver:=2.9.3}
 : ${libxslt_ver:=1.1.28}
+: ${gettext_ver:=0.19.7}
 : ${git_ver:=2.7.0}
 : ${zlib_ver:=1.2.8}
 : ${libpng_ver:=1.6.20}
@@ -141,6 +140,8 @@ help()
 		Specify the version of libxml2 you want, currently '${libxml2_ver}'.
 	libxslt_ver
 		Specify the version of libxslt you want, currently '${libxslt_ver}'.
+	gettext_ver
+		Specify the version of gettext you want, currently '${gettext_ver}'.
 	git_ver
 		Specify the version of Git you want, currently '${git_ver}'.
 	zlib_ver
@@ -268,6 +269,7 @@ clean()
 		${xmlto_org_src_dir} \
 		${libxml2_org_src_dir} \
 		${libxslt_org_src_dir} \
+		${gettext_org_src_dir} \
 		${git_org_src_dir} \
 		${zlib_src_dir_ntv} ${zlib_src_dir_crs_ntv} \
 		${libpng_src_dir_ntv} ${libpng_src_dir_crs_ntv} \
@@ -461,6 +463,10 @@ set_variables()
 	libxslt_src_base=${prefix}/src/libxslt
 	libxslt_org_src_dir=${libxslt_src_base}/${libxslt_name}
 
+	gettext_name=gettext-${gettext_ver}
+	gettext_src_base=${prefix}/src/gettext
+	gettext_org_src_dir=${gettext_src_base}/${gettext_name}
+
 	git_name=git-${git_ver}
 	git_src_base=${prefix}/src/git
 	git_org_src_dir=${git_src_base}/${git_name}
@@ -498,6 +504,8 @@ set_variables()
 
 install_prerequisites()
 {
+	return 0
+
 	[ -n "${prerequisites_have_been_already_installed}" ] && return 0
 	case ${os} in
 	Debian|Ubuntu)
@@ -752,6 +760,14 @@ prepare_libxslt_source()
 	[ -f ${libxslt_org_src_dir}.tar.gz ] ||
 		wget -nv -O ${libxslt_org_src_dir}.tar.gz \
 			ftp://xmlsoft.org/libxml2/${libxslt_name}.tar.gz || return 1
+}
+
+prepare_gettext_source()
+{
+	mkdir -p ${gettext_src_base}
+	[ -f ${gettext_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${gettext_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/pub/gnu/gettext/${gettext_name}.tar.xz || return 1
 }
 
 prepare_git_source()
@@ -1226,7 +1242,6 @@ install_native_openssl()
 	(cd ${openssl_org_src_dir}
 	./config --prefix=${prefix}) || return 1
 	make -C ${openssl_org_src_dir} -j ${jobs} || return 1
-	make -C ${openssl_org_src_dir} -j ${jobs} test || return 1
 	make -C ${openssl_org_src_dir} -j ${jobs} install || return 1
 }
 
@@ -1300,6 +1315,19 @@ install_native_libxslt()
 	make -C ${libxslt_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
+install_native_gettext()
+{
+	install_prerequisites || return 1
+	prepare_gettext_source || return 1
+	[ -d ${gettext_org_src_dir} ] ||
+		tar xJvf ${gettext_org_src_dir}.tar.xz -C ${gettext_src_base} || return 1
+	[ -f ${gettext_org_src_dir}/Makefile ] ||
+		(cd ${gettext_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${gettext_org_src_dir} -j ${jobs} || return 1
+	make -C ${gettext_org_src_dir} -j ${jobs} install-strip || return 1
+}
+
 install_native_git()
 {
 	install_prerequisites || return 1
@@ -1308,6 +1336,7 @@ install_native_git()
 	install_native_xmlto || return 1
 	install_native_libxml2 || return 1
 	install_native_libxslt || return 1
+	install_native_gettext || return 1
 	prepare_git_source || return 1
 	[ -d ${git_org_src_dir} ] ||
 		tar xJvf ${git_org_src_dir}.tar.xz -C ${git_src_base} || return 1
