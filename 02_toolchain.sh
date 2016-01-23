@@ -1343,7 +1343,8 @@ install_native_git()
 	make -C ${git_org_src_dir} -j ${jobs} configure || return 1
 	(cd ${git_org_src_dir}
 	./configure --prefix=${prefix}) || return 1
-	make -C ${git_org_src_dir} -j ${jobs} all doc || return 1
+	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return 1
+	make -C ${git_org_src_dir} -j ${jobs} LDFLAGS=-ldl all doc || return 1
 	make -C ${git_org_src_dir} -j ${jobs} install install-doc install-html || return 1
 }
 
