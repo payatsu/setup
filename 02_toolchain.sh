@@ -4,6 +4,8 @@
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] wget, bash, tar, diff, patch, find
 # [TODO] install_native_xmltoのリファクタリング。
+#        -> xmltoの障害のせいで、gitとgiflibのmakeに障害あり。
+# [TODO] globalのmakeでldが-lncursesを見つけられない。
 
 : ${coreutils_ver:=8.24}
 : ${bison_ver:=3.0.4}
@@ -231,8 +233,7 @@ deploy()
 # Deploy related files.
 {
 	tar xJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` || return 1
-	echo "${prefix}/lib\n${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return 1
-	ldconfig || return 1
+	update_shared_object_search_path || return 1
 	echo Please add ${prefix} to PATH
 }
 
@@ -282,29 +283,6 @@ list()
 # List all tags, which include the ones not listed here.
 {
 	list_all
-}
-
-archive_source()
-{
-	prepare || return 1
-	clean
-	tar cJvf ${prefix}/src.tar.xz -C ${prefix} src
-}
-
-list_major_tags()
-{
-	echo '[Available tags]'
-	eval "`grep -A 1 -e '^[[:alnum:]]\+()$' $0 |
-		sed -e '/^--$/d; /^{$/d; s/()$//; s/^# /\t/; s/^/\t/; 1s/^/echo "/; $s/$/"/'`"
-}
-
-list_all()
-{
-	cat <<EOF
-[All tags]
-#: major tags, -: internal tags(for debugging use)
-EOF
-	grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/\t- /; s/()$//; s/- \([[:alnum:]]\+\)$/# \1/'
 }
 
 set_variables()
@@ -500,6 +478,29 @@ set_variables()
 	giflib_src_dir_ntv=${giflib_src_base}/${giflib_name}-ntv
 
 	echo ${PATH} | grep -q ${prefix}/bin || PATH=${prefix}/bin:${PATH}
+}
+
+archive_sources()
+{
+	prepare || return 1
+	clean
+	tar cJvf ${prefix}/src.tar.xz -C ${prefix} src
+}
+
+list_major_tags()
+{
+	echo '[Available tags]'
+	eval "`grep -A 1 -e '^[[:alnum:]]\+()$' $0 |
+		sed -e '/^--$/d; /^{$/d; s/()$//; s/^# /\t/; s/^/\t/; 1s/^/echo "/; $s/$/"/'`"
+}
+
+list_all()
+{
+	cat <<EOF
+[All tags]
+#: major tags, -: internal tags(for debugging use)
+EOF
+	grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/\t- /; s/()$//; s/- \([[:alnum:]]\+\)$/# \1/'
 }
 
 install_prerequisites()
@@ -818,6 +819,13 @@ prepare_giflib_source()
 			http://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1
 }
 
+update_shared_object_search_path()
+{
+	[ -f /etc/ld.so.conf.d/`basename ${prefix}`.conf ] ||
+		echo "${prefix}/lib\n${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return 1
+	ldconfig || return 1
+}
+
 install_native_coreutils()
 {
 	install_prerequisites || return 1
@@ -856,8 +864,7 @@ install_native_flex()
 		./configure --prefix=${prefix}) || return 1
 	make -C ${flex_org_src_dir} -j ${jobs} || return 1
 	make -C ${flex_org_src_dir} -j ${jobs} install-strip install-man || return 1
-	echo ${prefix}/lib > /etc/ld.so.conf.d/libfl.conf
-	ldconfig
+	update_shared_object_search_path || return 1
 }
 
 install_native_m4()
@@ -1043,8 +1050,7 @@ install_native_gcc()
 			--enable-languages=c,c++,go --disable-multilib --without-isl --with-system-zlib) || return 1
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return 1
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install-strip || return 1
-	echo "${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/${gcc_name}.conf
-	ldconfig
+	update_shared_object_search_path || return 1
 }
 
 install_native_ncurses()
@@ -1055,7 +1061,7 @@ install_native_ncurses()
 		tar xzvf ${ncurses_org_src_dir}.tar.gz -C ${ncurses_src_base} || return 1
 
 	# workaround for GCC 5.x
-	patch -p0 -d ${ncurses_org_src_dir} <<EOF || return 1
+	patch -N -p0 -d ${ncurses_org_src_dir} <<EOF || return 1
 --- ncurses/base/MKlib_gen.sh
 +++ ncurses/base/MKlib_gen.sh
 @@ -491,11 +491,18 @@
@@ -1202,7 +1208,7 @@ install_native_global()
 		tar xzvf ${global_org_src_dir}.tar.gz -C ${global_src_base} || return 1
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		CPPFLAGS='-I ${prefix}/include/ncurses' ./configure --prefix=${prefix} --disable-gtagscscope) || return 1
 	make -C ${global_org_src_dir} -j ${jobs} || return 1
 	make -C ${global_org_src_dir} -j ${jobs} install-strip || return 1
 }
@@ -1456,7 +1462,7 @@ install_1st_glibc()
 		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
 			mv ${glibc_org_src_dir} ${glibc_src_dir_1st}) || return 1
 
-	[ ${linux_arch} = microblaze ] && (cd ${glibc_src_dir_1st}; patch -p0 -d ${glibc_src_dir_1st} <<EOF || return 1
+	[ ${linux_arch} = microblaze ] && (cd ${glibc_src_dir_1st}; patch -N -p0 -d ${glibc_src_dir_1st} <<EOF || return 1
 --- sysdeps/unix/sysv/linux/microblaze/sysdep.h
 +++ sysdeps/unix/sysv/linux/microblaze/sysdep.h
 @@ -16,8 +16,11 @@
