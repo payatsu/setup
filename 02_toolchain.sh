@@ -1085,7 +1085,7 @@ EOF
 
 	[ -f ${ncurses_org_src_dir}/Makefile ] ||
 		(cd ${ncurses_org_src_dir}
-		./configure --prefix=${prefix} --with-shared --with-cxx-shared --enable-widec) || return 1
+		./configure --prefix=${prefix} --with-shared --with-cxx-shared) || return 1
 	make -C ${ncurses_org_src_dir} -j ${jobs} || return 1
 	make -C ${ncurses_org_src_dir} -j ${jobs} install || return 1
 }
