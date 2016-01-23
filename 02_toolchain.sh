@@ -6,6 +6,7 @@
 # [TODO] install_native_xmltoのリファクタリング。
 #        -> xmltoの障害のせいで、gitとgiflibのmakeに障害あり。
 # [TODO] globalのmakeでldが-lncursesを見つけられない。
+# [TODO] gitのmakeでlibgettextsrcでコケる。
 
 : ${coreutils_ver:=8.24}
 : ${bison_ver:=3.0.4}
@@ -1332,6 +1333,7 @@ install_native_gettext()
 		./configure --prefix=${prefix}) || return 1
 	make -C ${gettext_org_src_dir} -j ${jobs} || return 1
 	make -C ${gettext_org_src_dir} -j ${jobs} install-strip || return 1
+	update_shared_object_search_path || return 1
 }
 
 install_native_git()
@@ -1348,10 +1350,10 @@ install_native_git()
 		tar xJvf ${git_org_src_dir}.tar.xz -C ${git_src_base} || return 1
 	make -C ${git_org_src_dir} -j ${jobs} configure || return 1
 	(cd ${git_org_src_dir}
-	./configure --prefix=${prefix}) || return 1
+	./configure --prefix=${prefix} --without-tcltk) || return 1
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return 1
-	make -C ${git_org_src_dir} -j ${jobs} LDFLAGS=-ldl all doc || return 1
-	make -C ${git_org_src_dir} -j ${jobs} install install-doc install-html || return 1
+	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS=-ldl all doc || return 1
+	make -C ${git_org_src_dir} -j ${jobs} V=1 install install-doc install-html || return 1
 }
 
 full_native()
