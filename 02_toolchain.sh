@@ -1,12 +1,12 @@
-#!/bin/sh -e
+﻿#!/bin/sh -e
 
-# [TODO] linux-2.6.18, glibc-2.16.0$B$NAH$_9g$o$;$r;n$9!#(B
-# [TODO] $B:n@.$7$?%/%m%9%3%s%Q%$%i$G!"(BC/C++/Go$B$N%M%$%F%#%V%3%s%Q%$%i:n$C$F$_$k!#(B
+# [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
+# [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] wget, bash, tar, diff, patch, find
-# [TODO] install_native_xmlto$B$N%j%U%!%/%?%j%s%0!#(B
-#        -> xmlto$B$N>c32$N$;$$$G!"(Bgit$B$H(Bgiflib$B$N(Bmake$B$K>c32$"$j!#(B
-# [TODO] global$B$N(Bmake$B$G(Bld$B$,(B-lncurses$B$r8+$D$1$i$l$J$$!#(B
-# [TODO] git$B$N(Bmake$B$G(Blibgettextsrc$B$G%3%1$k!#(B
+# [TODO] install_native_xmltoのリファクタリング。
+#        -> xmltoの障害のせいで、gitとgiflibのmakeに障害あり。
+# [TODO] globalのmakeでldが-lncursesを見つけられない。
+# [TODO] gitのmakeでlibgettextsrcでコケる。
 
 : ${coreutils_ver:=8.24}
 : ${bison_ver:=3.0.4}
@@ -1574,7 +1574,7 @@ install_crossed_native_gmp_mpfr_mpc()
 	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 
-# XXX $B%/%m%9@h$N%M%$%F%#%V4D6-MQ$J$N$G!"(Bwith-gmp, --with-mpfr$B$N;XDj$,4V0c$C$F$k$+$b!#(B
+# XXX クロス先のネイティブ環境用なので、with-gmp, --with-mpfrの指定が間違ってるかも。
 
 	[ -d ${mpfr_src_dir_crs_ntv} ] ||
 		(tar xzvf ${mpfr_org_src_dir}.tar.gz -C ${mpfr_src_base} &&
