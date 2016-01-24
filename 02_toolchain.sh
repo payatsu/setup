@@ -6,7 +6,7 @@
 # [TODO] install_native_xmltoのリファクタリング。
 #        -> xmltoの障害のせいで、gitとgiflibのmakeに障害あり。
 # [TODO] globalのmakeでldが-lncursesを見つけられない。
-# [TODO] gitのmakeでlibgettextsrcでコケる。
+# [TODO] glibcを/toolchains以下にインストールする。
 
 : ${coreutils_ver:=8.24}
 : ${bison_ver:=3.0.4}
@@ -172,7 +172,6 @@ native()
 # Install native GNU binutils, GNU C/C++/Go compiler, GDB(running on and compiles for '${build}').
 {
 	install_prerequisites || return 1
-	install_native_binutils || return 1
 	install_native_gcc || return 1
 	install_native_gdb || return 1
 	clean
@@ -255,8 +254,8 @@ clean()
 		${binutils_org_src_dir} ${binutils_src_dir_ntv} ${binutils_src_dir_crs} ${binutils_src_dir_crs_ntv} \
 		${kernel_org_src_dir} ${kernel_src_dir} \
 		${gperf_org_src_dir} \
-		${glibc_org_src_dir} ${glibc_bld_dir_hdr} ${glibc_bld_dir_1st} \
-		${glibc_src_dir_hdr} ${glibc_src_dir_1st} \
+		${glibc_org_src_dir} ${glibc_bld_dir_ntv} ${glibc_src_dir_ntv} \
+		${glibc_bld_dir_crs_hdr} ${glibc_bld_dir_crs_1st} ${glibc_src_dir_crs_hdr} ${glibc_src_dir_crs_1st} \
 		${gmp_src_dir_ntv} ${gmp_src_dir_crs_ntv} ${mpfr_src_dir_ntv} ${mpfr_src_dir_crs_ntv} ${mpc_src_dir_ntv} ${mpc_src_dir_crs_ntv} \
 		${gcc_org_src_dir} ${gcc_bld_dir_ntv} ${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} ${gcc_bld_dir_crs_ntv} \
 		${ncurses_org_src_dir} \
@@ -360,10 +359,12 @@ set_variables()
 	glibc_name=glibc-${glibc_ver}
 	glibc_src_base=${prefix}/src/glibc
 	glibc_org_src_dir=${glibc_src_base}/${glibc_name}
-	glibc_bld_dir_hdr=${glibc_src_base}/${target}-${glibc_name}-header
-	glibc_bld_dir_1st=${glibc_src_base}/${target}-${glibc_name}-1st
-	glibc_src_dir_hdr=${glibc_src_base}/${target}-${glibc_name}-header-src
-	glibc_src_dir_1st=${glibc_src_base}/${target}-${glibc_name}-1st-src
+	glibc_bld_dir_ntv=${glibc_src_base}/${glibc_name}-bld
+	glibc_src_dir_ntv=${glibc_src_base}/${glibc_name}-src
+	glibc_bld_dir_crs_hdr=${glibc_src_base}/${target}-${glibc_name}-bld-hdr
+	glibc_bld_dir_crs_1st=${glibc_src_base}/${target}-${glibc_name}-bld-1st
+	glibc_src_dir_crs_hdr=${glibc_src_base}/${target}-${glibc_name}-src-hdr
+	glibc_src_dir_crs_1st=${glibc_src_base}/${target}-${glibc_name}-src-1st
 
 	gmp_name=gmp-${gmp_ver}
 	gmp_src_base=${prefix}/src/gmp
@@ -975,6 +976,23 @@ install_native_binutils()
 	make -C ${binutils_src_dir_ntv} -j ${jobs} install-strip || return 1
 }
 
+install_native_glibc()
+{
+	[ -d ${glibc_src_dir_ntv} ] ||
+		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
+			mv ${glibc_org_src_dir} ${glibc_src_dir_ntv}) || return 1
+
+	mkdir -p ${glibc_bld_dir_ntv}
+	[ -f ${glibc_bld_dir_ntv}/Makefile ] ||
+		(cd ${glibc_bld_dir_ntv}
+		${glibc_src_dir_ntv}/configure --prefix=${prefix} --build=${build} \
+			--with-headers=/usr/include \
+			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return 1
+	make -C ${glibc_bld_dir_ntv} -j ${jobs} || return 1
+	make -C ${glibc_bld_dir_ntv} -j ${jobs} install || return 1
+	update_shared_object_search_path || return 1
+}
+
 install_native_gperf()
 {
 	install_prerequisites || return 1
@@ -1037,6 +1055,8 @@ make_symbolic_links()
 install_native_gcc()
 {
 	install_prerequisites || return 1
+	install_native_binutils || return 1
+	install_native_glibc || return 1
 	install_native_zlib || return 1
 	install_native_gmp_mpfr_mpc || return 1
 	prepare_gcc_source || return 1
@@ -1367,7 +1387,6 @@ full_native()
 	install_native_sed || return 1
 	install_native_gawk || return 1
 	install_native_make || return 1
-	install_native_binutils || return 1
 	install_native_gperf || return 1
 	install_native_gcc || return 1
 	install_native_gdb || return 1
@@ -1425,17 +1444,16 @@ install_glibc_headers()
 	install_native_gawk || return 1
 	install_native_gperf || return 1
 	prepare_glibc_source || return 1
-	[ -d ${glibc_src_dir_hdr} ] ||
+	[ -d ${glibc_src_dir_crs_hdr} ] ||
 		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
-			mv ${glibc_org_src_dir} ${glibc_src_dir_hdr}) || return 1
-	mkdir -p ${glibc_bld_dir_hdr}
-	[ -f ${glibc_bld_dir_hdr}/Makefile ] ||
-		(cd ${glibc_bld_dir_hdr}
-		${glibc_src_dir_hdr}/configure --prefix=/usr --build=${build} --host=${target} \
+			mv ${glibc_org_src_dir} ${glibc_src_dir_crs_hdr}) || return 1
+	mkdir -p ${glibc_bld_dir_crs_hdr}
+	[ -f ${glibc_bld_dir_crs_hdr}/Makefile ] ||
+		(cd ${glibc_bld_dir_crs_hdr}
+		${glibc_src_dir_crs_hdr}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-headers=${sysroot}/usr/include \
-			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes \
-		) || return 1
-	make -C ${glibc_bld_dir_hdr} -j ${jobs} DESTDIR=${sysroot} install-headers || return 1
+			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return 1
+	make -C ${glibc_bld_dir_crs_hdr} -j ${jobs} DESTDIR=${sysroot} install-headers || return 1
 }
 
 install_cross_gcc_with_glibc_headers()
@@ -1449,8 +1467,7 @@ install_cross_gcc_with_glibc_headers()
 			--enable-languages=c --with-sysroot=${sysroot} --with-newlib \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
-			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
-		) || return 1
+			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv) || return 1
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} all-gcc || return 1
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} install-gcc || return 1
 	touch ${sysroot}/usr/include/gnu/stubs.h
@@ -1461,11 +1478,11 @@ install_cross_gcc_with_glibc_headers()
 
 install_1st_glibc()
 {
-	[ -d ${glibc_src_dir_1st} ] ||
+	[ -d ${glibc_src_dir_crs_1st} ] ||
 		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
-			mv ${glibc_org_src_dir} ${glibc_src_dir_1st}) || return 1
+			mv ${glibc_org_src_dir} ${glibc_src_dir_crs_1st}) || return 1
 
-	[ ${linux_arch} = microblaze ] && (cd ${glibc_src_dir_1st}; patch -N -p0 -d ${glibc_src_dir_1st} <<EOF || return 1
+	[ ${linux_arch} = microblaze ] && (cd ${glibc_src_dir_crs_1st}; patch -N -p0 -d ${glibc_src_dir_crs_1st} <<EOF || return 1
 --- sysdeps/unix/sysv/linux/microblaze/sysdep.h
 +++ sysdeps/unix/sysv/linux/microblaze/sysdep.h
 @@ -16,8 +16,11 @@
@@ -1490,15 +1507,14 @@ install_1st_glibc()
 EOF
 )
 
-	mkdir -p ${glibc_bld_dir_1st}
-	[ -f ${glibc_bld_dir_1st}/Makefile ] ||
-		(cd ${glibc_bld_dir_1st}
-		${glibc_src_dir_1st}/configure --prefix=/usr --build=${build} --host=${target} \
+	mkdir -p ${glibc_bld_dir_crs_1st}
+	[ -f ${glibc_bld_dir_crs_1st}/Makefile ] ||
+		(cd ${glibc_bld_dir_crs_1st}
+		${glibc_src_dir_crs_1st}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-headers=${sysroot}/usr/include \
-			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes \
-		) || return 1
-	make -C ${glibc_bld_dir_1st} -j ${jobs} DESTDIR=${sysroot} || return 1
-	make -C ${glibc_bld_dir_1st} -j ${jobs} DESTDIR=${sysroot} install || return 1
+			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return 1
+	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} || return 1
+	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} install || return 1
 }
 
 install_cross_gcc_with_c_cxx_go_functionality()
