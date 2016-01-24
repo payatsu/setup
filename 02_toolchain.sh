@@ -1056,7 +1056,12 @@ install_native_gcc()
 {
 	install_prerequisites || return 1
 	install_native_binutils || return 1
-	install_native_glibc || return 1
+
+
+# FIXME!!! glibc入れたらあらゆるコマンドがsegfaultするようになった！！！
+# install_native_glibc || return 1
+
+
 	install_native_zlib || return 1
 	install_native_gmp_mpfr_mpc || return 1
 	prepare_gcc_source || return 1
