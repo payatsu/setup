@@ -1,4 +1,4 @@
-#!/bin/sh -e
+﻿#!/bin/sh -e
 
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
@@ -235,7 +235,7 @@ deploy()
 {
 	tar xJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` || return 1
 	update_shared_object_search_path || return 1
-	echo Please add ${prefix} to PATH
+	echo Please add ${prefix}/bin to PATH
 }
 
 clean()
@@ -1247,7 +1247,7 @@ install_native_openssl()
 	[ -d ${openssl_org_src_dir} ] ||
 		tar xzvf ${openssl_org_src_dir}.tar.gz -C ${openssl_src_base} || return 1
 	(cd ${openssl_org_src_dir}
-	./config --prefix=${prefix}) || return 1
+	./config --prefix=${prefix} shared) || return 1
 	make -C ${openssl_org_src_dir} -j ${jobs} || return 1
 	make -C ${openssl_org_src_dir} -j ${jobs} install || return 1
 }
