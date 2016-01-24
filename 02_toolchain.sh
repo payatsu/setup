@@ -1250,6 +1250,7 @@ install_native_openssl()
 	./config --prefix=${prefix} shared) || return 1
 	make -C ${openssl_org_src_dir} -j ${jobs} || return 1
 	make -C ${openssl_org_src_dir} -j ${jobs} install || return 1
+	update_shared_object_search_path || return 1
 }
 
 install_native_curl()
