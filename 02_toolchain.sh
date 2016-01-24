@@ -985,12 +985,12 @@ install_native_glibc()
 	mkdir -p ${glibc_bld_dir_ntv}
 	[ -f ${glibc_bld_dir_ntv}/Makefile ] ||
 		(cd ${glibc_bld_dir_ntv}
-		${glibc_src_dir_ntv}/configure --prefix=${prefix} --build=${build} \
-			--with-headers=/usr/include \
-			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return 1
-	make -C ${glibc_bld_dir_ntv} -j ${jobs} || return 1
-	make -C ${glibc_bld_dir_ntv} -j ${jobs} install || return 1
-	update_shared_object_search_path || return 1
+		CPPFLAGS='-I/usr/include/${build} -D_LIBC' ${glibc_src_dir_ntv}/configure --prefix=${prefix} --build=${build} \
+			--with-headers=/usr/include) || return 1
+	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} install-headers || return 1
+	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} || return 1
+	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} install || return 1
+# update_shared_object_search_path || return 1
 }
 
 install_native_gperf()
