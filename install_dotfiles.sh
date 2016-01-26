@@ -7,4 +7,4 @@ ln -sf ${dir}/.zshrc ${HOME}
 ln -sf ${dir}/.zlogin ${HOME}
 ln -sf ${dir}/.gdbinit ${HOME}
 ln -sf ${dir}/.screenrc ${HOME}
-ln -sf ${dir}/init.el ${HOME}/.emacs.d
+mkdir ${HOME}/.emacs.d && ln -sf ${dir}/init.el ${HOME}/.emacs.d
