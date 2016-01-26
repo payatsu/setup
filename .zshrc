@@ -39,10 +39,7 @@ colors
 zstyle ':completion:*' list-colors ''
 umask 022
 setopt no_hup
-if [ -x /etc/zsh_command_not_found ];
-then
-	source /etc/zsh_command_not_found
-fi
+[ -x /etc/zsh_command_not_found ] && source /etc/zsh_command_not_found
 export WORDCHARS=''
 setopt complete_aliases
 [ "${TERM}" != dumb ] && alias ls='ls --color=auto'
@@ -59,3 +56,4 @@ alias -s tgz='tar xzf'
 alias -s tar.bz2='tar xjf'
 alias -s tar.xz='tar xJf'
 alias g++='g++ --std=c++11 -Wall -Wextra -Weffc++ -Wcast-align -Wcast-qual -Wformat -Woverloaded-virtual -Wpointer-arith -Wshadow -Wwrite-strings'
+[ -f ${HOME}/.zshrc.local ] && . ${HOME}/.zshrc.local
