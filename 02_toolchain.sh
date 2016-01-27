@@ -1,12 +1,13 @@
 #!/bin/sh -e
 
-# [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
-# [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
-# [TODO] wget, bash, tar, diff, patch, find
+# [TODO] nativeにkernel header入れられるようにする。
+# [TODO] gdbとemacsそれぞれがncursesをインストールしようとして、patchが2度当てられることになる不具合。
 # [TODO] install_native_xmltoのリファクタリング。
 #        -> xmltoの障害のせいで、gitとgiflibのmakeに障害あり。
+# [TODO] wget, bash, tar, diff, patch, find
+# [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
+# [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] globalのmakeでldが-lncursesを見つけられない。
-# [TODO] glibcを/toolchains以下にインストールする。
 
 : ${coreutils_ver:=8.24}
 : ${bison_ver:=3.0.4}
@@ -225,7 +226,7 @@ archive()
 # Archive related files.
 {
 	clean
-	cp -f $0 ${prefix}/src || return 1
+	[ ${prefix}/src = `dirname $0` ] || cp -vf $0 ${prefix}/src || return 1
 	tar cJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` `basename ${prefix}` || return 1
 }
 
@@ -513,7 +514,7 @@ install_prerequisites()
 	case ${os} in
 	Debian|Ubuntu)
 		apt-get install -y make gcc g++ texinfo
-		apt-get install -y unifdef # for linux kernel
+		apt-get install -y unifdef # for linux kernel(microblaze)
 		apt-get install -y libgtk-3-dev # for emacs
 		apt-get install -y python2.7-dev # for gdb
 		;;
@@ -976,8 +977,24 @@ install_native_binutils()
 	make -C ${binutils_src_dir_ntv} -j ${jobs} install-strip || return 1
 }
 
+install_native_gperf()
+{
+	install_prerequisites || return 1
+	prepare_gperf_source || return 1
+	[ -d ${gperf_org_src_dir} ] ||
+		tar xzvf ${gperf_org_src_dir}.tar.gz -C ${gperf_src_base} || return 1
+	[ -f ${gperf_org_src_dir}/Makefile ] ||
+		(cd ${gperf_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${gperf_org_src_dir} -j ${jobs} || return 1
+	make -C ${gperf_org_src_dir} -j ${jobs} install || return 1
+}
+
 install_native_glibc()
 {
+	install_prerequisites || return 1
+	install_native_gperf || return 1
+	prepare_glibc_source || return 1
 	[ -d ${glibc_src_dir_ntv} ] ||
 		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
 			mv ${glibc_org_src_dir} ${glibc_src_dir_ntv}) || return 1
@@ -991,19 +1008,6 @@ install_native_glibc()
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} || return 1
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} install || return 1
 # update_shared_object_search_path || return 1
-}
-
-install_native_gperf()
-{
-	install_prerequisites || return 1
-	prepare_gperf_source || return 1
-	[ -d ${gperf_org_src_dir} ] ||
-		tar xzvf ${gperf_org_src_dir}.tar.gz -C ${gperf_src_base} || return 1
-	[ -f ${gperf_org_src_dir}/Makefile ] ||
-		(cd ${gperf_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
-	make -C ${gperf_org_src_dir} -j ${jobs} || return 1
-	make -C ${gperf_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_gmp_mpfr_mpc()
@@ -1056,12 +1060,7 @@ install_native_gcc()
 {
 	install_prerequisites || return 1
 	install_native_binutils || return 1
-
-
-# FIXME!!! glibc入れたらあらゆるコマンドがsegfaultするようになった！！！
-# install_native_glibc || return 1
-
-
+# install_native_glibc || return 1 # DANGEROUS!! pay attention to glibc version(compatibility)
 	install_native_zlib || return 1
 	install_native_gmp_mpfr_mpc || return 1
 	prepare_gcc_source || return 1
@@ -1234,7 +1233,7 @@ install_native_global()
 		tar xzvf ${global_org_src_dir}.tar.gz -C ${global_src_base} || return 1
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
-		CPPFLAGS='-I ${prefix}/include/ncurses' ./configure --prefix=${prefix} --disable-gtagscscope) || return 1
+		CPPFLAGS='-I${prefix}/include/ncurses' ./configure --prefix=${prefix} --disable-gtagscscope) || return 1
 	make -C ${global_org_src_dir} -j ${jobs} || return 1
 	make -C ${global_org_src_dir} -j ${jobs} install-strip || return 1
 }
@@ -1444,7 +1443,7 @@ install_kernel_header()
 		ARCH=${linux_arch} INSTALL_HDR_PATH=${sysroot}/usr headers_install || return 1
 }
 
-install_glibc_headers()
+install_cross_glibc_headers()
 {
 	install_native_gawk || return 1
 	install_native_gperf || return 1
@@ -1481,7 +1480,7 @@ install_cross_gcc_with_glibc_headers()
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} install-target-libgcc || return 1
 }
 
-install_1st_glibc()
+install_cross_1st_glibc()
 {
 	[ -d ${glibc_src_dir_crs_1st} ] ||
 		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
@@ -1543,9 +1542,9 @@ install_cross_gcc()
 	prepare_gcc_source || return 1
 	install_cross_gcc_without_headers || return 1
 	install_kernel_header || return 1
-	install_glibc_headers || return 1
+	install_cross_glibc_headers || return 1
 	install_cross_gcc_with_glibc_headers || return 1
-	install_1st_glibc || return 1
+	install_cross_1st_glibc || return 1
 	install_cross_gcc_with_c_cxx_go_functionality || return 1
 }
 
