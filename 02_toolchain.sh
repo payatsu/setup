@@ -1,7 +1,5 @@
 #!/bin/sh -e
 
-# [TODO] nativeにkernel header入れられるようにする。
-# [TODO] gdbとemacsそれぞれがncursesをインストールしようとして、patchが2度当てられることになる不具合。
 # [TODO] install_native_xmltoのリファクタリング。
 #        -> xmltoの障害のせいで、gitとgiflibのmakeに障害あり。
 # [TODO] wget, bash, tar, diff, patch, find
@@ -253,7 +251,7 @@ clean()
 		${gawk_org_src_dir} \
 		${make_org_src_dir} \
 		${binutils_org_src_dir} ${binutils_src_dir_ntv} ${binutils_src_dir_crs} ${binutils_src_dir_crs_ntv} \
-		${kernel_org_src_dir} ${kernel_src_dir} \
+		${kernel_org_src_dir} ${kernel_src_dir_ntv} ${kernel_src_dir_crs} \
 		${gperf_org_src_dir} \
 		${glibc_org_src_dir} ${glibc_bld_dir_ntv} ${glibc_src_dir_ntv} \
 		${glibc_bld_dir_crs_hdr} ${glibc_bld_dir_crs_1st} ${glibc_src_dir_crs_hdr} ${glibc_src_dir_crs_1st} \
@@ -351,7 +349,8 @@ set_variables()
 	kernel_name=linux-${kernel_ver}
 	kernel_src_base=${prefix}/src/linux
 	kernel_org_src_dir=${kernel_src_base}/${kernel_name}
-	kernel_src_dir=${kernel_src_base}/${target}-${kernel_name}
+	kernel_src_dir_ntv=${kernel_src_base}/${kernel_name}-ntv
+	kernel_src_dir_crs=${kernel_src_base}/${target}-${kernel_name}
 
 	gperf_name=gperf-${gperf_ver}
 	gperf_src_base=${prefix}/src/gperf
@@ -990,9 +989,21 @@ install_native_gperf()
 	make -C ${gperf_org_src_dir} -j ${jobs} install || return 1
 }
 
+install_native_kernel_header()
+{
+	prepare_kernel_source || return 1
+	[ -d ${kernel_src_dir_ntv} ] ||
+		(tar xJvf ${kernel_org_src_dir}.tar.xz -C ${kernel_src_base} &&
+			mv ${kernel_org_src_dir} ${kernel_src_dir_ntv}) || return 1
+	make -C ${kernel_src_dir_ntv} -j ${jobs} mrproper || return 1
+	make -C ${kernel_src_dir_ntv} -j ${jobs} \
+		ARCH=${linux_arch} INSTALL_HDR_PATH=${prefix} headers_install || return 1
+}
+
 install_native_glibc()
 {
 	install_prerequisites || return 1
+	install_native_kernel_header || return 1
 	install_native_gperf || return 1
 	prepare_glibc_source || return 1
 	[ -d ${glibc_src_dir_ntv} ] ||
@@ -1086,7 +1097,7 @@ install_native_ncurses()
 		tar xzvf ${ncurses_org_src_dir}.tar.gz -C ${ncurses_src_base} || return 1
 
 	# workaround for GCC 5.x
-	patch -N -p0 -d ${ncurses_org_src_dir} <<EOF || return 1
+	patch -N -p0 -d ${ncurses_org_src_dir} <<EOF || [ $? = 1 ]  || return 1
 --- ncurses/base/MKlib_gen.sh
 +++ ncurses/base/MKlib_gen.sh
 @@ -491,11 +491,18 @@
@@ -1432,14 +1443,14 @@ install_cross_gcc_without_headers()
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-gcc || return 1
 }
 
-install_kernel_header()
+install_cross_kernel_header()
 {
 	prepare_kernel_source || return 1
-	[ -d ${kernel_src_dir} ] ||
+	[ -d ${kernel_src_dir_crs} ] ||
 		(tar xJvf ${kernel_org_src_dir}.tar.xz -C ${kernel_src_base} &&
-			mv ${kernel_org_src_dir} ${kernel_src_dir}) || return 1
-	make -C ${kernel_src_dir} -j ${jobs} mrproper || return 1
-	make -C ${kernel_src_dir} -j ${jobs} \
+			mv ${kernel_org_src_dir} ${kernel_src_dir_crs}) || return 1
+	make -C ${kernel_src_dir_crs} -j ${jobs} mrproper || return 1
+	make -C ${kernel_src_dir_crs} -j ${jobs} \
 		ARCH=${linux_arch} INSTALL_HDR_PATH=${sysroot}/usr headers_install || return 1
 }
 
@@ -1486,7 +1497,7 @@ install_cross_1st_glibc()
 		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
 			mv ${glibc_org_src_dir} ${glibc_src_dir_crs_1st}) || return 1
 
-	[ ${linux_arch} = microblaze ] && (cd ${glibc_src_dir_crs_1st}; patch -N -p0 -d ${glibc_src_dir_crs_1st} <<EOF || return 1
+	[ ${linux_arch} = microblaze ] && (cd ${glibc_src_dir_crs_1st}; patch -N -p0 -d ${glibc_src_dir_crs_1st} <<EOF || [ $? = 1 ] || return 1
 --- sysdeps/unix/sysv/linux/microblaze/sysdep.h
 +++ sysdeps/unix/sysv/linux/microblaze/sysdep.h
 @@ -16,8 +16,11 @@
@@ -1541,7 +1552,7 @@ install_cross_gcc()
 	install_native_gmp_mpfr_mpc || return 1
 	prepare_gcc_source || return 1
 	install_cross_gcc_without_headers || return 1
-	install_kernel_header || return 1
+	install_cross_kernel_header || return 1
 	install_cross_glibc_headers || return 1
 	install_cross_gcc_with_glibc_headers || return 1
 	install_cross_1st_glibc || return 1
