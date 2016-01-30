@@ -6,6 +6,7 @@
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] globalのmakeでldが-lncursesを見つけられない。
+# [TODO] 同じインストールが何度も繰り返されないようにする。
 
 : ${coreutils_ver:=8.24}
 : ${bison_ver:=3.0.4}
@@ -1221,7 +1222,7 @@ install_native_giflib()
 	[ -f ${giflib_src_dir_ntv}/Makefile ] ||
 		(cd ${giflib_src_dir_ntv}
 		./configure --prefix=${prefix} --build=${build}) || return 1
-	make -C ${giflib_src_dir_ntv} -j ${jobs} || return 1
+	make -C ${giflib_src_dir_ntv} -j ${jobs} # || return 1
 	make -C ${giflib_src_dir_ntv} -j ${jobs} install-strip || return 1
 }
 
@@ -1267,6 +1268,7 @@ install_native_screen()
 		(cd ${screen_org_src_dir}
 		./configure --prefix=${prefix} --enable-color256 --enable-rxvt_osc) || return 1
 	make -C ${screen_org_src_dir} -j ${jobs} || return 1
+	mkdir -p ${prefix}/share/screen/utf8encodings || return 1
 	make -C ${screen_org_src_dir} -j ${jobs} install || return 1
 }
 
@@ -1396,8 +1398,8 @@ install_native_git()
 	(cd ${git_org_src_dir}
 	./configure --prefix=${prefix} --without-tcltk) || return 1
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return 1
-	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS=-ldl all doc || return 1
-	make -C ${git_org_src_dir} -j ${jobs} V=1 install install-doc install-html || return 1
+	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS=-ldl all || return 1 # doc
+	make -C ${git_org_src_dir} -j ${jobs} V=1 install || return 1 # install-doc install-html
 }
 
 full_native()
