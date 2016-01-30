@@ -1,3 +1,6 @@
+;;; init.el --- my init.el
+;;; Commentary:
+;;; my init.el
 ; *** Basic color settings ***
 (defvar fgcolor "white")
 (defvar bgcolor "black")
@@ -315,7 +318,7 @@
 ; *** company-mode ***
 (autoload 'company-mode "company" nil t)
 (global-company-mode 1)
-(setq company-idle-delay 0)
+(setq company-idle-delay 2)
 (setq company-minimum-prefix-length 2)
 (setq company-selection-wrap-around t)
 (global-set-key (kbd "C-M-i") 'company-complete)
@@ -358,8 +361,14 @@
 ; *** flycheck-mode ***
 (global-flycheck-mode 1)
 
-; *** Flymake-mode ***
-; (list "-Wall" "-Wextra" "-Weffc++" "-Wcast-qual" "-Wcast-align" "-Wfloat-equal" "-Wshadow" "-Woverloaded-virtual" "-Wpointer-arith" "-Wwrite-strings" "-Wformat=2" "-fsyntax-only")
+; *** ggtags-mode ***
+;(define-key ggtags-mode-map (kbd "C-c g s") 'ggtags-find-other-symbol)
+;(define-key ggtags-mode-map (kbd "C-c g h") 'ggtags-view-tag-history)
+;(define-key ggtags-mode-map (kbd "C-c g r") 'ggtags-find-reference)
+;(define-key ggtags-mode-map (kbd "C-c g f") 'ggtags-find-file)
+;(define-key ggtags-mode-map (kbd "C-c g c") 'ggtags-create-tags)
+;(define-key ggtags-mode-map (kbd "C-c g u") 'ggtags-update-tags)
+(add-hook 'c-mode-common-hook '(lambda ()(ggtags-mode 1)))
 
 ; *** prog-mode-hook ***
 (add-hook 'prog-mode-hook

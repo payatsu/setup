@@ -6,6 +6,7 @@
 (package-refresh-contents)
 (package-install 'ggtags)
 (package-install 'company)
+(package-install 'company-irony)
 (package-install 'company-quickhelp)
 (package-install 'yasnippet)
 (package-install 'irony)
