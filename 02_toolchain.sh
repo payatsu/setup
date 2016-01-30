@@ -291,12 +291,20 @@ set_variables()
 	build=`uname -m`-linux-gnu
 	os=`head -1 /etc/issue | cut -d ' ' -f 1`
 
+	case ${build} in
+	arm*)        native_linux_arch=arm;;
+	i?86*)       native_linux_arch=x86;;
+	microblaze*) native_linux_arch=microblaze;;
+	x86_64*)     native_linux_arch=x86;;
+	*) echo Unknown build architecture: ${build} >&2; return 1;;
+	esac
+
 	case ${target} in
-	arm*)        linux_arch=arm;;
-	i?86*)       linux_arch=x86;;
-	microblaze*) linux_arch=microblaze;;
-	x86_64*)     linux_arch=x86;;
-	*) echo Unknown architecture: ${target} >&2; return 1;;
+	arm*)        cross_linux_arch=arm;;
+	i?86*)       cross_linux_arch=x86;;
+	microblaze*) cross_linux_arch=microblaze;;
+	x86_64*)     cross_linux_arch=x86;;
+	*) echo Unknown target architecture: ${target} >&2; return 1;;
 	esac
 
 	coreutils_name=coreutils-${coreutils_ver}
@@ -722,7 +730,7 @@ prepare_openssl_source()
 	mkdir -p ${openssl_src_base}
 	[ -f ${openssl_org_src_dir}.tar.gz ] ||
 		wget -nv -O ${openssl_org_src_dir}.tar.gz \
-			https://www.openssl.org/source/${openssl_name}.tar.gz || return 1
+			https://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return 1
 }
 
 prepare_curl_source()
@@ -997,7 +1005,7 @@ install_native_kernel_header()
 			mv ${kernel_org_src_dir} ${kernel_src_dir_ntv}) || return 1
 	make -C ${kernel_src_dir_ntv} -j ${jobs} mrproper || return 1
 	make -C ${kernel_src_dir_ntv} -j ${jobs} \
-		ARCH=${linux_arch} INSTALL_HDR_PATH=${prefix} headers_install || return 1
+		ARCH=${native_linux_arch} INSTALL_HDR_PATH=${prefix} headers_install || return 1
 }
 
 install_native_glibc()
@@ -1018,7 +1026,7 @@ install_native_glibc()
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} install-headers || return 1
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} || return 1
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} install || return 1
-# update_shared_object_search_path || return 1
+	update_shared_object_search_path || return 1
 }
 
 install_native_gmp_mpfr_mpc()
@@ -1058,10 +1066,10 @@ make_symbolic_links()
 	case ${os} in
 	Debian|Ubuntu)
 		for dir in asm bits gnu sys; do
-			ln -sf ./x86_64-linux-gnu/${dir} /usr/include/${dir}
+			ln -sf ./${build}/${dir} /usr/include/${dir}
 		done
 		for obj in crt1.o crti.o crtn.o; do
-			ln -sf ./x86_64-linux-gnu/${obj} /usr/lib/${obj}
+			ln -sf ./${build}/${obj} /usr/lib/${obj}
 		done
 		;;
 	esac
@@ -1214,7 +1222,7 @@ install_native_giflib()
 		(cd ${giflib_src_dir_ntv}
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${giflib_src_dir_ntv} -j ${jobs} || return 1
-	make -C ${giflib_src_dir_ntv} -j ${jobs} install-strip|| return 1
+	make -C ${giflib_src_dir_ntv} -j ${jobs} install-strip || return 1
 }
 
 install_native_emacs()
@@ -1434,7 +1442,7 @@ install_cross_gcc_without_headers()
 	[ -f ${gcc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_1st}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			--enable-languages=c --without-headers \
+			--enable-languages=c --disable-multilib --with-system-zlib --without-headers \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
 			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
@@ -1451,7 +1459,7 @@ install_cross_kernel_header()
 			mv ${kernel_org_src_dir} ${kernel_src_dir_crs}) || return 1
 	make -C ${kernel_src_dir_crs} -j ${jobs} mrproper || return 1
 	make -C ${kernel_src_dir_crs} -j ${jobs} \
-		ARCH=${linux_arch} INSTALL_HDR_PATH=${sysroot}/usr headers_install || return 1
+		ARCH=${cross_linux_arch} INSTALL_HDR_PATH=${sysroot}/usr headers_install || return 1
 }
 
 install_cross_glibc_headers()
@@ -1479,7 +1487,7 @@ install_cross_gcc_with_glibc_headers()
 	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_2nd}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			--enable-languages=c --with-sysroot=${sysroot} --with-newlib \
+			--enable-languages=c --disable-multilib --with-system-zlib --with-sysroot=${sysroot} --with-newlib \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
 			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv) || return 1
@@ -1497,7 +1505,7 @@ install_cross_1st_glibc()
 		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
 			mv ${glibc_org_src_dir} ${glibc_src_dir_crs_1st}) || return 1
 
-	[ ${linux_arch} = microblaze ] && (cd ${glibc_src_dir_crs_1st}; patch -N -p0 -d ${glibc_src_dir_crs_1st} <<EOF || [ $? = 1 ] || return 1
+	[ ${cross_linux_arch} = microblaze ] && (cd ${glibc_src_dir_crs_1st}; patch -N -p0 -d ${glibc_src_dir_crs_1st} <<EOF || [ $? = 1 ] || return 1
 --- sysdeps/unix/sysv/linux/microblaze/sysdep.h
 +++ sysdeps/unix/sysv/linux/microblaze/sysdep.h
 @@ -16,8 +16,11 @@
@@ -1541,7 +1549,7 @@ install_cross_gcc_with_c_cxx_go_functionality()
 	[ -f ${gcc_bld_dir_crs_3rd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_3rd}
 		 ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			--enable-languages=c,c++,go --with-sysroot=${sysroot}) || return 1
+			--enable-languages=c,c++,go --disable-multilib --with-system-zlib --with-sysroot=${sysroot}) || return 1
 	make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} || return 1
 	make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} install || return 1
 }
