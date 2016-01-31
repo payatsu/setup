@@ -1,12 +1,13 @@
 #!/bin/sh -e
 
+# [TODO] 同じインストールが何度も繰り返されないようにする。
+# [TODO] native用とcross用にkernelとglibcのバージョンを同時に指定・最初に一括ダウンロードできるようにする。
+# [TODO] wget, bash, tar, diff, patch, find
+# [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
+# [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
 #        -> xmltoの障害のせいで、gitとgiflibのmakeに障害あり。
-# [TODO] wget, bash, tar, diff, patch, find
-# [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
-# [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] globalのmakeでldが-lncursesを見つけられない。
-# [TODO] 同じインストールが何度も繰り返されないようにする。
 
 : ${coreutils_ver:=8.24}
 : ${bison_ver:=3.0.4}
@@ -233,7 +234,7 @@ deploy()
 # Deploy related files.
 {
 	tar xJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` || return 1
-	update_shared_object_search_path || return 1
+	update_search_path || return 1
 	echo Please add ${prefix}/bin to PATH
 }
 
@@ -830,11 +831,12 @@ prepare_giflib_source()
 			http://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1
 }
 
-update_shared_object_search_path()
+update_search_path()
 {
 	[ -f /etc/ld.so.conf.d/`basename ${prefix}`.conf ] ||
 		echo "${prefix}/lib\n${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return 1
 	ldconfig || return 1
+# grep -q -e ${prefix}/share/man /etc/manpath.config || sed -e "1s+^+MANDATORY_MANPATH ${prefix}/share/man\n+" -i /etc/manpath.config || return 1
 }
 
 install_native_coreutils()
@@ -875,7 +877,7 @@ install_native_flex()
 		./configure --prefix=${prefix}) || return 1
 	make -C ${flex_org_src_dir} -j ${jobs} || return 1
 	make -C ${flex_org_src_dir} -j ${jobs} install-strip install-man || return 1
-	update_shared_object_search_path || return 1
+	update_search_path || return 1
 }
 
 install_native_m4()
@@ -1027,7 +1029,7 @@ install_native_glibc()
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} install-headers || return 1
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} || return 1
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} install || return 1
-	update_shared_object_search_path || return 1
+	update_search_path || return 1
 }
 
 install_native_gmp_mpfr_mpc()
@@ -1060,6 +1062,8 @@ install_native_gmp_mpfr_mpc()
 		./configure --prefix=${prefix} --with-gmp=${prefix} --with-mpfr=${prefix}) || return 1
 	make -C ${mpc_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${mpc_src_dir_ntv} -j ${jobs} install-strip || return 1
+
+	update_search_path || return 1
 }
 
 make_symbolic_links()
@@ -1095,7 +1099,7 @@ install_native_gcc()
 			--enable-languages=c,c++,go --disable-multilib --without-isl --with-system-zlib) || return 1
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return 1
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install-strip || return 1
-	update_shared_object_search_path || return 1
+	update_search_path || return 1
 }
 
 install_native_ncurses()
@@ -1139,6 +1143,7 @@ EOF
 		./configure --prefix=${prefix} --with-shared --with-cxx-shared) || return 1
 	make -C ${ncurses_org_src_dir} -j ${jobs} || return 1
 	make -C ${ncurses_org_src_dir} -j ${jobs} install || return 1
+	update_search_path || return 1
 }
 
 install_native_gdb()
@@ -1167,6 +1172,7 @@ install_native_zlib()
 	./configure --prefix=${prefix}) || return 1
 	make -C ${zlib_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${zlib_src_dir_ntv} -j ${jobs} install || return 1
+	update_search_path || return 1
 }
 
 install_native_libpng()
@@ -1182,6 +1188,7 @@ install_native_libpng()
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	C_INCLUDE_PATH=${prefix}/include make -C ${libpng_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${libpng_src_dir_ntv} -j ${jobs} install-strip || return 1
+	update_search_path || return 1
 }
 
 install_native_libtiff()
@@ -1196,6 +1203,7 @@ install_native_libtiff()
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${libtiff_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${libtiff_src_dir_ntv} -j ${jobs} install-strip || return 1
+	update_search_path || return 1
 }
 
 install_native_libjpeg()
@@ -1210,6 +1218,7 @@ install_native_libjpeg()
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${libjpeg_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${libjpeg_src_dir_ntv} -j ${jobs} install-strip || return 1
+	update_search_path || return 1
 }
 
 install_native_giflib()
@@ -1224,6 +1233,7 @@ install_native_giflib()
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${giflib_src_dir_ntv} -j ${jobs} # || return 1
 	make -C ${giflib_src_dir_ntv} -j ${jobs} install-strip || return 1
+	update_search_path || return 1
 }
 
 install_native_emacs()
@@ -1295,7 +1305,7 @@ install_native_openssl()
 	./config --prefix=${prefix} shared) || return 1
 	make -C ${openssl_org_src_dir} -j ${jobs} || return 1
 	make -C ${openssl_org_src_dir} -j ${jobs} install || return 1
-	update_shared_object_search_path || return 1
+	update_search_path || return 1
 }
 
 install_native_curl()
@@ -1309,6 +1319,7 @@ install_native_curl()
 	./configure --prefix=${prefix} --build=${build} --host=${build} --enable-optimize --enable-ipv6 --with-ssl) || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} install || return 1
+	update_search_path || return 1
 }
 
 install_native_asciidoc()
@@ -1379,7 +1390,7 @@ install_native_gettext()
 		./configure --prefix=${prefix}) || return 1
 	make -C ${gettext_org_src_dir} -j ${jobs} || return 1
 	make -C ${gettext_org_src_dir} -j ${jobs} install-strip || return 1
-	update_shared_object_search_path || return 1
+	update_search_path || return 1
 }
 
 install_native_git()

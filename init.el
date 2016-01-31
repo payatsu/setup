@@ -1,6 +1,7 @@
 ;;; init.el --- my init.el
 ;;; Commentary:
 ;;; my init.el
+
 ; *** Basic color settings ***
 (defvar fgcolor "white")
 (defvar bgcolor "black")
@@ -87,8 +88,8 @@
 (global-prettify-symbols-mode 1)
 (autoload 'dired "dired-x" nil t)
 (autoload 'dired "wdired" nil t)
-(require 'saveplace)
 (server-start 1)
+(require 'saveplace)
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
@@ -314,6 +315,10 @@
 (setq semantic-stickyfunc-sticky-classes '(function type variable include package))
 (require 'semantic/ia)
 (require 'semantic/bovine/gcc)
+(semantic-add-system-include "/usr/local/include")
+(semantic-add-system-include "/usr/local/include/c++/5.3.0" 'c++-mode)
+(semantic-add-system-include "/toolchains/include")
+(semantic-add-system-include "/toolchains/include/c++/5.3.0" 'c++-mode)
 
 ; *** company-mode ***
 (autoload 'company-mode "company" nil t)
@@ -321,6 +326,9 @@
 (setq company-idle-delay 2)
 (setq company-minimum-prefix-length 2)
 (setq company-selection-wrap-around t)
+(add-to-list 'company-backends 'company-c-headers)
+(eval-after-load "company"
+ '(lambda () (add-to-list 'company-c-headers-path-system "/usr/local/include/c++/5.3.0")))
 (global-set-key (kbd "C-M-i") 'company-complete)
 (define-key company-active-map (kbd "C-n") 'company-select-next)
 (define-key company-active-map (kbd "C-p") 'company-select-previous)
@@ -342,13 +350,6 @@
 (set-face-attribute 'company-scrollbar-bg nil
 					:background "gray40")
 
-; *** yasnippet-mode ***
-(yas-global-mode t)
-(eval-after-load "yasnippet"
- '(progn
-	 (define-key yas-keymap (kbd "<tab>") nil)
-	 (yas-global-mode 1)))
-
 ; *** irony-mode ***
 (require 'irony)
 (eval-after-load "irony"
@@ -357,6 +358,13 @@
 	 (add-to-list 'company-backends 'company-irony)
 	 (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
 	 (add-hook 'c-mode-common-hook 'irony-mode)))
+
+; *** yasnippet-mode ***
+(yas-global-mode t)
+(eval-after-load "yasnippet"
+ '(progn
+	 (define-key yas-keymap (kbd "<tab>") nil)
+	 (yas-global-mode 1)))
 
 ; *** flycheck-mode ***
 (global-flycheck-mode 1)
@@ -388,6 +396,9 @@
 									   ("\\w+::" . 'font-lock-function-name-face)
 									   ))
 			 (add-to-list 'c++-font-lock-extra-types "\\<\\(auto\\|char16_t\\|char32_t\\)\\>")))
+
+; *** gdb-mode ***
+(setq gdb-many-windows t)
 
 ; *** mode hooks ***
 (add-hook 'c-mode-common-hook '(lambda () (c-set-style "cc-mode")))

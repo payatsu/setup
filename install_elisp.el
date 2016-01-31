@@ -4,13 +4,14 @@
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
 (package-refresh-contents)
-(package-install 'ggtags)
 (package-install 'company)
-(package-install 'company-irony)
+(package-install 'company-c-headers)
 (package-install 'company-quickhelp)
-(package-install 'yasnippet)
+(package-install 'company-irony)
 (package-install 'irony)
+(package-install 'yasnippet)
 (package-install 'flycheck)
+(package-install 'ggtags)
 
 ;emacs -Q --batch \
 ;--eval '(require '\''package)' \
