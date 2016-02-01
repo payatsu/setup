@@ -2,14 +2,14 @@
 
 # [TODO] 同じインストールが何度も繰り返されないようにする。
 # [TODO] native用とcross用にkernelとglibcのバージョンを同時に指定・最初に一括ダウンロードできるようにする。
-# [TODO] wget, bash, tar, diff, patch, find
+# [TODO] wget, bash, tar, diff, patch, find, cmake, llvm, clang
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
 #        -> xmltoの障害のせいで、gitとgiflibのmakeに障害あり。
 # [TODO] globalのmakeでldが-lncursesを見つけられない。
 
-: ${coreutils_ver:=8.24}
+: ${coreutils_ver:=8.25}
 : ${bison_ver:=3.0.4}
 : ${flex_ver:=2.6.0}
 : ${m4_ver:=1.4.17}

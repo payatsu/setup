@@ -11,6 +11,7 @@
 (package-install 'irony)
 (package-install 'yasnippet)
 (package-install 'flycheck)
+(package-install 'flycheck-irony)
 (package-install 'ggtags)
 
 ;emacs -Q --batch \

@@ -368,6 +368,7 @@
 
 ; *** flycheck-mode ***
 (global-flycheck-mode 1)
+(flycheck-irony-setup)
 
 ; *** ggtags-mode ***
 ;(define-key ggtags-mode-map (kbd "C-c g s") 'ggtags-find-other-symbol)
