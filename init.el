@@ -396,7 +396,8 @@
 									 '(("\\<\\(alignof\\|alignas\\|constexpr\\|decltype\\|noexcept\\|nullptr\\|static_assert\\|thread_local\\|override\\|final\\)\\>" . 'font-lock-keyword-face)
 									   ("\\w+::" . 'font-lock-function-name-face)
 									   ))
-			 (add-to-list 'c++-font-lock-extra-types "\\<\\(auto\\|char16_t\\|char32_t\\)\\>")))
+			 (add-to-list 'c++-font-lock-extra-types "\\<\\(auto\\|char16_t\\|char32_t\\)\\>")
+			 (setq flycheck-gcc-language-standard "c++11")))
 
 ; *** gdb-mode ***
 (setq gdb-many-windows t)
