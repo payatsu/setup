@@ -1,13 +1,14 @@
 #!/bin/sh -e
-
+# [FIXME] install_native_clang_extra()のテスト実行が未完了。
 # [TODO] 同じインストールが何度も繰り返されないようにする。
-# [TODO] native用とcross用にkernelとglibcのバージョンを同時に指定・最初に一括ダウンロードできるようにする。
-# [TODO] wget, bash, tar, diff, patch, find, cmake, llvm, clang
+# [TODO] llvm, clangのビルドに/toolchains以下のgccが使われない原因の解析
+# [TODO] wget, bash, tar, diff, patch, find, llvm, clang, LLD, LLDB, Polly
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
 #        -> xmltoの障害のせいで、gitとgiflibのmakeに障害あり。
 # [TODO] globalのmakeでldが-lncursesを見つけられない。
+# [TODO] native用とcross用にkernelとglibcのバージョンを同時に指定・最初に一括ダウンロードできるようにする。
 
 : ${coreutils_ver:=8.25}
 : ${bison_ver:=3.0.4}
@@ -46,6 +47,8 @@
 : ${libtiff_ver:=4.0.6}
 : ${libjpeg_ver:=v9b}
 : ${giflib_ver:=5.1.2}
+: ${cmake_ver:=3.4.3}
+: ${llvm_ver:=3.7.1}
 
 : ${prefix:=/toolchains}
 : ${target:=`uname -m`-linux-gnu}
@@ -158,6 +161,10 @@ help()
 		Specify the version of libjpeg you want, currently '${libjpeg_ver}'.
 	giflib_ver
 		Specify the version of giflib you want, currently '${giflib_ver}'.
+	cmake_ver
+		Specify the version of Cmake you want, currently '${cmake_ver}'.
+	llvm_ver
+		Specify the version of llvm you want, currently '${llvm_ver}'.
 
 [Examples]
 	For Raspberry pi2
@@ -277,7 +284,9 @@ clean()
 		${libpng_src_dir_ntv} ${libpng_src_dir_crs_ntv} \
 		${libtiff_src_dir_ntv} ${libtiff_src_dir_crs_ntv} \
 		${libjpeg_src_dir_ntv} \
-		${giflib_src_dir_ntv}
+		${giflib_src_dir_ntv} \
+		${cmake_org_src_dir} \
+		${llvm_org_src_dir} ${llvm_bld_dir} ${clang_org_src_dir} ${clang_bld_dir} ${clang_rt_org_src_dir} ${clang_rt_bld_dir} ${libcxx_org_src_dir} ${libcxx_bld_dir} ${clang_extra_org_src_dir} ${clang_extra_bld_dir}
 }
 
 list()
@@ -488,6 +497,35 @@ set_variables()
 	giflib_src_base=${prefix}/src/giflib
 	giflib_org_src_dir=${giflib_src_base}/${giflib_name}
 	giflib_src_dir_ntv=${giflib_src_base}/${giflib_name}-ntv
+
+	cmake_name=cmake-${cmake_ver}
+	cmake_src_base=${prefix}/src/cmake
+	cmake_org_src_dir=${cmake_src_base}/${cmake_name}
+
+	llvm_name=llvm-${llvm_ver}.src
+	llvm_src_base=${prefix}/src/llvm
+	llvm_org_src_dir=${llvm_src_base}/${llvm_name}
+	llvm_bld_dir=${llvm_src_base}/${llvm_name}-build
+
+	clang_name=cfe-${llvm_ver}.src
+	clang_src_base=${prefix}/src/clang
+	clang_org_src_dir=${clang_src_base}/${clang_name}
+	clang_bld_dir=${clang_src_base}/${clang_name}-build
+
+	clang_rt_name=compiler-rt-${llvm_ver}.src
+	clang_rt_src_base=${prefix}/src/clang-rt
+	clang_rt_org_src_dir=${clang_rt_src_base}/${clang_rt_name}
+	clang_rt_bld_dir=${clang_rt_src_base}/${clang_rt_name}-build
+
+	libcxx_name=libcxx-${llvm_ver}.src
+	libcxx_src_base=${prefix}/src/libcxx
+	libcxx_org_src_dir=${libcxx_src_base}/${libcxx_name}
+	libcxx_bld_dir=${libcxx_src_base}/${libcxx_name}-build
+
+	clang_extra_name=clang-tools-extra-${llvm_ver}.src
+	clang_extra_src_base=${prefix}/src/clang-tools-extra
+	clang_extra_org_src_dir=${clang_extra_src_base}/${clang_extra_name}
+	clang_extra_bld_dir=${clang_extra_src_base}/${clang_extra_name}-build
 
 	echo ${PATH} | grep -q ${prefix}/bin || PATH=${prefix}/bin:${PATH}
 }
@@ -829,6 +867,54 @@ prepare_giflib_source()
 	[ -f ${giflib_org_src_dir}.tar.bz2 ] ||
 		wget -nv --trust-server-names -O ${giflib_org_src_dir}.tar.bz2 \
 			http://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1
+}
+
+prepare_cmake_source()
+{
+	mkdir -p ${cmake_src_base}
+	[ -f ${cmake_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${cmake_org_src_dir}.tar.gz \
+			https://cmake.org/files/v`echo ${cmake_ver} | cut -f1,2 -d.`/${cmake_name}.tar.gz || return 1
+}
+
+prepare_llvm_source()
+{
+	mkdir -p ${llvm_src_base}
+	[ -f ${llvm_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${llvm_org_src_dir}.tar.xz \
+			http://llvm.org/releases/${llvm_ver}/${llvm_name}.tar.xz || return 1
+}
+
+prepare_clang_source()
+{
+	mkdir -p ${clang_src_base}
+	[ -f ${clang_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${clang_org_src_dir}.tar.xz \
+			http://llvm.org/releases/${llvm_ver}/${clang_name}.tar.xz || return 1
+}
+
+prepare_clang_rt_source()
+{
+	mkdir -p ${clang_rt_src_base}
+	[ -f ${clang_rt_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${clang_rt_org_src_dir}.tar.xz \
+			http://llvm.org/releases/${llvm_ver}/${clang_rt_name}.tar.xz || return 1
+}
+
+prepare_libcxx_source()
+{
+	mkdir -p ${libcxx_src_base}
+	[ -f ${libcxx_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${libcxx_org_src_dir}.tar.xz \
+			http://llvm.org/releases/${llvm_ver}/${libcxx_name}.tar.xz || return 1
+}
+
+prepare_clang_extra_source()
+{
+	mkdir -p ${clang_extra_src_base}
+	[ -f ${clang_extra_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${clang_extra_org_src_dir}.tar.xz \
+			http://llvm.org/releases/${llvm_ver}/${clang_extra_name}.tar.xz || return 1
 }
 
 update_search_path()
@@ -1413,6 +1499,92 @@ install_native_git()
 	make -C ${git_org_src_dir} -j ${jobs} V=1 install || return 1 # install-doc install-html
 }
 
+install_native_cmake()
+{
+	install_prerequisites || return 1
+	prepare_cmake_source || return 1
+	[ -d ${cmake_org_src_dir} ] ||
+		tar xzvf ${cmake_org_src_dir}.tar.gz -C ${cmake_src_base} || return 1
+	[ -f ${cmake_org_src_dir}/Makefile ] ||
+		(cd ${cmake_org_src_dir}
+		./bootstrap --prefix=${prefix} --parallel=${jobs}) || return 1
+	make -C ${cmake_org_src_dir} -j ${jobs} || return 1
+	make -C ${cmake_org_src_dir} -j ${jobs} install || return 1
+}
+
+install_native_llvm()
+{
+	install_prerequisites || return 1
+	install_native_cmake || return 1
+	prepare_llvm_source || return 1
+	[ -d ${llvm_org_src_dir} ] ||
+		tar xJvf ${llvm_org_src_dir}.tar.xz -C ${llvm_src_base} || return 1
+	mkdir -p ${llvm_bld_dir}
+	(cd ${llvm_bld_dir}
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1
+	make -C ${llvm_bld_dir} -j ${jobs} || return 1
+	make -C ${llvm_bld_dir} -j ${jobs} install || return 1
+}
+
+install_native_clang()
+{
+	install_prerequisites || return 1
+	install_native_cmake || return 1
+	install_native_llvm || return 1
+	install_native_clang_rt || return 1
+	install_native_libcxx || return 1
+	prepare_clang_source || return 1
+	[ -d ${clang_org_src_dir} ] ||
+		tar xJvf ${clang_org_src_dir}.tar.xz -C ${clang_src_base} || return 1
+	mkdir -p ${clang_bld_dir}
+	(cd ${clang_bld_dir}
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_org_src_dir}) || return 1
+	make -C ${clang_bld_dir} -j ${jobs} || return 1
+	make -C ${clang_bld_dir} -j ${jobs} install || return 1
+}
+
+install_native_clang_rt()
+{
+	install_prerequisites || return 1
+	install_native_cmake || return 1
+	prepare_clang_rt_source || return 1
+	[ -d ${clang_rt_org_src_dir} ] ||
+		tar xJvf ${clang_rt_org_src_dir}.tar.xz -C ${clang_rt_src_base} || return 1
+	mkdir -p ${clang_rt_bld_dir}
+	(cd ${clang_rt_bld_dir}
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_rt_org_src_dir}) || return 1
+	make -C ${clang_rt_bld_dir} -j ${jobs} || return 1
+	make -C ${clang_rt_bld_dir} -j ${jobs} install || return 1
+}
+
+install_native_libcxx()
+{
+	install_prerequisites || return 1
+	install_native_cmake || return 1
+	prepare_libcxx_source || return 1
+	[ -d ${libcxx_org_src_dir} ] ||
+		tar xJvf ${libcxx_org_src_dir}.tar.xz -C ${libcxx_src_base} || return 1
+	mkdir -p ${libcxx_bld_dir}
+	(cd ${libcxx_bld_dir}
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxx_org_src_dir}) || return 1
+	make -C ${libcxx_bld_dir} -j ${jobs} || return 1
+	make -C ${libcxx_bld_dir} -j ${jobs} install || return 1
+}
+
+install_native_clang_extra()
+{
+	install_prerequisites || return 1
+	install_native_cmake || return 1
+	prepare_clang_extra_source || return 1
+	[ -d ${clang_extra_org_src_dir} ] ||
+		tar xJvf ${clang_extra_org_src_dir}.tar.xz -C ${clang_extra_src_base} || return 1
+	mkdir -p ${clang_extra_bld_dir}
+	(cd ${clang_extra_bld_dir}
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_extra_org_src_dir}) || return 1
+	make -C ${clang_extra_bld_dir} -j ${jobs} || return 1
+	make -C ${clang_extra_bld_dir} -j ${jobs} install || return 1
+}
+
 full_native()
 {
 	install_native_coreutils || return 1
@@ -1431,6 +1603,8 @@ full_native()
 	install_native_screen || return 1
 	install_native_zsh || return 1
 	install_native_git || return 1
+	install_native_cmake || return 1
+	install_native_clang || return 1
 }
 
 install_cross_binutils()
