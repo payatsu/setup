@@ -1,7 +1,6 @@
 #!/bin/sh -e
 # [FIXME] install_native_clang_extra()のテスト実行が未完了。
 # [TODO] 同じインストールが何度も繰り返されないようにする。
-# [TODO] llvm, clangのビルドに/toolchains以下のgccが使われない原因の解析
 # [TODO] wget, bash, tar, diff, patch, find, llvm, clang, LLD, LLDB, Polly
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
@@ -286,7 +285,12 @@ clean()
 		${libjpeg_src_dir_ntv} \
 		${giflib_src_dir_ntv} \
 		${cmake_org_src_dir} \
-		${llvm_org_src_dir} ${llvm_bld_dir} ${clang_org_src_dir} ${clang_bld_dir} ${clang_rt_org_src_dir} ${clang_rt_bld_dir} ${libcxx_org_src_dir} ${libcxx_bld_dir} ${clang_extra_org_src_dir} ${clang_extra_bld_dir}
+		${llvm_org_src_dir} ${llvm_bld_dir} \
+		${clang_org_src_dir} ${clang_bld_dir} \
+		${clang_rt_org_src_dir} ${clang_rt_bld_dir} \
+		${libcxx_org_src_dir} ${libcxx_bld_dir} \
+		${libcxxabi_org_src_dir} ${libcxxabi_bld_dir} \
+		${clang_extra_org_src_dir} ${clang_extra_bld_dir}
 }
 
 list()
@@ -518,9 +522,14 @@ set_variables()
 	clang_rt_bld_dir=${clang_rt_src_base}/${clang_rt_name}-build
 
 	libcxx_name=libcxx-${llvm_ver}.src
-	libcxx_src_base=${prefix}/src/libcxx
+	libcxx_src_base=${prefix}/src/libc++
 	libcxx_org_src_dir=${libcxx_src_base}/${libcxx_name}
 	libcxx_bld_dir=${libcxx_src_base}/${libcxx_name}-build
+
+	libcxxabi_name=libcxxabi-${llvm_ver}.src
+	libcxxabi_src_base=${prefix}/src/libc++abi
+	libcxxabi_org_src_dir=${libcxxabi_src_base}/${libcxxabi_name}
+	libcxxabi_bld_dir=${libcxxabi_src_base}/${libcxxabi_name}-build
 
 	clang_extra_name=clang-tools-extra-${llvm_ver}.src
 	clang_extra_src_base=${prefix}/src/clang-tools-extra
@@ -907,6 +916,14 @@ prepare_libcxx_source()
 	[ -f ${libcxx_org_src_dir}.tar.xz ] ||
 		wget -nv -O ${libcxx_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${libcxx_name}.tar.xz || return 1
+}
+
+prepare_libcxxabi_source()
+{
+	mkdir -p ${libcxxabi_src_base}
+	[ -f ${libcxxabi_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${libcxxabi_org_src_dir}.tar.xz \
+			http://llvm.org/releases/${llvm_ver}/${libcxxabi_name}.tar.xz || return 1
 }
 
 prepare_clang_extra_source()
@@ -1561,6 +1578,7 @@ install_native_libcxx()
 {
 	install_prerequisites || return 1
 	install_native_cmake || return 1
+	install_native_libcxxabi || return 1
 	prepare_libcxx_source || return 1
 	[ -d ${libcxx_org_src_dir} ] ||
 		tar xJvf ${libcxx_org_src_dir}.tar.xz -C ${libcxx_src_base} || return 1
@@ -1569,6 +1587,20 @@ install_native_libcxx()
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxx_org_src_dir}) || return 1
 	make -C ${libcxx_bld_dir} -j ${jobs} || return 1
 	make -C ${libcxx_bld_dir} -j ${jobs} install || return 1
+}
+
+install_native_libcxxabi()
+{
+	install_prerequisites || return 1
+	install_native_cmake || return 1
+	prepare_libcxxabi_source || return 1
+	[ -d ${libcxxabi_org_src_dir} ] ||
+		tar xJvf ${libcxxabi_org_src_dir}.tar.xz -C ${libcxxabi_src_base} || return 1
+	mkdir -p ${libcxxabi_bld_dir}
+	(cd ${libcxxabi_bld_dir}
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxxabi_org_src_dir}) || return 1
+	make -C ${libcxxabi_bld_dir} -j ${jobs} || return 1
+	make -C ${libcxxabi_bld_dir} -j ${jobs} install || return 1
 }
 
 install_native_clang_extra()
@@ -1604,6 +1636,7 @@ full_native()
 	install_native_zsh || return 1
 	install_native_git || return 1
 	install_native_cmake || return 1
+	install_native_libcxx || return 1
 	install_native_clang || return 1
 }
 
