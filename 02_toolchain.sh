@@ -29,6 +29,11 @@
 : ${gcc_ver:=5.3.0}
 : ${ncurses_ver:=6.0}
 : ${gdb_ver:=7.10.1}
+: ${zlib_ver:=1.2.8}
+: ${libpng_ver:=1.6.20}
+: ${libtiff_ver:=4.0.6}
+: ${libjpeg_ver:=v9b}
+: ${giflib_ver:=5.1.2}
 : ${emacs_ver:=24.5}
 : ${global_ver:=6.5.2}
 : ${screen_ver:=4.3.1}
@@ -41,11 +46,6 @@
 : ${libxslt_ver:=1.1.28}
 : ${gettext_ver:=0.19.7}
 : ${git_ver:=2.7.0}
-: ${zlib_ver:=1.2.8}
-: ${libpng_ver:=1.6.20}
-: ${libtiff_ver:=4.0.6}
-: ${libjpeg_ver:=v9b}
-: ${giflib_ver:=5.1.2}
 : ${cmake_ver:=3.4.3}
 : ${llvm_ver:=3.7.1}
 
@@ -126,6 +126,16 @@ help()
 		Specify the version of ncurses you want, currently '${ncurses_ver}'.
 	gdb_ver
 		Specify the version of GNU Debugger you want, currently '${gdb_ver}'.
+	zlib_ver
+		Specify the version of zlib you want, currently '${zlib_ver}'.
+	libpng_ver
+		Specify the version of libpng you want, currently '${libpng_ver}'.
+	libtiff_ver
+		Specify the version of libtiff you want, currently '${libtiff_ver}'.
+	libjpeg_ver
+		Specify the version of libjpeg you want, currently '${libjpeg_ver}'.
+	giflib_ver
+		Specify the version of giflib you want, currently '${giflib_ver}'.
 	emacs_ver
 		Specify the version of GNU Emacs you want, currently '${emacs_ver}'.
 	global_ver
@@ -150,16 +160,6 @@ help()
 		Specify the version of gettext you want, currently '${gettext_ver}'.
 	git_ver
 		Specify the version of Git you want, currently '${git_ver}'.
-	zlib_ver
-		Specify the version of zlib you want, currently '${zlib_ver}'.
-	libpng_ver
-		Specify the version of libpng you want, currently '${libpng_ver}'.
-	libtiff_ver
-		Specify the version of libtiff you want, currently '${libtiff_ver}'.
-	libjpeg_ver
-		Specify the version of libjpeg you want, currently '${libjpeg_ver}'.
-	giflib_ver
-		Specify the version of giflib you want, currently '${giflib_ver}'.
 	cmake_ver
 		Specify the version of Cmake you want, currently '${cmake_ver}'.
 	llvm_ver
@@ -263,10 +263,18 @@ clean()
 		${gperf_org_src_dir} \
 		${glibc_org_src_dir} ${glibc_bld_dir_ntv} ${glibc_src_dir_ntv} \
 		${glibc_bld_dir_crs_hdr} ${glibc_bld_dir_crs_1st} ${glibc_src_dir_crs_hdr} ${glibc_src_dir_crs_1st} \
-		${gmp_src_dir_ntv} ${gmp_src_dir_crs_ntv} ${mpfr_src_dir_ntv} ${mpfr_src_dir_crs_ntv} ${mpc_src_dir_ntv} ${mpc_src_dir_crs_ntv} \
-		${gcc_org_src_dir} ${gcc_bld_dir_ntv} ${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} ${gcc_bld_dir_crs_ntv} \
+		${gmp_src_dir_ntv} ${gmp_src_dir_crs_ntv} \
+		${mpfr_src_dir_ntv} ${mpfr_src_dir_crs_ntv} \
+		${mpc_src_dir_ntv} ${mpc_src_dir_crs_ntv} \
+		${gcc_org_src_dir} ${gcc_bld_dir_ntv} \
+		${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} \
+		${gcc_bld_dir_crs_ntv} \
 		${ncurses_org_src_dir} \
 		${gdb_org_src_dir} ${gdb_bld_dir_ntv} ${gdb_bld_dir_crs} \
+		${libpng_src_dir_ntv} ${libpng_src_dir_crs_ntv} \
+		${libtiff_src_dir_ntv} ${libtiff_src_dir_crs_ntv} \
+		${libjpeg_src_dir_ntv} \
+		${giflib_src_dir_ntv} \
 		${emacs_org_src_dir} \
 		${global_org_src_dir} \
 		${screen_org_src_dir} \
@@ -280,10 +288,6 @@ clean()
 		${gettext_org_src_dir} \
 		${git_org_src_dir} \
 		${zlib_src_dir_ntv} ${zlib_src_dir_crs_ntv} \
-		${libpng_src_dir_ntv} ${libpng_src_dir_crs_ntv} \
-		${libtiff_src_dir_ntv} ${libtiff_src_dir_crs_ntv} \
-		${libjpeg_src_dir_ntv} \
-		${giflib_src_dir_ntv} \
 		${cmake_org_src_dir} \
 		${llvm_org_src_dir} ${llvm_bld_dir} \
 		${clang_org_src_dir} ${clang_bld_dir} \
@@ -426,6 +430,34 @@ set_variables()
 	gdb_bld_dir_ntv=${gdb_src_base}/${gdb_name}-ntv
 	gdb_bld_dir_crs=${gdb_src_base}/${target}-${gdb_name}-crs
 
+	zlib_name=zlib-${zlib_ver}
+	zlib_src_base=${prefix}/src/zlib
+	zlib_org_src_dir=${zlib_src_base}/${zlib_name}
+	zlib_src_dir_ntv=${zlib_src_base}/${zlib_name}-ntv
+	zlib_src_dir_crs_ntv=${zlib_src_base}/${target}-${zlib_name}-crs-ntv
+
+	libpng_name=libpng-${libpng_ver}
+	libpng_src_base=${prefix}/src/libpng
+	libpng_org_src_dir=${libpng_src_base}/${libpng_name}
+	libpng_src_dir_ntv=${libpng_src_base}/${libpng_name}-ntv
+	libpng_src_dir_crs_ntv=${libpng_src_base}/${target}-${libpng_name}-crs-ntv
+
+	libtiff_name=tiff-${libtiff_ver}
+	libtiff_src_base=${prefix}/src/libtiff
+	libtiff_org_src_dir=${libtiff_src_base}/${libtiff_name}
+	libtiff_src_dir_ntv=${libtiff_src_base}/${libtiff_name}-ntv
+	libtiff_src_dir_crs_ntv=${libtiff_src_base}/${target}-${libtiff_name}-crs-ntv
+
+	libjpeg_name=jpegsrc.${libjpeg_ver}
+	libjpeg_src_base=${prefix}/src/libjpeg
+	libjpeg_org_src_dir=${libjpeg_src_base}/jpeg-`echo ${libjpeg_ver} | sed -e s/^v//`
+	libjpeg_src_dir_ntv=${libjpeg_src_base}/jpeg-`echo ${libjpeg_ver} | sed -e s/^v//`-ntv
+
+	giflib_name=giflib-${giflib_ver}
+	giflib_src_base=${prefix}/src/giflib
+	giflib_org_src_dir=${giflib_src_base}/${giflib_name}
+	giflib_src_dir_ntv=${giflib_src_base}/${giflib_name}-ntv
+
 	emacs_name=emacs-${emacs_ver}
 	emacs_src_base=${prefix}/src/emacs
 	emacs_org_src_dir=${emacs_src_base}/${emacs_name}
@@ -474,34 +506,6 @@ set_variables()
 	git_src_base=${prefix}/src/git
 	git_org_src_dir=${git_src_base}/${git_name}
 
-	zlib_name=zlib-${zlib_ver}
-	zlib_src_base=${prefix}/src/zlib
-	zlib_org_src_dir=${zlib_src_base}/${zlib_name}
-	zlib_src_dir_ntv=${zlib_src_base}/${zlib_name}-ntv
-	zlib_src_dir_crs_ntv=${zlib_src_base}/${target}-${zlib_name}-crs-ntv
-
-	libpng_name=libpng-${libpng_ver}
-	libpng_src_base=${prefix}/src/libpng
-	libpng_org_src_dir=${libpng_src_base}/${libpng_name}
-	libpng_src_dir_ntv=${libpng_src_base}/${libpng_name}-ntv
-	libpng_src_dir_crs_ntv=${libpng_src_base}/${target}-${libpng_name}-crs-ntv
-
-	libtiff_name=tiff-${libtiff_ver}
-	libtiff_src_base=${prefix}/src/libtiff
-	libtiff_org_src_dir=${libtiff_src_base}/${libtiff_name}
-	libtiff_src_dir_ntv=${libtiff_src_base}/${libtiff_name}-ntv
-	libtiff_src_dir_crs_ntv=${libtiff_src_base}/${target}-${libtiff_name}-crs-ntv
-
-	libjpeg_name=jpegsrc.${libjpeg_ver}
-	libjpeg_src_base=${prefix}/src/libjpeg
-	libjpeg_org_src_dir=${libjpeg_src_base}/jpeg-`echo ${libjpeg_ver} | sed -e s/^v//`
-	libjpeg_src_dir_ntv=${libjpeg_src_base}/jpeg-`echo ${libjpeg_ver} | sed -e s/^v//`-ntv
-
-	giflib_name=giflib-${giflib_ver}
-	giflib_src_base=${prefix}/src/giflib
-	giflib_org_src_dir=${giflib_src_base}/${giflib_name}
-	giflib_src_dir_ntv=${giflib_src_base}/${giflib_name}-ntv
-
 	cmake_name=cmake-${cmake_ver}
 	cmake_src_base=${prefix}/src/cmake
 	cmake_org_src_dir=${cmake_src_base}/${cmake_name}
@@ -511,25 +515,25 @@ set_variables()
 	llvm_org_src_dir=${llvm_src_base}/${llvm_name}
 	llvm_bld_dir=${llvm_src_base}/${llvm_name}-build
 
-	clang_name=cfe-${llvm_ver}.src
-	clang_src_base=${prefix}/src/clang
-	clang_org_src_dir=${clang_src_base}/${clang_name}
-	clang_bld_dir=${clang_src_base}/${clang_name}-build
-
-	clang_rt_name=compiler-rt-${llvm_ver}.src
-	clang_rt_src_base=${prefix}/src/clang-rt
-	clang_rt_org_src_dir=${clang_rt_src_base}/${clang_rt_name}
-	clang_rt_bld_dir=${clang_rt_src_base}/${clang_rt_name}-build
+	libcxxabi_name=libcxxabi-${llvm_ver}.src
+	libcxxabi_src_base=${prefix}/src/libc++abi
+	libcxxabi_org_src_dir=${libcxxabi_src_base}/${libcxxabi_name}
+	libcxxabi_bld_dir=${libcxxabi_src_base}/${libcxxabi_name}-build
 
 	libcxx_name=libcxx-${llvm_ver}.src
 	libcxx_src_base=${prefix}/src/libc++
 	libcxx_org_src_dir=${libcxx_src_base}/${libcxx_name}
 	libcxx_bld_dir=${libcxx_src_base}/${libcxx_name}-build
 
-	libcxxabi_name=libcxxabi-${llvm_ver}.src
-	libcxxabi_src_base=${prefix}/src/libc++abi
-	libcxxabi_org_src_dir=${libcxxabi_src_base}/${libcxxabi_name}
-	libcxxabi_bld_dir=${libcxxabi_src_base}/${libcxxabi_name}-build
+	clang_rt_name=compiler-rt-${llvm_ver}.src
+	clang_rt_src_base=${prefix}/src/clang-rt
+	clang_rt_org_src_dir=${clang_rt_src_base}/${clang_rt_name}
+	clang_rt_bld_dir=${clang_rt_src_base}/${clang_rt_name}-build
+
+	clang_name=cfe-${llvm_ver}.src
+	clang_src_base=${prefix}/src/clang
+	clang_org_src_dir=${clang_src_base}/${clang_name}
+	clang_bld_dir=${clang_src_base}/${clang_name}-build
 
 	clang_extra_name=clang-tools-extra-${llvm_ver}.src
 	clang_extra_src_base=${prefix}/src/clang-tools-extra
@@ -560,6 +564,14 @@ list_all()
 #: major tags, -: internal tags(for debugging use)
 EOF
 	grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/\t- /; s/()$//; s/- \([[:alnum:]]\+\)$/# \1/'
+}
+
+update_search_path()
+{
+	[ -f /etc/ld.so.conf.d/`basename ${prefix}`.conf ] ||
+		echo "${prefix}/lib\n${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return 1
+	ldconfig || return 1
+# grep -q -e ${prefix}/share/man /etc/manpath.config || sed -e "1s+^+MANDATORY_MANPATH ${prefix}/share/man\n+" -i /etc/manpath.config || return 1
 }
 
 install_prerequisites()
@@ -742,6 +754,46 @@ prepare_gdb_source()
 			http://ftp.gnu.org/gnu/gdb/${gdb_name}.tar.xz || return 1
 }
 
+prepare_zlib_source()
+{
+	mkdir -p ${zlib_src_base}
+	[ -f ${zlib_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${zlib_org_src_dir}.tar.gz \
+			http://zlib.net/${zlib_name}.tar.gz || return 1
+}
+
+prepare_libpng_source()
+{
+	mkdir -p ${libpng_src_base}
+	[ -f ${libpng_org_src_dir}.tar.gz ] ||
+		wget -nv --trust-server-names -O ${libpng_org_src_dir}.tar.gz \
+			http://download.sourceforge.net/libpng/${libpng_name}.tar.gz || return 1
+}
+
+prepare_libtiff_source()
+{
+	mkdir -p ${libtiff_src_base}
+	[ -f ${libtiff_org_src_dir}.zip ] ||
+		wget -nv -O ${libtiff_org_src_dir}.zip \
+			ftp://ftp.remotesensing.org/pub/libtiff/${libtiff_name}.zip || return 1
+}
+
+prepare_libjpeg_source()
+{
+	mkdir -p ${libjpeg_src_base}
+	[ -f ${libjpeg_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${libjpeg_org_src_dir}.tar.gz \
+			http://www.ijg.org/files/${libjpeg_name}.tar.gz || return 1
+}
+
+prepare_giflib_source()
+{
+	mkdir -p ${giflib_src_base}
+	[ -f ${giflib_org_src_dir}.tar.bz2 ] ||
+		wget -nv --trust-server-names -O ${giflib_org_src_dir}.tar.bz2 \
+			http://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1
+}
+
 prepare_emacs_source()
 {
 	mkdir -p ${emacs_src_base}
@@ -838,46 +890,6 @@ prepare_git_source()
 			https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return 1
 }
 
-prepare_zlib_source()
-{
-	mkdir -p ${zlib_src_base}
-	[ -f ${zlib_org_src_dir}.tar.gz ] ||
-		wget -nv -O ${zlib_org_src_dir}.tar.gz \
-			http://zlib.net/${zlib_name}.tar.gz || return 1
-}
-
-prepare_libpng_source()
-{
-	mkdir -p ${libpng_src_base}
-	[ -f ${libpng_org_src_dir}.tar.gz ] ||
-		wget -nv --trust-server-names -O ${libpng_org_src_dir}.tar.gz \
-			http://download.sourceforge.net/libpng/${libpng_name}.tar.gz || return 1
-}
-
-prepare_libtiff_source()
-{
-	mkdir -p ${libtiff_src_base}
-	[ -f ${libtiff_org_src_dir}.zip ] ||
-		wget -nv -O ${libtiff_org_src_dir}.zip \
-			ftp://ftp.remotesensing.org/pub/libtiff/${libtiff_name}.zip || return 1
-}
-
-prepare_libjpeg_source()
-{
-	mkdir -p ${libjpeg_src_base}
-	[ -f ${libjpeg_org_src_dir}.tar.gz ] ||
-		wget -nv -O ${libjpeg_org_src_dir}.tar.gz \
-			http://www.ijg.org/files/${libjpeg_name}.tar.gz || return 1
-}
-
-prepare_giflib_source()
-{
-	mkdir -p ${giflib_src_base}
-	[ -f ${giflib_org_src_dir}.tar.bz2 ] ||
-		wget -nv --trust-server-names -O ${giflib_org_src_dir}.tar.bz2 \
-			http://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1
-}
-
 prepare_cmake_source()
 {
 	mkdir -p ${cmake_src_base}
@@ -894,20 +906,12 @@ prepare_llvm_source()
 			http://llvm.org/releases/${llvm_ver}/${llvm_name}.tar.xz || return 1
 }
 
-prepare_clang_source()
+prepare_libcxxabi_source()
 {
-	mkdir -p ${clang_src_base}
-	[ -f ${clang_org_src_dir}.tar.xz ] ||
-		wget -nv -O ${clang_org_src_dir}.tar.xz \
-			http://llvm.org/releases/${llvm_ver}/${clang_name}.tar.xz || return 1
-}
-
-prepare_clang_rt_source()
-{
-	mkdir -p ${clang_rt_src_base}
-	[ -f ${clang_rt_org_src_dir}.tar.xz ] ||
-		wget -nv -O ${clang_rt_org_src_dir}.tar.xz \
-			http://llvm.org/releases/${llvm_ver}/${clang_rt_name}.tar.xz || return 1
+	mkdir -p ${libcxxabi_src_base}
+	[ -f ${libcxxabi_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${libcxxabi_org_src_dir}.tar.xz \
+			http://llvm.org/releases/${llvm_ver}/${libcxxabi_name}.tar.xz || return 1
 }
 
 prepare_libcxx_source()
@@ -918,12 +922,20 @@ prepare_libcxx_source()
 			http://llvm.org/releases/${llvm_ver}/${libcxx_name}.tar.xz || return 1
 }
 
-prepare_libcxxabi_source()
+prepare_clang_rt_source()
 {
-	mkdir -p ${libcxxabi_src_base}
-	[ -f ${libcxxabi_org_src_dir}.tar.xz ] ||
-		wget -nv -O ${libcxxabi_org_src_dir}.tar.xz \
-			http://llvm.org/releases/${llvm_ver}/${libcxxabi_name}.tar.xz || return 1
+	mkdir -p ${clang_rt_src_base}
+	[ -f ${clang_rt_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${clang_rt_org_src_dir}.tar.xz \
+			http://llvm.org/releases/${llvm_ver}/${clang_rt_name}.tar.xz || return 1
+}
+
+prepare_clang_source()
+{
+	mkdir -p ${clang_src_base}
+	[ -f ${clang_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${clang_org_src_dir}.tar.xz \
+			http://llvm.org/releases/${llvm_ver}/${clang_name}.tar.xz || return 1
 }
 
 prepare_clang_extra_source()
@@ -932,14 +944,6 @@ prepare_clang_extra_source()
 	[ -f ${clang_extra_org_src_dir}.tar.xz ] ||
 		wget -nv -O ${clang_extra_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${clang_extra_name}.tar.xz || return 1
-}
-
-update_search_path()
-{
-	[ -f /etc/ld.so.conf.d/`basename ${prefix}`.conf ] ||
-		echo "${prefix}/lib\n${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return 1
-	ldconfig || return 1
-# grep -q -e ${prefix}/share/man /etc/manpath.config || sed -e "1s+^+MANDATORY_MANPATH ${prefix}/share/man\n+" -i /etc/manpath.config || return 1
 }
 
 install_native_coreutils()
@@ -1090,6 +1094,17 @@ install_native_binutils()
 	make -C ${binutils_src_dir_ntv} -j ${jobs} install-strip || return 1
 }
 
+install_native_kernel_header()
+{
+	prepare_kernel_source || return 1
+	[ -d ${kernel_src_dir_ntv} ] ||
+		(tar xJvf ${kernel_org_src_dir}.tar.xz -C ${kernel_src_base} &&
+			mv ${kernel_org_src_dir} ${kernel_src_dir_ntv}) || return 1
+	make -C ${kernel_src_dir_ntv} -j ${jobs} mrproper || return 1
+	make -C ${kernel_src_dir_ntv} -j ${jobs} \
+		ARCH=${native_linux_arch} INSTALL_HDR_PATH=${prefix} headers_install || return 1
+}
+
 install_native_gperf()
 {
 	install_prerequisites || return 1
@@ -1101,17 +1116,6 @@ install_native_gperf()
 		./configure --prefix=${prefix}) || return 1
 	make -C ${gperf_org_src_dir} -j ${jobs} || return 1
 	make -C ${gperf_org_src_dir} -j ${jobs} install || return 1
-}
-
-install_native_kernel_header()
-{
-	prepare_kernel_source || return 1
-	[ -d ${kernel_src_dir_ntv} ] ||
-		(tar xJvf ${kernel_org_src_dir}.tar.xz -C ${kernel_src_base} &&
-			mv ${kernel_org_src_dir} ${kernel_src_dir_ntv}) || return 1
-	make -C ${kernel_src_dir_ntv} -j ${jobs} mrproper || return 1
-	make -C ${kernel_src_dir_ntv} -j ${jobs} \
-		ARCH=${native_linux_arch} INSTALL_HDR_PATH=${prefix} headers_install || return 1
 }
 
 install_native_glibc()
@@ -1543,35 +1547,18 @@ install_native_llvm()
 	make -C ${llvm_bld_dir} -j ${jobs} install || return 1
 }
 
-install_native_clang()
+install_native_libcxxabi()
 {
 	install_prerequisites || return 1
 	install_native_cmake || return 1
-	install_native_llvm || return 1
-	install_native_clang_rt || return 1
-	install_native_libcxx || return 1
-	prepare_clang_source || return 1
-	[ -d ${clang_org_src_dir} ] ||
-		tar xJvf ${clang_org_src_dir}.tar.xz -C ${clang_src_base} || return 1
-	mkdir -p ${clang_bld_dir}
-	(cd ${clang_bld_dir}
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_org_src_dir}) || return 1
-	make -C ${clang_bld_dir} -j ${jobs} || return 1
-	make -C ${clang_bld_dir} -j ${jobs} install || return 1
-}
-
-install_native_clang_rt()
-{
-	install_prerequisites || return 1
-	install_native_cmake || return 1
-	prepare_clang_rt_source || return 1
-	[ -d ${clang_rt_org_src_dir} ] ||
-		tar xJvf ${clang_rt_org_src_dir}.tar.xz -C ${clang_rt_src_base} || return 1
-	mkdir -p ${clang_rt_bld_dir}
-	(cd ${clang_rt_bld_dir}
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_rt_org_src_dir}) || return 1
-	make -C ${clang_rt_bld_dir} -j ${jobs} || return 1
-	make -C ${clang_rt_bld_dir} -j ${jobs} install || return 1
+	prepare_libcxxabi_source || return 1
+	[ -d ${libcxxabi_org_src_dir} ] ||
+		tar xJvf ${libcxxabi_org_src_dir}.tar.xz -C ${libcxxabi_src_base} || return 1
+	mkdir -p ${libcxxabi_bld_dir}
+	(cd ${libcxxabi_bld_dir}
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxxabi_org_src_dir}) || return 1
+	make -C ${libcxxabi_bld_dir} -j ${jobs} || return 1
+	make -C ${libcxxabi_bld_dir} -j ${jobs} install || return 1
 }
 
 install_native_libcxx()
@@ -1589,18 +1576,35 @@ install_native_libcxx()
 	make -C ${libcxx_bld_dir} -j ${jobs} install || return 1
 }
 
-install_native_libcxxabi()
+install_native_clang_rt()
 {
 	install_prerequisites || return 1
 	install_native_cmake || return 1
-	prepare_libcxxabi_source || return 1
-	[ -d ${libcxxabi_org_src_dir} ] ||
-		tar xJvf ${libcxxabi_org_src_dir}.tar.xz -C ${libcxxabi_src_base} || return 1
-	mkdir -p ${libcxxabi_bld_dir}
-	(cd ${libcxxabi_bld_dir}
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxxabi_org_src_dir}) || return 1
-	make -C ${libcxxabi_bld_dir} -j ${jobs} || return 1
-	make -C ${libcxxabi_bld_dir} -j ${jobs} install || return 1
+	prepare_clang_rt_source || return 1
+	[ -d ${clang_rt_org_src_dir} ] ||
+		tar xJvf ${clang_rt_org_src_dir}.tar.xz -C ${clang_rt_src_base} || return 1
+	mkdir -p ${clang_rt_bld_dir}
+	(cd ${clang_rt_bld_dir}
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_rt_org_src_dir}) || return 1
+	make -C ${clang_rt_bld_dir} -j ${jobs} || return 1
+	make -C ${clang_rt_bld_dir} -j ${jobs} install || return 1
+}
+
+install_native_clang()
+{
+	install_prerequisites || return 1
+	install_native_cmake || return 1
+	install_native_llvm || return 1
+	install_native_clang_rt || return 1
+	install_native_libcxx || return 1
+	prepare_clang_source || return 1
+	[ -d ${clang_org_src_dir} ] ||
+		tar xJvf ${clang_org_src_dir}.tar.xz -C ${clang_src_base} || return 1
+	mkdir -p ${clang_bld_dir}
+	(cd ${clang_bld_dir}
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_org_src_dir}) || return 1
+	make -C ${clang_bld_dir} -j ${jobs} || return 1
+	make -C ${clang_bld_dir} -j ${jobs} install || return 1
 }
 
 install_native_clang_extra()
@@ -1636,7 +1640,6 @@ full_native()
 	install_native_zsh || return 1
 	install_native_git || return 1
 	install_native_cmake || return 1
-	install_native_libcxx || return 1
 	install_native_clang || return 1
 }
 

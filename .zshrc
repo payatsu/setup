@@ -56,4 +56,5 @@ alias -s tgz='tar xzf'
 alias -s tar.bz2='tar xjf'
 alias -s tar.xz='tar xJf'
 alias g++='g++ --std=c++11 -Wall -Wextra -Weffc++ -Wcast-align -Wcast-qual -Wformat -Woverloaded-virtual -Wpointer-arith -Wshadow -Wwrite-strings'
+alias clang++='clang++ --std=c++11 -Wall -Wextra -Weffc++ -Wcast-align -Wcast-qual -Wformat -Woverloaded-virtual -Wpointer-arith -Wshadow -Wwrite-strings -stdlib=libc++ -lc++abi'
 [ -f ${HOME}/.zshrc.local ] && . ${HOME}/.zshrc.local
