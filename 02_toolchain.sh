@@ -1,5 +1,4 @@
 #!/bin/sh -e
-# [FIXME] install_native_clang_extra()のテスト実行が未完了。
 # [TODO] 同じインストールが何度も繰り返されないようにする。
 # [TODO] wget, bash, tar, diff, patch, find, llvm, clang, LLD, LLDB, Polly
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
@@ -7,6 +6,7 @@
 # [TODO] install_native_xmltoのリファクタリング。
 #        -> xmltoの障害のせいで、gitとgiflibのmakeに障害あり。
 # [TODO] globalのmakeでldが-lncursesを見つけられない。
+# [TODO] install_native_clang_extra()のテスト実行が未完了。
 # [TODO] native用とcross用にkernelとglibcのバージョンを同時に指定・最初に一括ダウンロードできるようにする。
 
 : ${coreutils_ver:=8.25}
@@ -540,6 +540,16 @@ set_variables()
 	clang_extra_org_src_dir=${clang_extra_src_base}/${clang_extra_name}
 	clang_extra_bld_dir=${clang_extra_src_base}/${clang_extra_name}-build
 
+	lld_name=lld-${llvm_ver}.src
+	lld_src_base=${prefix}/src/lld
+	lld_org_src_dir=${lld_src_base}/${lld_name}
+	lld_bld_dir=${lld_src_base}/${lld_name}-build
+
+	lldb_name=lldb-${llvm_ver}.src
+	lldb_src_base=${prefix}/src/lldb
+	lldb_org_src_dir=${lldb_src_base}/${lldb_name}
+	lldb_bld_dir=${lldb_src_base}/${lldb_name}-build
+
 	echo ${PATH} | grep -q ${prefix}/bin || PATH=${prefix}/bin:${PATH}
 }
 
@@ -944,6 +954,22 @@ prepare_clang_extra_source()
 	[ -f ${clang_extra_org_src_dir}.tar.xz ] ||
 		wget -nv -O ${clang_extra_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${clang_extra_name}.tar.xz || return 1
+}
+
+prepare_lld_source()
+{
+	mkdir -p ${lld_src_base}
+	[ -f ${lld_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${lld_org_src_dir}.tar.xz \
+			http://llvm.org/releases/${llvm_ver}/${lld_name}.tar.xz || return 1
+}
+
+prepare_lldb_source()
+{
+	mkdir -p ${lldb_src_base}
+	[ -f ${lldb_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${lldb_org_src_dir}.tar.xz \
+			http://llvm.org/releases/${llvm_ver}/${lldb_name}.tar.xz || return 1
 }
 
 install_native_coreutils()
@@ -1619,6 +1645,34 @@ install_native_clang_extra()
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_extra_org_src_dir}) || return 1
 	make -C ${clang_extra_bld_dir} -j ${jobs} || return 1
 	make -C ${clang_extra_bld_dir} -j ${jobs} install || return 1
+}
+
+install_native_lld()
+{
+	install_prerequisites || return 1
+	install_native_cmake || return 1
+	prepare_lld_source || return 1
+	[ -d ${lld_org_src_dir} ] ||
+		tar xJvf ${lld_org_src_dir}.tar.xz -C ${lld_src_base} || return 1
+	mkdir -p ${lld_bld_dir}
+	(cd ${lld_bld_dir}
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${lld_org_src_dir}) || return 1
+	make -C ${lld_bld_dir} -j ${jobs} || return 1
+	make -C ${lld_bld_dir} -j ${jobs} install || return 1
+}
+
+install_native_lldb()
+{
+	install_prerequisites || return 1
+	install_native_cmake || return 1
+	prepare_lldb_source || return 1
+	[ -d ${lldb_org_src_dir} ] ||
+		tar xJvf ${lldb_org_src_dir}.tar.xz -C ${lldb_src_base} || return 1
+	mkdir -p ${lldb_bld_dir}
+	(cd ${lldb_bld_dir}
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREIFX=${prefix} ${lldb_org_src_dir}) || return 1
+	make -C ${lldb_bld_dir} -j ${jobs} || return 1
+	make -C ${lldb_bld_dir} -j ${jobs} install || return 1
 }
 
 full_native()
