@@ -1,6 +1,6 @@
 #!/bin/sh -e
 # [TODO] 同じインストールが何度も繰り返されないようにする。
-# [TODO] wget, bash, tar, diff, patch, find, llvm, clang, LLD, LLDB, Polly
+# [TODO] bash, diff, patch, find, LLD, LLDB, Polly
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
@@ -9,6 +9,8 @@
 # [TODO] install_native_clang_extra()のテスト実行が未完了。
 # [TODO] native用とcross用にkernelとglibcのバージョンを同時に指定・最初に一括ダウンロードできるようにする。
 
+: ${tar_ver=1.28}
+: ${wget_ver=1.17.1}
 : ${coreutils_ver:=8.25}
 : ${bison_ver:=3.0.4}
 : ${flex_ver:=2.6.0}
@@ -86,6 +88,10 @@ help()
 	usage
 	cat <<EOF
 [Environmental variables]
+	tar_ver
+		Specify the version of GNU tar you want, currently '${tar_ver}'.
+	wget_ver
+		Specify the version of GNU wget you want, currently '${wget_ver}'.
 	coreutils_ver
 		Specify the version of GNU Coreutils you want, currently '${coreutils_ver}'.
 	bison_ver
@@ -248,6 +254,8 @@ clean()
 # Delete no longer required source trees.
 {
 	rm -rf \
+		${tar_org_src_dir} \
+		${wget_org_src_dir} \
 		${coreutils_org_src_dir} \
 		${bison_org_src_dir} \
 		${flex_org_src_dir} \
@@ -294,7 +302,9 @@ clean()
 		${clang_rt_org_src_dir} ${clang_rt_bld_dir} \
 		${libcxx_org_src_dir} ${libcxx_bld_dir} \
 		${libcxxabi_org_src_dir} ${libcxxabi_bld_dir} \
-		${clang_extra_org_src_dir} ${clang_extra_bld_dir}
+		${clang_extra_org_src_dir} ${clang_extra_bld_dir} \
+		${lld_org_src_dir} ${lld_bld_dir} \
+		${lldb_org_src_dir} ${lldb_bld_dir}
 }
 
 list()
@@ -317,14 +327,21 @@ set_variables()
 	x86_64*)     native_linux_arch=x86;;
 	*) echo Unknown build architecture: ${build} >&2; return 1;;
 	esac
-
-	case ${target} in
+case ${target} in
 	arm*)        cross_linux_arch=arm;;
 	i?86*)       cross_linux_arch=x86;;
 	microblaze*) cross_linux_arch=microblaze;;
 	x86_64*)     cross_linux_arch=x86;;
 	*) echo Unknown target architecture: ${target} >&2; return 1;;
 	esac
+
+	tar_name=tar-${tar_ver}
+	tar_src_base=${prefix}/src/tar
+	tar_org_src_dir=${tar_src_base}/${tar_name}
+
+	wget_name=wget-${wget_ver}
+	wget_src_base=${prefix}/src/wget
+	wget_org_src_dir=${wget_src_base}/${wget_name}
 
 	coreutils_name=coreutils-${coreutils_ver}
 	coreutils_src_base=${prefix}/src/coreutils
@@ -604,6 +621,22 @@ install_prerequisites()
 	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1 ;;
 	esac
 	prerequisites_have_been_already_installed=yes
+}
+
+prepare_tar_source()
+{
+	mkdir -p ${tar_src_base}
+	[ -f ${tar_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${tar_org_src_dir}.tar.gz \
+			http://ftp.gnu.org/gnu/tar/${tar_name}.tar.gz || return 1
+}
+
+prepare_wget_source()
+{
+	mkdir -p ${wget_src_base}
+	[ -f ${wget_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${wget_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/wget/${wget_name}.tar.xz || return 1
 }
 
 prepare_coreutils_source()
@@ -970,6 +1003,32 @@ prepare_lldb_source()
 	[ -f ${lldb_org_src_dir}.tar.xz ] ||
 		wget -nv -O ${lldb_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${lldb_name}.tar.xz || return 1
+}
+
+install_native_tar()
+{
+	install_prerequisites || return 1
+	prepare_tar_source || return 1
+	[ -d ${tar_org_src_dir} ] ||
+		tar xzvf ${tar_org_src_dir}.tar.gz -C ${tar_src_base} || return 1
+	[ -f ${tar_org_src_dir}/Makefile ] ||
+		(cd ${tar_org_src_dir}
+		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} --build=${build}) || return 1
+	make -C ${tar_org_src_dir} -j ${jobs} || return 1
+	make -C ${tar_org_src_dir} -j ${jobs} install-strip || return 1
+}
+
+install_native_wget()
+{
+	install_prerequisites || return 1
+	prepare_wget_source || return 1
+	[ -d ${wget_org_src_dir} ] ||
+		tar xJvf ${wget_org_src_dir}.tar.xz -C ${wget_src_base} || return 1
+	[ -f ${wget_org_src_dir}/Makefile ] ||
+		(cd ${wget_org_src_dir}
+		PKG_CONFIG_PATH=${prefix}/lib64/pkgconfig ./configure --prefix=${prefix} --build=${build} --with-ssl=openssl) || return 1
+	make -C ${wget_org_src_dir} -j ${jobs} || return 1
+	make -C ${wget_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
 install_native_coreutils()
@@ -1621,8 +1680,8 @@ install_native_clang()
 	install_prerequisites || return 1
 	install_native_cmake || return 1
 	install_native_llvm || return 1
-	install_native_clang_rt || return 1
 	install_native_libcxx || return 1
+	install_native_clang_rt || return 1
 	prepare_clang_source || return 1
 	[ -d ${clang_org_src_dir} ] ||
 		tar xJvf ${clang_org_src_dir}.tar.xz -C ${clang_src_base} || return 1
@@ -1677,6 +1736,8 @@ install_native_lldb()
 
 full_native()
 {
+	install_native_tar || return 1
+	install_native_wget || return 1
 	install_native_coreutils || return 1
 	install_native_m4 || return 1
 	install_native_autoconf || return 1
