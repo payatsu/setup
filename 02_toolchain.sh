@@ -659,8 +659,8 @@ prepare_flex_source()
 {
 	mkdir -p ${flex_src_base}
 	[ -f ${flex_org_src_dir}.tar.xz ] ||
-		wget -nv --trust-server-names -O ${flex_org_src_dir}.tar.xz \
-			http://sourceforge.net/projects/flex/files/${flex_name}.tar.xz/download || return 1
+		wget -nv --trust-server-names --no-check-certificate -O ${flex_org_src_dir}.tar.xz \
+			https://sourceforge.net/projects/flex/files/${flex_name}.tar.xz/download || return 1
 }
 
 prepare_m4_source()
@@ -700,7 +700,7 @@ prepare_sed_source()
 	mkdir -p ${sed_src_base}
 	[ -f ${sed_org_src_dir}.tar.bz2 ] ||
 		wget -nv -O ${sed_org_src_dir}.tar.bz2 \
-			https://ftp.gnu.org/gnu/sed/${sed_name}.tar.bz2 || return 1
+			http://ftp.gnu.org/gnu/sed/${sed_name}.tar.bz2 || return 1
 }
 
 prepare_gawk_source()
@@ -737,7 +737,7 @@ prepare_kernel_source()
 	esac
 	mkdir -p ${kernel_src_base}
 	[ -f ${kernel_org_src_dir}.tar.xz ] ||
-		wget -nv -O ${kernel_org_src_dir}.tar.xz \
+		wget -nv --no-check-certificate -O ${kernel_org_src_dir}.tar.xz \
 			https://www.kernel.org/pub/linux/kernel/${dir}/${kernel_name}.tar.xz || return 1
 }
 
@@ -746,7 +746,7 @@ prepare_gperf_source()
 	mkdir -p ${gperf_src_base}
 	[ -f ${gperf_org_src_dir}.tar.gz ] ||
 		wget -nv -O ${gperf_org_src_dir}.tar.gz \
-			https://ftp.gnu.org/gnu/gperf/${gperf_name}.tar.gz || return 1
+			http://ftp.gnu.org/gnu/gperf/${gperf_name}.tar.gz || return 1
 }
 
 prepare_glibc_source()
@@ -833,8 +833,8 @@ prepare_giflib_source()
 {
 	mkdir -p ${giflib_src_base}
 	[ -f ${giflib_org_src_dir}.tar.bz2 ] ||
-		wget -nv --trust-server-names -O ${giflib_org_src_dir}.tar.bz2 \
-			http://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1
+		wget -nv --trust-server-names --no-check-certificate -O ${giflib_org_src_dir}.tar.bz2 \
+			https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1
 }
 
 prepare_emacs_source()
@@ -865,8 +865,8 @@ prepare_zsh_source()
 {
 	mkdir -p ${zsh_src_base}
 	[ -f ${zsh_org_src_dir}.tar.gz ] ||
-		wget -nv --trust-server-names -O ${zsh_org_src_dir}.tar.gz \
-			http://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.gz/download || return 1
+		wget -nv --trust-server-names --no-check-certificate -O ${zsh_org_src_dir}.tar.gz \
+			https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.gz/download || return 1
 }
 
 prepare_openssl_source()
@@ -874,30 +874,30 @@ prepare_openssl_source()
 	mkdir -p ${openssl_src_base}
 	[ -f ${openssl_org_src_dir}.tar.gz ] ||
 		wget -nv -O ${openssl_org_src_dir}.tar.gz \
-			https://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return 1
+			http://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return 1
 }
 
 prepare_curl_source()
 {
 	mkdir -p ${curl_src_base}
 	[ -f ${curl_org_src_dir}.tar.bz2 ] ||
-		wget -nv -O ${curl_org_src_dir}.tar.bz2 \
-			http://curl.haxx.se/download/${curl_name}.tar.bz2 || return 1
+		wget -nv --no-check-certificate -O ${curl_org_src_dir}.tar.bz2 \
+			https://curl.haxx.se/download/${curl_name}.tar.bz2 || return 1
 }
 
 prepare_asciidoc_source()
 {
 	mkdir -p ${asciidoc_src_base}
 	[ -f ${asciidoc_org_src_dir}.zip ] ||
-		wget -nv -O ${asciidoc_org_src_dir}.zip \
-			http://sourceforge.net/projects/asciidoc/files/asciidoc/${asciidoc_ver}/${asciidoc_name}.zip/download || return 1
+		wget -nv --no-check-certificate -O ${asciidoc_org_src_dir}.zip \
+			https://sourceforge.net/projects/asciidoc/files/asciidoc/${asciidoc_ver}/${asciidoc_name}.zip/download || return 1
 }
 
 prepare_xmlto_source()
 {
 	mkdir -p ${xmlto_src_base}
 	[ -f ${xmlto_org_src_dir}.tar.bz2 ] ||
-		wget -nv -O ${xmlto_org_src_dir}.tar.bz2 \
+		wget -nv --no-check-certificate -O ${xmlto_org_src_dir}.tar.bz2 \
 			https://fedorahosted.org/releases/x/m/xmlto/${xmlto_name}.tar.bz2 || return 1
 }
 
@@ -929,7 +929,7 @@ prepare_git_source()
 {
 	mkdir -p ${git_src_base}
 	[ -f ${git_org_src_dir}.tar.xz ] ||
-		wget -nv -O ${git_org_src_dir}.tar.xz \
+		wget -nv --no-check-certificate -O ${git_org_src_dir}.tar.xz \
 			https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return 1
 }
 
@@ -937,7 +937,7 @@ prepare_cmake_source()
 {
 	mkdir -p ${cmake_src_base}
 	[ -f ${cmake_org_src_dir}.tar.gz ] ||
-		wget -nv -O ${cmake_org_src_dir}.tar.gz \
+		wget -nv --no-check-certificate -O ${cmake_org_src_dir}.tar.gz \
 			https://cmake.org/files/v`echo ${cmake_ver} | cut -f1,2 -d.`/${cmake_name}.tar.gz || return 1
 }
 
