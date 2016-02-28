@@ -47,7 +47,7 @@
 (which-function-mode 1)
 (eldoc-mode 1)
 (savehist-mode 1)
-(set-frame-font "Ricty 10" nil t)
+(set-frame-font "Ricty 14" nil t)
 (setq scroll-conservatively 1)
 (setq inhibit-startup-screen t)
 (setq initial-scratch-message "")
