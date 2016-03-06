@@ -1,5 +1,4 @@
 #!/bin/sh -e
-# [TODO] 同じインストールが何度も繰り返されないようにする。
 # [TODO] bash, diff, patch, find, LLD, LLDB, Polly
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
@@ -1007,6 +1006,7 @@ prepare_lldb_source()
 
 install_native_tar()
 {
+	[ -e ${prefix}/bin/tar -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_tar_source || return 1
 	[ -d ${tar_org_src_dir} ] ||
@@ -1020,6 +1020,7 @@ install_native_tar()
 
 install_native_wget()
 {
+	[ -e ${prefix}/bin/wget -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_wget_source || return 1
 	[ -d ${wget_org_src_dir} ] ||
@@ -1033,6 +1034,7 @@ install_native_wget()
 
 install_native_coreutils()
 {
+	[ -e ${prefix}/bin/cat -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_coreutils_source || return 1
 	[ -d ${coreutils_org_src_dir} ] ||
@@ -1046,6 +1048,7 @@ install_native_coreutils()
 
 install_native_bison()
 {
+	[ -e ${prefix}/bin/bison -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_bison_source || return 1
 	[ -d ${bison_org_src_dir} ] ||
@@ -1059,6 +1062,7 @@ install_native_bison()
 
 install_native_flex()
 {
+	[ -e ${prefix}/bin/flex -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_bison || return 1
 	prepare_flex_source || return 1
@@ -1074,6 +1078,7 @@ install_native_flex()
 
 install_native_m4()
 {
+	[ -e ${prefix}/bin/m4 -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_m4_source || return 1
 	[ -d ${m4_org_src_dir} ] ||
@@ -1087,6 +1092,7 @@ install_native_m4()
 
 install_native_autoconf()
 {
+	[ -e ${prefix}/bin/autoconf -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_autoconf_source || return 1
 	[ -d ${autoconf_org_src_dir} ] ||
@@ -1100,6 +1106,7 @@ install_native_autoconf()
 
 install_native_automake()
 {
+	[ -e ${prefix}/bin/automake -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_automake_source || return 1
 	[ -d ${automake_org_src_dir} ] ||
@@ -1113,6 +1120,7 @@ install_native_automake()
 
 install_native_libtool()
 {
+	[ -e ${prefix}/bin/libtool -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_flex || return 1
 	prepare_libtool_source || return 1
@@ -1127,6 +1135,7 @@ install_native_libtool()
 
 install_native_sed()
 {
+	[ -e ${prefix}/bin/sed -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_sed_source || return 1
 	[ -d ${sed_org_src_dir} ] ||
@@ -1140,6 +1149,7 @@ install_native_sed()
 
 install_native_gawk()
 {
+	[ -e ${prefix}/bin/gawk -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_gawk_source || return 1
 	[ -d ${gawk_org_src_dir} ] ||
@@ -1153,6 +1163,7 @@ install_native_gawk()
 
 install_native_make()
 {
+	[ -e ${prefix}/bin/make -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_make_source || return 1
 	[ -d ${make_org_src_dir} ] ||
@@ -1166,6 +1177,7 @@ install_native_make()
 
 install_native_binutils()
 {
+	[ -e ${prefix}/bin/as -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_bison || return 1
 	prepare_binutils_source || return 1
@@ -1192,6 +1204,7 @@ install_native_kernel_header()
 
 install_native_gperf()
 {
+	[ -e ${prefix}/bin/gperf -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_gperf_source || return 1
 	[ -d ${gperf_org_src_dir} ] ||
@@ -1205,6 +1218,7 @@ install_native_gperf()
 
 install_native_glibc()
 {
+	[ -e ${prefix}/lib/libc.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_kernel_header || return 1
 	install_native_gperf || return 1
@@ -1226,6 +1240,7 @@ install_native_glibc()
 
 install_native_gmp_mpfr_mpc()
 {
+	[ -e ${prefix}/lib/libgmp.so -a -e ${prefix}/lib/libmpfr.so -a -e ${prefix}/lib/libmpc.so -a -z "${force_install}" ] && return 0
 	prepare_gmp_mpfr_mpc_source || return 1
 
 	[ -d ${gmp_src_dir_ntv} ] ||
@@ -1274,6 +1289,7 @@ make_symbolic_links()
 
 install_native_gcc()
 {
+	[ -e ${prefix}/bin/gcc -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_binutils || return 1
 # install_native_glibc || return 1 # DANGEROUS!! pay attention to glibc version(compatibility)
@@ -1296,6 +1312,7 @@ install_native_gcc()
 
 install_native_ncurses()
 {
+	[ -e ${prefix}/lib/libncurses.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_ncurses_source || return 1
 	[ -d ${ncurses_org_src_dir} ] ||
@@ -1340,6 +1357,7 @@ EOF
 
 install_native_gdb()
 {
+	[ -e ${prefix}/bin/gdb -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_ncurses || return 1
 	prepare_gdb_source || return 1
@@ -1355,6 +1373,7 @@ install_native_gdb()
 
 install_native_zlib()
 {
+	[ -e ${prefix}/lib/libz.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_zlib_source || return 1
 	[ -d ${zlib_src_dir_ntv} ] ||
@@ -1369,6 +1388,7 @@ install_native_zlib()
 
 install_native_libpng()
 {
+	[ -e ${prefix}/lib/libpng.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_zlib || return 1
 	prepare_libpng_source || return 1
@@ -1385,6 +1405,7 @@ install_native_libpng()
 
 install_native_libtiff()
 {
+	[ -e ${prefix}/lib/libtiff.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_libtiff_source || return 1
 	[ -d ${libtiff_src_dir_ntv} ] ||
@@ -1400,6 +1421,7 @@ install_native_libtiff()
 
 install_native_libjpeg()
 {
+	[ -e ${prefix}/lib/libjpeg.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_libjpeg_source || return 1
 	[ -d ${libjpeg_src_dir_ntv} ] ||
@@ -1415,6 +1437,7 @@ install_native_libjpeg()
 
 install_native_giflib()
 {
+	[ -e ${prefix}/lib/libgif.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_giflib_source || return 1
 	[ -d ${giflib_src_dir_ntv} ] ||
@@ -1430,6 +1453,7 @@ install_native_giflib()
 
 install_native_emacs()
 {
+	[ -e ${prefix}/bin/emacs -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_ncurses || return 1
 	install_native_zlib || return 1
@@ -1449,6 +1473,7 @@ install_native_emacs()
 
 install_native_global()
 {
+	[ -e ${prefix}/bin/global -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_global_source || return 1
 	[ -d ${global_org_src_dir} ] ||
@@ -1462,6 +1487,7 @@ install_native_global()
 
 install_native_screen()
 {
+	[ -e ${prefix}/bin/screen -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_screen_source || return 1
 	[ -d ${screen_org_src_dir} ] ||
@@ -1476,6 +1502,7 @@ install_native_screen()
 
 install_native_zsh()
 {
+	[ -e ${prefix}/bin/zsh -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_zsh_source || return 1
 	[ -d ${zsh_org_src_dir} ] ||
@@ -1489,6 +1516,7 @@ install_native_zsh()
 
 install_native_openssl()
 {
+	[ \( -e ${prefix}/lib/libssl.so -o -e ${prefix}/lib64/libssl.so \) -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_openssl_source || return 1
 	[ -d ${openssl_org_src_dir} ] ||
@@ -1502,6 +1530,7 @@ install_native_openssl()
 
 install_native_curl()
 {
+	[ -e ${prefix}/bin/curl -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_openssl || return 1
 	prepare_curl_source || return 1
@@ -1516,6 +1545,7 @@ install_native_curl()
 
 install_native_asciidoc()
 {
+	[ -e ${prefix}/bin/asciidoc -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_asciidoc_source || return 1
 	[ -d ${asciidoc_org_src_dir} ] ||
@@ -1529,6 +1559,7 @@ install_native_asciidoc()
 
 install_native_xmlto()
 {
+	[ -e ${prefix}/bin/xmlto -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_xmlto_source || return 1
 	[ -d ${xmlto_org_src_dir} ] ||
@@ -1547,6 +1578,7 @@ install_native_xmlto()
 
 install_native_libxml2()
 {
+	[ -e ${prefix}/lib/libxml2.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_libxml2_source || return 1
 	[ -d ${libxml2_org_src_dir} ] ||
@@ -1560,6 +1592,7 @@ install_native_libxml2()
 
 install_native_libxslt()
 {
+	[ -e ${prefix}/lib/libxslt.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_libxslt_source || return 1
 	[ -d ${libxslt_org_src_dir} ] ||
@@ -1573,6 +1606,7 @@ install_native_libxslt()
 
 install_native_gettext()
 {
+	[ -e ${prefix}/bin/gettext -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_gettext_source || return 1
 	[ -d ${gettext_org_src_dir} ] ||
@@ -1587,6 +1621,7 @@ install_native_gettext()
 
 install_native_git()
 {
+	[ -e ${prefix}/bin/git -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_curl || return 1
 	install_native_asciidoc || return 1
@@ -1607,6 +1642,7 @@ install_native_git()
 
 install_native_cmake()
 {
+	[ -e ${prefix}/bin/cmake -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_cmake_source || return 1
 	[ -d ${cmake_org_src_dir} ] ||
@@ -1620,6 +1656,7 @@ install_native_cmake()
 
 install_native_llvm()
 {
+	[ -e ${prefix}/lib/libLLVMCore.a -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_cmake || return 1
 	prepare_llvm_source || return 1
@@ -1634,6 +1671,7 @@ install_native_llvm()
 
 install_native_libcxxabi()
 {
+	[ -e ${prefix}/lib/libc++abi.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_cmake || return 1
 	prepare_libcxxabi_source || return 1
@@ -1648,6 +1686,7 @@ install_native_libcxxabi()
 
 install_native_libcxx()
 {
+	[ -e ${prefix}/lib/libc++.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_cmake || return 1
 	install_native_libcxxabi || return 1
@@ -1677,6 +1716,7 @@ install_native_clang_rt()
 
 install_native_clang()
 {
+	[ -e ${prefix}/bin/clang -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_cmake || return 1
 	install_native_llvm || return 1
@@ -1760,6 +1800,7 @@ full_native()
 
 install_cross_binutils()
 {
+	[ -e ${prefix}/bin/${target}-as -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_crs} ] ||
@@ -1907,6 +1948,7 @@ install_cross_gcc()
 
 install_cross_gdb()
 {
+	[ -e ${prefix}/bin/${target}-gdb -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_gdb_source || return 1
 	[ -d ${gdb_org_src_dir} ] ||
