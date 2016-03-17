@@ -48,7 +48,7 @@
 : ${gettext_ver:=0.19.7}
 : ${git_ver:=2.7.0}
 : ${cmake_ver:=3.4.3}
-: ${llvm_ver:=3.7.1}
+: ${llvm_ver:=3.8.0}
 
 : ${prefix:=/toolchains}
 : ${target:=`uname -m`-linux-gnu}
