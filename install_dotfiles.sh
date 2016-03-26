@@ -1,10 +1,4 @@
 #!/bin/sh -e
 
-dir=`dirname \`readlink -f $0\``
-ln -sf ${dir}/.exrc ${HOME}
-ln -sf ${dir}/.vimrc ${HOME}
-ln -sf ${dir}/.zshrc ${HOME}
-ln -sf ${dir}/.zlogin ${HOME}
-ln -sf ${dir}/.gdbinit ${HOME}
-ln -sf ${dir}/.screenrc ${HOME}
-mkdir -p ${HOME}/.emacs.d && ln -sf ${dir}/init.el ${HOME}/.emacs.d
+dir=`dirname \`readlink -f $0\``/dotfiles
+find ${dir} -mindepth 1 -maxdepth 1 -exec cp -t ${HOME} -rf {} +
