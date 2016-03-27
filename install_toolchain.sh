@@ -49,6 +49,7 @@
 : ${git_ver:=2.7.0}
 : ${cmake_ver:=3.4.3}
 : ${llvm_ver:=3.8.0}
+: ${boost_ver:=1_60_0}
 
 : ${prefix:=/toolchains}
 : ${target:=`uname -m`-linux-gnu}
@@ -169,6 +170,8 @@ help()
 		Specify the version of Cmake you want, currently '${cmake_ver}'.
 	llvm_ver
 		Specify the version of llvm you want, currently '${llvm_ver}'.
+	boost_ver
+		Specify the version of boost you want, currently '${boost_ver}'.
 
 [Examples]
 	For Raspberry pi2
@@ -303,7 +306,8 @@ clean()
 		${libcxxabi_org_src_dir} ${libcxxabi_bld_dir} \
 		${clang_extra_org_src_dir} ${clang_extra_bld_dir} \
 		${lld_org_src_dir} ${lld_bld_dir} \
-		${lldb_org_src_dir} ${lldb_bld_dir}
+		${lldb_org_src_dir} ${lldb_bld_dir} \
+		${boost_org_src_dir}
 }
 
 list()
@@ -565,6 +569,10 @@ case ${target} in
 	lldb_src_base=${prefix}/src/lldb
 	lldb_org_src_dir=${lldb_src_base}/${lldb_name}
 	lldb_bld_dir=${lldb_src_base}/${lldb_name}-build
+
+	boost_name=boost_${boost_ver}
+	boost_src_base=${prefix}/src/boost
+	boost_org_src_dir=${boost_src_base}/${boost_name}
 
 	echo ${PATH} | grep -q ${prefix}/bin || PATH=${prefix}/bin:${PATH}
 }
@@ -1002,6 +1010,14 @@ prepare_lldb_source()
 	[ -f ${lldb_org_src_dir}.tar.xz ] ||
 		wget -nv -O ${lldb_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${lldb_name}.tar.xz || return 1
+}
+
+prepare_boost_source()
+{
+	mkdir -p ${boost_src_base}
+	[ -f ${boost_org_src_dir}.tar.bz2 ] ||
+		wget -nv --trust-server-names --no-check-certificate -O ${boost_org_src_dir}.tar.bz2 \
+			https://sourceforge.net/projects/boost/files/boost/`echo ${boost_ver} | tr _ .`/${boost_name}.tar.bz2/download || return 1
 }
 
 install_native_tar()
@@ -1774,6 +1790,18 @@ install_native_lldb()
 	make -C ${lldb_bld_dir} -j ${jobs} install || return 1
 }
 
+install_native_boost()
+{
+	install_prerequisites || return 1
+	prepare_boost_source || return 1
+	[ -d ${boost_org_src_dir} ] ||
+		tar xjvf ${boost_org_src_dir}.tar.bz2 -C ${boost_src_base} || return 1
+	(cd ${boost_org_src_dir}
+	./bootstrap.sh || return 1
+	./b2 -j ${jobs} || return 1
+	./b2 install || return 1) || return 1
+}
+
 full_native()
 {
 	install_native_tar || return 1
@@ -1796,6 +1824,7 @@ full_native()
 	install_native_git || return 1
 	install_native_cmake || return 1
 	install_native_clang || return 1
+	install_native_boost || return 1
 }
 
 install_cross_binutils()
