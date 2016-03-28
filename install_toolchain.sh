@@ -1797,9 +1797,9 @@ install_native_boost()
 	[ -d ${boost_org_src_dir} ] ||
 		tar xjvf ${boost_org_src_dir}.tar.bz2 -C ${boost_src_base} || return 1
 	(cd ${boost_org_src_dir}
-	./bootstrap.sh || return 1
-	./b2 -j ${jobs} || return 1
-	./b2 install || return 1) || return 1
+	./bootstrap.sh --prefix=${prefix} || return 1
+	./b2 -j ${jobs}
+	./b2 install)
 }
 
 full_native()
