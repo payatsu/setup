@@ -330,7 +330,7 @@ set_variables()
 	x86_64*)     native_linux_arch=x86;;
 	*) echo Unknown build architecture: ${build} >&2; return 1;;
 	esac
-case ${target} in
+	case ${target} in
 	arm*)        cross_linux_arch=arm;;
 	i?86*)       cross_linux_arch=x86;;
 	microblaze*) cross_linux_arch=microblaze;;
@@ -628,6 +628,15 @@ install_prerequisites()
 	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1 ;;
 	esac
 	prerequisites_have_been_already_installed=yes
+}
+
+unpack_tar()
+{
+	[ -d $1 ] && return 0
+	[ -f $1.tar.gz  ] && tar xzvf $1.tar.gz  -C $2 && return 0
+	[ -f $1.tar.bz2 ] && tar xjvf $1.tar.bz2 -C $2 && return 0
+	[ -f $1.tar.xz  ] && tar xJvf $1.tar.xz  -C $2 && return 0
+	return 1
 }
 
 prepare_tar_source()
@@ -1025,8 +1034,7 @@ install_native_tar()
 	[ -e ${prefix}/bin/tar -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_tar_source || return 1
-	[ -d ${tar_org_src_dir} ] ||
-		tar xzvf ${tar_org_src_dir}.tar.gz -C ${tar_src_base} || return 1
+	unpack_tar ${tar_org_src_dir} ${tar_src_base} || return 1
 	[ -f ${tar_org_src_dir}/Makefile ] ||
 		(cd ${tar_org_src_dir}
 		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} --build=${build}) || return 1
@@ -1039,8 +1047,7 @@ install_native_wget()
 	[ -e ${prefix}/bin/wget -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_wget_source || return 1
-	[ -d ${wget_org_src_dir} ] ||
-		tar xJvf ${wget_org_src_dir}.tar.xz -C ${wget_src_base} || return 1
+	unpack_tar ${wget_org_src_dir} ${wget_src_base} || return 1
 	[ -f ${wget_org_src_dir}/Makefile ] ||
 		(cd ${wget_org_src_dir}
 		PKG_CONFIG_PATH=${prefix}/lib64/pkgconfig ./configure --prefix=${prefix} --build=${build} --with-ssl=openssl) || return 1
@@ -1053,8 +1060,7 @@ install_native_coreutils()
 	[ -e ${prefix}/bin/cat -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_coreutils_source || return 1
-	[ -d ${coreutils_org_src_dir} ] ||
-		tar xJvf ${coreutils_org_src_dir}.tar.xz -C ${coreutils_src_base} || return 1
+	unpack_tar ${coreutils_org_src_dir} ${coreutils_src_base} || return 1
 	[ -f ${coreutils_org_src_dir}/Makefile ] ||
 		(cd ${coreutils_org_src_dir}
 		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} --build=${build}) || return 1
@@ -1067,8 +1073,7 @@ install_native_bison()
 	[ -e ${prefix}/bin/bison -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_bison_source || return 1
-	[ -d ${bison_org_src_dir} ] ||
-		tar xJvf ${bison_org_src_dir}.tar.xz -C ${bison_src_base} || return 1
+	unpack_tar ${bison_org_src_dir} ${bison_src_base} || return 1
 	[ -f ${bison_org_src_dir}/Makefile ] ||
 		(cd ${bison_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
@@ -1082,8 +1087,7 @@ install_native_flex()
 	install_prerequisites || return 1
 	install_native_bison || return 1
 	prepare_flex_source || return 1
-	[ -d ${flex_org_src_dir} ] ||
-		tar xJvf ${flex_org_src_dir}.tar.xz -C ${flex_src_base} || return 1
+	unpack_tar ${flex_org_src_dir} ${flex_src_base} || return 1
 	[ -f ${flex_org_src_dir}/Makefile ] ||
 		(cd ${flex_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
@@ -1097,8 +1101,7 @@ install_native_m4()
 	[ -e ${prefix}/bin/m4 -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_m4_source || return 1
-	[ -d ${m4_org_src_dir} ] ||
-		tar xJvf ${m4_org_src_dir}.tar.xz -C ${m4_src_base} || return 1
+	unpack_tar ${m4_org_src_dir} ${m4_src_base} || return 1
 	[ -f ${m4_org_src_dir}/Makefile ] ||
 		(cd ${m4_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
@@ -1111,8 +1114,7 @@ install_native_autoconf()
 	[ -e ${prefix}/bin/autoconf -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_autoconf_source || return 1
-	[ -d ${autoconf_org_src_dir} ] ||
-		tar xJvf ${autoconf_org_src_dir}.tar.xz -C ${autoconf_src_base} || return 1
+	unpack_tar ${autoconf_org_src_dir} ${autoconf_src_base} || return 1
 	[ -f ${autoconf_org_src_dir}/Makefile ] ||
 		(cd ${autoconf_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
@@ -1125,8 +1127,7 @@ install_native_automake()
 	[ -e ${prefix}/bin/automake -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_automake_source || return 1
-	[ -d ${automake_org_src_dir} ] ||
-		tar xJvf ${automake_org_src_dir}.tar.xz -C ${automake_src_base} || return 1
+	unpack_tar ${automake_org_src_dir} ${automake_src_base} || return 1
 	[ -f ${automake_org_src_dir}/Makefile ] ||
 		(cd ${automake_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
@@ -1140,8 +1141,7 @@ install_native_libtool()
 	install_prerequisites || return 1
 	install_native_flex || return 1
 	prepare_libtool_source || return 1
-	[ -d ${libtool_org_src_dir} ] ||
-		tar xJvf ${libtool_org_src_dir}.tar.xz -C ${libtool_src_base} || return 1
+	unpack_tar ${libtool_org_src_dir} ${libtool_src_base} || return 1
 	[ -f ${libtool_org_src_dir}/Makefile ] ||
 		(cd ${libtool_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
@@ -1154,8 +1154,7 @@ install_native_sed()
 	[ -e ${prefix}/bin/sed -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_sed_source || return 1
-	[ -d ${sed_org_src_dir} ] ||
-		tar xjvf ${sed_org_src_dir}.tar.bz2 -C ${sed_src_base} || return 1
+	unpack_tar ${sed_org_src_dir} ${sed_src_base} || return 1
 	[ -f ${sed_org_src_dir}/Makefile ] ||
 		(cd ${sed_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
@@ -1168,8 +1167,7 @@ install_native_gawk()
 	[ -e ${prefix}/bin/gawk -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_gawk_source || return 1
-	[ -d ${gawk_org_src_dir} ] ||
-		tar xJvf ${gawk_org_src_dir}.tar.xz -C ${gawk_src_base} || return 1
+	unpack_tar ${gawk_org_src_dir} ${gawk_src_base} || return 1
 	[ -f ${gawk_org_src_dir}/Makefile ] ||
 		(cd ${gawk_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
@@ -1182,8 +1180,7 @@ install_native_make()
 	[ -e ${prefix}/bin/make -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_make_source || return 1
-	[ -d ${make_org_src_dir} ] ||
-		tar xzvf ${make_org_src_dir}.tar.gz -C ${make_src_base} || return 1
+	unpack_tar ${make_org_src_dir} ${make_src_base} || return 1
 	[ -f ${make_org_src_dir}/Makefile ] ||
 		(cd ${make_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return 1
@@ -1223,8 +1220,7 @@ install_native_gperf()
 	[ -e ${prefix}/bin/gperf -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_gperf_source || return 1
-	[ -d ${gperf_org_src_dir} ] ||
-		tar xzvf ${gperf_org_src_dir}.tar.gz -C ${gperf_src_base} || return 1
+	unpack_tar ${gperf_org_src_dir} ${gperf_src_base} || return 1
 	[ -f ${gperf_org_src_dir}/Makefile ] ||
 		(cd ${gperf_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
@@ -1313,8 +1309,7 @@ install_native_gcc()
 	install_native_gmp_mpfr_mpc || return 1
 	prepare_gcc_source || return 1
 	make_symbolic_links || return 1
-	[ -d ${gcc_org_src_dir} ] ||
-		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
+	unpack_tar ${gcc_org_src_dir} ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_ntv}
 	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_ntv}
@@ -1331,8 +1326,7 @@ install_native_ncurses()
 	[ -e ${prefix}/lib/libncurses.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_ncurses_source || return 1
-	[ -d ${ncurses_org_src_dir} ] ||
-		tar xzvf ${ncurses_org_src_dir}.tar.gz -C ${ncurses_src_base} || return 1
+	unpack_tar ${ncurses_org_src_dir} ${ncurses_src_base} || return 1
 
 	# workaround for GCC 5.x
 	patch -N -p0 -d ${ncurses_org_src_dir} <<EOF || [ $? = 1 ]  || return 1
@@ -1377,8 +1371,7 @@ install_native_gdb()
 	install_prerequisites || return 1
 	install_native_ncurses || return 1
 	prepare_gdb_source || return 1
-	[ -d ${gdb_org_src_dir} ] ||
-		tar xJvf ${gdb_org_src_dir}.tar.xz -C ${gdb_src_base} || return 1
+	unpack_tar ${gdb_org_src_dir} ${gdb_src_base} || return 1
 	mkdir -p ${gdb_bld_dir_ntv}
 	[ -f ${gdb_bld_dir_ntv}/Makefile ] ||
 		(cd ${gdb_bld_dir_ntv}
@@ -1478,8 +1471,7 @@ install_native_emacs()
 	install_native_libjpeg || return 1
 	install_native_giflib || return 1
 	prepare_emacs_source || return 1
-	[ -d ${emacs_org_src_dir} ] ||
-		tar xJvf ${emacs_org_src_dir}.tar.xz -C ${emacs_src_base} || return 1
+	unpack_tar ${emacs_org_src_dir} ${emacs_src_base} || return 1
 	[ -f ${emacs_org_src_dir}/Makefile ] ||
 		(cd ${emacs_org_src_dir}
 		./configure --prefix=${prefix} --without-xpm) || return 1
@@ -1492,8 +1484,7 @@ install_native_global()
 	[ -e ${prefix}/bin/global -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_global_source || return 1
-	[ -d ${global_org_src_dir} ] ||
-		tar xzvf ${global_org_src_dir}.tar.gz -C ${global_src_base} || return 1
+	unpack_tar ${global_org_src_dir} ${global_src_base} || return 1
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
 		CPPFLAGS='-I${prefix}/include/ncurses' ./configure --prefix=${prefix} --disable-gtagscscope) || return 1
@@ -1506,8 +1497,7 @@ install_native_screen()
 	[ -e ${prefix}/bin/screen -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_screen_source || return 1
-	[ -d ${screen_org_src_dir} ] ||
-		tar xzvf ${screen_org_src_dir}.tar.gz -C ${screen_src_base} || return 1
+	unpack_tar ${screen_org_src_dir} ${screen_src_base} || return 1
 	[ -f ${screen_org_src_dir}/Makefile ] ||
 		(cd ${screen_org_src_dir}
 		./configure --prefix=${prefix} --enable-color256 --enable-rxvt_osc) || return 1
@@ -1521,8 +1511,7 @@ install_native_zsh()
 	[ -e ${prefix}/bin/zsh -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_zsh_source || return 1
-	[ -d ${zsh_org_src_dir} ] ||
-		tar xzvf ${zsh_org_src_dir}.tar.gz -C ${zsh_src_base} || return 1
+	unpack_tar ${zsh_org_src_dir} ${zsh_src_base} || return 1
 	[ -f ${zsh_org_src_dir}/Makefile ] ||
 		(cd ${zsh_org_src_dir}
 		./configure --prefix=${prefix} --host=${build}) || return 1
@@ -1535,8 +1524,7 @@ install_native_openssl()
 	[ \( -e ${prefix}/lib/libssl.so -o -e ${prefix}/lib64/libssl.so \) -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_openssl_source || return 1
-	[ -d ${openssl_org_src_dir} ] ||
-		tar xzvf ${openssl_org_src_dir}.tar.gz -C ${openssl_src_base} || return 1
+	unpack_tar ${openssl_org_src_dir} ${openssl_src_base} || return 1
 	(cd ${openssl_org_src_dir}
 	./config --prefix=${prefix} shared) || return 1
 	make -C ${openssl_org_src_dir} -j ${jobs} || return 1
@@ -1550,8 +1538,7 @@ install_native_curl()
 	install_prerequisites || return 1
 	install_native_openssl || return 1
 	prepare_curl_source || return 1
-	[ -d ${curl_org_src_dir} ] ||
-		tar xjvf ${curl_org_src_dir}.tar.bz2 -C ${curl_src_base} || return 1
+	unpack_tar ${curl_org_src_dir} ${curl_src_base} || return 1
 	(cd ${curl_org_src_dir}
 	./configure --prefix=${prefix} --build=${build} --host=${build} --enable-optimize --enable-ipv6 --with-ssl) || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} || return 1
@@ -1578,8 +1565,7 @@ install_native_xmlto()
 	[ -e ${prefix}/bin/xmlto -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_xmlto_source || return 1
-	[ -d ${xmlto_org_src_dir} ] ||
-		tar xjvf ${xmlto_org_src_dir}.tar.bz2 -C ${xmlto_src_base} || return 1
+	unpack_tar ${xmlto_org_src_dir} ${xmlto_src_base} || return 1
 	[ -f ${xmlto_org_src_dir}/Makefile ] ||
 		(cd ${xmlto_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
@@ -1597,8 +1583,7 @@ install_native_libxml2()
 	[ -e ${prefix}/lib/libxml2.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_libxml2_source || return 1
-	[ -d ${libxml2_org_src_dir} ] ||
-		tar xzvf ${libxml2_org_src_dir}.tar.gz -C ${libxml2_src_base} || return 1
+	unpack_tar ${libxml2_org_src_dir} ${libxml2_src_base} || return 1
 	[ -f ${libxml2_org_src_dir}/Makefile ] ||
 		(cd ${libxml2_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return 1
@@ -1611,8 +1596,7 @@ install_native_libxslt()
 	[ -e ${prefix}/lib/libxslt.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_libxslt_source || return 1
-	[ -d ${libxslt_org_src_dir} ] ||
-		tar xzvf ${libxslt_org_src_dir}.tar.gz -C ${libxslt_src_base} || return 1
+	unpack_tar ${libxslt_org_src_dir} ${libxslt_src_base} || return 1
 	[ -f ${libxslt_org_src_dir}/Makefile ] ||
 		(cd ${libxslt_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return 1
@@ -1625,8 +1609,7 @@ install_native_gettext()
 	[ -e ${prefix}/bin/gettext -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_gettext_source || return 1
-	[ -d ${gettext_org_src_dir} ] ||
-		tar xJvf ${gettext_org_src_dir}.tar.xz -C ${gettext_src_base} || return 1
+	unpack_tar ${gettext_org_src_dir} ${gettext_src_base} || return 1
 	[ -f ${gettext_org_src_dir}/Makefile ] ||
 		(cd ${gettext_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
@@ -1646,8 +1629,7 @@ install_native_git()
 	install_native_libxslt || return 1
 	install_native_gettext || return 1
 	prepare_git_source || return 1
-	[ -d ${git_org_src_dir} ] ||
-		tar xJvf ${git_org_src_dir}.tar.xz -C ${git_src_base} || return 1
+	unpack_tar ${git_org_src_dir} ${git_src_base} || return 1
 	make -C ${git_org_src_dir} -j ${jobs} configure || return 1
 	(cd ${git_org_src_dir}
 	./configure --prefix=${prefix} --without-tcltk) || return 1
@@ -1661,8 +1643,7 @@ install_native_cmake()
 	[ -e ${prefix}/bin/cmake -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_cmake_source || return 1
-	[ -d ${cmake_org_src_dir} ] ||
-		tar xzvf ${cmake_org_src_dir}.tar.gz -C ${cmake_src_base} || return 1
+	unpack_tar ${cmake_org_src_dir} ${cmake_src_base} || return 1
 	[ -f ${cmake_org_src_dir}/Makefile ] ||
 		(cd ${cmake_org_src_dir}
 		./bootstrap --prefix=${prefix} --parallel=${jobs}) || return 1
@@ -1676,8 +1657,7 @@ install_native_llvm()
 	install_prerequisites || return 1
 	install_native_cmake || return 1
 	prepare_llvm_source || return 1
-	[ -d ${llvm_org_src_dir} ] ||
-		tar xJvf ${llvm_org_src_dir}.tar.xz -C ${llvm_src_base} || return 1
+	unpack_tar ${llvm_org_src_dir} ${llvm_src_base} || return 1
 	mkdir -p ${llvm_bld_dir}
 	(cd ${llvm_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1
@@ -1691,8 +1671,7 @@ install_native_libcxxabi()
 	install_prerequisites || return 1
 	install_native_cmake || return 1
 	prepare_libcxxabi_source || return 1
-	[ -d ${libcxxabi_org_src_dir} ] ||
-		tar xJvf ${libcxxabi_org_src_dir}.tar.xz -C ${libcxxabi_src_base} || return 1
+	unpack_tar ${libcxxabi_org_src_dir} ${libcxxabi_src_base} || return 1
 	mkdir -p ${libcxxabi_bld_dir}
 	(cd ${libcxxabi_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxxabi_org_src_dir}) || return 1
@@ -1707,8 +1686,7 @@ install_native_libcxx()
 	install_native_cmake || return 1
 	install_native_libcxxabi || return 1
 	prepare_libcxx_source || return 1
-	[ -d ${libcxx_org_src_dir} ] ||
-		tar xJvf ${libcxx_org_src_dir}.tar.xz -C ${libcxx_src_base} || return 1
+	unpack_tar ${libcxx_org_src_dir} ${libcxx_src_base} || return 1
 	mkdir -p ${libcxx_bld_dir}
 	(cd ${libcxx_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxx_org_src_dir}) || return 1
@@ -1721,8 +1699,7 @@ install_native_clang_rt()
 	install_prerequisites || return 1
 	install_native_cmake || return 1
 	prepare_clang_rt_source || return 1
-	[ -d ${clang_rt_org_src_dir} ] ||
-		tar xJvf ${clang_rt_org_src_dir}.tar.xz -C ${clang_rt_src_base} || return 1
+	unpack_tar ${clang_rt_org_src_dir} ${clang_rt_src_base} || return 1
 	mkdir -p ${clang_rt_bld_dir}
 	(cd ${clang_rt_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_rt_org_src_dir}) || return 1
@@ -1739,8 +1716,7 @@ install_native_clang()
 	install_native_libcxx || return 1
 	install_native_clang_rt || return 1
 	prepare_clang_source || return 1
-	[ -d ${clang_org_src_dir} ] ||
-		tar xJvf ${clang_org_src_dir}.tar.xz -C ${clang_src_base} || return 1
+	unpack_tar ${clang_org_src_dir} ${clang_src_base} || return 1
 	mkdir -p ${clang_bld_dir}
 	(cd ${clang_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_org_src_dir}) || return 1
@@ -1753,8 +1729,7 @@ install_native_clang_extra()
 	install_prerequisites || return 1
 	install_native_cmake || return 1
 	prepare_clang_extra_source || return 1
-	[ -d ${clang_extra_org_src_dir} ] ||
-		tar xJvf ${clang_extra_org_src_dir}.tar.xz -C ${clang_extra_src_base} || return 1
+	unpack_tar ${clang_extra_org_src_dir} ${clang_extra_src_base} || return 1
 	mkdir -p ${clang_extra_bld_dir}
 	(cd ${clang_extra_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_extra_org_src_dir}) || return 1
@@ -1767,8 +1742,7 @@ install_native_lld()
 	install_prerequisites || return 1
 	install_native_cmake || return 1
 	prepare_lld_source || return 1
-	[ -d ${lld_org_src_dir} ] ||
-		tar xJvf ${lld_org_src_dir}.tar.xz -C ${lld_src_base} || return 1
+	unpack_tar ${lld_org_src_dir} ${lld_src_base} || return 1
 	mkdir -p ${lld_bld_dir}
 	(cd ${lld_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${lld_org_src_dir}) || return 1
@@ -1781,8 +1755,7 @@ install_native_lldb()
 	install_prerequisites || return 1
 	install_native_cmake || return 1
 	prepare_lldb_source || return 1
-	[ -d ${lldb_org_src_dir} ] ||
-		tar xJvf ${lldb_org_src_dir}.tar.xz -C ${lldb_src_base} || return 1
+	unpack_tar ${lldb_org_src_dir} ${lldb_src_base} || return 1
 	mkdir -p ${lldb_bld_dir}
 	(cd ${lldb_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREIFX=${prefix} ${lldb_org_src_dir}) || return 1
@@ -1794,8 +1767,7 @@ install_native_boost()
 {
 	install_prerequisites || return 1
 	prepare_boost_source || return 1
-	[ -d ${boost_org_src_dir} ] ||
-		tar xjvf ${boost_org_src_dir}.tar.bz2 -C ${boost_src_base} || return 1
+	unpack_tar ${boost_org_src_dir} ${boost_src_base} || return 1
 	(cd ${boost_org_src_dir}
 	./bootstrap.sh --prefix=${prefix} || return 1
 	./b2 -j ${jobs}
