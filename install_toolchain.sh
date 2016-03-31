@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# [TODO] bash, diff, patch, find, LLD, LLDB, Polly
+# [TODO] bash, find, LLD, LLDB, Polly
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
@@ -36,7 +36,10 @@
 : ${libjpeg_ver:=v9b}
 : ${giflib_ver:=5.1.2}
 : ${emacs_ver:=24.5}
+: ${grep_ver:=2.24}
 : ${global_ver:=6.5.2}
+: ${diffutils_ver:=3.3}
+: ${patch_ver:=2.7.5}
 : ${screen_ver:=4.3.1}
 : ${zsh_ver:=5.2}
 : ${openssl_ver:=1.0.2e}
@@ -144,8 +147,14 @@ help()
 		Specify the version of giflib you want, currently '${giflib_ver}'.
 	emacs_ver
 		Specify the version of GNU Emacs you want, currently '${emacs_ver}'.
+	grep_ver
+		Specify the version of GNU Grep you want, currently '${grep_ver}'.
 	global_ver
 		Specify the version of GNU Global you want, currently '${global_ver}'.
+	diffutils_ver
+		Specify the version of GNU diffutils you want, currently '${diffutils_ver}'.
+	patch_ver
+		Specify the version of GNU Patch you want, currently '${patch_ver}'.
 	screen_ver
 		Specify the version of GNU Screen you want, currently '${screen_ver}'.
 	zsh_ver
@@ -286,7 +295,10 @@ clean()
 		${libjpeg_src_dir_ntv} \
 		${giflib_src_dir_ntv} \
 		${emacs_org_src_dir} \
+		${grep_org_src_dir} \
 		${global_org_src_dir} \
+		${diffutils_org_src_dir} \
+		${patch_org_src_dir} \
 		${screen_org_src_dir} \
 		${zsh_org_src_dir} \
 		${openssl_org_src_dir} \
@@ -482,9 +494,21 @@ set_variables()
 	emacs_src_base=${prefix}/src/emacs
 	emacs_org_src_dir=${emacs_src_base}/${emacs_name}
 
+	grep_name=grep-${grep_ver}
+	grep_src_base=${prefix}/src/grep
+	grep_org_src_dir=${grep_src_base}/${grep_name}
+
 	global_name=global-${global_ver}
 	global_src_base=${prefix}/src/global
 	global_org_src_dir=${global_src_base}/${global_name}
+
+	diffutils_name=diffutils-${diffutils_ver}
+	diffutils_src_base=${prefix}/src/diffutils
+	diffutils_org_src_dir=${diffutils_src_base}/${diffutils_name}
+
+	patch_name=patch-${patch_ver}
+	patch_src_base=${prefix}/src/patch
+	patch_org_src_dir=${patch_src_base}/${patch_name}
 
 	screen_name=screen-${screen_ver}
 	screen_src_base=${prefix}/src/screen
@@ -861,12 +885,36 @@ prepare_emacs_source()
 			http://ftp.gnu.org/gnu/emacs/${emacs_name}.tar.xz || return 1
 }
 
+prepare_grep_source()
+{
+	mkdir -p ${grep_src_base}
+	[ -f ${grep_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${grep_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/grep/${grep_name}.tar.xz || return 1
+}
+
 prepare_global_source()
 {
 	mkdir -p ${global_src_base}
 	[ -f ${global_org_src_dir}.tar.gz ] ||
 		wget -nv -O ${global_org_src_dir}.tar.gz \
 			http://ftp.gnu.org/gnu/global/${global_name}.tar.gz || return 1
+}
+
+prepare_diffutils_source()
+{
+	mkdir -p ${diffutils_src_base}
+	[ -f ${diffutils_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${diffutils_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/diffutils/${diffutils_name}.tar.xz || return 1
+}
+
+prepare_patch_source()
+{
+	mkdir -p ${patch_src_base}
+	[ -f ${patch_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${patch_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/patch/${patch_name}.tar.xz || return 1
 }
 
 prepare_screen_source()
@@ -1031,7 +1079,7 @@ prepare_boost_source()
 
 install_native_tar()
 {
-	[ -e ${prefix}/bin/tar -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/tar -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_tar_source || return 1
 	unpack_tar ${tar_org_src_dir} ${tar_src_base} || return 1
@@ -1044,7 +1092,7 @@ install_native_tar()
 
 install_native_wget()
 {
-	[ -e ${prefix}/bin/wget -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/wget -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_wget_source || return 1
 	unpack_tar ${wget_org_src_dir} ${wget_src_base} || return 1
@@ -1057,7 +1105,7 @@ install_native_wget()
 
 install_native_coreutils()
 {
-	[ -e ${prefix}/bin/cat -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/cat -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_coreutils_source || return 1
 	unpack_tar ${coreutils_org_src_dir} ${coreutils_src_base} || return 1
@@ -1070,7 +1118,7 @@ install_native_coreutils()
 
 install_native_bison()
 {
-	[ -e ${prefix}/bin/bison -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/bison -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_bison_source || return 1
 	unpack_tar ${bison_org_src_dir} ${bison_src_base} || return 1
@@ -1083,7 +1131,7 @@ install_native_bison()
 
 install_native_flex()
 {
-	[ -e ${prefix}/bin/flex -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/flex -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_bison || return 1
 	prepare_flex_source || return 1
@@ -1098,7 +1146,7 @@ install_native_flex()
 
 install_native_m4()
 {
-	[ -e ${prefix}/bin/m4 -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/m4 -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_m4_source || return 1
 	unpack_tar ${m4_org_src_dir} ${m4_src_base} || return 1
@@ -1111,7 +1159,7 @@ install_native_m4()
 
 install_native_autoconf()
 {
-	[ -e ${prefix}/bin/autoconf -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/autoconf -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_autoconf_source || return 1
 	unpack_tar ${autoconf_org_src_dir} ${autoconf_src_base} || return 1
@@ -1124,7 +1172,7 @@ install_native_autoconf()
 
 install_native_automake()
 {
-	[ -e ${prefix}/bin/automake -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/automake -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_automake_source || return 1
 	unpack_tar ${automake_org_src_dir} ${automake_src_base} || return 1
@@ -1137,7 +1185,7 @@ install_native_automake()
 
 install_native_libtool()
 {
-	[ -e ${prefix}/bin/libtool -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/libtool -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_flex || return 1
 	prepare_libtool_source || return 1
@@ -1151,7 +1199,7 @@ install_native_libtool()
 
 install_native_sed()
 {
-	[ -e ${prefix}/bin/sed -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/sed -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_sed_source || return 1
 	unpack_tar ${sed_org_src_dir} ${sed_src_base} || return 1
@@ -1164,7 +1212,7 @@ install_native_sed()
 
 install_native_gawk()
 {
-	[ -e ${prefix}/bin/gawk -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/gawk -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_gawk_source || return 1
 	unpack_tar ${gawk_org_src_dir} ${gawk_src_base} || return 1
@@ -1177,7 +1225,7 @@ install_native_gawk()
 
 install_native_make()
 {
-	[ -e ${prefix}/bin/make -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/make -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_make_source || return 1
 	unpack_tar ${make_org_src_dir} ${make_src_base} || return 1
@@ -1190,7 +1238,7 @@ install_native_make()
 
 install_native_binutils()
 {
-	[ -e ${prefix}/bin/as -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/as -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_bison || return 1
 	prepare_binutils_source || return 1
@@ -1217,7 +1265,7 @@ install_native_kernel_header()
 
 install_native_gperf()
 {
-	[ -e ${prefix}/bin/gperf -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/gperf -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_gperf_source || return 1
 	unpack_tar ${gperf_org_src_dir} ${gperf_src_base} || return 1
@@ -1301,7 +1349,7 @@ make_symbolic_links()
 
 install_native_gcc()
 {
-	[ -e ${prefix}/bin/gcc -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/gcc -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_binutils || return 1
 # install_native_glibc || return 1 # DANGEROUS!! pay attention to glibc version(compatibility)
@@ -1367,7 +1415,7 @@ EOF
 
 install_native_gdb()
 {
-	[ -e ${prefix}/bin/gdb -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/gdb -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_ncurses || return 1
 	prepare_gdb_source || return 1
@@ -1462,7 +1510,7 @@ install_native_giflib()
 
 install_native_emacs()
 {
-	[ -e ${prefix}/bin/emacs -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/emacs -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_ncurses || return 1
 	install_native_zlib || return 1
@@ -1479,9 +1527,22 @@ install_native_emacs()
 	make -C ${emacs_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
+install_native_grep()
+{
+	[ -x ${prefix}/bin/grep -a -z "${force_install}" ] && return 0
+	install_prerequisites || return 1
+	prepare_grep_source || return 1
+	unpack_tar ${grep_org_src_dir} ${grep_src_base} || return 1
+	[ -f ${grep_org_src_dir}/Makefile ] ||
+		(cd ${grep_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${grep_org_src_dir} -j ${jobs} || return 1
+	make -C ${grep_org_src_dir} -j ${jobs} install-strip || return 1
+}
+
 install_native_global()
 {
-	[ -e ${prefix}/bin/global -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/global -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_global_source || return 1
 	unpack_tar ${global_org_src_dir} ${global_src_base} || return 1
@@ -1492,9 +1553,35 @@ install_native_global()
 	make -C ${global_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
+install_native_diffutils()
+{
+	[ -x ${prefix}/bin/diff -a -z "${force_install}" ] && return 0
+	install_prerequisites || return 1
+	prepare_diffutils_source || return 1
+	unpack_tar ${diffutils_org_src_dir} ${diffutils_src_base} || return 1
+	[ -f ${diffutils_org_src_dir}/Makefile ] ||
+		(cd ${diffutils_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${diffutils_org_src_dir} -j ${jobs} || return 1
+	make -C ${diffutils_org_src_dir} -j ${jobs} install-strip || return 1
+}
+
+install_native_patch()
+{
+	[ -x ${prefix}/bin/patch -a -z "${force_install}" ] && return 0
+	install_prerequisites || return 1
+	prepare_patch_source || return 1
+	unpack_tar ${patch_org_src_dir} ${patch_src_base} || return 1
+	[ -f ${patch_org_src_dir}/Makefile ] ||
+		(cd ${patch_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${patch_org_src_dir} -j ${jobs} || return 1
+	make -C ${patch_org_src_dir} -j ${jobs} install-strip || return 1
+}
+
 install_native_screen()
 {
-	[ -e ${prefix}/bin/screen -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/screen -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_screen_source || return 1
 	unpack_tar ${screen_org_src_dir} ${screen_src_base} || return 1
@@ -1508,7 +1595,7 @@ install_native_screen()
 
 install_native_zsh()
 {
-	[ -e ${prefix}/bin/zsh -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/zsh -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_zsh_source || return 1
 	unpack_tar ${zsh_org_src_dir} ${zsh_src_base} || return 1
@@ -1534,7 +1621,7 @@ install_native_openssl()
 
 install_native_curl()
 {
-	[ -e ${prefix}/bin/curl -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/curl -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_openssl || return 1
 	prepare_curl_source || return 1
@@ -1548,7 +1635,7 @@ install_native_curl()
 
 install_native_asciidoc()
 {
-	[ -e ${prefix}/bin/asciidoc -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/asciidoc -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_asciidoc_source || return 1
 	[ -d ${asciidoc_org_src_dir} ] ||
@@ -1562,7 +1649,7 @@ install_native_asciidoc()
 
 install_native_xmlto()
 {
-	[ -e ${prefix}/bin/xmlto -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/xmlto -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_xmlto_source || return 1
 	unpack_tar ${xmlto_org_src_dir} ${xmlto_src_base} || return 1
@@ -1606,7 +1693,7 @@ install_native_libxslt()
 
 install_native_gettext()
 {
-	[ -e ${prefix}/bin/gettext -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/gettext -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_gettext_source || return 1
 	unpack_tar ${gettext_org_src_dir} ${gettext_src_base} || return 1
@@ -1620,7 +1707,7 @@ install_native_gettext()
 
 install_native_git()
 {
-	[ -e ${prefix}/bin/git -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/git -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_curl || return 1
 	install_native_asciidoc || return 1
@@ -1640,7 +1727,7 @@ install_native_git()
 
 install_native_cmake()
 {
-	[ -e ${prefix}/bin/cmake -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/cmake -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_cmake_source || return 1
 	unpack_tar ${cmake_org_src_dir} ${cmake_src_base} || return 1
@@ -1709,7 +1796,7 @@ install_native_clang_rt()
 
 install_native_clang()
 {
-	[ -e ${prefix}/bin/clang -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/clang -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_cmake || return 1
 	install_native_llvm || return 1
@@ -1770,8 +1857,8 @@ install_native_boost()
 	unpack_tar ${boost_org_src_dir} ${boost_src_base} || return 1
 	(cd ${boost_org_src_dir}
 	./bootstrap.sh --prefix=${prefix} || return 1
-	./b2 -j ${jobs}
-	./b2 install)
+	./b2 --prefix=${prefix} -j ${jobs}
+	./b2 --prefix=${prefix} install)
 }
 
 full_native()
@@ -1790,7 +1877,10 @@ full_native()
 	install_native_gcc || return 1
 	install_native_gdb || return 1
 	install_native_emacs || return 1
+	install_native_grep || return 1
 	install_native_global || return 1
+	install_native_diffutils || return 1
+	install_native_patch || return 1
 	install_native_screen || return 1
 	install_native_zsh || return 1
 	install_native_git || return 1
