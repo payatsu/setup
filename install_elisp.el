@@ -5,14 +5,15 @@
 (package-initialize)
 (package-refresh-contents)
 (package-install 'company)
+(package-install 'ggtags)
+(package-install 'yasnippet)
+(package-install 'undo-tree)
 (package-install 'company-c-headers)
 (package-install 'company-quickhelp)
 (package-install 'company-irony)
-(package-install 'irony)
-(package-install 'yasnippet)
 (package-install 'flycheck)
 (package-install 'flycheck-irony)
-(package-install 'ggtags)
+(package-install 'irony)
 
 ;emacs -Q --batch \
 ;--eval '(require '\''package)' \
