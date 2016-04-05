@@ -20,37 +20,37 @@
 : ${sed_ver:=4.2.2}
 : ${gawk_ver:=4.1.3}
 : ${make_ver:=4.1}
-: ${binutils_ver:=2.25.1}
+: ${binutils_ver:=2.26}
 : ${kernel_ver:=3.18.13}
 : ${gperf_ver:=3.0.4}
-: ${glibc_ver:=2.22}
+: ${glibc_ver:=2.23}
 : ${gmp_ver:=6.1.0}
-: ${mpfr_ver:=3.1.3}
+: ${mpfr_ver:=3.1.4}
 : ${mpc_ver:=1.0.3}
 : ${gcc_ver:=5.3.0}
 : ${ncurses_ver:=6.0}
-: ${gdb_ver:=7.10.1}
+: ${gdb_ver:=7.11}
 : ${zlib_ver:=1.2.8}
-: ${libpng_ver:=1.6.20}
+: ${libpng_ver:=1.6.21}
 : ${libtiff_ver:=4.0.6}
 : ${libjpeg_ver:=v9b}
 : ${giflib_ver:=5.1.2}
 : ${emacs_ver:=24.5}
 : ${grep_ver:=2.24}
-: ${global_ver:=6.5.2}
+: ${global_ver:=6.5.4}
 : ${diffutils_ver:=3.3}
 : ${patch_ver:=2.7.5}
 : ${screen_ver:=4.3.1}
 : ${zsh_ver:=5.2}
 : ${openssl_ver:=1.0.2e}
-: ${curl_ver:=7.46.0}
+: ${curl_ver:=7.48.0}
 : ${asciidoc_ver:=8.6.9}
 : ${xmlto_ver:=0.0.28}
 : ${libxml2_ver:=2.9.3}
 : ${libxslt_ver:=1.1.28}
 : ${gettext_ver:=0.19.7}
-: ${git_ver:=2.7.0}
-: ${cmake_ver:=3.4.3}
+: ${git_ver:=2.8.1}
+: ${cmake_ver:=3.5.1}
 : ${llvm_ver:=3.8.0}
 : ${boost_ver:=1_60_0}
 
@@ -1207,7 +1207,7 @@ install_native_sed()
 		(cd ${sed_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
 	make -C ${sed_org_src_dir} -j ${jobs} || return 1
-	make -C ${sed_org_src_dir} -j ${jobs} install || return 1
+	make -C ${sed_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
 install_native_gawk()
@@ -1220,7 +1220,7 @@ install_native_gawk()
 		(cd ${gawk_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
 	make -C ${gawk_org_src_dir} -j ${jobs} || return 1
-	make -C ${gawk_org_src_dir} -j ${jobs} install || return 1
+	make -C ${gawk_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
 install_native_make()
