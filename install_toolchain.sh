@@ -2189,4 +2189,4 @@ while [ $# -gt 0 ]; do
 	esac
 	shift
 done
-[ ${count} -eq 0 ] && usage
+[ ${count} -eq 0 ] && usage || exit 0
