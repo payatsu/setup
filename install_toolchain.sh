@@ -1094,11 +1094,12 @@ install_native_wget()
 {
 	[ -x ${prefix}/bin/wget -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
+	install_native_openssl || return 1
 	prepare_wget_source || return 1
 	unpack_tar ${wget_org_src_dir} ${wget_src_base} || return 1
 	[ -f ${wget_org_src_dir}/Makefile ] ||
 		(cd ${wget_org_src_dir}
-		PKG_CONFIG_PATH=${prefix}/lib64/pkgconfig ./configure --prefix=${prefix} --build=${build} --with-ssl=openssl) || return 1
+		PKG_CONFIG_PATH=${prefix}/lib/pkgconfig ./configure --prefix=${prefix} --build=${build} --with-ssl=openssl) || return 1
 	make -C ${wget_org_src_dir} -j ${jobs} || return 1
 	make -C ${wget_org_src_dir} -j ${jobs} install-strip || return 1
 }
@@ -1523,7 +1524,7 @@ install_native_emacs()
 	[ -f ${emacs_org_src_dir}/Makefile ] ||
 		(cd ${emacs_org_src_dir}
 		./configure --prefix=${prefix} --without-xpm) || return 1
-	make -C ${emacs_org_src_dir} -j ${jobs} || return 1
+	LDFLAGS=-L${prefix}/lib make -C ${emacs_org_src_dir} -j ${jobs} || return 1
 	make -C ${emacs_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
@@ -1757,6 +1758,7 @@ install_native_libcxxabi()
 	[ -e ${prefix}/lib/libc++abi.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_cmake || return 1
+	install_native_libcxx || return 1
 	prepare_libcxxabi_source || return 1
 	unpack_tar ${libcxxabi_org_src_dir} ${libcxxabi_src_base} || return 1
 	mkdir -p ${libcxxabi_bld_dir}
@@ -1771,7 +1773,6 @@ install_native_libcxx()
 	[ -e ${prefix}/lib/libc++.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_cmake || return 1
-	install_native_libcxxabi || return 1
 	prepare_libcxx_source || return 1
 	unpack_tar ${libcxx_org_src_dir} ${libcxx_src_base} || return 1
 	mkdir -p ${libcxx_bld_dir}
@@ -1801,6 +1802,7 @@ install_native_clang()
 	install_native_cmake || return 1
 	install_native_llvm || return 1
 	install_native_libcxx || return 1
+	install_native_libcxxabi || return 1
 	install_native_clang_rt || return 1
 	prepare_clang_source || return 1
 	unpack_tar ${clang_org_src_dir} ${clang_src_base} || return 1
