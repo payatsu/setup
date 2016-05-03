@@ -27,7 +27,7 @@
 : ${gmp_ver:=6.1.0}
 : ${mpfr_ver:=3.1.4}
 : ${mpc_ver:=1.0.3}
-: ${gcc_ver:=5.3.0}
+: ${gcc_ver:=6.1.0}
 : ${ncurses_ver:=6.0}
 : ${gdb_ver:=7.11}
 : ${zlib_ver:=1.2.8}
@@ -1854,6 +1854,7 @@ install_native_lldb()
 
 install_native_boost()
 {
+	[ -d ${prefix}/include/boost -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	prepare_boost_source || return 1
 	unpack_tar ${boost_org_src_dir} ${boost_src_base} || return 1
@@ -1901,7 +1902,7 @@ install_cross_binutils()
 			mv ${binutils_org_src_dir} ${binutils_src_dir_crs}) || return 1
 	[ -f ${binutils_src_dir_crs}/Makefile ] ||
 		(cd ${binutils_src_dir_crs}
-		./configure --prefix=${prefix} --target=${target} --with-sysroot=${sysroot} --enable-gold) || return 1
+		./configure --prefix=${prefix} --target=${target} --with-sysroot=${sysroot} ) || return 1 # XXX WA対応で暫定的にオプション外す。 --enable-gold
 	make -C ${binutils_src_dir_crs} -j ${jobs} || return 1
 	make -C ${binutils_src_dir_crs} -j ${jobs} install-strip || return 1
 }
@@ -2005,7 +2006,7 @@ EOF
 	mkdir -p ${glibc_bld_dir_crs_1st}
 	[ -f ${glibc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${glibc_bld_dir_crs_1st}
-		${glibc_src_dir_crs_1st}/configure --prefix=/usr --build=${build} --host=${target} \
+		CFLAGS='-Wno-error=parentheses -O2' ${glibc_src_dir_crs_1st}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-headers=${sysroot}/usr/include \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return 1
 	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} || return 1
