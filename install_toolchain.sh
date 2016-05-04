@@ -36,21 +36,21 @@
 : ${libjpeg_ver:=v9b}
 : ${giflib_ver:=5.1.2}
 : ${emacs_ver:=24.5}
-: ${grep_ver:=2.24}
+: ${grep_ver:=2.25}
 : ${global_ver:=6.5.4}
 : ${diffutils_ver:=3.3}
 : ${patch_ver:=2.7.5}
 : ${screen_ver:=4.3.1}
 : ${zsh_ver:=5.2}
-: ${openssl_ver:=1.0.2e}
+: ${openssl_ver:=1.0.2f}
 : ${curl_ver:=7.48.0}
 : ${asciidoc_ver:=8.6.9}
 : ${xmlto_ver:=0.0.28}
 : ${libxml2_ver:=2.9.3}
 : ${libxslt_ver:=1.1.28}
 : ${gettext_ver:=0.19.7}
-: ${git_ver:=2.8.1}
-: ${cmake_ver:=3.5.1}
+: ${git_ver:=2.8.2}
+: ${cmake_ver:=3.5.2}
 : ${llvm_ver:=3.8.0}
 : ${boost_ver:=1_60_0}
 
@@ -198,7 +198,6 @@ native()
 	install_prerequisites || return 1
 	install_native_gcc || return 1
 	install_native_gdb || return 1
-	clean
 }
 
 cross()
@@ -207,7 +206,6 @@ cross()
 	install_prerequisites || return 1
 	install_cross_gcc || return 1
 	install_cross_gdb || return 1
-	clean
 }
 
 all()
@@ -216,7 +214,6 @@ all()
 	install_prerequisites || return 1
 	native || return 1
 	cross || return 1
-	clean
 }
 
 full()
@@ -225,7 +222,6 @@ full()
 	install_prerequisites || return 1
 	full_native || return 1
 	full_cross || return 1
-	clean
 }
 
 experimental()
@@ -1248,7 +1244,7 @@ install_native_binutils()
 			mv ${binutils_org_src_dir} ${binutils_src_dir_ntv}) || return 1
 	[ -f ${binutils_src_dir_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --with-sysroot=/ --enable-gold) || return 1
+		CFLAGS='-Wno-error=unused-const-variable' CXXFLAGS='-Wno-error=unused-function' ./configure --prefix=${prefix} --build=${build} --with-sysroot=/ --enable-gold) || return 1
 	make -C ${binutils_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${binutils_src_dir_ntv} -j ${jobs} install-strip || return 1
 }
@@ -1723,7 +1719,7 @@ install_native_git()
 	./configure --prefix=${prefix} --without-tcltk) || return 1
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return 1
 	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS=-ldl all || return 1 # doc
-	make -C ${git_org_src_dir} -j ${jobs} V=1 install || return 1 # install-doc install-html
+	make -C ${git_org_src_dir} -j ${jobs} V=1 strip install || return 1 # install-doc install-html
 }
 
 install_native_cmake()
@@ -1736,7 +1732,7 @@ install_native_cmake()
 		(cd ${cmake_org_src_dir}
 		./bootstrap --prefix=${prefix} --parallel=${jobs}) || return 1
 	make -C ${cmake_org_src_dir} -j ${jobs} || return 1
-	make -C ${cmake_org_src_dir} -j ${jobs} install || return 1
+	make -C ${cmake_org_src_dir} -j ${jobs} install/strip || return 1
 }
 
 install_native_llvm()
@@ -1750,7 +1746,7 @@ install_native_llvm()
 	(cd ${llvm_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1
 	make -C ${llvm_bld_dir} -j ${jobs} || return 1
-	make -C ${llvm_bld_dir} -j ${jobs} install || return 1
+	make -C ${llvm_bld_dir} -j ${jobs} install/strip || return 1
 }
 
 install_native_libcxxabi()
@@ -1765,7 +1761,7 @@ install_native_libcxxabi()
 	(cd ${libcxxabi_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxxabi_org_src_dir}) || return 1
 	make -C ${libcxxabi_bld_dir} -j ${jobs} || return 1
-	make -C ${libcxxabi_bld_dir} -j ${jobs} install || return 1
+	make -C ${libcxxabi_bld_dir} -j ${jobs} install/strip || return 1
 }
 
 install_native_libcxx()
@@ -1779,7 +1775,7 @@ install_native_libcxx()
 	(cd ${libcxx_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxx_org_src_dir}) || return 1
 	make -C ${libcxx_bld_dir} -j ${jobs} || return 1
-	make -C ${libcxx_bld_dir} -j ${jobs} install || return 1
+	make -C ${libcxx_bld_dir} -j ${jobs} install/strip || return 1
 }
 
 install_native_clang_rt()
@@ -1792,7 +1788,7 @@ install_native_clang_rt()
 	(cd ${clang_rt_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_rt_org_src_dir}) || return 1
 	make -C ${clang_rt_bld_dir} -j ${jobs} || return 1
-	make -C ${clang_rt_bld_dir} -j ${jobs} install || return 1
+	make -C ${clang_rt_bld_dir} -j ${jobs} install/strip || return 1
 }
 
 install_native_clang()
@@ -1810,7 +1806,7 @@ install_native_clang()
 	(cd ${clang_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_org_src_dir}) || return 1
 	make -C ${clang_bld_dir} -j ${jobs} || return 1
-	make -C ${clang_bld_dir} -j ${jobs} install || return 1
+	make -C ${clang_bld_dir} -j ${jobs} install/strip || return 1
 }
 
 install_native_clang_extra()
@@ -1823,7 +1819,7 @@ install_native_clang_extra()
 	(cd ${clang_extra_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_extra_org_src_dir}) || return 1
 	make -C ${clang_extra_bld_dir} -j ${jobs} || return 1
-	make -C ${clang_extra_bld_dir} -j ${jobs} install || return 1
+	make -C ${clang_extra_bld_dir} -j ${jobs} install/strip || return 1
 }
 
 install_native_lld()
@@ -1836,7 +1832,7 @@ install_native_lld()
 	(cd ${lld_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${lld_org_src_dir}) || return 1
 	make -C ${lld_bld_dir} -j ${jobs} || return 1
-	make -C ${lld_bld_dir} -j ${jobs} install || return 1
+	make -C ${lld_bld_dir} -j ${jobs} install/strip || return 1
 }
 
 install_native_lldb()
@@ -1849,7 +1845,7 @@ install_native_lldb()
 	(cd ${lldb_bld_dir}
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREIFX=${prefix} ${lldb_org_src_dir}) || return 1
 	make -C ${lldb_bld_dir} -j ${jobs} || return 1
-	make -C ${lldb_bld_dir} -j ${jobs} install || return 1
+	make -C ${lldb_bld_dir} -j ${jobs} install/strip || return 1
 }
 
 install_native_boost()
@@ -1861,7 +1857,7 @@ install_native_boost()
 	(cd ${boost_org_src_dir}
 	./bootstrap.sh --prefix=${prefix} || return 1
 	./b2 --prefix=${prefix} -j ${jobs}
-	./b2 --prefix=${prefix} install)
+	./b2 --prefix=${prefix} install) || true # XXX boostはインストール完了しても終了ステータスが0でないことに対するWA.
 }
 
 full_native()
@@ -1902,7 +1898,7 @@ install_cross_binutils()
 			mv ${binutils_org_src_dir} ${binutils_src_dir_crs}) || return 1
 	[ -f ${binutils_src_dir_crs}/Makefile ] ||
 		(cd ${binutils_src_dir_crs}
-		./configure --prefix=${prefix} --target=${target} --with-sysroot=${sysroot} ) || return 1 # XXX WA対応で暫定的にオプション外す。 --enable-gold
+		CFLAGS='-Wno-error=unused-const-variable' CXXFLAGS='-Wno-error=unused-function' ./configure --prefix=${prefix} --target=${target} --with-sysroot=${sysroot} --enable-gold) || return 1
 	make -C ${binutils_src_dir_crs} -j ${jobs} || return 1
 	make -C ${binutils_src_dir_crs} -j ${jobs} install-strip || return 1
 }
@@ -2024,7 +2020,7 @@ install_cross_gcc_with_c_cxx_go_functionality()
 		 ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
 			--enable-languages=c,c++,go --disable-multilib --with-system-zlib --with-sysroot=${sysroot}) || return 1
 	make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} || return 1
-	make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} install || return 1
+	make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k install-strip || true # XXX -stripをgotools以外に関して強制的に成功させるため、-kと|| trueで暫定対応(WA)
 }
 
 install_cross_gcc()
