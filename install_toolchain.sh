@@ -69,13 +69,13 @@ usage()
 		Installation directory, currently '${prefix}'.
 		'/usr/local' is NOT strongly recommended.
 	-t target
-		Target-triplet of new compiler, currently '${target}'.
+		Target-triplet of new toolchain, currently '${target}'.
 		ex. armv7l-linux-gnueabihf
 			x86_64-linux-gnu
 			i686-unknown-linux
 			microblaze-none-linux
 	-j jobs
-		The number of process run simultaneously by 'make', currently '${jobs}'.
+		The number of processes invoked simultaneously by 'make', currently '${jobs}'.
 		Recommended not to be more than the number of CPU cores.
 	-h
 		Show detailed help.
@@ -193,7 +193,7 @@ EOF
 }
 
 native()
-# Install native GNU binutils, GNU C/C++/Go compiler, GDB(running on and compiles for '${build}').
+# Install native GNU Toolchain, such as GNU binutils, GNU C/C++/Go compiler, GDB(running on and compiles for '${build}').
 {
 	install_prerequisites || return 1
 	install_native_gcc || return 1
@@ -201,7 +201,7 @@ native()
 }
 
 cross()
-# Install cross GNU binutils, GNU C/C++/Go compiler, GDB(running on '${build}', compiles for '${target}').
+# Install cross GNU Toolchain, such as GNU binutils, GNU C/C++/Go compiler, GDB(running on '${build}', compiles for '${target}').
 {
 	install_prerequisites || return 1
 	install_cross_gcc || return 1
@@ -209,19 +209,28 @@ cross()
 }
 
 all()
-# Install native/cross GNU Toolchains.
+# Both of 'native' and 'cross'.
 {
-	install_prerequisites || return 1
 	native || return 1
 	cross || return 1
 }
 
 full()
-# Install all of the available software packages.
+# Install native/cross GNU toolchain and other tools. as many as possible.
 {
 	install_prerequisites || return 1
 	full_native || return 1
 	full_cross || return 1
+}
+
+auto()
+# Auto
+{
+	prepare || return 1
+	full || return 1
+	clean || return 1
+	strip || return 1
+	archive || return 1
 }
 
 experimental()
@@ -236,9 +245,17 @@ experimental()
 }
 
 prepare()
-# Prepare all sources
+# Prepare all source files.
 {
 	for prepare_command in `grep -e '^prepare_.\+_source()$' $0 | sed -e 's/()$//'`; do ${prepare_command} || return 1; done
+}
+
+strip()
+# Strip all binary files.
+{
+	for strip in strip ${target}-strip; do
+		find ${prefix} -type f -perm /111 | xargs file | grep 'not stripped' | cut -f1 -d: | xargs ${strip} || true
+	done
 }
 
 archive()
@@ -653,9 +670,9 @@ install_prerequisites()
 unpack_tar()
 {
 	[ -d $1 ] && return 0
-	[ -f $1.tar.gz  ] && tar xzvf $1.tar.gz  -C $2 && return 0
-	[ -f $1.tar.bz2 ] && tar xjvf $1.tar.bz2 -C $2 && return 0
-	[ -f $1.tar.xz  ] && tar xJvf $1.tar.xz  -C $2 && return 0
+	[ -f $1.tar.gz  ] && tar xzovf $1.tar.gz  -C $2 && return 0
+	[ -f $1.tar.bz2 ] && tar xjovf $1.tar.bz2 -C $2 && return 0
+	[ -f $1.tar.xz  ] && tar xJovf $1.tar.xz  -C $2 && return 0
 	return 1
 }
 
@@ -1244,7 +1261,7 @@ install_native_binutils()
 			mv ${binutils_org_src_dir} ${binutils_src_dir_ntv}) || return 1
 	[ -f ${binutils_src_dir_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_ntv}
-		CFLAGS='-Wno-error=unused-const-variable' CXXFLAGS='-Wno-error=unused-function' ./configure --prefix=${prefix} --build=${build} --with-sysroot=/ --enable-gold) || return 1
+		./configure --prefix=${prefix} --build=${build} --with-sysroot=/ --enable-gold) || return 1
 	make -C ${binutils_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${binutils_src_dir_ntv} -j ${jobs} install-strip || return 1
 }
