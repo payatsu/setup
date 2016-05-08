@@ -1304,8 +1304,8 @@ install_native_glibc()
 	mkdir -p ${glibc_bld_dir_ntv}
 	[ -f ${glibc_bld_dir_ntv}/Makefile ] ||
 		(cd ${glibc_bld_dir_ntv}
-		CPPFLAGS='-I/usr/include/${build} -D_LIBC' ${glibc_src_dir_ntv}/configure --prefix=${prefix} --build=${build} \
-			--with-headers=/usr/include) || return 1
+		${glibc_src_dir_ntv}/configure --prefix=${prefix} --build=${build} \
+			--with-headers=/usr/include CPPFLAGS='-I/usr/include/${build} -D_LIBC') || return 1
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} install-headers || return 1
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} || return 1
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} install || return 1
@@ -1537,7 +1537,7 @@ install_native_emacs()
 	[ -f ${emacs_org_src_dir}/Makefile ] ||
 		(cd ${emacs_org_src_dir}
 		./configure --prefix=${prefix} --without-xpm) || return 1
-	LDFLAGS=-L${prefix}/lib make -C ${emacs_org_src_dir} -j ${jobs} || return 1
+	make -C ${emacs_org_src_dir} -j ${jobs} LDFLAGS=-L${prefix}/lib || return 1
 	make -C ${emacs_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
@@ -1562,7 +1562,7 @@ install_native_global()
 	unpack_tar ${global_org_src_dir} ${global_src_base} || return 1
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
-		CPPFLAGS='-I${prefix}/include/ncurses' ./configure --prefix=${prefix} --disable-gtagscscope) || return 1
+		./configure --prefix=${prefix} --disable-gtagscscope CPPFLAGS='-I${prefix}/include/ncurses') || return 1
 	make -C ${global_org_src_dir} -j ${jobs} || return 1
 	make -C ${global_org_src_dir} -j ${jobs} install-strip || return 1
 }
@@ -1915,7 +1915,8 @@ install_cross_binutils()
 			mv ${binutils_org_src_dir} ${binutils_src_dir_crs}) || return 1
 	[ -f ${binutils_src_dir_crs}/Makefile ] ||
 		(cd ${binutils_src_dir_crs}
-		CFLAGS='-Wno-error=unused-const-variable' CXXFLAGS='-Wno-error=unused-function' ./configure --prefix=${prefix} --target=${target} --with-sysroot=${sysroot} --enable-gold) || return 1
+		./configure --prefix=${prefix} --target=${target} --with-sysroot=${sysroot} --enable-gold \
+			CFLAGS='-Wno-error=unused-const-variable' CXXFLAGS='-Wno-error=unused-function') || return 1
 	make -C ${binutils_src_dir_crs} -j ${jobs} || return 1
 	make -C ${binutils_src_dir_crs} -j ${jobs} install-strip || return 1
 }
@@ -2019,8 +2020,9 @@ EOF
 	mkdir -p ${glibc_bld_dir_crs_1st}
 	[ -f ${glibc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${glibc_bld_dir_crs_1st}
-		CFLAGS='-Wno-error=parentheses -O2' ${glibc_src_dir_crs_1st}/configure --prefix=/usr --build=${build} --host=${target} \
+		${glibc_src_dir_crs_1st}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-headers=${sysroot}/usr/include \
+			CFLAGS='-Wno-error=parentheses -O2' \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return 1
 	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} || return 1
 	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} install || return 1
@@ -2034,7 +2036,7 @@ install_cross_gcc_with_c_cxx_go_functionality()
 	export LIBS=-lgcc_s
 	[ -f ${gcc_bld_dir_crs_3rd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_3rd}
-		 ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
+		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
 			--enable-languages=c,c++,go --disable-multilib --with-system-zlib --with-sysroot=${sysroot}) || return 1
 	make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} || return 1
 	make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k install-strip || true # XXX -stripをgotools以外に関して強制的に成功させるため、-kと|| trueで暫定対応(WA)
@@ -2136,7 +2138,7 @@ install_crossed_native_gcc()
 	[ -f ${gcc_bld_dir_crs_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_ntv}
 		${gcc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
-			 --enable-languages=c,c++,go --with-sysroot=/ --without-isl) || return 1
+			--enable-languages=c,c++,go --with-sysroot=/ --without-isl) || return 1
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 }
