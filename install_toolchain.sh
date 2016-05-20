@@ -651,13 +651,26 @@ ${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return 1
 # grep -q -e ${prefix}/share/man /etc/manpath.config || sed -e "1s+^+MANDATORY_MANPATH ${prefix}/share/man\n+" -i /etc/manpath.config || return 1
 }
 
+search_library()
+{
+	ldconfig -p | grep -q -e "\<$1\>"
+}
+
+search_header()
+{
+	for dir in ${prefix}/include /usr/local/include /opt/include /usr/include; do
+		[ -d ${dir} ] &&  [ `find ${dir} -type f -name "$1" | wc -l` != 0 ] && return 0
+	done
+	return 1
+}
+
 install_prerequisites()
 {
 	return 0
 
 	[ -n "${prerequisites_have_been_already_installed}" ] && return 0
 	case ${os} in
-	Debian|Ubuntu)
+	Debian|Ubuntu|Raspbian)
 		apt-get install -y make gcc g++ texinfo
 		apt-get install -y unifdef # for linux kernel(microblaze)
 		apt-get install -y libgtk-3-dev # for emacs
@@ -1113,7 +1126,7 @@ install_native_wget()
 {
 	[ -x ${prefix}/bin/wget -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
-	install_native_openssl || return 1
+	search_header ssl.h || install_native_openssl || return 1
 	prepare_wget_source || return 1
 	unpack_tar ${wget_org_src_dir} ${wget_src_base} || return 1
 	[ -f ${wget_org_src_dir}/Makefile ] ||
@@ -1153,7 +1166,7 @@ install_native_flex()
 {
 	[ -x ${prefix}/bin/flex -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
-	install_native_bison || return 1
+	which yacc || install_native_bison || return 1
 	prepare_flex_source || return 1
 	unpack_tar ${flex_org_src_dir} ${flex_src_base} || return 1
 	[ -f ${flex_org_src_dir}/Makefile ] ||
@@ -1207,7 +1220,7 @@ install_native_libtool()
 {
 	[ -x ${prefix}/bin/libtool -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
-	install_native_flex || return 1
+	which flex || install_native_flex || return 1
 	prepare_libtool_source || return 1
 	unpack_tar ${libtool_org_src_dir} ${libtool_src_base} || return 1
 	[ -f ${libtool_org_src_dir}/Makefile ] ||
@@ -1260,7 +1273,7 @@ install_native_binutils()
 {
 	[ -x ${prefix}/bin/as -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
-	install_native_bison || return 1
+	which yacc || install_native_bison || return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_ntv} ] ||
 		(tar xzvf ${binutils_org_src_dir}.tar.gz -C ${binutils_src_base} &&
@@ -1303,7 +1316,7 @@ install_native_glibc()
 	[ -e ${prefix}/lib/libc.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 	install_native_kernel_header || return 1
-	install_native_gperf || return 1
+	which gperf || install_native_gperf || return 1
 	prepare_glibc_source || return 1
 	[ -d ${glibc_src_dir_ntv} ] ||
 		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
@@ -1358,7 +1371,7 @@ install_native_gmp_mpfr_mpc()
 make_symbolic_links()
 {
 	case ${os} in
-	Debian|Ubuntu)
+	Debian|Ubuntu|Raspbian)
 		for dir in asm bits gnu sys; do
 			ln -sf ./${build}/${dir} /usr/include/${dir}
 		done
@@ -1374,8 +1387,8 @@ install_native_gcc()
 	[ -x ${prefix}/bin/gcc -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
 # install_native_glibc || return 1 # DANGEROUS!! pay attention to glibc version(compatibility)
-	install_native_zlib || return 1
-	install_native_gmp_mpfr_mpc || return 1
+	search_header zlib.h || install_native_zlib || return 1
+	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
 	prepare_gcc_source || return 1
 	make_symbolic_links || return 1
 	unpack_tar ${gcc_org_src_dir} ${gcc_src_base} || return 1
@@ -1438,7 +1451,7 @@ install_native_gdb()
 {
 	[ -x ${prefix}/bin/gdb -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
-	install_native_ncurses || return 1
+	search_header curses.h || install_native_ncurses || return 1
 	prepare_gdb_source || return 1
 	unpack_tar ${gdb_org_src_dir} ${gdb_src_base} || return 1
 	mkdir -p ${gdb_bld_dir_ntv}
@@ -1468,7 +1481,7 @@ install_native_libpng()
 {
 	[ -e ${prefix}/lib/libpng.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
-	install_native_zlib || return 1
+	search_header zlib.h || install_native_zlib || return 1
 	prepare_libpng_source || return 1
 	[ -d ${libpng_src_dir_ntv} ] ||
 		(tar xzvf ${libpng_org_src_dir}.tar.gz -C ${libpng_src_base} &&
@@ -1533,12 +1546,12 @@ install_native_emacs()
 {
 	[ -x ${prefix}/bin/emacs -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
-	install_native_ncurses || return 1
-	install_native_zlib || return 1
-	install_native_libpng || return 1
-	install_native_libtiff || return 1
-	install_native_libjpeg || return 1
-	install_native_giflib || return 1
+	search_header curses.h || install_native_ncurses || return 1
+	search_header zlib.h || install_native_zlib || return 1
+	search_header png.h || install_native_libpng || return 1
+	search_header tiff.h || install_native_libtiff || return 1
+	search_header jpeglib.h || install_native_libjpeg || return 1
+	search_header gif_lib.h || install_native_giflib || return 1
 	prepare_emacs_source || return 1
 	unpack_tar ${emacs_org_src_dir} ${emacs_src_base} || return 1
 	[ -f ${emacs_org_src_dir}/Makefile ] ||
@@ -1618,7 +1631,7 @@ install_native_zsh()
 {
 	[ -x ${prefix}/bin/zsh -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
-	install_native_ncurses || return 1
+	search_header curses.h || install_native_ncurses || return 1
 	prepare_zsh_source || return 1
 	unpack_tar ${zsh_org_src_dir} ${zsh_src_base} || return 1
 	[ -f ${zsh_org_src_dir}/Makefile ] ||
@@ -1645,7 +1658,7 @@ install_native_curl()
 {
 	[ -x ${prefix}/bin/curl -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
-	install_native_openssl || return 1
+	search_header ssl.h || install_native_openssl || return 1
 	prepare_curl_source || return 1
 	unpack_tar ${curl_org_src_dir} ${curl_src_base} || return 1
 	(cd ${curl_org_src_dir}
@@ -1731,12 +1744,12 @@ install_native_git()
 {
 	[ -x ${prefix}/bin/git -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
-	install_native_curl || return 1
-	install_native_asciidoc || return 1
-	install_native_xmlto || return 1
-	install_native_libxml2 || return 1
-	install_native_libxslt || return 1
-	install_native_gettext || return 1
+	which curl || install_native_curl || return 1
+	which asciidoc || install_native_asciidoc || return 1
+	which xmlto || install_native_xmlto || return 1
+	search_header xmlversion.h || install_native_libxml2 || return 1
+	search_header xslt.h || install_native_libxslt || return 1
+	which gettext || install_native_gettext || return 1
 	prepare_git_source || return 1
 	unpack_tar ${git_org_src_dir} ${git_src_base} || return 1
 	make -C ${git_org_src_dir} -j ${jobs} configure || return 1
@@ -1764,7 +1777,7 @@ install_native_llvm()
 {
 	[ -e ${prefix}/lib/libLLVMCore.a -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
-	install_native_cmake || return 1
+	which cmake || install_native_cmake || return 1
 	prepare_llvm_source || return 1
 	unpack_tar ${llvm_org_src_dir} ${llvm_src_base} || return 1
 	mkdir -p ${llvm_bld_dir}
@@ -1778,7 +1791,7 @@ install_native_libcxxabi()
 {
 	[ -e ${prefix}/lib/libc++abi.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
-	install_native_cmake || return 1
+	which cmake || install_native_cmake || return 1
 	install_native_libcxx || return 1
 	prepare_libcxxabi_source || return 1
 	unpack_tar ${libcxxabi_org_src_dir} ${libcxxabi_src_base} || return 1
@@ -1793,7 +1806,7 @@ install_native_libcxx()
 {
 	[ -e ${prefix}/lib/libc++.so -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
-	install_native_cmake || return 1
+	which cmake || install_native_cmake || return 1
 	prepare_libcxx_source || return 1
 	unpack_tar ${libcxx_org_src_dir} ${libcxx_src_base} || return 1
 	mkdir -p ${libcxx_bld_dir}
@@ -1806,7 +1819,7 @@ install_native_libcxx()
 install_native_clang_rt()
 {
 	install_prerequisites || return 1
-	install_native_cmake || return 1
+	which cmake || install_native_cmake || return 1
 	prepare_clang_rt_source || return 1
 	unpack_tar ${clang_rt_org_src_dir} ${clang_rt_src_base} || return 1
 	mkdir -p ${clang_rt_bld_dir}
@@ -1820,10 +1833,10 @@ install_native_clang()
 {
 	[ -x ${prefix}/bin/clang -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
-	install_native_cmake || return 1
-	install_native_llvm || return 1
+	which cmake || install_native_cmake || return 1
+	search_header llvm-config.h || install_native_llvm || return 1
 	install_native_libcxx || return 1
-	install_native_libcxxabi || return 1
+	search_header ABI.h || install_native_libcxxabi || return 1
 	install_native_clang_rt || return 1
 	prepare_clang_source || return 1
 	unpack_tar ${clang_org_src_dir} ${clang_src_base} || return 1
@@ -1837,7 +1850,7 @@ install_native_clang()
 install_native_clang_extra()
 {
 	install_prerequisites || return 1
-	install_native_cmake || return 1
+	which cmake || install_native_cmake || return 1
 	prepare_clang_extra_source || return 1
 	unpack_tar ${clang_extra_org_src_dir} ${clang_extra_src_base} || return 1
 	mkdir -p ${clang_extra_bld_dir}
@@ -1850,7 +1863,7 @@ install_native_clang_extra()
 install_native_lld()
 {
 	install_prerequisites || return 1
-	install_native_cmake || return 1
+	which cmake || install_native_cmake || return 1
 	prepare_lld_source || return 1
 	unpack_tar ${lld_org_src_dir} ${lld_src_base} || return 1
 	mkdir -p ${lld_bld_dir}
@@ -1863,7 +1876,7 @@ install_native_lld()
 install_native_lldb()
 {
 	install_prerequisites || return 1
-	install_native_cmake || return 1
+	which cmake || install_native_cmake || return 1
 	prepare_lldb_source || return 1
 	unpack_tar ${lldb_org_src_dir} ${lldb_src_base} || return 1
 	mkdir -p ${lldb_bld_dir}
@@ -1960,8 +1973,8 @@ install_cross_kernel_header()
 
 install_cross_glibc_headers()
 {
-	install_native_gawk || return 1
-	install_native_gperf || return 1
+	which awk || install_native_gawk || return 1
+	which gperf || install_native_gperf || return 1
 	prepare_glibc_source || return 1
 	[ -d ${glibc_src_dir_crs_hdr} ] ||
 		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
@@ -2053,8 +2066,8 @@ install_cross_gcc_with_c_cxx_go_functionality()
 
 install_cross_gcc()
 {
-	install_cross_binutils || return 1
-	install_native_gmp_mpfr_mpc || return 1
+	which ${target}-as || install_cross_binutils || return 1
+	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
 	prepare_gcc_source || return 1
 	install_cross_gcc_without_headers || return 1
 	install_cross_kernel_header || return 1
