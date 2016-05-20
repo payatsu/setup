@@ -1,4 +1,5 @@
 #!/bin/sh -e
+# [TODO] xz入れる。
 # [TODO] bash, find, LLD, LLDB, Polly
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
@@ -196,6 +197,7 @@ native()
 # Install native GNU Toolchain, such as GNU binutils, GNU C/C++/Go compiler, GDB(running on and compiles for '${build}').
 {
 	install_prerequisites || return 1
+	install_native_binutils || return 1
 	install_native_gcc || return 1
 	install_native_gdb || return 1
 }
@@ -611,7 +613,8 @@ set_variables()
 	boost_src_base=${prefix}/src/boost
 	boost_org_src_dir=${boost_src_base}/${boost_name}
 
-	echo ${PATH} | grep -q ${prefix}/bin || PATH=${prefix}/bin:${PATH}
+	echo ${PATH} | grep -q -e ${prefix}/bin || PATH=${prefix}/bin:${PATH}
+	echo ${PATH} | grep -q -e /sbin || PATH=/sbin:${PATH}
 }
 
 archive_sources()
@@ -640,7 +643,10 @@ EOF
 update_search_path()
 {
 	[ -f /etc/ld.so.conf.d/`basename ${prefix}`.conf ] ||
-		echo "${prefix}/lib\n${prefix}/lib64\n${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return 1
+		echo \
+"${prefix}/lib
+${prefix}/lib64
+${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return 1
 	ldconfig || return 1
 # grep -q -e ${prefix}/share/man /etc/manpath.config || sed -e "1s+^+MANDATORY_MANPATH ${prefix}/share/man\n+" -i /etc/manpath.config || return 1
 }
@@ -950,7 +956,7 @@ prepare_openssl_source()
 {
 	mkdir -p ${openssl_src_base}
 	[ -f ${openssl_org_src_dir}.tar.gz ] ||
-		wget -nv -O ${openssl_org_src_dir}.tar.gz \
+		wget -nv --no-check-certificate -O ${openssl_org_src_dir}.tar.gz \
 			http://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return 1
 }
 
@@ -1261,7 +1267,9 @@ install_native_binutils()
 			mv ${binutils_org_src_dir} ${binutils_src_dir_ntv}) || return 1
 	[ -f ${binutils_src_dir_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --with-sysroot=/ --enable-gold) || return 1
+		./configure --prefix=${prefix} --build=${build} --with-sysroot=/ --enable-gold \
+			# CFLAGS='-Wno-error=unused-const-variable' CXXFLAGS='-Wno-error=unused-function'
+		) || return 1
 	make -C ${binutils_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${binutils_src_dir_ntv} -j ${jobs} install-strip || return 1
 }
@@ -1365,7 +1373,6 @@ install_native_gcc()
 {
 	[ -x ${prefix}/bin/gcc -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
-	install_native_binutils || return 1
 # install_native_glibc || return 1 # DANGEROUS!! pay attention to glibc version(compatibility)
 	install_native_zlib || return 1
 	install_native_gmp_mpfr_mpc || return 1
@@ -1611,6 +1618,7 @@ install_native_zsh()
 {
 	[ -x ${prefix}/bin/zsh -a -z "${force_install}" ] && return 0
 	install_prerequisites || return 1
+	install_native_ncurses || return 1
 	prepare_zsh_source || return 1
 	unpack_tar ${zsh_org_src_dir} ${zsh_src_base} || return 1
 	[ -f ${zsh_org_src_dir}/Makefile ] ||
@@ -1890,6 +1898,7 @@ full_native()
 	install_native_gawk || return 1
 	install_native_make || return 1
 	install_native_gperf || return 1
+	install_native_binutils || return 1
 	install_native_gcc || return 1
 	install_native_gdb || return 1
 	install_native_emacs || return 1
