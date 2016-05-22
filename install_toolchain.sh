@@ -1,4 +1,5 @@
 #!/bin/sh -e
+# [TODO] install_native_llvm中で、CC, CXXを設定する。
 # [TODO] bash, find, LLD, LLDB, Polly
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
@@ -206,6 +207,7 @@ native()
 cross()
 # Install cross GNU Toolchain, such as GNU binutils, GNU C/C++/Go compiler, GDB(running on '${build}', compiles for '${target}').
 {
+	install_cross_binutils || return 1
 	install_cross_gcc || return 1
 	install_cross_gdb || return 1
 }
@@ -652,7 +654,7 @@ update_search_path()
 ${prefix}/lib64
 ${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return 1
 	ldconfig || return 1
-# grep -q -e ${prefix}/share/man /etc/manpath.config || sed -e "1s+^+MANDATORY_MANPATH ${prefix}/share/man\n+" -i /etc/manpath.config || return 1
+	# grep -q -e ${prefix}/share/man /etc/manpath.config || sed -e "\$s+\$+\nMANDATORY_MANPATH ${prefix}/share/man+" -i /etc/manpath.config || return 1
 }
 
 search_library()
@@ -670,20 +672,18 @@ search_header()
 
 install_prerequisites()
 {
-	return 0
-
 	[ -n "${prerequisites_have_been_already_installed}" ] && return 0
 	case ${os} in
 	Debian|Ubuntu|Raspbian)
-		apt-get install -y make gcc g++ texinfo
-		apt-get install -y unifdef # for linux kernel(microblaze)
-		apt-get install -y libgtk-3-dev # for emacs
-		apt-get install -y python2.7-dev # for gdb
+		apt-get install -y make gcc g++ texinfo || return 1
+		apt-get install -y unifdef || return 1 # for linux kernel(microblaze)
+		apt-get install -y libgtk-3-dev || return 1 # for emacs
+		apt-get install -y python2.7-dev || return 1 # for gdb
 		;;
 	Red|CentOS|\\S)
-		yum install -y make gcc gcc-c++ texinfo
-		yum install -y unifdef
-		yum install -y gtk3-devel
+		yum install -y make gcc gcc-c++ texinfo || return 1
+		yum install -y unifdef || return 1
+		yum install -y gtk3-devel || return 1
 		;;
 	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1 ;;
 	esac
@@ -1617,7 +1617,7 @@ install_native_screen()
 	unpack_tar ${screen_org_src_dir} ${screen_src_base} || return 1
 	[ -f ${screen_org_src_dir}/Makefile ] ||
 		(cd ${screen_org_src_dir}
-		./configure --prefix=${prefix} --enable-color256 --enable-rxvt_osc) || return 1
+		./configure --prefix=${prefix} --enable-colors256 --enable-rxvt_osc) || return 1
 	make -C ${screen_org_src_dir} -j ${jobs} || return 1
 	mkdir -p ${prefix}/share/screen/utf8encodings || return 1
 	make -C ${screen_org_src_dir} -j ${jobs} install || return 1
