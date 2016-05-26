@@ -1277,7 +1277,7 @@ install_native_make()
 	unpack_tar ${make_org_src_dir} ${make_src_base} || return 1
 	[ -f ${make_org_src_dir}/Makefile ] ||
 		(cd ${make_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return 1
+		./configure --prefix=${prefix} --build=${build} --host=${build}) || return 1
 	make -C ${make_org_src_dir} -j ${jobs} || return 1
 	make -C ${make_org_src_dir} -j ${jobs} install-strip || return 1
 }
@@ -1406,7 +1406,7 @@ install_native_gcc()
 		(cd ${gcc_bld_dir_ntv}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			--enable-languages=c,c++,go --disable-multilib --without-isl --with-system-zlib) || return 1
+			--enable-languages=c,c++,go --disable-multilib --without-isl --with-system-zlib) || return 1 # ARMの場合右記オプションが必要。--with-arch=armv6 --with-fpu=vfp --with-float=hard
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return 1
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install-strip || return 1
 	update_search_path || return 1
@@ -1631,7 +1631,7 @@ install_native_zsh()
 	unpack_tar ${zsh_org_src_dir} ${zsh_src_base} || return 1
 	[ -f ${zsh_org_src_dir}/Makefile ] ||
 		(cd ${zsh_org_src_dir}
-		./configure --prefix=${prefix} --host=${build}) || return 1
+		./configure --prefix=${prefix} --build=${build} --host=${build}) || return 1
 	make -C ${zsh_org_src_dir} -j ${jobs} || return 1
 	make -C ${zsh_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1767,7 +1767,7 @@ install_native_llvm()
 	unpack_tar ${llvm_org_src_dir} ${llvm_src_base} || return 1
 	mkdir -p ${llvm_bld_dir}
 	(cd ${llvm_bld_dir}
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1 # CC=gcc CXX=g++ CXXFLAGS='-mfpu=neon -mhard-float' LD_LIBRARY_PATH=${prefix}/lib
 	make -C ${llvm_bld_dir} -j ${jobs} || return 1
 	make -C ${llvm_bld_dir} -j ${jobs} install/strip || return 1
 }
@@ -1933,7 +1933,7 @@ install_cross_gcc_without_headers()
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
 			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
 		) || return 1
-	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} all-gcc || return 1
+	LD_LIBRARY_PATH=/toolchains/lib make -C ${gcc_bld_dir_crs_1st} -j ${jobs} all-gcc || return 1
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-gcc || return 1
 }
 
