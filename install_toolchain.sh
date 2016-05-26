@@ -1353,7 +1353,7 @@ install_native_gmp_mpfr_mpc()
 			mv ${gmp_org_src_dir} ${gmp_src_dir_ntv}) || return 1
 	[ -f ${gmp_src_dir_ntv}/Makefile ] ||
 		(cd ${gmp_src_dir_ntv}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --enable-cxx) || return 1
 	make -C ${gmp_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${gmp_src_dir_ntv} -j ${jobs} install-strip || return 1
 
