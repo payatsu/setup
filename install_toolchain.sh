@@ -227,7 +227,7 @@ full()
 }
 
 auto()
-# Auto
+# Perform auto installation for all available toolchains and other tools.
 {
 	prepare || return 1
 	full || return 1
