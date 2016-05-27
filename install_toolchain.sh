@@ -38,6 +38,7 @@
 : ${libjpeg_ver:=v9b}
 : ${giflib_ver:=5.1.2}
 : ${emacs_ver:=24.5}
+: ${vim_ver:=7.4.1849}
 : ${grep_ver:=2.25}
 : ${global_ver:=6.5.4}
 : ${diffutils_ver:=3.3}
@@ -151,6 +152,8 @@ help()
 		Specify the version of giflib you want, currently '${giflib_ver}'.
 	emacs_ver
 		Specify the version of GNU Emacs you want, currently '${emacs_ver}'.
+	vim_ver
+		Specify the version of Vim, currently '${vim_ver}'.
 	grep_ver
 		Specify the version of GNU Grep you want, currently '${grep_ver}'.
 	global_ver
@@ -312,6 +315,7 @@ clean()
 		${libjpeg_src_dir_ntv} \
 		${giflib_src_dir_ntv} \
 		${emacs_org_src_dir} \
+		${vim_org_src_dir} \
 		${grep_org_src_dir} \
 		${global_org_src_dir} \
 		${diffutils_org_src_dir} \
@@ -515,6 +519,10 @@ set_variables()
 	emacs_src_base=${prefix}/src/emacs
 	emacs_org_src_dir=${emacs_src_base}/${emacs_name}
 
+	vim_name=vim-${vim_ver}
+	vim_src_base=${prefix}/src/vim
+	vim_org_src_dir=${vim_src_base}/${vim_name}
+
 	grep_name=grep-${grep_ver}
 	grep_src_base=${prefix}/src/grep
 	grep_org_src_dir=${grep_src_base}/${grep_name}
@@ -679,6 +687,9 @@ install_prerequisites()
 		apt-get install -y unifdef || return 1 # for linux kernel(microblaze)
 		apt-get install -y libgtk-3-dev || return 1 # for emacs
 		apt-get install -y python2.7-dev || return 1 # for gdb
+		apt-get install -y libperl-dev python-dev python3-dev ruby-dev # for vim
+		apt-get install -y lua5.2 liblua5.2-dev # for vim
+		apt-get install -y luajit libluajit-5.1 # for vim
 		;;
 	Red|CentOS|\\S)
 		yum install -y make gcc gcc-c++ texinfo || return 1
@@ -927,6 +938,14 @@ prepare_emacs_source()
 	[ -f ${emacs_org_src_dir}.tar.xz ] ||
 		wget -nv -O ${emacs_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/emacs/${emacs_name}.tar.xz || return 1
+}
+
+prepare_vim_source()
+{
+	mkdir -p ${vim_src_base}
+	[ -f ${vim_org_src_dir}.tar.gz ] ||
+		wget -nv --no-check-certificate -O ${vim_org_src_dir}.tar.gz \
+			http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return 1
 }
 
 prepare_grep_source()
@@ -1560,6 +1579,24 @@ install_native_emacs()
 		./configure --prefix=${prefix} --without-xpm) || return 1
 	make -C ${emacs_org_src_dir} -j ${jobs} LDFLAGS=-L${prefix}/lib || return 1
 	make -C ${emacs_org_src_dir} -j ${jobs} install-strip || return 1
+}
+
+install_native_vim()
+{
+	[ -x ${prefix}/bin/vim -a -z "${force_install}" ] && return 0
+	search_header curses.h || install_native_ncurses || return 1
+	which gettext || install_native_gettext || return 1
+	prepare_vim_source || return 1
+	unpack_tar ${vim_org_src_dir} ${vim_src_base} || return 1
+	(cd ${vim_org_src_dir}
+	./configure --prefix=${prefix} --with-features=huge --enable-fail-if-missing \
+		--enable-perlinterp=dynamic --enable-pythoninterp=dynamic --enable-python3interp=dynamic --enable-rubyinterp=dynamic \
+		--enable-luainterp=dynamic --with-luajit \
+		--enable-cscope --enable-multibyte --enable-xim \
+		# --with-x --enable-fontset --enable-gui=gtk3
+	) || return 1
+	make -C ${vim_org_src_dir} -j ${jobs} || return 1
+	make -C ${vim_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_grep()
