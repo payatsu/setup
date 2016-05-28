@@ -1143,7 +1143,7 @@ prepare_boost_source()
 install_native_tar()
 {
 	[ -x ${prefix}/bin/tar -a -z "${force_install}" ] && return 0
-	which xz || install_native_xz || return 1
+	which xz > /dev/null || install_native_xz || return 1
 	prepare_tar_source || return 1
 	unpack_tar ${tar_org_src_dir} ${tar_src_base} || return 1
 	[ -f ${tar_org_src_dir}/Makefile ] ||
@@ -1205,7 +1205,7 @@ install_native_bison()
 install_native_flex()
 {
 	[ -x ${prefix}/bin/flex -a -z "${force_install}" ] && return 0
-	which yacc || install_native_bison || return 1
+	which yacc > /dev/null || install_native_bison || return 1
 	prepare_flex_source || return 1
 	unpack_tar ${flex_org_src_dir} ${flex_src_base} || return 1
 	[ -f ${flex_org_src_dir}/Makefile ] ||
@@ -1255,7 +1255,7 @@ install_native_automake()
 install_native_libtool()
 {
 	[ -x ${prefix}/bin/libtool -a -z "${force_install}" ] && return 0
-	which flex || install_native_flex || return 1
+	which flex > /dev/null || install_native_flex || return 1
 	prepare_libtool_source || return 1
 	unpack_tar ${libtool_org_src_dir} ${libtool_src_base} || return 1
 	[ -f ${libtool_org_src_dir}/Makefile ] ||
@@ -1304,7 +1304,7 @@ install_native_make()
 install_native_binutils()
 {
 	[ -x ${prefix}/bin/as -a -z "${force_install}" ] && return 0
-	which yacc || install_native_bison || return 1
+	which yacc > /dev/null || install_native_bison || return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_ntv} ] ||
 		(tar xzvf ${binutils_org_src_dir}.tar.gz -C ${binutils_src_base} &&
@@ -1345,7 +1345,7 @@ install_native_glibc()
 {
 	[ -e ${prefix}/lib/libc.so -a -z "${force_install}" ] && return 0
 	install_native_kernel_header || return 1
-	which gperf || install_native_gperf || return 1
+	which gperf > /dev/null || install_native_gperf || return 1
 	prepare_glibc_source || return 1
 	[ -d ${glibc_src_dir_ntv} ] ||
 		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
@@ -1585,7 +1585,7 @@ install_native_vim()
 {
 	[ -x ${prefix}/bin/vim -a -z "${force_install}" ] && return 0
 	search_header curses.h || install_native_ncurses || return 1
-	which gettext || install_native_gettext || return 1
+	which gettext > /dev/null || install_native_gettext || return 1
 	prepare_vim_source || return 1
 	unpack_tar ${vim_org_src_dir} ${vim_src_base} || return 1
 	(cd ${vim_org_src_dir}
@@ -1768,12 +1768,14 @@ install_native_gettext()
 install_native_git()
 {
 	[ -x ${prefix}/bin/git -a -z "${force_install}" ] && return 0
-	which curl || install_native_curl || return 1
-	which asciidoc || install_native_asciidoc || return 1
-	which xmlto || install_native_xmlto || return 1
+	search_header zlib.h || install_native_zlib || return 1
+	search_header ssl.h || install_native_openssl || return 1
+	search_header curl.h curl || install_native_curl || return 1
+	which asciidoc > /dev/null || install_native_asciidoc || return 1
+	which xmlto > /dev/null || install_native_xmlto || return 1
 	search_header xmlversion.h || install_native_libxml2 || return 1
 	search_header xslt.h || install_native_libxslt || return 1
-	which gettext || install_native_gettext || return 1
+	which gettext > /dev/null || install_native_gettext || return 1
 	prepare_git_source || return 1
 	unpack_tar ${git_org_src_dir} ${git_src_base} || return 1
 	make -C ${git_org_src_dir} -j ${jobs} configure || return 1
@@ -1799,7 +1801,7 @@ install_native_cmake()
 install_native_llvm()
 {
 	[ -e ${prefix}/lib/libLLVMCore.a -a -z "${force_install}" ] && return 0
-	which cmake || install_native_cmake || return 1
+	which cmake > /dev/null || install_native_cmake || return 1
 	prepare_llvm_source || return 1
 	unpack_tar ${llvm_org_src_dir} ${llvm_src_base} || return 1
 	mkdir -p ${llvm_bld_dir}
@@ -1813,7 +1815,7 @@ install_native_llvm()
 install_native_libcxxabi()
 {
 	[ -e ${prefix}/lib/libc++abi.so -a -z "${force_install}" ] && return 0
-	which cmake || install_native_cmake || return 1
+	which cmake > /dev/null || install_native_cmake || return 1
 	search_header iostream c++/v1 || install_native_libcxx || return 1
 	prepare_libcxxabi_source || return 1
 	unpack_tar ${libcxxabi_org_src_dir} ${libcxxabi_src_base} || return 1
@@ -1828,7 +1830,7 @@ install_native_libcxxabi()
 install_native_libcxx()
 {
 	[ -e ${prefix}/lib/libc++.so -a -z "${force_install}" ] && return 0
-	which cmake || install_native_cmake || return 1
+	which cmake > /dev/null || install_native_cmake || return 1
 	prepare_libcxx_source || return 1
 	unpack_tar ${libcxx_org_src_dir} ${libcxx_src_base} || return 1
 	mkdir -p ${libcxx_bld_dir}
@@ -1841,7 +1843,7 @@ install_native_libcxx()
 
 install_native_clang_rt()
 {
-	which cmake || install_native_cmake || return 1
+	which cmake > /dev/null || install_native_cmake || return 1
 	prepare_clang_rt_source || return 1
 	unpack_tar ${clang_rt_org_src_dir} ${clang_rt_src_base} || return 1
 	mkdir -p ${clang_rt_bld_dir}
@@ -1855,7 +1857,7 @@ install_native_clang_rt()
 install_native_clang()
 {
 	[ -x ${prefix}/bin/clang -a -z "${force_install}" ] && return 0
-	which cmake || install_native_cmake || return 1
+	which cmake > /dev/null || install_native_cmake || return 1
 	search_header llvm-config.h || install_native_llvm || return 1
 	search_header iostream c++/v1 || install_native_libcxx || return 1
 	search_header ABI.h clang/Basic || install_native_libcxxabi || return 1
@@ -1872,7 +1874,7 @@ install_native_clang()
 
 install_native_clang_extra()
 {
-	which cmake || install_native_cmake || return 1
+	which cmake > /dev/null || install_native_cmake || return 1
 	prepare_clang_extra_source || return 1
 	unpack_tar ${clang_extra_org_src_dir} ${clang_extra_src_base} || return 1
 	mkdir -p ${clang_extra_bld_dir}
@@ -1884,7 +1886,7 @@ install_native_clang_extra()
 
 install_native_lld()
 {
-	which cmake || install_native_cmake || return 1
+	which cmake > /dev/null || install_native_cmake || return 1
 	prepare_lld_source || return 1
 	unpack_tar ${lld_org_src_dir} ${lld_src_base} || return 1
 	mkdir -p ${lld_bld_dir}
@@ -1897,7 +1899,7 @@ install_native_lld()
 
 install_native_lldb()
 {
-	which cmake || install_native_cmake || return 1
+	which cmake > /dev/null || install_native_cmake || return 1
 	prepare_lldb_source || return 1
 	unpack_tar ${lldb_org_src_dir} ${lldb_src_base} || return 1
 	mkdir -p ${lldb_bld_dir}
@@ -2016,8 +2018,8 @@ install_cross_kernel_header()
 
 install_cross_glibc_headers()
 {
-	which awk || install_native_gawk || return 1
-	which gperf || install_native_gperf || return 1
+	which awk > /dev/null || install_native_gawk || return 1
+	which gperf > /dev/null || install_native_gperf || return 1
 	prepare_glibc_source || return 1
 	[ -d ${glibc_src_dir_crs_hdr} ] ||
 		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
@@ -2109,7 +2111,7 @@ install_cross_gcc_with_c_cxx_go_functionality()
 
 install_cross_gcc()
 {
-	which ${target}-as || install_cross_binutils || return 1
+	which ${target}-as > /dev/null || install_cross_binutils || return 1
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build}) " && return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
 	prepare_gcc_source || return 1
