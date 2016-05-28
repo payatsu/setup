@@ -1,6 +1,5 @@
 #!/bin/sh -e
-# [TODO] install_native_llvm中で、CC, CXXを設定する。
-# [TODO] bash, find, LLD, LLDB, Polly
+# [TODO] bash, python, find, LLD, LLDB, Polly
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
@@ -9,7 +8,7 @@
 # [TODO] install_native_clang_extra()のテスト実行が未完了。
 # [TODO] native用とcross用にkernelとglibcのバージョンを同時に指定・最初に一括ダウンロードできるようにする。
 
-: ${tar_ver:=1.28}
+: ${tar_ver:=1.29}
 : ${xz_ver:=5.2.2}
 : ${wget_ver:=1.17.1}
 : ${coreutils_ver:=8.25}
@@ -21,7 +20,7 @@
 : ${libtool_ver:=2.4.6}
 : ${sed_ver:=4.2.2}
 : ${gawk_ver:=4.1.3}
-: ${make_ver:=4.1}
+: ${make_ver:=4.2}
 : ${binutils_ver:=2.26}
 : ${kernel_ver:=3.18.13}
 : ${gperf_ver:=3.0.4}
@@ -36,26 +35,27 @@
 : ${libpng_ver:=1.6.21}
 : ${libtiff_ver:=4.0.6}
 : ${libjpeg_ver:=v9b}
-: ${giflib_ver:=5.1.2}
+: ${giflib_ver:=5.1.4}
 : ${emacs_ver:=24.5}
 : ${vim_ver:=7.4.1849}
 : ${grep_ver:=2.25}
 : ${global_ver:=6.5.4}
 : ${diffutils_ver:=3.3}
 : ${patch_ver:=2.7.5}
+: ${findutils_ver:=4.6.0}
 : ${screen_ver:=4.3.1}
 : ${zsh_ver:=5.2}
 : ${openssl_ver:=1.0.2f}
-: ${curl_ver:=7.48.0}
+: ${curl_ver:=7.49.0}
 : ${asciidoc_ver:=8.6.9}
 : ${xmlto_ver:=0.0.28}
-: ${libxml2_ver:=2.9.3}
-: ${libxslt_ver:=1.1.28}
+: ${libxml2_ver:=2.9.4}
+: ${libxslt_ver:=1.1.29}
 : ${gettext_ver:=0.19.7}
-: ${git_ver:=2.8.2}
+: ${git_ver:=2.8.3}
 : ${cmake_ver:=3.5.2}
 : ${llvm_ver:=3.8.0}
-: ${boost_ver:=1_60_0}
+: ${boost_ver:=1_61_0}
 
 : ${prefix:=/toolchains}
 : ${target:=`uname -m`-linux-gnu}
@@ -162,6 +162,8 @@ help()
 		Specify the version of GNU diffutils you want, currently '${diffutils_ver}'.
 	patch_ver
 		Specify the version of GNU Patch you want, currently '${patch_ver}'.
+	findutils_ver
+		Specify the version of GNU findutils you want, currently'${findutils_ver}'.
 	screen_ver
 		Specify the version of GNU Screen you want, currently '${screen_ver}'.
 	zsh_ver
@@ -269,13 +271,13 @@ archive()
 {
 	clean
 	[ ${prefix}/src = `dirname $0` ] || cp -vf $0 ${prefix}/src || return 1
-	tar cJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` `basename ${prefix}` || return 1
+	tar cJovf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` `basename ${prefix}` || return 1
 }
 
 deploy()
 # Deploy related files.
 {
-	tar xJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` || return 1
+	tar xJovf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` || return 1
 	update_search_path || return 1
 	echo Please add ${prefix}/bin to PATH
 }
@@ -320,6 +322,7 @@ clean()
 		${global_org_src_dir} \
 		${diffutils_org_src_dir} \
 		${patch_org_src_dir} \
+		${findutils_org_src_dir} \
 		${screen_org_src_dir} \
 		${zsh_org_src_dir} \
 		${openssl_org_src_dir} \
@@ -539,6 +542,10 @@ set_variables()
 	patch_src_base=${prefix}/src/patch
 	patch_org_src_dir=${patch_src_base}/${patch_name}
 
+	findutils_name=findutils-${findutils_ver}
+	findutils_src_base=${prefix}/src/findutils
+	findutils_org_src_dir=${findutils_src_base}/${findutils_name}
+
 	screen_name=screen-${screen_ver}
 	screen_src_base=${prefix}/src/screen
 	screen_org_src_dir=${screen_src_base}/${screen_name}
@@ -588,15 +595,15 @@ set_variables()
 	llvm_org_src_dir=${llvm_src_base}/${llvm_name}
 	llvm_bld_dir=${llvm_src_base}/${llvm_name}-build
 
-	libcxxabi_name=libcxxabi-${llvm_ver}.src
-	libcxxabi_src_base=${prefix}/src/libc++abi
-	libcxxabi_org_src_dir=${libcxxabi_src_base}/${libcxxabi_name}
-	libcxxabi_bld_dir=${libcxxabi_src_base}/${libcxxabi_name}-build
-
 	libcxx_name=libcxx-${llvm_ver}.src
 	libcxx_src_base=${prefix}/src/libc++
 	libcxx_org_src_dir=${libcxx_src_base}/${libcxx_name}
 	libcxx_bld_dir=${libcxx_src_base}/${libcxx_name}-build
+
+	libcxxabi_name=libcxxabi-${llvm_ver}.src
+	libcxxabi_src_base=${prefix}/src/libc++abi
+	libcxxabi_org_src_dir=${libcxxabi_src_base}/${libcxxabi_name}
+	libcxxabi_bld_dir=${libcxxabi_src_base}/${libcxxabi_name}-build
 
 	clang_rt_name=compiler-rt-${llvm_ver}.src
 	clang_rt_src_base=${prefix}/src/clang-rt
@@ -635,7 +642,7 @@ archive_sources()
 {
 	prepare || return 1
 	clean
-	tar cJvf ${prefix}/src.tar.xz -C ${prefix} src
+	tar cJovf ${prefix}/src.tar.xz -C ${prefix} src
 }
 
 list_major_tags()
@@ -656,6 +663,7 @@ EOF
 
 update_search_path()
 {
+	[ `id -ur` !=  0 ] && return 0
 	[ -f /etc/ld.so.conf.d/`basename ${prefix}`.conf ] ||
 		echo \
 "${prefix}/lib
@@ -713,17 +721,17 @@ unpack_tar()
 prepare_tar_source()
 {
 	mkdir -p ${tar_src_base}
-	[ -f ${tar_org_src_dir}.tar.gz ] ||
-		wget -nv -O ${tar_org_src_dir}.tar.gz \
-			http://ftp.gnu.org/gnu/tar/${tar_name}.tar.gz || return 1
+	[ -f ${tar_org_src_dir}.tar.bz2 ] ||
+		wget -nv -O ${tar_org_src_dir}.tar.bz2 \
+			http://ftp.gnu.org/gnu/tar/${tar_name}.tar.bz2 || return 1
 }
 
 prepare_xz_source()
 {
 	mkdir -p ${xz_src_base}
-	[ -f ${xz_org_src_dir}.tar.gz ] ||
-		wget -nv -O ${xz_org_src_dir}.tar.gz \
-			http://tukaani.org/xz/xz-${xz_ver}.tar.gz || return 1
+	[ -f ${xz_org_src_dir}.tar.bz2 ] ||
+		wget -nv -O ${xz_org_src_dir}.tar.bz2 \
+			http://tukaani.org/xz/xz-${xz_ver}.tar.bz2 || return 1
 }
 
 prepare_wget_source()
@@ -809,17 +817,17 @@ prepare_gawk_source()
 prepare_make_source()
 {
 	mkdir -p ${make_src_base}
-	[ -f ${make_org_src_dir}.tar.gz ] ||
-		wget -nv -O ${make_org_src_dir}.tar.gz \
-			http://ftp.gnu.org/gnu/make/${make_name}.tar.gz || return 1
+	[ -f ${make_org_src_dir}.tar.bz2 ] ||
+		wget -nv -O ${make_org_src_dir}.tar.bz2 \
+			http://ftp.gnu.org/gnu/make/${make_name}.tar.bz2 || return 1
 }
 
 prepare_binutils_source()
 {
 	mkdir -p ${binutils_src_base}
-	[ -f ${binutils_org_src_dir}.tar.gz ] ||
-		wget -nv -O ${binutils_org_src_dir}.tar.gz \
-			http://ftp.gnu.org/gnu/binutils/${binutils_name}.tar.gz || return 1
+	[ -f ${binutils_org_src_dir}.tar.bz2 ] ||
+		wget -nv -O ${binutils_org_src_dir}.tar.bz2 \
+			http://ftp.gnu.org/gnu/binutils/${binutils_name}.tar.bz2 || return 1
 }
 
 prepare_kernel_source()
@@ -855,13 +863,13 @@ prepare_glibc_source()
 prepare_gmp_mpfr_mpc_source()
 {
 	mkdir -p ${gmp_src_base}
-	[ -f ${gmp_org_src_dir}.tar.bz2 ] ||
-		wget -nv -O ${gmp_org_src_dir}.tar.bz2 \
-			http://ftp.gnu.org/gnu/gmp/${gmp_name}.tar.bz2 || return 1
+	[ -f ${gmp_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${gmp_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/gmp/${gmp_name}.tar.xz || return 1
 	mkdir -p ${mpfr_src_base}
-	[ -f ${mpfr_org_src_dir}.tar.gz ] ||
-		wget -nv -O ${mpfr_org_src_dir}.tar.gz \
-			http://www.mpfr.org/${mpfr_name}/${mpfr_name}.tar.gz || return 1
+	[ -f ${mpfr_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${mpfr_org_src_dir}.tar.xz \
+			http://www.mpfr.org/${mpfr_name}/${mpfr_name}.tar.xz || return 1
 	mkdir -p ${mpc_src_base}
 	[ -f ${mpc_org_src_dir}.tar.gz ] ||
 		wget -nv -O ${mpc_org_src_dir}.tar.gz \
@@ -871,9 +879,9 @@ prepare_gmp_mpfr_mpc_source()
 prepare_gcc_source()
 {
 	mkdir -p ${gcc_src_base}
-	[ -f ${gcc_org_src_dir}.tar.gz ] ||
-		wget -nv -O ${gcc_org_src_dir}.tar.gz \
-			http://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.gz || return 1
+	[ -f ${gcc_org_src_dir}.tar.bz2 ] ||
+		wget -nv -O ${gcc_org_src_dir}.tar.bz2 \
+			http://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.bz2 || return 1
 }
 
 prepare_ncurses_source()
@@ -895,25 +903,25 @@ prepare_gdb_source()
 prepare_zlib_source()
 {
 	mkdir -p ${zlib_src_base}
-	[ -f ${zlib_org_src_dir}.tar.gz ] ||
-		wget -nv -O ${zlib_org_src_dir}.tar.gz \
-			http://zlib.net/${zlib_name}.tar.gz || return 1
+	[ -f ${zlib_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${zlib_org_src_dir}.tar.xz \
+			http://zlib.net/${zlib_name}.tar.xz || return 1
 }
 
 prepare_libpng_source()
 {
 	mkdir -p ${libpng_src_base}
-	[ -f ${libpng_org_src_dir}.tar.gz ] ||
-		wget -nv --trust-server-names -O ${libpng_org_src_dir}.tar.gz \
-			http://download.sourceforge.net/libpng/${libpng_name}.tar.gz || return 1
+	[ -f ${libpng_org_src_dir}.tar.xz ] ||
+		wget -nv --trust-server-names -O ${libpng_org_src_dir}.tar.xz \
+			http://download.sourceforge.net/libpng/${libpng_name}.tar.xz || return 1
 }
 
 prepare_libtiff_source()
 {
 	mkdir -p ${libtiff_src_base}
-	[ -f ${libtiff_org_src_dir}.zip ] ||
-		wget -nv -O ${libtiff_org_src_dir}.zip \
-			ftp://ftp.remotesensing.org/pub/libtiff/${libtiff_name}.zip || return 1
+	[ -f ${libtiff_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${libtiff_org_src_dir}.tar.gz \
+			ftp://ftp.remotesensing.org/pub/libtiff/${libtiff_name}.tar.gz || return 1
 }
 
 prepare_libjpeg_source()
@@ -980,6 +988,14 @@ prepare_patch_source()
 			http://ftp.gnu.org/gnu/patch/${patch_name}.tar.xz || return 1
 }
 
+prepare_findutils_source()
+{
+	mkdir -p ${findutils_src_base}
+	[ -f ${findutils_org_src_dir}.tar.gz ] ||
+		wget -nv -O ${findutils_org_src_dir}.tar.gz \
+			http://ftp.gnu.org/gnu/findutils/${findutils_name}.tar.gz || return 1
+}
+
 prepare_screen_source()
 {
 	mkdir -p ${screen_src_base}
@@ -991,9 +1007,9 @@ prepare_screen_source()
 prepare_zsh_source()
 {
 	mkdir -p ${zsh_src_base}
-	[ -f ${zsh_org_src_dir}.tar.gz ] ||
-		wget -nv --trust-server-names --no-check-certificate -O ${zsh_org_src_dir}.tar.gz \
-			https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.gz/download || return 1
+	[ -f ${zsh_org_src_dir}.tar.xz ] ||
+		wget -nv --trust-server-names --no-check-certificate -O ${zsh_org_src_dir}.tar.xz \
+			https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return 1
 }
 
 prepare_openssl_source()
@@ -1015,9 +1031,9 @@ prepare_curl_source()
 prepare_asciidoc_source()
 {
 	mkdir -p ${asciidoc_src_base}
-	[ -f ${asciidoc_org_src_dir}.zip ] ||
-		wget -nv --no-check-certificate -O ${asciidoc_org_src_dir}.zip \
-			https://sourceforge.net/projects/asciidoc/files/asciidoc/${asciidoc_ver}/${asciidoc_name}.zip/download || return 1
+	[ -f ${asciidoc_org_src_dir}.tar.gz ] ||
+		wget -nv --no-check-certificate -O ${asciidoc_org_src_dir}.tar.gz \
+			https://sourceforge.net/projects/asciidoc/files/asciidoc/${asciidoc_ver}/${asciidoc_name}.tar.gz/download || return 1
 }
 
 prepare_xmlto_source()
@@ -1076,20 +1092,20 @@ prepare_llvm_source()
 			http://llvm.org/releases/${llvm_ver}/${llvm_name}.tar.xz || return 1
 }
 
-prepare_libcxxabi_source()
-{
-	mkdir -p ${libcxxabi_src_base}
-	[ -f ${libcxxabi_org_src_dir}.tar.xz ] ||
-		wget -nv -O ${libcxxabi_org_src_dir}.tar.xz \
-			http://llvm.org/releases/${llvm_ver}/${libcxxabi_name}.tar.xz || return 1
-}
-
 prepare_libcxx_source()
 {
 	mkdir -p ${libcxx_src_base}
 	[ -f ${libcxx_org_src_dir}.tar.xz ] ||
 		wget -nv -O ${libcxx_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${libcxx_name}.tar.xz || return 1
+}
+
+prepare_libcxxabi_source()
+{
+	mkdir -p ${libcxxabi_src_base}
+	[ -f ${libcxxabi_org_src_dir}.tar.xz ] ||
+		wget -nv -O ${libcxxabi_org_src_dir}.tar.xz \
+			http://llvm.org/releases/${llvm_ver}/${libcxxabi_name}.tar.xz || return 1
 }
 
 prepare_clang_rt_source()
@@ -1307,7 +1323,7 @@ install_native_binutils()
 	which yacc > /dev/null || install_native_bison || return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_ntv} ] ||
-		(tar xzvf ${binutils_org_src_dir}.tar.gz -C ${binutils_src_base} &&
+		(unpack_tar ${binutils_org_src_dir} ${binutils_src_base} &&
 			mv ${binutils_org_src_dir} ${binutils_src_dir_ntv}) || return 1
 	[ -f ${binutils_src_dir_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_ntv}
@@ -1322,7 +1338,7 @@ install_native_kernel_header()
 {
 	prepare_kernel_source || return 1
 	[ -d ${kernel_src_dir_ntv} ] ||
-		(tar xJvf ${kernel_org_src_dir}.tar.xz -C ${kernel_src_base} &&
+		(unpack_tar ${kernel_org_src_dir} ${kernel_src_base} &&
 			mv ${kernel_org_src_dir} ${kernel_src_dir_ntv}) || return 1
 	make -C ${kernel_src_dir_ntv} -j ${jobs} mrproper || return 1
 	make -C ${kernel_src_dir_ntv} -j ${jobs} \
@@ -1348,7 +1364,7 @@ install_native_glibc()
 	which gperf > /dev/null || install_native_gperf || return 1
 	prepare_glibc_source || return 1
 	[ -d ${glibc_src_dir_ntv} ] ||
-		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
+		(unpack_tar ${glibc_org_src_dir} ${glibc_src_base} &&
 			mv ${glibc_org_src_dir} ${glibc_src_dir_ntv}) || return 1
 
 	mkdir -p ${glibc_bld_dir_ntv}
@@ -1368,7 +1384,7 @@ install_native_gmp_mpfr_mpc()
 	prepare_gmp_mpfr_mpc_source || return 1
 
 	[ -d ${gmp_src_dir_ntv} ] ||
-		(tar xjvf ${gmp_org_src_dir}.tar.bz2 -C ${gmp_src_base} &&
+		(unpack_tar ${gmp_org_src_dir} ${gmp_src_base} &&
 			mv ${gmp_org_src_dir} ${gmp_src_dir_ntv}) || return 1
 	[ -f ${gmp_src_dir_ntv}/Makefile ] ||
 		(cd ${gmp_src_dir_ntv}
@@ -1377,7 +1393,7 @@ install_native_gmp_mpfr_mpc()
 	make -C ${gmp_src_dir_ntv} -j ${jobs} install-strip || return 1
 
 	[ -d ${mpfr_src_dir_ntv} ] ||
-		(tar xzvf ${mpfr_org_src_dir}.tar.gz -C ${mpfr_src_base} &&
+		(unpack_tar ${mpfr_org_src_dir} ${mpfr_src_base} &&
 			mv ${mpfr_org_src_dir} ${mpfr_src_dir_ntv}) || return 1
 	[ -f ${mpfr_src_dir_ntv}/Makefile ] ||
 		(cd ${mpfr_src_dir_ntv}
@@ -1386,7 +1402,7 @@ install_native_gmp_mpfr_mpc()
 	make -C ${mpfr_src_dir_ntv} -j ${jobs} install-strip || return 1
 
 	[ -d ${mpc_src_dir_ntv} ] ||
-		(tar xzvf ${mpc_org_src_dir}.tar.gz -C ${mpc_src_base} &&
+		(unpack_tar ${mpc_org_src_dir} ${mpc_src_base} &&
 			mv ${mpc_org_src_dir} ${mpc_src_dir_ntv}) || return 1
 	[ -f ${mpc_src_dir_ntv}/Makefile ] ||
 		(cd ${mpc_src_dir_ntv}
@@ -1493,7 +1509,7 @@ install_native_zlib()
 	[ -e ${prefix}/lib/libz.so -a -z "${force_install}" ] && return 0
 	prepare_zlib_source || return 1
 	[ -d ${zlib_src_dir_ntv} ] ||
-		(tar xzvf ${zlib_org_src_dir}.tar.gz -C ${zlib_src_base} &&
+		(unpack_tar ${zlib_org_src_dir} ${zlib_src_base} &&
 			mv ${zlib_org_src_dir} ${zlib_src_dir_ntv}) || return 1
 	(cd ${zlib_src_dir_ntv}
 	./configure --prefix=${prefix}) || return 1
@@ -1508,7 +1524,7 @@ install_native_libpng()
 	search_header zlib.h || install_native_zlib || return 1
 	prepare_libpng_source || return 1
 	[ -d ${libpng_src_dir_ntv} ] ||
-		(tar xzvf ${libpng_org_src_dir}.tar.gz -C ${libpng_src_base} &&
+		(unpack_tar ${libpng_org_src_dir} ${libpng_src_base} &&
 			mv ${libpng_org_src_dir} ${libpng_src_dir_ntv}) || return 1
 	[ -f ${libpng_src_dir_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_ntv}
@@ -1523,7 +1539,7 @@ install_native_libtiff()
 	[ -e ${prefix}/lib/libtiff.so -a -z "${force_install}" ] && return 0
 	prepare_libtiff_source || return 1
 	[ -d ${libtiff_src_dir_ntv} ] ||
-		(unzip -d ${libtiff_src_base} ${libtiff_org_src_dir}.zip &&
+		(unpack_tar ${libtiff_org_src_dir} ${libtiff_src_base} &&
 			mv ${libtiff_org_src_dir} ${libtiff_src_dir_ntv}) || return 1
 	[ -f ${libtiff_src_dir_ntv}/Makefile ] ||
 		(cd ${libtiff_src_dir_ntv}
@@ -1538,7 +1554,7 @@ install_native_libjpeg()
 	[ -e ${prefix}/lib/libjpeg.so -a -z "${force_install}" ] && return 0
 	prepare_libjpeg_source || return 1
 	[ -d ${libjpeg_src_dir_ntv} ] ||
-		(tar xzvf ${libjpeg_org_src_dir}.tar.gz -C ${libjpeg_src_base} &&
+		(unpack_tar ${libjpeg_org_src_dir} ${libjpeg_src_base} &&
 			mv ${libjpeg_org_src_dir} ${libjpeg_src_dir_ntv}) || return 1
 	[ -f ${libjpeg_src_dir_ntv}/Makefile ] ||
 		(cd ${libjpeg_src_dir_ntv}
@@ -1553,7 +1569,7 @@ install_native_giflib()
 	[ -e ${prefix}/lib/libgif.so -a -z "${force_install}" ] && return 0
 	prepare_giflib_source || return 1
 	[ -d ${giflib_src_dir_ntv} ] ||
-		(tar xjvf ${giflib_org_src_dir}.tar.bz2 -C ${giflib_src_base} &&
+		(unpack_tar ${giflib_org_src_dir} ${giflib_src_base} &&
 			mv ${giflib_org_src_dir} ${giflib_src_dir_ntv}) || return 1
 	[ -f ${giflib_src_dir_ntv}/Makefile ] ||
 		(cd ${giflib_src_dir_ntv}
@@ -1647,6 +1663,18 @@ install_native_patch()
 	make -C ${patch_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
+install_native_findutils()
+{
+	[ -x ${prefix}/bin/find -a -z "${force_install}" ] && return 0
+	prepare_findutils_source || return 1
+	unpack_tar ${findutils_org_src_dir} ${findutils_src_base} || return 1
+	[ -f ${findutils_org_src_dir}/Makefile ] ||
+		(cd ${findutils_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${findutils_org_src_dir} -j ${jobs} || return 1
+	make -C ${findutils_org_src_dir} -j ${jobs} install-strip || return 1
+}
+
 install_native_screen()
 {
 	[ -x ${prefix}/bin/screen -a -z "${force_install}" ] && return 0
@@ -1702,8 +1730,7 @@ install_native_asciidoc()
 {
 	[ -x ${prefix}/bin/asciidoc -a -z "${force_install}" ] && return 0
 	prepare_asciidoc_source || return 1
-	[ -d ${asciidoc_org_src_dir} ] ||
-		unzip -d ${asciidoc_src_base} ${asciidoc_org_src_dir}.zip || return 1
+	unpack_tar ${asciidoc_org_src_dir} ${asciidoc_src_base} || return 1
 	[ -f ${asciidoc_org_src_dir}/Makefile ] ||
 		(cd ${asciidoc_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
@@ -1812,6 +1839,20 @@ install_native_llvm()
 	make -C ${llvm_bld_dir} -j ${jobs} install/strip || return 1
 }
 
+install_native_libcxx()
+{
+	[ -e ${prefix}/lib/libc++.so -a -z "${force_install}" ] && return 0
+	which cmake > /dev/null || install_native_cmake || return 1
+	prepare_libcxx_source || return 1
+	unpack_tar ${libcxx_org_src_dir} ${libcxx_src_base} || return 1
+	mkdir -p ${libcxx_bld_dir}
+	(cd ${libcxx_bld_dir}
+	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxx_org_src_dir}) || return 1
+	make -C ${libcxx_bld_dir} -j ${jobs} || return 1
+	make -C ${libcxx_bld_dir} -j ${jobs} install/strip || return 1
+}
+
 install_native_libcxxabi()
 {
 	[ -e ${prefix}/lib/libc++abi.so -a -z "${force_install}" ] && return 0
@@ -1825,20 +1866,6 @@ install_native_libcxxabi()
 		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxxabi_org_src_dir}) || return 1
 	make -C ${libcxxabi_bld_dir} -j ${jobs} || return 1
 	make -C ${libcxxabi_bld_dir} -j ${jobs} install/strip || return 1
-}
-
-install_native_libcxx()
-{
-	[ -e ${prefix}/lib/libc++.so -a -z "${force_install}" ] && return 0
-	which cmake > /dev/null || install_native_cmake || return 1
-	prepare_libcxx_source || return 1
-	unpack_tar ${libcxx_org_src_dir} ${libcxx_src_base} || return 1
-	mkdir -p ${libcxx_bld_dir}
-	(cd ${libcxx_bld_dir}
-	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxx_org_src_dir}) || return 1
-	make -C ${libcxx_bld_dir} -j ${jobs} || return 1
-	make -C ${libcxx_bld_dir} -j ${jobs} install/strip || return 1
 }
 
 install_native_clang_rt()
@@ -1978,7 +2005,7 @@ install_cross_binutils()
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build}) " && return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_crs} ] ||
-		(tar xzvf ${binutils_org_src_dir}.tar.gz -C ${binutils_src_base} &&
+		(unpack_tar ${binutils_org_src_dir} ${binutils_src_base} &&
 			mv ${binutils_org_src_dir} ${binutils_src_dir_crs}) || return 1
 	[ -f ${binutils_src_dir_crs}/Makefile ] ||
 		(cd ${binutils_src_dir_crs}
@@ -1990,8 +2017,7 @@ install_cross_binutils()
 
 install_cross_gcc_without_headers()
 {
-	[ -d ${gcc_org_src_dir} ] ||
-		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
+	unpack_tar ${gcc_org_src_dir} ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_crs_1st}
 	[ -f ${gcc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_1st}
@@ -2009,7 +2035,7 @@ install_cross_kernel_header()
 {
 	prepare_kernel_source || return 1
 	[ -d ${kernel_src_dir_crs} ] ||
-		(tar xJvf ${kernel_org_src_dir}.tar.xz -C ${kernel_src_base} &&
+		(unpack_tar ${kernel_org_src_dir} ${kernel_src_base} &&
 			mv ${kernel_org_src_dir} ${kernel_src_dir_crs}) || return 1
 	make -C ${kernel_src_dir_crs} -j ${jobs} mrproper || return 1
 	make -C ${kernel_src_dir_crs} -j ${jobs} \
@@ -2022,7 +2048,7 @@ install_cross_glibc_headers()
 	which gperf > /dev/null || install_native_gperf || return 1
 	prepare_glibc_source || return 1
 	[ -d ${glibc_src_dir_crs_hdr} ] ||
-		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
+		(unpack_tar ${glibc_org_src_dir} ${glibc_src_base} &&
 			mv ${glibc_org_src_dir} ${glibc_src_dir_crs_hdr}) || return 1
 	mkdir -p ${glibc_bld_dir_crs_hdr}
 	[ -f ${glibc_bld_dir_crs_hdr}/Makefile ] ||
@@ -2035,8 +2061,7 @@ install_cross_glibc_headers()
 
 install_cross_gcc_with_glibc_headers()
 {
-	[ -d ${gcc_org_src_dir} ] ||
-		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
+	unpack_tar ${gcc_org_src_dir} ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_crs_2nd}
 	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_2nd}
@@ -2056,7 +2081,7 @@ install_cross_gcc_with_glibc_headers()
 install_cross_1st_glibc()
 {
 	[ -d ${glibc_src_dir_crs_1st} ] ||
-		(tar xJvf ${glibc_org_src_dir}.tar.xz -C ${glibc_src_base} &&
+		(unpack_tar ${glibc_org_src_dir} ${glibc_src_base} &&
 			mv ${glibc_org_src_dir} ${glibc_src_dir_crs_1st}) || return 1
 
 	[ ${cross_linux_arch} = microblaze ] && (cd ${glibc_src_dir_crs_1st}; patch -N -p0 -d ${glibc_src_dir_crs_1st} <<EOF || [ $? = 1 ] || return 1
@@ -2097,8 +2122,7 @@ EOF
 
 install_cross_gcc_with_c_cxx_go_functionality()
 {
-	[ -d ${gcc_org_src_dir} ] ||
-		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
+	unpack_tar ${gcc_org_src_dir} ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_crs_3rd}
 	export LIBS=-lgcc_s
 	[ -f ${gcc_bld_dir_crs_3rd}/Makefile ] ||
@@ -2127,8 +2151,7 @@ install_cross_gdb()
 {
 	[ -e ${prefix}/bin/${target}-gdb -a -z "${force_install}" ] && return 0
 	prepare_gdb_source || return 1
-	[ -d ${gdb_org_src_dir} ] ||
-		tar xJvf ${gdb_org_src_dir}.tar.xz -C ${gdb_src_base} || return 1
+	unpack_tar ${gdb_org_src_dir} ${gdb_src_base} || return 1
 	mkdir -p ${gdb_bld_dir_crs}
 	[ -f ${gdb_bld_dir_crs}/Makefile ] ||
 		(cd ${gdb_bld_dir_crs}
@@ -2147,7 +2170,7 @@ install_crossed_native_binutils()
 {
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_crs_ntv} ] ||
-		(tar xzvf ${binutils_org_src_dir}.tar.gz -C ${binutils_src_base} &&
+		(unpack_tar ${binutils_org_src_dir} ${binutils_src_base} &&
 			mv ${binutils_org_src_dir} ${binutils_src_dir_crs_ntv}) || return 1
 	[ -f ${binutils_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_crs_ntv}
@@ -2161,7 +2184,7 @@ install_crossed_native_gmp_mpfr_mpc()
 	prepare_gmp_mpfr_mpc_source || return 1
 
 	[ -d ${gmp_src_dir_crs_ntv} ] ||
-		(tar xjvf ${gmp_org_src_dir}.tar.bz2 -C ${gmp_src_base} &&
+		(unpack_tar ${gmp_org_src_dir} ${gmp_src_base} &&
 			mv ${gmp_org_src_dir} ${gmp_src_dir_crs_ntv}) || return 1
 	[ -f ${gmp_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${gmp_src_dir_crs_ntv}
@@ -2172,7 +2195,7 @@ install_crossed_native_gmp_mpfr_mpc()
 # XXX クロス先のネイティブ環境用なので、with-gmp, --with-mpfrの指定が間違ってるかも。
 
 	[ -d ${mpfr_src_dir_crs_ntv} ] ||
-		(tar xzvf ${mpfr_org_src_dir}.tar.gz -C ${mpfr_src_base} &&
+		(unpack_tar ${mpfr_org_src_dir} ${mpfr_src_base} &&
 			mv ${mpfr_org_src_dir} ${mpfr_src_dir_crs_ntv}) || return 1
 	[ -f ${mpfr_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${mpfr_src_dir_crs_ntv}
@@ -2181,7 +2204,7 @@ install_crossed_native_gmp_mpfr_mpc()
 	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 
 	[ -d ${mpc_src_dir_crs_ntv} ] ||
-		(tar xzvf ${mpc_org_src_dir}.tar.gz -C ${mpc_src_base} &&
+		(unpack_tar ${mpc_org_src_dir} ${mpc_src_base} &&
 			mv ${mpc_org_src_dir} ${mpc_src_dir_crs_ntv}) || return 1
 	[ -f ${mpc_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${mpc_src_dir_crs_ntv}
@@ -2194,8 +2217,7 @@ install_crossed_native_gcc()
 {
 	install_crossed_native_gmp_mpfr_mpc || return 1
 	prepare_gcc_source || return 1
-	[ -d ${gcc_org_src_dir} ] ||
-		tar xzvf ${gcc_org_src_dir}.tar.gz -C ${gcc_src_base} || return 1
+	unpack_tar ${gcc_org_src_dir} ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_crs_ntv}
 	export CC_FOR_TARGET=${prefix}/bin/${target}-gcc
 	export CXX_FOR_TARGET=${prefix}/bin/${target}-g++
@@ -2212,7 +2234,7 @@ install_crossed_native_zlib()
 {
 	prepare_zlib_source || return 1
 	[ -d ${zlib_src_dir_crs_ntv} ] ||
-		(tar xzvf ${zlib_org_src_dir}.tar.gz -C ${zlib_src_base} &&
+		(unpack_tar ${zlib_org_src_dir} ${zlib_src_base} &&
 			mv ${zlib_org_src_dir} ${zlib_src_dir_crs_ntv}) || return 1
 	(cd ${zlib_src_dir_crs_ntv}
 	CC=${target}-gcc ./configure --prefix=${sysroot}/usr) || return 1
@@ -2225,7 +2247,7 @@ install_crossed_native_libpng()
 	install_crossed_native_zlib || return 1
 	prepare_libpng_source || return 1
 	[ -d ${libpng_src_dir_crs_ntv} ] ||
-		(tar xzvf ${libpng_org_src_dir}.tar.gz -C ${libpng_src_base} &&
+		(unpack_tar ${libpng_org_src_dir} ${libpng_src_base} &&
 			mv ${libpng_org_src_dir} ${libpng_src_dir_crs_ntv}) || return 1
 	[ -f ${libpng_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_crs_ntv}
