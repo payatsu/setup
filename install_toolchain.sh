@@ -1804,7 +1804,8 @@ install_native_llvm()
 	unpack_tar ${llvm_org_src_dir} ${llvm_src_base} || return 1
 	mkdir -p ${llvm_bld_dir}
 	(cd ${llvm_bld_dir}
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1 # CC=gcc CXX=g++ CXXFLAGS='-mfpu=neon -mhard-float' LD_LIBRARY_PATH=${prefix}/lib
+	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1 # CXXFLAGS='-mfpu=neon -mhard-float' LD_LIBRARY_PATH=${prefix}/lib
 	make -C ${llvm_bld_dir} -j ${jobs} || return 1
 	make -C ${llvm_bld_dir} -j ${jobs} install/strip || return 1
 }
@@ -1818,7 +1819,8 @@ install_native_libcxxabi()
 	unpack_tar ${libcxxabi_org_src_dir} ${libcxxabi_src_base} || return 1
 	mkdir -p ${libcxxabi_bld_dir}
 	(cd ${libcxxabi_bld_dir}
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxxabi_org_src_dir}) || return 1
+	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxxabi_org_src_dir}) || return 1
 	make -C ${libcxxabi_bld_dir} -j ${jobs} || return 1
 	make -C ${libcxxabi_bld_dir} -j ${jobs} install/strip || return 1
 }
@@ -1831,7 +1833,8 @@ install_native_libcxx()
 	unpack_tar ${libcxx_org_src_dir} ${libcxx_src_base} || return 1
 	mkdir -p ${libcxx_bld_dir}
 	(cd ${libcxx_bld_dir}
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxx_org_src_dir}) || return 1
+	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxx_org_src_dir}) || return 1
 	make -C ${libcxx_bld_dir} -j ${jobs} || return 1
 	make -C ${libcxx_bld_dir} -j ${jobs} install/strip || return 1
 }
@@ -1843,7 +1846,8 @@ install_native_clang_rt()
 	unpack_tar ${clang_rt_org_src_dir} ${clang_rt_src_base} || return 1
 	mkdir -p ${clang_rt_bld_dir}
 	(cd ${clang_rt_bld_dir}
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_rt_org_src_dir}) || return 1
+	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_rt_org_src_dir}) || return 1
 	make -C ${clang_rt_bld_dir} -j ${jobs} || return 1
 	make -C ${clang_rt_bld_dir} -j ${jobs} install/strip || return 1
 }
@@ -1860,7 +1864,8 @@ install_native_clang()
 	unpack_tar ${clang_org_src_dir} ${clang_src_base} || return 1
 	mkdir -p ${clang_bld_dir}
 	(cd ${clang_bld_dir}
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_org_src_dir}) || return 1
+	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_org_src_dir}) || return 1
 	make -C ${clang_bld_dir} -j ${jobs} || return 1
 	make -C ${clang_bld_dir} -j ${jobs} install/strip || return 1
 }
@@ -1884,7 +1889,8 @@ install_native_lld()
 	unpack_tar ${lld_org_src_dir} ${lld_src_base} || return 1
 	mkdir -p ${lld_bld_dir}
 	(cd ${lld_bld_dir}
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${lld_org_src_dir}) || return 1
+	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${lld_org_src_dir}) || return 1
 	make -C ${lld_bld_dir} -j ${jobs} || return 1
 	make -C ${lld_bld_dir} -j ${jobs} install/strip || return 1
 }
@@ -1896,7 +1902,8 @@ install_native_lldb()
 	unpack_tar ${lldb_org_src_dir} ${lldb_src_base} || return 1
 	mkdir -p ${lldb_bld_dir}
 	(cd ${lldb_bld_dir}
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREIFX=${prefix} ${lldb_org_src_dir}) || return 1
+	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREIFX=${prefix} ${lldb_org_src_dir}) || return 1
 	make -C ${lldb_bld_dir} -j ${jobs} || return 1
 	make -C ${lldb_bld_dir} -j ${jobs} install/strip || return 1
 }
@@ -1918,6 +1925,8 @@ full_native()
 	install_native_xz || return 1
 	install_native_wget || return 1
 	install_native_coreutils || return 1
+	install_native_bison || return 1
+	install_native_flex || return 1
 	install_native_m4 || return 1
 	install_native_autoconf || return 1
 	install_native_automake || return 1
@@ -1925,19 +1934,38 @@ full_native()
 	install_native_sed || return 1
 	install_native_gawk || return 1
 	install_native_make || return 1
-	install_native_gperf || return 1
 	install_native_binutils || return 1
+	install_native_gperf || return 1
+	install_native_gmp_mpfr_mpc || return 1
 	install_native_gcc || return 1
+	install_native_ncurses || return 1
 	install_native_gdb || return 1
+	install_native_zlib || return 1
+	install_native_libpng || return 1
+	install_native_libtiff || return 1
+	install_native_libjpeg || return 1
+	install_native_giflib || return 1
 	install_native_emacs || return 1
+	install_native_vim || return 1
 	install_native_grep || return 1
 	install_native_global || return 1
 	install_native_diffutils || return 1
 	install_native_patch || return 1
 	install_native_screen || return 1
 	install_native_zsh || return 1
+	install_native_openssl || return 1
+	install_native_curl || return 1
+	install_native_asciidoc || return 1
+	install_native_xmlto || return 1
+	install_native_libxml2 || return 1
+	install_native_libxslt || return 1
+	install_native_gettext || return 1
 	install_native_git || return 1
 	install_native_cmake || return 1
+	install_native_llvm || return 1
+	install_native_libcxx || return 1
+	install_native_libcxxabi || return 1
+	install_native_clang_rt || return 1
 	install_native_clang || return 1
 	install_native_boost || return 1
 }
@@ -1945,6 +1973,7 @@ full_native()
 install_cross_binutils()
 {
 	[ -e ${prefix}/bin/${target}-as -a -z "${force_install}" ] && return 0
+	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build}) " && return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_crs} ] ||
 		(tar xzvf ${binutils_org_src_dir}.tar.gz -C ${binutils_src_base} &&
@@ -2081,6 +2110,7 @@ install_cross_gcc_with_c_cxx_go_functionality()
 install_cross_gcc()
 {
 	which ${target}-as || install_cross_binutils || return 1
+	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build}) " && return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
 	prepare_gcc_source || return 1
 	install_cross_gcc_without_headers || return 1
