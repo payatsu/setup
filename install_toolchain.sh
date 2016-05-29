@@ -58,6 +58,7 @@
 : ${cmake_ver:=3.5.2}
 : ${llvm_ver:=3.8.0}
 : ${boost_ver:=1_61_0}
+: ${mingw_w64_ver:=4.0.6}
 
 : ${prefix:=/toolchains}
 : ${target:=`uname -m`-linux-gnu}
@@ -192,6 +193,8 @@ help()
 		Specify the version of llvm you want, currently '${llvm_ver}'.
 	boost_ver
 		Specify the version of boost you want, currently '${boost_ver}'.
+	mingw_w64_ver
+		Specify the version of mingw-w64 you want, currently '${mingw_w64_ver}'.
 
 [Examples]
 	For Raspberry pi2
@@ -310,7 +313,8 @@ clean()
 		${clang_extra_org_src_dir} ${clang_extra_bld_dir} \
 		${lld_org_src_dir} ${lld_bld_dir} \
 		${lldb_org_src_dir} ${lldb_bld_dir} \
-		${boost_org_src_dir}
+		${boost_org_src_dir} \
+		${mingw_w64_org_src_dir} ${mingw_w64_bld_dir_hdr} ${mingw_w64_bld_dir_1st} ${mingw_w64_src_dir_hdr} ${mingw_w64_src_dir_1st}
 }
 
 strip()
@@ -645,6 +649,14 @@ set_variables()
 	boost_src_base=${prefix}/src/boost
 	boost_org_src_dir=${boost_src_base}/${boost_name}
 
+	mingw_w64_name=mingw-w64-v${mingw_w64_ver}
+	mingw_w64_src_base=${prefix}/src/mingw-w64
+	mingw_w64_org_src_dir=${mingw_w64_src_base}/${mingw_w64_name}
+	mingw_w64_bld_dir_hdr=${mingw_w64_src_base}/${mingw_w64_name}-bld-hdr
+	mingw_w64_bld_dir_1st=${mingw_w64_src_base}/${mingw_w64_name}-bld-1st
+	mingw_w64_src_dir_hdr=${mingw_w64_src_base}/${mingw_w64_name}-src-hdr
+	mingw_w64_src_dir_1st=${mingw_w64_src_base}/${mingw_w64_name}-src-1st
+
 	echo ${PATH} | grep -q -e ${prefix}/bin || PATH=${prefix}/bin:${PATH}
 	echo ${PATH} | grep -q -e /sbin || PATH=/sbin:${PATH}
 }
@@ -743,7 +755,7 @@ prepare_tar_source()
 {
 	mkdir -p ${tar_src_base}
 	[ -f ${tar_org_src_dir}.tar.bz2 ] ||
-		wgetg -O ${tar_org_src_dir}.tar.bz2 \
+		wget -O ${tar_org_src_dir}.tar.bz2 \
 			http://ftp.gnu.org/gnu/tar/${tar_name}.tar.bz2 || return 1
 }
 
@@ -751,7 +763,7 @@ prepare_xz_source()
 {
 	mkdir -p ${xz_src_base}
 	[ -f ${xz_org_src_dir}.tar.bz2 ] ||
-		wgetg -O ${xz_org_src_dir}.tar.bz2 \
+		wget -O ${xz_org_src_dir}.tar.bz2 \
 			http://tukaani.org/xz/xz-${xz_ver}.tar.bz2 || return 1
 }
 
@@ -759,7 +771,7 @@ prepare_wget_source()
 {
 	mkdir -p ${wget_src_base}
 	[ -f ${wget_org_src_dir}.tar.xz ] ||
-		wgetg -O ${wget_org_src_dir}.tar.xz \
+		wget -O ${wget_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/wget/${wget_name}.tar.xz || return 1
 }
 
@@ -767,7 +779,7 @@ prepare_coreutils_source()
 {
 	mkdir -p ${coreutils_src_base}
 	[ -f ${coreutils_org_src_dir}.tar.xz ] ||
-		wgetg -O ${coreutils_org_src_dir}.tar.xz \
+		wget -O ${coreutils_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/coreutils/${coreutils_name}.tar.xz || return 1
 }
 
@@ -775,7 +787,7 @@ prepare_bison_source()
 {
 	mkdir -p ${bison_src_base}
 	[ -f ${bison_org_src_dir}.tar.xz ] ||
-		wgetg -O ${bison_org_src_dir}.tar.xz \
+		wget -O ${bison_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/bison/${bison_name}.tar.xz || return 1
 }
 
@@ -783,7 +795,7 @@ prepare_flex_source()
 {
 	mkdir -p ${flex_src_base}
 	[ -f ${flex_org_src_dir}.tar.xz ] ||
-		wgetg --trust-server-names --no-check-certificate -O ${flex_org_src_dir}.tar.xz \
+		wget --trust-server-names --no-check-certificate -O ${flex_org_src_dir}.tar.xz \
 			https://sourceforge.net/projects/flex/files/${flex_name}.tar.xz/download || return 1
 }
 
@@ -791,7 +803,7 @@ prepare_m4_source()
 {
 	mkdir -p ${m4_src_base}
 	[ -f ${m4_org_src_dir}.tar.xz ] ||
-		wgetg -O ${m4_org_src_dir}.tar.xz \
+		wget -O ${m4_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/m4/${m4_name}.tar.xz || return 1
 }
 
@@ -799,7 +811,7 @@ prepare_autoconf_source()
 {
 	mkdir -p ${autoconf_src_base}
 	[ -f ${autoconf_org_src_dir}.tar.xz ] ||
-		wgetg -O ${autoconf_org_src_dir}.tar.xz \
+		wget -O ${autoconf_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/autoconf/${autoconf_name}.tar.xz || return 1
 }
 
@@ -807,7 +819,7 @@ prepare_automake_source()
 {
 	mkdir -p ${automake_src_base}
 	[ -f ${automake_org_src_dir}.tar.xz ] ||
-		wgetg -O ${automake_org_src_dir}.tar.xz \
+		wget -O ${automake_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/automake/${automake_name}.tar.xz || return 1
 }
 
@@ -815,7 +827,7 @@ prepare_libtool_source()
 {
 	mkdir -p ${libtool_src_base}
 	[ -f ${libtool_org_src_dir}.tar.xz ] ||
-		wgetg -O ${libtool_org_src_dir}.tar.xz \
+		wget -O ${libtool_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/libtool/${libtool_name}.tar.xz || return 1
 }
 
@@ -823,7 +835,7 @@ prepare_sed_source()
 {
 	mkdir -p ${sed_src_base}
 	[ -f ${sed_org_src_dir}.tar.bz2 ] ||
-		wgetg -O ${sed_org_src_dir}.tar.bz2 \
+		wget -O ${sed_org_src_dir}.tar.bz2 \
 			http://ftp.gnu.org/gnu/sed/${sed_name}.tar.bz2 || return 1
 }
 
@@ -831,7 +843,7 @@ prepare_gawk_source()
 {
 	mkdir -p ${gawk_src_base}
 	[ -f ${gawk_org_src_dir}.tar.xz ] ||
-		wgetg -O ${gawk_org_src_dir}.tar.xz \
+		wget -O ${gawk_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/gawk/${gawk_name}.tar.xz || return 1
 }
 
@@ -839,7 +851,7 @@ prepare_make_source()
 {
 	mkdir -p ${make_src_base}
 	[ -f ${make_org_src_dir}.tar.bz2 ] ||
-		wgetg -O ${make_org_src_dir}.tar.bz2 \
+		wget -O ${make_org_src_dir}.tar.bz2 \
 			http://ftp.gnu.org/gnu/make/${make_name}.tar.bz2 || return 1
 }
 
@@ -847,7 +859,7 @@ prepare_binutils_source()
 {
 	mkdir -p ${binutils_src_base}
 	[ -f ${binutils_org_src_dir}.tar.bz2 ] ||
-		wgetg -O ${binutils_org_src_dir}.tar.bz2 \
+		wget -O ${binutils_org_src_dir}.tar.bz2 \
 			http://ftp.gnu.org/gnu/binutils/${binutils_name}.tar.bz2 || return 1
 }
 
@@ -861,7 +873,7 @@ prepare_kernel_source()
 	esac
 	mkdir -p ${kernel_src_base}
 	[ -f ${kernel_org_src_dir}.tar.xz ] ||
-		wgetg --no-check-certificate -O ${kernel_org_src_dir}.tar.xz \
+		wget --no-check-certificate -O ${kernel_org_src_dir}.tar.xz \
 			https://www.kernel.org/pub/linux/kernel/${dir}/${kernel_name}.tar.xz || return 1
 }
 
@@ -869,7 +881,7 @@ prepare_gperf_source()
 {
 	mkdir -p ${gperf_src_base}
 	[ -f ${gperf_org_src_dir}.tar.gz ] ||
-		wgetg -O ${gperf_org_src_dir}.tar.gz \
+		wget -O ${gperf_org_src_dir}.tar.gz \
 			http://ftp.gnu.org/gnu/gperf/${gperf_name}.tar.gz || return 1
 }
 
@@ -877,7 +889,7 @@ prepare_glibc_source()
 {
 	mkdir -p ${glibc_src_base}
 	[ -f ${glibc_org_src_dir}.tar.xz ] ||
-		wgetg -O ${glibc_org_src_dir}.tar.xz \
+		wget -O ${glibc_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/glibc/${glibc_name}.tar.xz || return 1
 }
 
@@ -885,15 +897,15 @@ prepare_gmp_mpfr_mpc_source()
 {
 	mkdir -p ${gmp_src_base}
 	[ -f ${gmp_org_src_dir}.tar.xz ] ||
-		wgetg -O ${gmp_org_src_dir}.tar.xz \
+		wget -O ${gmp_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/gmp/${gmp_name}.tar.xz || return 1
 	mkdir -p ${mpfr_src_base}
 	[ -f ${mpfr_org_src_dir}.tar.xz ] ||
-		wgetg -O ${mpfr_org_src_dir}.tar.xz \
+		wget -O ${mpfr_org_src_dir}.tar.xz \
 			http://www.mpfr.org/${mpfr_name}/${mpfr_name}.tar.xz || return 1
 	mkdir -p ${mpc_src_base}
 	[ -f ${mpc_org_src_dir}.tar.gz ] ||
-		wgetg -O ${mpc_org_src_dir}.tar.gz \
+		wget -O ${mpc_org_src_dir}.tar.gz \
 			http://ftp.gnu.org/gnu/mpc/${mpc_name}.tar.gz || return 1
 }
 
@@ -901,7 +913,7 @@ prepare_gcc_source()
 {
 	mkdir -p ${gcc_src_base}
 	[ -f ${gcc_org_src_dir}.tar.bz2 ] ||
-		wgetg -O ${gcc_org_src_dir}.tar.bz2 \
+		wget -O ${gcc_org_src_dir}.tar.bz2 \
 			http://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.bz2 || return 1
 }
 
@@ -909,7 +921,7 @@ prepare_ncurses_source()
 {
 	mkdir -p ${ncurses_src_base}
 	[ -f ${ncurses_org_src_dir}.tar.gz ] ||
-		wgetg -O ${ncurses_org_src_dir}.tar.gz \
+		wget -O ${ncurses_org_src_dir}.tar.gz \
 			http://ftp.gnu.org/gnu/ncurses/${ncurses_name}.tar.gz || return 1
 }
 
@@ -917,7 +929,7 @@ prepare_gdb_source()
 {
 	mkdir -p ${gdb_src_base}
 	[ -f ${gdb_org_src_dir}.tar.xz ] ||
-		wgetg -O ${gdb_org_src_dir}.tar.xz \
+		wget -O ${gdb_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/gdb/${gdb_name}.tar.xz || return 1
 }
 
@@ -925,7 +937,7 @@ prepare_zlib_source()
 {
 	mkdir -p ${zlib_src_base}
 	[ -f ${zlib_org_src_dir}.tar.xz ] ||
-		wgetg -O ${zlib_org_src_dir}.tar.xz \
+		wget -O ${zlib_org_src_dir}.tar.xz \
 			http://zlib.net/${zlib_name}.tar.xz || return 1
 }
 
@@ -933,7 +945,7 @@ prepare_libpng_source()
 {
 	mkdir -p ${libpng_src_base}
 	[ -f ${libpng_org_src_dir}.tar.xz ] ||
-		wgetg --trust-server-names -O ${libpng_org_src_dir}.tar.xz \
+		wget --trust-server-names -O ${libpng_org_src_dir}.tar.xz \
 			http://download.sourceforge.net/libpng/${libpng_name}.tar.xz || return 1
 }
 
@@ -941,7 +953,7 @@ prepare_libtiff_source()
 {
 	mkdir -p ${libtiff_src_base}
 	[ -f ${libtiff_org_src_dir}.tar.gz ] ||
-		wgetg -O ${libtiff_org_src_dir}.tar.gz \
+		wget -O ${libtiff_org_src_dir}.tar.gz \
 			ftp://ftp.remotesensing.org/pub/libtiff/${libtiff_name}.tar.gz || return 1
 }
 
@@ -949,7 +961,7 @@ prepare_libjpeg_source()
 {
 	mkdir -p ${libjpeg_src_base}
 	[ -f ${libjpeg_org_src_dir}.tar.gz ] ||
-		wgetg -O ${libjpeg_org_src_dir}.tar.gz \
+		wget -O ${libjpeg_org_src_dir}.tar.gz \
 			http://www.ijg.org/files/${libjpeg_name}.tar.gz || return 1
 }
 
@@ -957,7 +969,7 @@ prepare_giflib_source()
 {
 	mkdir -p ${giflib_src_base}
 	[ -f ${giflib_org_src_dir}.tar.bz2 ] ||
-		wgetg --trust-server-names --no-check-certificate -O ${giflib_org_src_dir}.tar.bz2 \
+		wget --trust-server-names --no-check-certificate -O ${giflib_org_src_dir}.tar.bz2 \
 			https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1
 }
 
@@ -965,7 +977,7 @@ prepare_emacs_source()
 {
 	mkdir -p ${emacs_src_base}
 	[ -f ${emacs_org_src_dir}.tar.xz ] ||
-		wgetg -O ${emacs_org_src_dir}.tar.xz \
+		wget -O ${emacs_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/emacs/${emacs_name}.tar.xz || return 1
 }
 
@@ -973,7 +985,7 @@ prepare_vim_source()
 {
 	mkdir -p ${vim_src_base}
 	[ -f ${vim_org_src_dir}.tar.gz ] ||
-		wgetg --no-check-certificate -O ${vim_org_src_dir}.tar.gz \
+		wget --no-check-certificate -O ${vim_org_src_dir}.tar.gz \
 			http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return 1
 }
 
@@ -981,7 +993,7 @@ prepare_grep_source()
 {
 	mkdir -p ${grep_src_base}
 	[ -f ${grep_org_src_dir}.tar.xz ] ||
-		wgetg -O ${grep_org_src_dir}.tar.xz \
+		wget -O ${grep_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/grep/${grep_name}.tar.xz || return 1
 }
 
@@ -989,7 +1001,7 @@ prepare_global_source()
 {
 	mkdir -p ${global_src_base}
 	[ -f ${global_org_src_dir}.tar.gz ] ||
-		wgetg -O ${global_org_src_dir}.tar.gz \
+		wget -O ${global_org_src_dir}.tar.gz \
 			http://ftp.gnu.org/gnu/global/${global_name}.tar.gz || return 1
 }
 
@@ -997,7 +1009,7 @@ prepare_diffutils_source()
 {
 	mkdir -p ${diffutils_src_base}
 	[ -f ${diffutils_org_src_dir}.tar.xz ] ||
-		wgetg -O ${diffutils_org_src_dir}.tar.xz \
+		wget -O ${diffutils_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/diffutils/${diffutils_name}.tar.xz || return 1
 }
 
@@ -1005,7 +1017,7 @@ prepare_patch_source()
 {
 	mkdir -p ${patch_src_base}
 	[ -f ${patch_org_src_dir}.tar.xz ] ||
-		wgetg -O ${patch_org_src_dir}.tar.xz \
+		wget -O ${patch_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/patch/${patch_name}.tar.xz || return 1
 }
 
@@ -1013,7 +1025,7 @@ prepare_findutils_source()
 {
 	mkdir -p ${findutils_src_base}
 	[ -f ${findutils_org_src_dir}.tar.gz ] ||
-		wgetg -O ${findutils_org_src_dir}.tar.gz \
+		wget -O ${findutils_org_src_dir}.tar.gz \
 			http://ftp.gnu.org/gnu/findutils/${findutils_name}.tar.gz || return 1
 }
 
@@ -1021,7 +1033,7 @@ prepare_screen_source()
 {
 	mkdir -p ${screen_src_base}
 	[ -f ${screen_org_src_dir}.tar.gz ] ||
-		wgetg -O ${screen_org_src_dir}.tar.gz \
+		wget -O ${screen_org_src_dir}.tar.gz \
 			http://ftp.gnu.org/gnu/screen/${screen_name}.tar.gz || return 1
 }
 
@@ -1029,7 +1041,7 @@ prepare_zsh_source()
 {
 	mkdir -p ${zsh_src_base}
 	[ -f ${zsh_org_src_dir}.tar.xz ] ||
-		wgetg --trust-server-names --no-check-certificate -O ${zsh_org_src_dir}.tar.xz \
+		wget --trust-server-names --no-check-certificate -O ${zsh_org_src_dir}.tar.xz \
 			https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return 1
 }
 
@@ -1037,7 +1049,7 @@ prepare_openssl_source()
 {
 	mkdir -p ${openssl_src_base}
 	[ -f ${openssl_org_src_dir}.tar.gz ] ||
-		wgetg --no-check-certificate -O ${openssl_org_src_dir}.tar.gz \
+		wget --no-check-certificate -O ${openssl_org_src_dir}.tar.gz \
 			http://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return 1
 }
 
@@ -1045,7 +1057,7 @@ prepare_curl_source()
 {
 	mkdir -p ${curl_src_base}
 	[ -f ${curl_org_src_dir}.tar.bz2 ] ||
-		wgetg --no-check-certificate -O ${curl_org_src_dir}.tar.bz2 \
+		wget --no-check-certificate -O ${curl_org_src_dir}.tar.bz2 \
 			https://curl.haxx.se/download/${curl_name}.tar.bz2 || return 1
 }
 
@@ -1053,7 +1065,7 @@ prepare_asciidoc_source()
 {
 	mkdir -p ${asciidoc_src_base}
 	[ -f ${asciidoc_org_src_dir}.tar.gz ] ||
-		wgetg --no-check-certificate -O ${asciidoc_org_src_dir}.tar.gz \
+		wget --no-check-certificate -O ${asciidoc_org_src_dir}.tar.gz \
 			https://sourceforge.net/projects/asciidoc/files/asciidoc/${asciidoc_ver}/${asciidoc_name}.tar.gz/download || return 1
 }
 
@@ -1061,7 +1073,7 @@ prepare_xmlto_source()
 {
 	mkdir -p ${xmlto_src_base}
 	[ -f ${xmlto_org_src_dir}.tar.bz2 ] ||
-		wgetg --no-check-certificate -O ${xmlto_org_src_dir}.tar.bz2 \
+		wget --no-check-certificate -O ${xmlto_org_src_dir}.tar.bz2 \
 			https://fedorahosted.org/releases/x/m/xmlto/${xmlto_name}.tar.bz2 || return 1
 }
 
@@ -1069,7 +1081,7 @@ prepare_libxml2_source()
 {
 	mkdir -p ${libxml2_src_base}
 	[ -f ${libxml2_org_src_dir}.tar.gz ] ||
-		wgetg -O ${libxml2_org_src_dir}.tar.gz \
+		wget -O ${libxml2_org_src_dir}.tar.gz \
 			ftp://xmlsoft.org/libxml2/${libxml2_name}.tar.gz || return 1
 }
 
@@ -1077,7 +1089,7 @@ prepare_libxslt_source()
 {
 	mkdir -p ${libxslt_src_base}
 	[ -f ${libxslt_org_src_dir}.tar.gz ] ||
-		wgetg -O ${libxslt_org_src_dir}.tar.gz \
+		wget -O ${libxslt_org_src_dir}.tar.gz \
 			ftp://xmlsoft.org/libxml2/${libxslt_name}.tar.gz || return 1
 }
 
@@ -1085,7 +1097,7 @@ prepare_gettext_source()
 {
 	mkdir -p ${gettext_src_base}
 	[ -f ${gettext_org_src_dir}.tar.xz ] ||
-		wgetg -O ${gettext_org_src_dir}.tar.xz \
+		wget -O ${gettext_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/pub/gnu/gettext/${gettext_name}.tar.xz || return 1
 }
 
@@ -1093,7 +1105,7 @@ prepare_git_source()
 {
 	mkdir -p ${git_src_base}
 	[ -f ${git_org_src_dir}.tar.xz ] ||
-		wgetg --no-check-certificate -O ${git_org_src_dir}.tar.xz \
+		wget --no-check-certificate -O ${git_org_src_dir}.tar.xz \
 			https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return 1
 }
 
@@ -1101,7 +1113,7 @@ prepare_cmake_source()
 {
 	mkdir -p ${cmake_src_base}
 	[ -f ${cmake_org_src_dir}.tar.gz ] ||
-		wgetg --no-check-certificate -O ${cmake_org_src_dir}.tar.gz \
+		wget --no-check-certificate -O ${cmake_org_src_dir}.tar.gz \
 			https://cmake.org/files/v`echo ${cmake_ver} | cut -f1,2 -d.`/${cmake_name}.tar.gz || return 1
 }
 
@@ -1109,7 +1121,7 @@ prepare_llvm_source()
 {
 	mkdir -p ${llvm_src_base}
 	[ -f ${llvm_org_src_dir}.tar.xz ] ||
-		wgetg -O ${llvm_org_src_dir}.tar.xz \
+		wget -O ${llvm_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${llvm_name}.tar.xz || return 1
 }
 
@@ -1117,7 +1129,7 @@ prepare_libcxx_source()
 {
 	mkdir -p ${libcxx_src_base}
 	[ -f ${libcxx_org_src_dir}.tar.xz ] ||
-		wgetg -O ${libcxx_org_src_dir}.tar.xz \
+		wget -O ${libcxx_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${libcxx_name}.tar.xz || return 1
 }
 
@@ -1125,7 +1137,7 @@ prepare_libcxxabi_source()
 {
 	mkdir -p ${libcxxabi_src_base}
 	[ -f ${libcxxabi_org_src_dir}.tar.xz ] ||
-		wgetg -O ${libcxxabi_org_src_dir}.tar.xz \
+		wget -O ${libcxxabi_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${libcxxabi_name}.tar.xz || return 1
 }
 
@@ -1133,7 +1145,7 @@ prepare_clang_rt_source()
 {
 	mkdir -p ${clang_rt_src_base}
 	[ -f ${clang_rt_org_src_dir}.tar.xz ] ||
-		wgetg -O ${clang_rt_org_src_dir}.tar.xz \
+		wget -O ${clang_rt_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${clang_rt_name}.tar.xz || return 1
 }
 
@@ -1141,7 +1153,7 @@ prepare_clang_source()
 {
 	mkdir -p ${clang_src_base}
 	[ -f ${clang_org_src_dir}.tar.xz ] ||
-		wgetg -O ${clang_org_src_dir}.tar.xz \
+		wget -O ${clang_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${clang_name}.tar.xz || return 1
 }
 
@@ -1149,7 +1161,7 @@ prepare_clang_extra_source()
 {
 	mkdir -p ${clang_extra_src_base}
 	[ -f ${clang_extra_org_src_dir}.tar.xz ] ||
-		wgetg -O ${clang_extra_org_src_dir}.tar.xz \
+		wget -O ${clang_extra_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${clang_extra_name}.tar.xz || return 1
 }
 
@@ -1157,7 +1169,7 @@ prepare_lld_source()
 {
 	mkdir -p ${lld_src_base}
 	[ -f ${lld_org_src_dir}.tar.xz ] ||
-		wgetg -O ${lld_org_src_dir}.tar.xz \
+		wget -O ${lld_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${lld_name}.tar.xz || return 1
 }
 
@@ -1165,7 +1177,7 @@ prepare_lldb_source()
 {
 	mkdir -p ${lldb_src_base}
 	[ -f ${lldb_org_src_dir}.tar.xz ] ||
-		wgetg -O ${lldb_org_src_dir}.tar.xz \
+		wget -O ${lldb_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${lldb_name}.tar.xz || return 1
 }
 
@@ -1173,8 +1185,16 @@ prepare_boost_source()
 {
 	mkdir -p ${boost_src_base}
 	[ -f ${boost_org_src_dir}.tar.bz2 ] ||
-		wgetg --trust-server-names --no-check-certificate -O ${boost_org_src_dir}.tar.bz2 \
+		wget --trust-server-names --no-check-certificate -O ${boost_org_src_dir}.tar.bz2 \
 			https://sourceforge.net/projects/boost/files/boost/`echo ${boost_ver} | tr _ .`/${boost_name}.tar.bz2/download || return 1
+}
+
+prepare_mingw_w64_source()
+{
+	mkdir -p ${mingw_w64_src_base}
+	[ -f ${mingw_w64_org_src_dir}.tar.bz2 ] ||
+		wget --trust-server-names --no-check-certificate -O ${mingw_w64_org_src_dir}.tar.bz2 \
+			https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v${mingw_w64_ver}.tar.bz2/download || return 1
 }
 
 install_native_tar()
@@ -1771,8 +1791,8 @@ install_native_xmlto()
 	make -C ${xmlto_org_src_dir} -j ${jobs} install || return 1
 
 # FIXME
-# [ -d ${prefix}/share/docbook-xsl-1.79.1 ] || wgetg --trust-server-names -O- http://sourceforge.net/projects/docbook/files/docbook-xsl/1.79.1/docbook-xsl-1.79.1.tar.bz2/download | tar xjvf - -C ${prefix}/share
-# [ -f ${prefix}/share/catalog.xml ] || (wgetg -O /tmp/hoge.zip http://www.oasis-open.org/docbook/xml/4.2/docbook-xml-4.2.zip && unzip -d ${prefix}/share /tmp/hoge.zip)
+# [ -d ${prefix}/share/docbook-xsl-1.79.1 ] || wget --trust-server-names -O- http://sourceforge.net/projects/docbook/files/docbook-xsl/1.79.1/docbook-xsl-1.79.1.tar.bz2/download | tar xjvf - -C ${prefix}/share
+# [ -f ${prefix}/share/catalog.xml ] || (wget -O /tmp/hoge.zip http://www.oasis-open.org/docbook/xml/4.2/docbook-xml-4.2.zip && unzip -d ${prefix}/share /tmp/hoge.zip)
 # export XML_CATALOG_FILES="${prefix}/share/catalog.xml ${prefix}/share/docbook-xsl-1.79.1/catalog.xml"
 }
 
