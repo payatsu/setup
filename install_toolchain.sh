@@ -1,4 +1,5 @@
 #!/bin/sh -e
+# [TODO] gitのインストールでPM.stampが無いとかでこける。
 # [TODO] pkg-configが無くても動作できるようにする。
 # [TODO] 野良ビルドのllvm抜きでlibc++abiなどインストールできるようにする。
 # [TODO] bash, python, LLD, LLDB, Polly
@@ -2200,6 +2201,68 @@ install_cross_gdb()
 		${gdb_org_src_dir}/configure --prefix=${prefix} --target=${target} --enable-tui --with-python --with-sysroot=${sysroot}) || return 1
 	make -C ${gdb_bld_dir_crs} -j ${jobs} || return 1
 	make -C ${gdb_bld_dir_crs} -j ${jobs} install || return 1
+}
+
+install_mingw_w64_header()
+{
+	prepare_mingw_w64_source || return 1
+	[ -d ${mingw_w64_src_dir_hdr} ] ||
+		(unpack_archive ${mingw_w64_org_src_dir} ${mingw_w64_src_base} &&
+			mv ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_hdr}) || return 1
+	mkdir -p ${mingw_w64_bld_dir_hdr}
+	[ -f ${mingw_w64_bld_dir_hdr}/Makefile ] ||
+		(cd ${mingw_w64_bld_dir_hdr}
+		${mingw_w64_src_dir_hdr}/configure --prefix=${sysroot} --with-sysroot=${sysroot} --build=${build} --host=${target} \
+			--disable-multilib --without-crt) || return 1
+	make -C ${mingw_w64_bld_dir_hdr} -j ${jobs} || return 1
+	make -C ${mingw_w64_bld_dir_hdr} -j ${jobs} install || return 1
+#	ln -sf ./${target} ${sysroot}/mingw
+#	mkdir -p ${sysroot}/${target}/lib
+#	ln -sf ./lib ${sysroot}/${target}/lib64
+}
+
+install_mingw_w64_gcc_with_mingw_w64_header()
+{
+	unpack_archive ${gcc_org_src_dir} ${gcc_src_base} || return 1
+	mkdir -p ${gcc_bld_dir_crs_2nd}
+	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
+		(cd ${gcc_bld_dir_crs_2nd}
+		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
+			--enable-languages=c --disable-multilib --with-system-zlib --with-sysroot=${sysroot} \
+			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
+			--disable-libmudflap --disable-libquadmath --disable-libatomic \
+			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv) || return 1
+	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} all-gcc || return 1
+	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} install-gcc || return 1
+#	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} all-target-libgcc || return 1
+#	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} install-target-libgcc || return 1
+}
+
+install_mingw_w64_crt()
+{
+	[ -d ${mingw_w64_src_dir_1st} ] ||
+		(unpack_archive ${mingw_w64_org_src_dir} ${mingw_w64_src_base} &&
+			mv ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_1st}) || return 1
+	mkdir -p ${mingw_w64_bld_dir_1st}
+	[ -f ${mingw_w64_bld_dir_1st}/Makefile ] ||
+		(cd ${mingw_w64_bld_dir_1st}
+		${mingw_w64_src_dir_1st}/configure --prefix=${sysroot} --with-sysroot=${sysroot} --build=${build} --host=${target} \
+			--disable-multilib --without-header) || return 1
+	make -C ${mingw_w64_bld_dir_1st} -j ${jobs} || return 1
+	make -C ${mingw_w64_bld_dir_1st} -j ${jobs} install || return 1
+}
+
+install_mingw_w64_gcc()
+{
+	which ${target}-as > /dev/null || install_cross_binutils || return 1
+	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build}) " && return 1
+	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
+	prepare_gcc_source || return 1
+	install_cross_gcc_without_headers || return 1
+	install_mingw_w64_header || return 1
+	install_mingw_w64_gcc_with_mingw_w64_header || return 1
+	install_mingw_w64_crt || return  1
+	install_cross_gcc_with_c_cxx_go_functionality || return 1
 }
 
 full_cross()
