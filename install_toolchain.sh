@@ -1,13 +1,11 @@
 #!/bin/sh -e
-# [TODO] gitのインストールでPM.stampが無いとかでこける。
-# [TODO] pkg-configが無くても動作できるようにする。
+# [TODO] export不使用にする。
 # [TODO] 野良ビルドのllvm抜きでlibc++abiなどインストールできるようにする。
-# [TODO] bash, python, LLD, LLDB, Polly
+# [TODO] bash, python, gzip, LLD, LLDB, Polly
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
 #        -> xmltoの障害のせいで、gitとgiflibのmakeに障害あり。
-# [TODO] globalのmakeでldが-lncursesを見つけられない。
 # [TODO] install_native_clang_extra()のテスト実行が未完了。
 # [TODO] native用とcross用にkernelとglibcのバージョンを同時に指定・最初に一括ダウンロードできるようにする。
 
@@ -352,6 +350,7 @@ list()
 reset()
 # Reset ${prefix} except src/.
 {
+	clean
 	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src -exec rm -rf '{}' +
 	rm  -f /etc/ld.so.conf.d/`basename ${prefix}`.conf
 	ldconfig || true
@@ -1231,7 +1230,8 @@ install_native_wget()
 	unpack_archive ${wget_org_src_dir} ${wget_src_base} || return 1
 	[ -f ${wget_org_src_dir}/Makefile ] ||
 		(cd ${wget_org_src_dir}
-		PKG_CONFIG_PATH=${prefix}/lib/pkgconfig ./configure --prefix=${prefix} --build=${build} --with-ssl=openssl) || return 1
+		OPENSSL_CFLAGS="-I${prefix}/include -L${prefix}/lib" OPENSSL_LIBS='-lssl -lcrypto' \
+			./configure --prefix=${prefix} --build=${build} --with-ssl=openssl) || return 1
 	make -C ${wget_org_src_dir} -j ${jobs} || return 1
 	make -C ${wget_org_src_dir} -j ${jobs} install-strip || return 1
 }
@@ -1301,6 +1301,7 @@ install_native_autoconf()
 install_native_automake()
 {
 	[ -x ${prefix}/bin/automake -a -z "${force_install}" ] && return 0
+	which autoconf > /dev/null || install_native_autoconf || return 1
 	prepare_automake_source || return 1
 	unpack_archive ${automake_org_src_dir} ${automake_src_base} || return 1
 	[ -f ${automake_org_src_dir}/Makefile ] ||
@@ -1616,7 +1617,7 @@ install_native_giflib()
 	[ -f ${giflib_src_dir_ntv}/Makefile ] ||
 		(cd ${giflib_src_dir_ntv}
 		./configure --prefix=${prefix} --build=${build}) || return 1
-	make -C ${giflib_src_dir_ntv} -j ${jobs} # || return 1
+	make -C ${giflib_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${giflib_src_dir_ntv} -j ${jobs} install-strip || return 1
 	update_search_path || return 1
 }
@@ -1634,7 +1635,8 @@ install_native_emacs()
 	unpack_archive ${emacs_org_src_dir} ${emacs_src_base} || return 1
 	[ -f ${emacs_org_src_dir}/Makefile ] ||
 		(cd ${emacs_org_src_dir}
-		./configure --prefix=${prefix} --without-xpm) || return 1
+		CPPFLAGS=-I${prefix}/include LDFLAGS=-L${prefix}/lib \
+			./configure --prefix=${prefix} --without-xpm) || return 1
 	make -C ${emacs_org_src_dir} -j ${jobs} LDFLAGS=-L${prefix}/lib || return 1
 	make -C ${emacs_org_src_dir} -j ${jobs} install-strip || return 1
 }
@@ -1676,7 +1678,7 @@ install_native_global()
 	unpack_archive ${global_org_src_dir} ${global_src_base} || return 1
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
-		./configure --prefix=${prefix} --disable-gtagscscope CPPFLAGS='-I${prefix}/include/ncurses') || return 1
+		./configure --prefix=${prefix} CPPFLAGS="-I${prefix}/include/ncurses") || return 1 # --disable-gtagscscope
 	make -C ${global_org_src_dir} -j ${jobs} || return 1
 	make -C ${global_org_src_dir} -j ${jobs} install-strip || return 1
 }
@@ -1812,6 +1814,7 @@ install_native_libxml2()
 install_native_libxslt()
 {
 	[ -e ${prefix}/lib/libxslt.so -a -z "${force_install}" ] && return 0
+	search_header xmlversion.h || install_native_libxml2 || return 1
 	prepare_libxslt_source || return 1
 	unpack_archive ${libxslt_org_src_dir} ${libxslt_src_base} || return 1
 	[ -f ${libxslt_org_src_dir}/Makefile ] ||
@@ -1837,6 +1840,7 @@ install_native_gettext()
 install_native_git()
 {
 	[ -x ${prefix}/bin/git -a -z "${force_install}" ] && return 0
+	which autoconf > /dev/null || install_native_autoconf || return 1
 	search_header zlib.h || install_native_zlib || return 1
 	search_header ssl.h || install_native_openssl || return 1
 	search_header curl.h curl || install_native_curl || return 1
@@ -2112,7 +2116,8 @@ install_cross_gcc_with_glibc_headers()
 			--enable-languages=c --disable-multilib --with-system-zlib --with-sysroot=${sysroot} --with-newlib \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
-			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv) || return 1
+			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
+		) || return 1
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} all-gcc || return 1
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} install-gcc || return 1
 	touch ${sysroot}/usr/include/gnu/stubs.h
@@ -2212,13 +2217,13 @@ install_mingw_w64_header()
 	mkdir -p ${mingw_w64_bld_dir_hdr}
 	[ -f ${mingw_w64_bld_dir_hdr}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_hdr}
-		${mingw_w64_src_dir_hdr}/configure --prefix=${sysroot} --with-sysroot=${sysroot} --build=${build} --host=${target} \
+		${mingw_w64_src_dir_hdr}/configure --prefix=${prefix} --with-sysroot=${sysroot} --build=${build} --host=${target} \
 			--disable-multilib --without-crt) || return 1
 	make -C ${mingw_w64_bld_dir_hdr} -j ${jobs} || return 1
 	make -C ${mingw_w64_bld_dir_hdr} -j ${jobs} install || return 1
-#	ln -sf ./${target} ${sysroot}/mingw
-#	mkdir -p ${sysroot}/${target}/lib
-#	ln -sf ./lib ${sysroot}/${target}/lib64
+	mkdir -p ${sysroot}/${target}/lib
+	ln -sf ./${target} ${sysroot}/mingw
+	ln -sf ./lib ${sysroot}/${target}/lib64
 }
 
 install_mingw_w64_gcc_with_mingw_w64_header()
@@ -2231,7 +2236,8 @@ install_mingw_w64_gcc_with_mingw_w64_header()
 			--enable-languages=c --disable-multilib --with-system-zlib --with-sysroot=${sysroot} \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
-			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv) || return 1
+			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
+		) || return 1
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} all-gcc || return 1
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} install-gcc || return 1
 #	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} all-target-libgcc || return 1
@@ -2246,7 +2252,7 @@ install_mingw_w64_crt()
 	mkdir -p ${mingw_w64_bld_dir_1st}
 	[ -f ${mingw_w64_bld_dir_1st}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_1st}
-		${mingw_w64_src_dir_1st}/configure --prefix=${sysroot} --with-sysroot=${sysroot} --build=${build} --host=${target} \
+		${mingw_w64_src_dir_1st}/configure --prefix=${prefix} --with-sysroot=${sysroot} --build=${build} --host=${target} \
 			--disable-multilib --without-header) || return 1
 	make -C ${mingw_w64_bld_dir_1st} -j ${jobs} || return 1
 	make -C ${mingw_w64_bld_dir_1st} -j ${jobs} install || return 1
