@@ -1,7 +1,7 @@
 #!/bin/sh -e
-# [TODO] export不使用にする。
-# [TODO] 野良ビルドのllvm抜きでlibc++abiなどインストールできるようにする。
-# [TODO] bash, python, gzip, LLD, LLDB, Polly
+# [TODO] export不使用にする。C_INCLUDE_PATHも。
+# [TODO] mingw
+# [TODO] bash, python, perl, LLD, LLDB, Polly
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
@@ -11,6 +11,8 @@
 
 : ${tar_ver:=1.29}
 : ${xz_ver:=5.2.2}
+: ${bzip2_ver:=1.0.6}
+: ${gzip_ver:=1.8}
 : ${wget_ver:=1.17.1}
 : ${coreutils_ver:=8.25}
 : ${bison_ver:=3.0.4}
@@ -100,6 +102,10 @@ help()
 		Specify the version of GNU tar you want, currently '${tar_ver}'.
 	xz_ver
 		Specify the version of xz utils, currently '${xz_ver}'.
+	bzip2_ver
+		Specify the version of bzip2 you want, currently '${bzip2_ver}'.
+	gzip_ver
+		Specify the version of GNU gzip you want, currently '${gzip_ver}'.
 	wget_ver
 		Specify the version of GNU wget you want, currently '${wget_ver}'.
 	coreutils_ver
@@ -257,6 +263,8 @@ clean()
 	rm -rf \
 		${tar_org_src_dir} \
 		${xz_org_src_dir} \
+		${bzip2_org_src_dir} \
+		${gzip_org_src_dir} \
 		${wget_org_src_dir} \
 		${coreutils_org_src_dir} \
 		${bison_org_src_dir} \
@@ -396,6 +404,14 @@ set_variables()
 	xz_name=xz-${xz_ver}
 	xz_src_base=${prefix}/src/xz
 	xz_org_src_dir=${xz_src_base}/${xz_name}
+
+	bzip2_name=bzip2-${bzip2_ver}
+	bzip2_src_base=${prefix}/src/bzip2
+	bzip2_org_src_dir=${bzip2_src_base}/${bzip2_name}
+
+	gzip_name=gzip-${gzip_ver}
+	gzip_src_base=${prefix}/src/gzip
+	gzip_org_src_dir=${gzip_src_base}/${gzip_name}
 
 	wget_name=wget-${wget_ver}
 	wget_src_base=${prefix}/src/wget
@@ -726,19 +742,33 @@ install_prerequisites()
 		apt-get install -y unifdef || return 1 # for linux kernel(microblaze)
 		apt-get install -y libgtk-3-dev || return 1 # for emacs
 		apt-get install -y python2.7-dev || return 1 # for gdb
-		apt-get install -y libperl-dev python-dev python3-dev ruby-dev # for vim
-		apt-get install -y ruby # for vim
-		apt-get install -y lua5.2 liblua5.2-dev # for vim
-		apt-get install -y luajit libluajit-5.1 # for vim
+		apt-get install -y libperl-dev python-dev python3-dev ruby-dev || return 1 # for vim
+		apt-get install -y ruby || return 1 # for vim
+		apt-get install -y lua5.2 liblua5.2-dev || return 1 # for vim
+		apt-get install -y luajit libluajit-5.1 || return 1 # for vim
 		;;
 	Red|CentOS|\\S)
 		yum install -y make gcc gcc-c++ texinfo || return 1
 		yum install -y unifdef || return 1
 		yum install -y gtk3-devel || return 1
+		yum install -y python-devel || return 1
+		yum install -y perl-devel python-devel python3-devel ruby-devel || return 1
+		yum install -y ruby || return 1
+		yum install -y lua lua-devel || return 1
+		yum install -y luajit luajit-devel || return 1
 		;;
 	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1 ;;
 	esac
 	prerequisites_have_been_already_installed=yes
+}
+
+check_archive()
+{
+	[ -f $1.tar.gz  ] && return 0
+	[ -f $1.tar.bz2 ] && return 0
+	[ -f $1.tar.xz  ] && return 0
+	[ -f $1.zip     ] && return 0
+	return 1
 }
 
 unpack_archive()
@@ -754,7 +784,7 @@ unpack_archive()
 prepare_tar_source()
 {
 	mkdir -p ${tar_src_base}
-	[ -f ${tar_org_src_dir}.tar.bz2 ] ||
+	check_archive ${tar_org_src_dir} ||
 		wget -O ${tar_org_src_dir}.tar.bz2 \
 			http://ftp.gnu.org/gnu/tar/${tar_name}.tar.bz2 || return 1
 }
@@ -762,15 +792,31 @@ prepare_tar_source()
 prepare_xz_source()
 {
 	mkdir -p ${xz_src_base}
-	[ -f ${xz_org_src_dir}.tar.bz2 ] ||
+	check_archive ${xz_org_src_dir} ||
 		wget -O ${xz_org_src_dir}.tar.bz2 \
-			http://tukaani.org/xz/xz-${xz_ver}.tar.bz2 || return 1
+			http://tukaani.org/xz/${xz_name}.tar.bz2 || return 1
+}
+
+prepare_bzip2_source()
+{
+	mkdir -p ${bzip2_src_base}
+	check_archive ${bzip2_org_src_dir} ||
+		wget -O ${bzip2_org_src_dir}.tar.gz \
+			http://www.bzip.org/${bzip2_ver}/${bzip2_name}.tar.gz || return 1
+}
+
+prepare_gzip_source()
+{
+	mkdir -p ${gzip_src_base}
+	check_archive ${gzip_org_src_dir} ||
+		wget -O ${gzip_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/gzip/${gzip_name}.tar.xz || return 1
 }
 
 prepare_wget_source()
 {
 	mkdir -p ${wget_src_base}
-	[ -f ${wget_org_src_dir}.tar.xz ] ||
+	check_archive ${wget_org_src_dir} ||
 		wget -O ${wget_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/wget/${wget_name}.tar.xz || return 1
 }
@@ -778,7 +824,7 @@ prepare_wget_source()
 prepare_coreutils_source()
 {
 	mkdir -p ${coreutils_src_base}
-	[ -f ${coreutils_org_src_dir}.tar.xz ] ||
+	check_archive ${coreutils_org_src_dir} ||
 		wget -O ${coreutils_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/coreutils/${coreutils_name}.tar.xz || return 1
 }
@@ -786,7 +832,7 @@ prepare_coreutils_source()
 prepare_bison_source()
 {
 	mkdir -p ${bison_src_base}
-	[ -f ${bison_org_src_dir}.tar.xz ] ||
+	check_archive ${bison_org_src_dir} ||
 		wget -O ${bison_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/bison/${bison_name}.tar.xz || return 1
 }
@@ -794,7 +840,7 @@ prepare_bison_source()
 prepare_flex_source()
 {
 	mkdir -p ${flex_src_base}
-	[ -f ${flex_org_src_dir}.tar.xz ] ||
+	check_archive ${flex_org_src_dir} ||
 		wget --trust-server-names --no-check-certificate -O ${flex_org_src_dir}.tar.xz \
 			https://sourceforge.net/projects/flex/files/${flex_name}.tar.xz/download || return 1
 }
@@ -802,7 +848,7 @@ prepare_flex_source()
 prepare_m4_source()
 {
 	mkdir -p ${m4_src_base}
-	[ -f ${m4_org_src_dir}.tar.xz ] ||
+	check_archive ${m4_org_src_dir} ||
 		wget -O ${m4_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/m4/${m4_name}.tar.xz || return 1
 }
@@ -810,7 +856,7 @@ prepare_m4_source()
 prepare_autoconf_source()
 {
 	mkdir -p ${autoconf_src_base}
-	[ -f ${autoconf_org_src_dir}.tar.xz ] ||
+	check_archive ${autoconf_org_src_dir} ||
 		wget -O ${autoconf_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/autoconf/${autoconf_name}.tar.xz || return 1
 }
@@ -818,7 +864,7 @@ prepare_autoconf_source()
 prepare_automake_source()
 {
 	mkdir -p ${automake_src_base}
-	[ -f ${automake_org_src_dir}.tar.xz ] ||
+	check_archive ${automake_org_src_dir} ||
 		wget -O ${automake_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/automake/${automake_name}.tar.xz || return 1
 }
@@ -826,7 +872,7 @@ prepare_automake_source()
 prepare_libtool_source()
 {
 	mkdir -p ${libtool_src_base}
-	[ -f ${libtool_org_src_dir}.tar.xz ] ||
+	check_archive ${libtool_org_src_dir} ||
 		wget -O ${libtool_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/libtool/${libtool_name}.tar.xz || return 1
 }
@@ -834,7 +880,7 @@ prepare_libtool_source()
 prepare_sed_source()
 {
 	mkdir -p ${sed_src_base}
-	[ -f ${sed_org_src_dir}.tar.bz2 ] ||
+	check_archive ${sed_org_src_dir} ||
 		wget -O ${sed_org_src_dir}.tar.bz2 \
 			http://ftp.gnu.org/gnu/sed/${sed_name}.tar.bz2 || return 1
 }
@@ -842,7 +888,7 @@ prepare_sed_source()
 prepare_gawk_source()
 {
 	mkdir -p ${gawk_src_base}
-	[ -f ${gawk_org_src_dir}.tar.xz ] ||
+	check_archive ${gawk_org_src_dir} ||
 		wget -O ${gawk_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/gawk/${gawk_name}.tar.xz || return 1
 }
@@ -850,7 +896,7 @@ prepare_gawk_source()
 prepare_make_source()
 {
 	mkdir -p ${make_src_base}
-	[ -f ${make_org_src_dir}.tar.bz2 ] ||
+	check_archive ${make_org_src_dir} ||
 		wget -O ${make_org_src_dir}.tar.bz2 \
 			http://ftp.gnu.org/gnu/make/${make_name}.tar.bz2 || return 1
 }
@@ -858,7 +904,7 @@ prepare_make_source()
 prepare_binutils_source()
 {
 	mkdir -p ${binutils_src_base}
-	[ -f ${binutils_org_src_dir}.tar.bz2 ] ||
+	check_archive ${binutils_org_src_dir} ||
 		wget -O ${binutils_org_src_dir}.tar.bz2 \
 			http://ftp.gnu.org/gnu/binutils/${binutils_name}.tar.bz2 || return 1
 }
@@ -872,7 +918,7 @@ prepare_kernel_source()
 		*)   echo unsupported kernel version >&2; return 1;;
 	esac
 	mkdir -p ${kernel_src_base}
-	[ -f ${kernel_org_src_dir}.tar.xz ] ||
+	check_archive ${kernel_org_src_dir} ||
 		wget --no-check-certificate -O ${kernel_org_src_dir}.tar.xz \
 			https://www.kernel.org/pub/linux/kernel/${dir}/${kernel_name}.tar.xz || return 1
 }
@@ -880,7 +926,7 @@ prepare_kernel_source()
 prepare_gperf_source()
 {
 	mkdir -p ${gperf_src_base}
-	[ -f ${gperf_org_src_dir}.tar.gz ] ||
+	check_archive ${gperf_org_src_dir} ||
 		wget -O ${gperf_org_src_dir}.tar.gz \
 			http://ftp.gnu.org/gnu/gperf/${gperf_name}.tar.gz || return 1
 }
@@ -888,7 +934,7 @@ prepare_gperf_source()
 prepare_glibc_source()
 {
 	mkdir -p ${glibc_src_base}
-	[ -f ${glibc_org_src_dir}.tar.xz ] ||
+	check_archive ${glibc_org_src_dir} ||
 		wget -O ${glibc_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/glibc/${glibc_name}.tar.xz || return 1
 }
@@ -896,15 +942,15 @@ prepare_glibc_source()
 prepare_gmp_mpfr_mpc_source()
 {
 	mkdir -p ${gmp_src_base}
-	[ -f ${gmp_org_src_dir}.tar.xz ] ||
+	check_archive ${gmp_org_src_dir} ||
 		wget -O ${gmp_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/gmp/${gmp_name}.tar.xz || return 1
 	mkdir -p ${mpfr_src_base}
-	[ -f ${mpfr_org_src_dir}.tar.xz ] ||
+	check_archive ${mpfr_org_src_dir} ||
 		wget -O ${mpfr_org_src_dir}.tar.xz \
 			http://www.mpfr.org/${mpfr_name}/${mpfr_name}.tar.xz || return 1
 	mkdir -p ${mpc_src_base}
-	[ -f ${mpc_org_src_dir}.tar.gz ] ||
+	check_archive ${mpc_org_src_dir} ||
 		wget -O ${mpc_org_src_dir}.tar.gz \
 			http://ftp.gnu.org/gnu/mpc/${mpc_name}.tar.gz || return 1
 }
@@ -912,7 +958,7 @@ prepare_gmp_mpfr_mpc_source()
 prepare_gcc_source()
 {
 	mkdir -p ${gcc_src_base}
-	[ -f ${gcc_org_src_dir}.tar.bz2 ] ||
+	check_archive ${gcc_org_src_dir} ||
 		wget -O ${gcc_org_src_dir}.tar.bz2 \
 			http://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.bz2 || return 1
 }
@@ -920,7 +966,7 @@ prepare_gcc_source()
 prepare_ncurses_source()
 {
 	mkdir -p ${ncurses_src_base}
-	[ -f ${ncurses_org_src_dir}.tar.gz ] ||
+	check_archive ${ncurses_org_src_dir} ||
 		wget -O ${ncurses_org_src_dir}.tar.gz \
 			http://ftp.gnu.org/gnu/ncurses/${ncurses_name}.tar.gz || return 1
 }
@@ -928,7 +974,7 @@ prepare_ncurses_source()
 prepare_gdb_source()
 {
 	mkdir -p ${gdb_src_base}
-	[ -f ${gdb_org_src_dir}.tar.xz ] ||
+	check_archive ${gdb_org_src_dir} ||
 		wget -O ${gdb_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/gdb/${gdb_name}.tar.xz || return 1
 }
@@ -936,7 +982,7 @@ prepare_gdb_source()
 prepare_zlib_source()
 {
 	mkdir -p ${zlib_src_base}
-	[ -f ${zlib_org_src_dir}.tar.xz ] ||
+	check_archive ${zlib_org_src_dir} ||
 		wget -O ${zlib_org_src_dir}.tar.xz \
 			http://zlib.net/${zlib_name}.tar.xz || return 1
 }
@@ -944,7 +990,7 @@ prepare_zlib_source()
 prepare_libpng_source()
 {
 	mkdir -p ${libpng_src_base}
-	[ -f ${libpng_org_src_dir}.tar.xz ] ||
+	check_archive ${libpng_org_src_dir} ||
 		wget --trust-server-names -O ${libpng_org_src_dir}.tar.xz \
 			http://download.sourceforge.net/libpng/${libpng_name}.tar.xz || return 1
 }
@@ -952,7 +998,7 @@ prepare_libpng_source()
 prepare_libtiff_source()
 {
 	mkdir -p ${libtiff_src_base}
-	[ -f ${libtiff_org_src_dir}.tar.gz ] ||
+	check_archive ${libtiff_org_src_dir} ||
 		wget -O ${libtiff_org_src_dir}.tar.gz \
 			ftp://ftp.remotesensing.org/pub/libtiff/${libtiff_name}.tar.gz || return 1
 }
@@ -960,7 +1006,7 @@ prepare_libtiff_source()
 prepare_libjpeg_source()
 {
 	mkdir -p ${libjpeg_src_base}
-	[ -f ${libjpeg_org_src_dir}.tar.gz ] ||
+	check_archive ${libjpeg_org_src_dir} ||
 		wget -O ${libjpeg_org_src_dir}.tar.gz \
 			http://www.ijg.org/files/${libjpeg_name}.tar.gz || return 1
 }
@@ -968,7 +1014,7 @@ prepare_libjpeg_source()
 prepare_giflib_source()
 {
 	mkdir -p ${giflib_src_base}
-	[ -f ${giflib_org_src_dir}.tar.bz2 ] ||
+	check_archive ${giflib_org_src_dir} ||
 		wget --trust-server-names --no-check-certificate -O ${giflib_org_src_dir}.tar.bz2 \
 			https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1
 }
@@ -976,7 +1022,7 @@ prepare_giflib_source()
 prepare_emacs_source()
 {
 	mkdir -p ${emacs_src_base}
-	[ -f ${emacs_org_src_dir}.tar.xz ] ||
+	check_archive ${emacs_org_src_dir} ||
 		wget -O ${emacs_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/emacs/${emacs_name}.tar.xz || return 1
 }
@@ -984,7 +1030,7 @@ prepare_emacs_source()
 prepare_vim_source()
 {
 	mkdir -p ${vim_src_base}
-	[ -f ${vim_org_src_dir}.tar.gz ] ||
+	check_archive ${vim_org_src_dir} ||
 		wget --no-check-certificate -O ${vim_org_src_dir}.tar.gz \
 			http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return 1
 }
@@ -992,7 +1038,7 @@ prepare_vim_source()
 prepare_grep_source()
 {
 	mkdir -p ${grep_src_base}
-	[ -f ${grep_org_src_dir}.tar.xz ] ||
+	check_archive ${grep_org_src_dir} ||
 		wget -O ${grep_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/grep/${grep_name}.tar.xz || return 1
 }
@@ -1000,7 +1046,7 @@ prepare_grep_source()
 prepare_global_source()
 {
 	mkdir -p ${global_src_base}
-	[ -f ${global_org_src_dir}.tar.gz ] ||
+	check_archive ${global_org_src_dir} ||
 		wget -O ${global_org_src_dir}.tar.gz \
 			http://ftp.gnu.org/gnu/global/${global_name}.tar.gz || return 1
 }
@@ -1008,7 +1054,7 @@ prepare_global_source()
 prepare_diffutils_source()
 {
 	mkdir -p ${diffutils_src_base}
-	[ -f ${diffutils_org_src_dir}.tar.xz ] ||
+	check_archive ${diffutils_org_src_dir} ||
 		wget -O ${diffutils_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/diffutils/${diffutils_name}.tar.xz || return 1
 }
@@ -1016,7 +1062,7 @@ prepare_diffutils_source()
 prepare_patch_source()
 {
 	mkdir -p ${patch_src_base}
-	[ -f ${patch_org_src_dir}.tar.xz ] ||
+	check_archive ${patch_org_src_dir} ||
 		wget -O ${patch_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/patch/${patch_name}.tar.xz || return 1
 }
@@ -1024,7 +1070,7 @@ prepare_patch_source()
 prepare_findutils_source()
 {
 	mkdir -p ${findutils_src_base}
-	[ -f ${findutils_org_src_dir}.tar.gz ] ||
+	check_archive ${findutils_org_src_dir} ||
 		wget -O ${findutils_org_src_dir}.tar.gz \
 			http://ftp.gnu.org/gnu/findutils/${findutils_name}.tar.gz || return 1
 }
@@ -1032,7 +1078,7 @@ prepare_findutils_source()
 prepare_screen_source()
 {
 	mkdir -p ${screen_src_base}
-	[ -f ${screen_org_src_dir}.tar.gz ] ||
+	check_archive ${screen_org_src_dir} ||
 		wget -O ${screen_org_src_dir}.tar.gz \
 			http://ftp.gnu.org/gnu/screen/${screen_name}.tar.gz || return 1
 }
@@ -1040,7 +1086,7 @@ prepare_screen_source()
 prepare_zsh_source()
 {
 	mkdir -p ${zsh_src_base}
-	[ -f ${zsh_org_src_dir}.tar.xz ] ||
+	check_archive ${zsh_org_src_dir} ||
 		wget --trust-server-names --no-check-certificate -O ${zsh_org_src_dir}.tar.xz \
 			https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return 1
 }
@@ -1048,7 +1094,7 @@ prepare_zsh_source()
 prepare_openssl_source()
 {
 	mkdir -p ${openssl_src_base}
-	[ -f ${openssl_org_src_dir}.tar.gz ] ||
+	check_archive ${openssl_org_src_dir} ||
 		wget --no-check-certificate -O ${openssl_org_src_dir}.tar.gz \
 			http://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return 1
 }
@@ -1056,7 +1102,7 @@ prepare_openssl_source()
 prepare_curl_source()
 {
 	mkdir -p ${curl_src_base}
-	[ -f ${curl_org_src_dir}.tar.bz2 ] ||
+	check_archive ${curl_org_src_dir} ||
 		wget --no-check-certificate -O ${curl_org_src_dir}.tar.bz2 \
 			https://curl.haxx.se/download/${curl_name}.tar.bz2 || return 1
 }
@@ -1064,7 +1110,7 @@ prepare_curl_source()
 prepare_asciidoc_source()
 {
 	mkdir -p ${asciidoc_src_base}
-	[ -f ${asciidoc_org_src_dir}.tar.gz ] ||
+	check_archive ${asciidoc_org_src_dir} ||
 		wget --no-check-certificate -O ${asciidoc_org_src_dir}.tar.gz \
 			https://sourceforge.net/projects/asciidoc/files/asciidoc/${asciidoc_ver}/${asciidoc_name}.tar.gz/download || return 1
 }
@@ -1072,7 +1118,7 @@ prepare_asciidoc_source()
 prepare_xmlto_source()
 {
 	mkdir -p ${xmlto_src_base}
-	[ -f ${xmlto_org_src_dir}.tar.bz2 ] ||
+	check_archive ${xmlto_org_src_dir} ||
 		wget --no-check-certificate -O ${xmlto_org_src_dir}.tar.bz2 \
 			https://fedorahosted.org/releases/x/m/xmlto/${xmlto_name}.tar.bz2 || return 1
 }
@@ -1080,7 +1126,7 @@ prepare_xmlto_source()
 prepare_libxml2_source()
 {
 	mkdir -p ${libxml2_src_base}
-	[ -f ${libxml2_org_src_dir}.tar.gz ] ||
+	check_archive ${libxml2_org_src_dir} ||
 		wget -O ${libxml2_org_src_dir}.tar.gz \
 			ftp://xmlsoft.org/libxml2/${libxml2_name}.tar.gz || return 1
 }
@@ -1088,7 +1134,7 @@ prepare_libxml2_source()
 prepare_libxslt_source()
 {
 	mkdir -p ${libxslt_src_base}
-	[ -f ${libxslt_org_src_dir}.tar.gz ] ||
+	check_archive ${libxslt_org_src_dir} ||
 		wget -O ${libxslt_org_src_dir}.tar.gz \
 			ftp://xmlsoft.org/libxml2/${libxslt_name}.tar.gz || return 1
 }
@@ -1096,7 +1142,7 @@ prepare_libxslt_source()
 prepare_gettext_source()
 {
 	mkdir -p ${gettext_src_base}
-	[ -f ${gettext_org_src_dir}.tar.xz ] ||
+	check_archive ${gettext_org_src_dir} ||
 		wget -O ${gettext_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/pub/gnu/gettext/${gettext_name}.tar.xz || return 1
 }
@@ -1104,7 +1150,7 @@ prepare_gettext_source()
 prepare_git_source()
 {
 	mkdir -p ${git_src_base}
-	[ -f ${git_org_src_dir}.tar.xz ] ||
+	check_archive ${git_org_src_dir} ||
 		wget --no-check-certificate -O ${git_org_src_dir}.tar.xz \
 			https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return 1
 }
@@ -1112,7 +1158,7 @@ prepare_git_source()
 prepare_cmake_source()
 {
 	mkdir -p ${cmake_src_base}
-	[ -f ${cmake_org_src_dir}.tar.gz ] ||
+	check_archive ${cmake_org_src_dir} ||
 		wget --no-check-certificate -O ${cmake_org_src_dir}.tar.gz \
 			https://cmake.org/files/v`echo ${cmake_ver} | cut -f1,2 -d.`/${cmake_name}.tar.gz || return 1
 }
@@ -1120,7 +1166,7 @@ prepare_cmake_source()
 prepare_llvm_source()
 {
 	mkdir -p ${llvm_src_base}
-	[ -f ${llvm_org_src_dir}.tar.xz ] ||
+	check_archive ${llvm_org_src_dir} ||
 		wget -O ${llvm_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${llvm_name}.tar.xz || return 1
 }
@@ -1128,7 +1174,7 @@ prepare_llvm_source()
 prepare_libcxx_source()
 {
 	mkdir -p ${libcxx_src_base}
-	[ -f ${libcxx_org_src_dir}.tar.xz ] ||
+	check_archive ${libcxx_org_src_dir} ||
 		wget -O ${libcxx_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${libcxx_name}.tar.xz || return 1
 }
@@ -1136,7 +1182,7 @@ prepare_libcxx_source()
 prepare_libcxxabi_source()
 {
 	mkdir -p ${libcxxabi_src_base}
-	[ -f ${libcxxabi_org_src_dir}.tar.xz ] ||
+	check_archive ${libcxxabi_org_src_dir} ||
 		wget -O ${libcxxabi_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${libcxxabi_name}.tar.xz || return 1
 }
@@ -1144,7 +1190,7 @@ prepare_libcxxabi_source()
 prepare_clang_rt_source()
 {
 	mkdir -p ${clang_rt_src_base}
-	[ -f ${clang_rt_org_src_dir}.tar.xz ] ||
+	check_archive ${clang_rt_org_src_dir} ||
 		wget -O ${clang_rt_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${clang_rt_name}.tar.xz || return 1
 }
@@ -1152,7 +1198,7 @@ prepare_clang_rt_source()
 prepare_clang_source()
 {
 	mkdir -p ${clang_src_base}
-	[ -f ${clang_org_src_dir}.tar.xz ] ||
+	check_archive ${clang_org_src_dir} ||
 		wget -O ${clang_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${clang_name}.tar.xz || return 1
 }
@@ -1160,7 +1206,7 @@ prepare_clang_source()
 prepare_clang_extra_source()
 {
 	mkdir -p ${clang_extra_src_base}
-	[ -f ${clang_extra_org_src_dir}.tar.xz ] ||
+	check_archive ${clang_extra_org_src_dir} ||
 		wget -O ${clang_extra_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${clang_extra_name}.tar.xz || return 1
 }
@@ -1168,7 +1214,7 @@ prepare_clang_extra_source()
 prepare_lld_source()
 {
 	mkdir -p ${lld_src_base}
-	[ -f ${lld_org_src_dir}.tar.xz ] ||
+	check_archive ${lld_org_src_dir} ||
 		wget -O ${lld_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${lld_name}.tar.xz || return 1
 }
@@ -1176,7 +1222,7 @@ prepare_lld_source()
 prepare_lldb_source()
 {
 	mkdir -p ${lldb_src_base}
-	[ -f ${lldb_org_src_dir}.tar.xz ] ||
+	check_archive ${lldb_org_src_dir} ||
 		wget -O ${lldb_org_src_dir}.tar.xz \
 			http://llvm.org/releases/${llvm_ver}/${lldb_name}.tar.xz || return 1
 }
@@ -1184,7 +1230,7 @@ prepare_lldb_source()
 prepare_boost_source()
 {
 	mkdir -p ${boost_src_base}
-	[ -f ${boost_org_src_dir}.tar.bz2 ] ||
+	check_archive ${boost_org_src_dir} ||
 		wget --trust-server-names --no-check-certificate -O ${boost_org_src_dir}.tar.bz2 \
 			https://sourceforge.net/projects/boost/files/boost/`echo ${boost_ver} | tr _ .`/${boost_name}.tar.bz2/download || return 1
 }
@@ -1192,7 +1238,7 @@ prepare_boost_source()
 prepare_mingw_w64_source()
 {
 	mkdir -p ${mingw_w64_src_base}
-	[ -f ${mingw_w64_org_src_dir}.tar.bz2 ] ||
+	check_archive ${mingw_w64_org_src_dir} ||
 		wget --trust-server-names --no-check-certificate -O ${mingw_w64_org_src_dir}.tar.bz2 \
 			https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v${mingw_w64_ver}.tar.bz2/download || return 1
 }
@@ -1220,6 +1266,30 @@ install_native_xz()
 		./configure --prefix=${prefix}) || return 1
 	make -C ${xz_org_src_dir} -j ${jobs} || return 1
 	make -C ${xz_org_src_dir} -j ${jobs} install-strip || return 1
+}
+
+install_native_bzip2()
+{
+	[ -x ${prefix}/bin/bzip2 -a -z "${force_install}" ] && return 0
+	prepare_bzip2_source || return 1
+	unpack_archive ${bzip2_org_src_dir} ${bzip2_src_base} || return 1
+	[ -f ${bzip2_org_src_dir}/Makefile ] ||
+		(cd ${bzip2_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${bzip2_org_src_dir} -j ${jobs} || return 1
+	make -C ${bzip2_org_src_dir} -j ${jobs} install-strip || return 1
+}
+
+install_native_gzip()
+{
+	[ -x ${prefix}/bin/gzip -a -z "${force_install}" ] && return 0
+	prepare_gzip_source || return 1
+	unpack_archive ${gzip_org_src_dir} ${gzip_src_base} || return 1
+	[ -f ${gzip_org_src_dir}/Makefile ] ||
+		(cd ${gzip_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${gzip_org_src_dir} -j ${jobs} || return 1
+	make -C ${gzip_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
 install_native_wget()
@@ -1371,7 +1441,7 @@ install_native_binutils()
 	[ -f ${binutils_src_dir_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_ntv}
 		./configure --prefix=${prefix} --build=${build} --with-sysroot=/ --enable-64-bit-bfd --enable-gold \
-			# CFLAGS='-Wno-error=unused-const-variable' CXXFLAGS='-Wno-error=unused-function'
+			# CFLAGS="${CFLAGS} -Wno-error=unused-const-variable" CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function"
 		) || return 1
 	make -C ${binutils_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${binutils_src_dir_ntv} -j ${jobs} install-strip || return 1
@@ -1414,7 +1484,7 @@ install_native_glibc()
 	[ -f ${glibc_bld_dir_ntv}/Makefile ] ||
 		(cd ${glibc_bld_dir_ntv}
 		${glibc_src_dir_ntv}/configure --prefix=${prefix} --build=${build} \
-			--with-headers=/usr/include CPPFLAGS='-I/usr/include/${build} -D_LIBC') || return 1
+			--with-headers=/usr/include CPPFLAGS="${CPPFLAGS} -I/usr/include/${build} -D_LIBC") || return 1
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} install-headers || return 1
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} || return 1
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} install || return 1
@@ -1635,9 +1705,9 @@ install_native_emacs()
 	unpack_archive ${emacs_org_src_dir} ${emacs_src_base} || return 1
 	[ -f ${emacs_org_src_dir}/Makefile ] ||
 		(cd ${emacs_org_src_dir}
-		CPPFLAGS=-I${prefix}/include LDFLAGS=-L${prefix}/lib \
+		CPPFLAGS="${CPPFLAGS} -I${prefix}/include" LDFLAGS="${LDFLAGS} -L${prefix}/lib" \
 			./configure --prefix=${prefix} --without-xpm) || return 1
-	make -C ${emacs_org_src_dir} -j ${jobs} LDFLAGS=-L${prefix}/lib || return 1
+	make -C ${emacs_org_src_dir} -j ${jobs} || return 1 # LDFLAGS=-L${prefix}/lib 
 	make -C ${emacs_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
@@ -1678,7 +1748,7 @@ install_native_global()
 	unpack_archive ${global_org_src_dir} ${global_src_base} || return 1
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
-		./configure --prefix=${prefix} CPPFLAGS="-I${prefix}/include/ncurses") || return 1 # --disable-gtagscscope
+		./configure --prefix=${prefix} CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1 # --disable-gtagscscope
 	make -C ${global_org_src_dir} -j ${jobs} || return 1
 	make -C ${global_org_src_dir} -j ${jobs} install-strip || return 1
 }
@@ -1855,7 +1925,7 @@ install_native_git()
 	(cd ${git_org_src_dir}
 	./configure --prefix=${prefix} --without-tcltk) || return 1
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return 1
-	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS=-ldl all || return 1 # doc
+	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS="${LDFLAGS} -ldl" all || return 1 # doc
 	make -C ${git_org_src_dir} -j ${jobs} V=1 strip install || return 1 # install-doc install-html
 }
 
@@ -1880,7 +1950,7 @@ install_native_llvm()
 	mkdir -p ${llvm_bld_dir}
 	(cd ${llvm_bld_dir}
 	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1 # CXXFLAGS='-mfpu=neon -mhard-float' LD_LIBRARY_PATH=${prefix}/lib
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1 # CXXFLAGS="${CXXFLAGS} -mfpu=neon -mhard-float" LD_LIBRARY_PATH=${prefix}/lib
 	make -C ${llvm_bld_dir} -j ${jobs} || return 1
 	make -C ${llvm_bld_dir} -j ${jobs} install/strip || return 1
 }
@@ -1903,6 +1973,7 @@ install_native_libcxxabi()
 {
 	[ -e ${prefix}/lib/libc++abi.so -a -z "${force_install}" ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
+	search_header llvm-config.h || install_native_llvm || return 1
 	search_header iostream c++/v1 || install_native_libcxx || return 1
 	prepare_libcxxabi_source || return 1
 	unpack_archive ${libcxxabi_org_src_dir} ${libcxxabi_src_base} || return 1
@@ -1917,6 +1988,7 @@ install_native_libcxxabi()
 install_native_clang_rt()
 {
 	which cmake > /dev/null || install_native_cmake || return 1
+	search_header llvm-config.h || install_native_llvm || return 1
 	prepare_clang_rt_source || return 1
 	unpack_archive ${clang_rt_org_src_dir} ${clang_rt_src_base} || return 1
 	mkdir -p ${clang_rt_bld_dir}
@@ -1998,6 +2070,8 @@ full_native()
 {
 	install_native_tar || return 1
 	install_native_xz || return 1
+	install_native_bzip2 || return 1
+	install_native_gzip || return 1
 	install_native_wget || return 1
 	install_native_coreutils || return 1
 	install_native_bison || return 1
@@ -2049,7 +2123,7 @@ full_native()
 install_cross_binutils()
 {
 	[ -e ${prefix}/bin/${target}-as -a -z "${force_install}" ] && return 0
-	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build}) " && return 1
+	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_crs} ] ||
 		(unpack_archive ${binutils_org_src_dir} ${binutils_src_base} &&
@@ -2057,7 +2131,7 @@ install_cross_binutils()
 	[ -f ${binutils_src_dir_crs}/Makefile ] ||
 		(cd ${binutils_src_dir_crs}
 		./configure --prefix=${prefix} --target=${target} --with-sysroot=${sysroot} --enable-gold \
-			CFLAGS='-Wno-error=unused-const-variable' CXXFLAGS='-Wno-error=unused-function') || return 1
+			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable" CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function") || return 1
 	make -C ${binutils_src_dir_crs} -j ${jobs} || return 1
 	make -C ${binutils_src_dir_crs} -j ${jobs} install-strip || return 1
 }
@@ -2162,7 +2236,7 @@ EOF
 		(cd ${glibc_bld_dir_crs_1st}
 		${glibc_src_dir_crs_1st}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-headers=${sysroot}/usr/include \
-			CFLAGS='-Wno-error=parentheses -O2' \
+			CFLAGS="${CFLAGS} -Wno-error=parentheses -O2" \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return 1
 	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} || return 1
 	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} install || return 1
@@ -2172,19 +2246,18 @@ install_cross_gcc_with_c_cxx_go_functionality()
 {
 	unpack_archive ${gcc_org_src_dir} ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_crs_3rd}
-	export LIBS=-lgcc_s
 	[ -f ${gcc_bld_dir_crs_3rd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_3rd}
-		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
+		LIBS=-lgcc_s ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
 			--enable-languages=c,c++,go --disable-multilib --with-system-zlib --with-sysroot=${sysroot}) || return 1
-	make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} || return 1
-	make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k install-strip || true # XXX -stripをgotools以外に関して強制的に成功させるため、-kと|| trueで暫定対応(WA)
+	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} || return 1
+	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k install-strip || true # XXX -stripをgotools以外に関して強制的に成功させるため、-kと|| trueで暫定対応(WA)
 }
 
 install_cross_gcc()
 {
 	which ${target}-as > /dev/null || install_cross_binutils || return 1
-	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build}) " && return 1
+	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
 	prepare_gcc_source || return 1
 	install_cross_gcc_without_headers || return 1
@@ -2217,7 +2290,7 @@ install_mingw_w64_header()
 	mkdir -p ${mingw_w64_bld_dir_hdr}
 	[ -f ${mingw_w64_bld_dir_hdr}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_hdr}
-		${mingw_w64_src_dir_hdr}/configure --prefix=${prefix} --with-sysroot=${sysroot} --build=${build} --host=${target} \
+		${mingw_w64_src_dir_hdr}/configure --prefix=${sysroot} --with-sysroot=${sysroot} --build=${build} --host=${target} \
 			--disable-multilib --without-crt) || return 1
 	make -C ${mingw_w64_bld_dir_hdr} -j ${jobs} || return 1
 	make -C ${mingw_w64_bld_dir_hdr} -j ${jobs} install || return 1
@@ -2232,7 +2305,7 @@ install_mingw_w64_gcc_with_mingw_w64_header()
 	mkdir -p ${gcc_bld_dir_crs_2nd}
 	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_2nd}
-		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
+		CFLAGS="${CFLAGS} -D_WIN32" ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
 			--enable-languages=c --disable-multilib --with-system-zlib --with-sysroot=${sysroot} \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
@@ -2252,7 +2325,7 @@ install_mingw_w64_crt()
 	mkdir -p ${mingw_w64_bld_dir_1st}
 	[ -f ${mingw_w64_bld_dir_1st}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_1st}
-		${mingw_w64_src_dir_1st}/configure --prefix=${prefix} --with-sysroot=${sysroot} --build=${build} --host=${target} \
+		${mingw_w64_src_dir_1st}/configure --prefix=${sysroot} --with-sysroot=${sysroot} --build=${build} --host=${target} \
 			--disable-multilib --without-header) || return 1
 	make -C ${mingw_w64_bld_dir_1st} -j ${jobs} || return 1
 	make -C ${mingw_w64_bld_dir_1st} -j ${jobs} install || return 1
@@ -2261,7 +2334,7 @@ install_mingw_w64_crt()
 install_mingw_w64_gcc()
 {
 	which ${target}-as > /dev/null || install_cross_binutils || return 1
-	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build}) " && return 1
+	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
 	prepare_gcc_source || return 1
 	install_cross_gcc_without_headers || return 1
@@ -2299,7 +2372,7 @@ install_crossed_native_gmp_mpfr_mpc()
 			mv ${gmp_org_src_dir} ${gmp_src_dir_crs_ntv}) || return 1
 	[ -f ${gmp_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${gmp_src_dir_crs_ntv}
-		./configure --prefix=/usr --host=${target}) || return 1
+		./configure --prefix=/usr --host=${target} --enable-cxx) || return 1
 	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 
