@@ -679,9 +679,9 @@ set_variables()
 
 convert_archives()
 {
-	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.tar.gz'  -execdir sh -c 'gzip  -dvc {} | xz -c > `basename {} .gz`.xz'  \; -delete || return 1
-	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.tar.bz2' -execdir sh -c 'bzip2 -dvc {} | xz -c > `basename {} .bz2`.xz' \; -delete || return 1
-	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.zip'     -execdir sh -c 'unzip      {} && tar cJovf `basename {} .zip`.tar.xz `basename {} .zip`' \; -delete || return 1
+	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.tar.gz'  -execdir sh -c '[ -f `basename {} .gz`.xz      ] && exit 0; gzip  -dvc {} | xz -c > `basename {} .gz`.xz'  \; -delete || return 1
+	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.tar.bz2' -execdir sh -c '[ -f `basename {} .bz2`.xz     ] && exit 0; bzip2 -dvc {} | xz -c > `basename {} .bz2`.xz' \; -delete || return 1
+	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.zip'     -execdir sh -c '[ -f `basename {} .zip`.tar.xz ] && exit 0; unzip      {} && tar cJovf `basename {} .zip`.tar.xz `basename {} .zip`' \; -delete || return 1
 }
 
 archive_sources()
@@ -1273,11 +1273,8 @@ install_native_bzip2()
 	[ -x ${prefix}/bin/bzip2 -a -z "${force_install}" ] && return 0
 	prepare_bzip2_source || return 1
 	unpack_archive ${bzip2_org_src_dir} ${bzip2_src_base} || return 1
-	[ -f ${bzip2_org_src_dir}/Makefile ] ||
-		(cd ${bzip2_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
 	make -C ${bzip2_org_src_dir} -j ${jobs} || return 1
-	make -C ${bzip2_org_src_dir} -j ${jobs} install-strip || return 1
+	make -C ${bzip2_org_src_dir} -j ${jobs} PREFIX=${prefix} install || return 1
 }
 
 install_native_gzip()
