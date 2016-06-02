@@ -356,7 +356,7 @@ list()
 }
 
 reset()
-# Reset ${prefix} except src/.
+# Reset 'prefix' except 'prefix/src/'.
 {
 	clean
 	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src -exec rm -rf '{}' +
@@ -673,8 +673,11 @@ set_variables()
 	mingw_w64_src_dir_hdr=${mingw_w64_src_base}/${mingw_w64_name}-src-hdr
 	mingw_w64_src_dir_1st=${mingw_w64_src_base}/${mingw_w64_name}-src-1st
 
-	echo ${PATH} | grep -q -e ${prefix}/bin || PATH=${prefix}/bin:${PATH}
-	echo ${PATH} | grep -q -e /sbin || PATH=/sbin:${PATH}
+	echo ${PATH} | tr : '\n' | grep -q -e ^${prefix}/bin\$ || PATH=${prefix}/bin:${PATH}
+	echo ${PATH} | tr : '\n' | grep -q -e ^/sbin\$         || PATH=/sbin:${PATH}
+	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -q -e ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64:${LD_LIBRARY_PATH}
+	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -q -e ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib:${LD_LIBRARY_PATH}
+	export LD_LIBRARY_PATH
 }
 
 convert_archives()
@@ -1528,10 +1531,10 @@ make_symbolic_links()
 	case ${os} in
 	Debian|Ubuntu|Raspbian)
 		for dir in asm bits gnu sys; do
-			ln -sf ./${build}/${dir} /usr/include/${dir}
+			[ -d /usr/include/${dir} ] || ln -s ./${build}/${dir} /usr/include/${dir} || return 1
 		done
 		for obj in crt1.o crti.o crtn.o; do
-			ln -sf ./${build}/${obj} /usr/lib/${obj}
+			[ -f /usr/lib/${obj} ] || ln -s ./${build}/${obj} /usr/lib/${obj} || return 1
 		done
 		;;
 	esac
@@ -2145,7 +2148,7 @@ install_cross_gcc_without_headers()
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
 			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
 		) || return 1
-	LD_LIBRARY_PATH=/toolchains/lib make -C ${gcc_bld_dir_crs_1st} -j ${jobs} all-gcc || return 1
+	LD_LIBRARY_PATH=${prefix}/lib make -C ${gcc_bld_dir_crs_1st} -j ${jobs} all-gcc || return 1
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-gcc || return 1
 }
 
