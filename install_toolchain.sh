@@ -1,7 +1,7 @@
 #!/bin/sh -e
 # [TODO] export不使用にする。C_INCLUDE_PATHも。
 # [TODO] mingw
-# [TODO] bash, python, perl, LLD, LLDB, Polly
+# [TODO] bash, python, perl, LLD, LLDB, Polly, MySQL
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
@@ -377,6 +377,7 @@ experimental()
 
 set_variables()
 {
+	prefix=`readlink -m ${prefix}`
 	: ${sysroot:=${prefix}/${target}/sysroot}
 	: ${jobs:=`grep -e processor /proc/cpuinfo | wc -l`}
 	build=`uname -m`-linux-gnu
