@@ -2,11 +2,10 @@
 # [TODO] reset後にauto実行するとinstall_native_binutilsあたりでハングする問題の調査・解決
 # [TODO] install_native_gitがperl.makのPM.stampとかでmake allがこける問題。
 # [TODO] libboostが非root時に、再配置がどうのこうのでインストールできない。
-# [TODO] archiveの中のtarが原因不明のエラー終了する。
 # [TODO] libxml2が非rootでinstall-stripできない問題の解決。/usr/libに書き込もうとする問題。
 
-# [TODO] export不使用にする。C_INCLUDE_PATHも。
 # [TODO] mingw
+# [TODO] export不使用にする。C_INCLUDE_PATHも。
 # [TODO] bash, python, perl, LLD, LLDB, Polly, MySQL
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
@@ -342,16 +341,15 @@ strip()
 archive()
 # Archive related files.
 {
-	clean
 	[ ${prefix}/src = `dirname $0` ] || cp -vf $0 ${prefix}/src || return 1
 	convert_archives || return 1
-	tar cJopvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` `basename ${prefix}` || return 1
+	tar cJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` `basename ${prefix}` || return 1
 }
 
 deploy()
 # Deploy related files.
 {
-	tar xJopvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` || return 1
+	tar xJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz --no-same-owner --no-same-permissions -C `dirname ${prefix}` || return 1
 	update_search_path || return 1
 	echo Please add ${prefix}/bin to PATH
 }
@@ -690,9 +688,9 @@ set_variables()
 
 convert_archives()
 {
-	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.tar.gz'  -execdir sh -c '[ -f `basename {} .gz`.xz      ] && exit 0; gzip  -dvc {} | xz -c > `basename {} .gz`.xz'  \; -delete || return 1
-	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.tar.bz2' -execdir sh -c '[ -f `basename {} .bz2`.xz     ] && exit 0; bzip2 -dvc {} | xz -c > `basename {} .bz2`.xz' \; -delete || return 1
-	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.zip'     -execdir sh -c '[ -f `basename {} .zip`.tar.xz ] && exit 0; unzip      {} && tar cJovf `basename {} .zip`.tar.xz `basename {} .zip`' \; -delete || return 1
+	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.tar.gz'  -execdir sh -c '[ -f `basename {} .gz`.xz      ] && exit 0; gzip  -cdv {} | xz -c > `basename {} .gz`.xz'  \; -delete || return 1
+	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.tar.bz2' -execdir sh -c '[ -f `basename {} .bz2`.xz     ] && exit 0; bzip2 -cdv {} | xz -c > `basename {} .bz2`.xz' \; -delete || return 1
+	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.zip'     -execdir sh -c '[ -f `basename {} .zip`.tar.xz ] && exit 0; unzip      {} && tar cJvf `basename {} .zip`.tar.xz `basename {} .zip`' \; -delete || return 1
 }
 
 archive_sources()
@@ -700,7 +698,7 @@ archive_sources()
 	prepare || return 1
 	clean
 	convert_archives || return 1
-	tar cJopvf ${prefix}/src.tar.xz -C ${prefix} src
+	tar cJvf ${prefix}/src.tar.xz -C ${prefix} src
 }
 
 list_major_tags()
@@ -785,9 +783,9 @@ check_archive()
 unpack_archive()
 {
 	[ -d $1 ] && return 0
-	[ -f $1.tar.gz  ] && tar xzopvf $1.tar.gz  -C $2 && return 0
-	[ -f $1.tar.bz2 ] && tar xjopvf $1.tar.bz2 -C $2 && return 0
-	[ -f $1.tar.xz  ] && tar xJopvf $1.tar.xz  -C $2 && return 0
+	[ -f $1.tar.gz  ] && tar xzvf $1.tar.gz  --no-same-owner --no-same-permissions -C $2 && return 0
+	[ -f $1.tar.bz2 ] && tar xjvf $1.tar.bz2 --no-same-owner --no-same-permissions -C $2 && return 0
+	[ -f $1.tar.xz  ] && tar xJvf $1.tar.xz  --no-same-owner --no-same-permissions -C $2 && return 0
 	[ -f $1.zip     ] && unzip -d $2 $1.zip         && return 0
 	return 1
 }
