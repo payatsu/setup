@@ -1,4 +1,10 @@
 #!/bin/sh -e
+# [TODO] reset後にauto実行するとinstall_native_binutilsあたりでハングする問題の調査・解決
+# [TODO] install_native_gitがperl.makのPM.stampとかでmake allがこける問題。
+# [TODO] libboostが非root時に、再配置がどうのこうのでインストールできない。
+# [TODO] archiveの中のtarが原因不明のエラー終了する。
+# [TODO] libxml2が非rootでinstall-stripできない問題の解決。/usr/libに書き込もうとする問題。
+
 # [TODO] export不使用にする。C_INCLUDE_PATHも。
 # [TODO] mingw
 # [TODO] bash, python, perl, LLD, LLDB, Polly, MySQL
@@ -7,6 +13,7 @@
 # [TODO] install_native_xmltoのリファクタリング。
 #        -> xmltoの障害のせいで、gitとgiflibのmakeに障害あり。
 # [TODO] install_native_clang_extra()のテスト実行が未完了。
+# [TODO] install_native_global時、libcursesがnot foundになる問題。
 # [TODO] native用とcross用にkernelとglibcのバージョンを同時に指定・最初に一括ダウンロードできるようにする。
 
 : ${tar_ver:=1.29}
@@ -338,13 +345,13 @@ archive()
 	clean
 	[ ${prefix}/src = `dirname $0` ] || cp -vf $0 ${prefix}/src || return 1
 	convert_archives || return 1
-	tar cJovf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` `basename ${prefix}` || return 1
+	tar cJopvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` `basename ${prefix}` || return 1
 }
 
 deploy()
 # Deploy related files.
 {
-	tar xJovf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` || return 1
+	tar xJopvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` || return 1
 	update_search_path || return 1
 	echo Please add ${prefix}/bin to PATH
 }
@@ -693,7 +700,7 @@ archive_sources()
 	prepare || return 1
 	clean
 	convert_archives || return 1
-	tar cJovf ${prefix}/src.tar.xz -C ${prefix} src
+	tar cJopvf ${prefix}/src.tar.xz -C ${prefix} src
 }
 
 list_major_tags()
@@ -778,9 +785,9 @@ check_archive()
 unpack_archive()
 {
 	[ -d $1 ] && return 0
-	[ -f $1.tar.gz  ] && tar xzovf $1.tar.gz  -C $2 && return 0
-	[ -f $1.tar.bz2 ] && tar xjovf $1.tar.bz2 -C $2 && return 0
-	[ -f $1.tar.xz  ] && tar xJovf $1.tar.xz  -C $2 && return 0
+	[ -f $1.tar.gz  ] && tar xzopvf $1.tar.gz  -C $2 && return 0
+	[ -f $1.tar.bz2 ] && tar xjopvf $1.tar.bz2 -C $2 && return 0
+	[ -f $1.tar.xz  ] && tar xJopvf $1.tar.xz  -C $2 && return 0
 	[ -f $1.zip     ] && unzip -d $2 $1.zip         && return 0
 	return 1
 }
@@ -1484,7 +1491,7 @@ install_native_glibc()
 	mkdir -p ${glibc_bld_dir_ntv}
 	[ -f ${glibc_bld_dir_ntv}/Makefile ] ||
 		(cd ${glibc_bld_dir_ntv}
-		${glibc_src_dir_ntv}/configure --prefix=${prefix} --build=${build} \
+		LD_LIBRARY_PATH='' ${glibc_src_dir_ntv}/configure --prefix=${prefix} --build=${build} \
 			--with-headers=/usr/include CPPFLAGS="${CPPFLAGS} -I/usr/include/${build} -D_LIBC") || return 1
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} install-headers || return 1
 	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} || return 1
@@ -1749,7 +1756,7 @@ install_native_global()
 	unpack_archive ${global_org_src_dir} ${global_src_base} || return 1
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
-		./configure --prefix=${prefix} CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1 # --disable-gtagscscope
+		./configure --prefix=${prefix} --disable-gtagscscope CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1
 	make -C ${global_org_src_dir} -j ${jobs} || return 1
 	make -C ${global_org_src_dir} -j ${jobs} install-strip || return 1
 }
@@ -2175,7 +2182,7 @@ install_cross_glibc_headers()
 	mkdir -p ${glibc_bld_dir_crs_hdr}
 	[ -f ${glibc_bld_dir_crs_hdr}/Makefile ] ||
 		(cd ${glibc_bld_dir_crs_hdr}
-		${glibc_src_dir_crs_hdr}/configure --prefix=/usr --build=${build} --host=${target} \
+		LD_LIBRARY_PATH='' ${glibc_src_dir_crs_hdr}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-headers=${sysroot}/usr/include \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return 1
 	make -C ${glibc_bld_dir_crs_hdr} -j ${jobs} DESTDIR=${sysroot} install-headers || return 1
@@ -2235,7 +2242,7 @@ EOF
 	mkdir -p ${glibc_bld_dir_crs_1st}
 	[ -f ${glibc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${glibc_bld_dir_crs_1st}
-		${glibc_src_dir_crs_1st}/configure --prefix=/usr --build=${build} --host=${target} \
+		LD_LIBRARY_PATH='' ${glibc_src_dir_crs_1st}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-headers=${sysroot}/usr/include \
 			CFLAGS="${CFLAGS} -Wno-error=parentheses -O2" \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return 1
