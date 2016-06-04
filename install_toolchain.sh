@@ -366,7 +366,7 @@ reset()
 	clean
 	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src -exec rm -rf '{}' +
 	rm  -f /etc/ld.so.conf.d/`basename ${prefix}`.conf
-	ldconfig || true
+	[ `whoami` = root ] && ldconfig
 }
 
 experimental()
@@ -731,7 +731,7 @@ ${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return 1
 
 search_library()
 {
-	ldconfig -p | grep -q -e "\<$1\>"
+	ldconfig -p | grep -q -e "\<$1\>" || return 1
 }
 
 search_header()
