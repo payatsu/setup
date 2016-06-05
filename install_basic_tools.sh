@@ -3,17 +3,18 @@
 os=`head -1 /etc/issue | cut -d ' ' -f 1`
 
 case ${os} in
-	Debian|Ubuntu)
+	Debian|Ubuntu|Raspbian)
 		sed -i -e 's/^# \(deb..*partner\)$/\1/' /etc/apt/sources.list
 		apt-get update
-		apt-get install --yes emacs vim
-		apt-get install --yes zsh
-		apt-get install --yes screen
-		apt-get install --yes wget curl zip
-		apt-get install --yes lv nkf ghostscript gv manpages-ja manpages-ja-dev
-		apt-get install --yes g++ git llvm-dev clang libclang-dev cmake
-		apt-get install --yes python3
-		apt-get install --yes doxygen graphviz
+		apt-get install -y emacs vim
+		apt-get install -y zsh
+		apt-get install -y screen
+		apt-get install -y wget curl zip
+		apt-get install -y bison flex m4 autoconf automake libtool binutils gcc g++ gdb make git 
+		apt-get install -y llvm-dev clang libclang-dev cmake
+		apt-get install -y lv nkf ghostscript gv manpages-ja manpages-ja-dev
+		apt-get install -y python3
+		apt-get install -y doxygen graphviz
 		;;
 	Red|CentOS|\\S)
 		yum update
@@ -21,7 +22,7 @@ case ${os} in
 		yum install -y zsh
 		yum install -y screen
 		yum install -y wget curl zip
-		yum install -y gcc gcc-c++ binutils gdb make git bison flex m4 autoconf automake libtool
+		yum install -y bison flex m4 autoconf automake libtool binutils gcc gcc-c++ gdb make git
 		yum install -y python
 		yum install -y doxygen graphviz
 		;;
