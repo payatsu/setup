@@ -2063,7 +2063,8 @@ install_native_clang_extra()
 	unpack_archive ${clang_extra_org_src_dir} ${clang_extra_src_base} || return 1
 	mkdir -p ${clang_extra_bld_dir}
 	(cd ${clang_extra_bld_dir}
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_extra_org_src_dir}) || return 1
+	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_extra_org_src_dir}) || return 1
 	make -C ${clang_extra_bld_dir} -j ${jobs} || return 1
 	make -C ${clang_extra_bld_dir} -j ${jobs} install/strip || return 1
 }
