@@ -6,6 +6,7 @@
 # [TODO] mingw
 # [TODO] export不使用にする。C_INCLUDE_PATHも。
 # [TODO] bash, python, perl, LLD, LLDB, Polly, MySQL
+# [TODO] install_native_vimのconfigure見直す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
@@ -737,7 +738,7 @@ search_library()
 search_header()
 {
 	for dir in ${prefix}/include /usr/local/include /opt/include /usr/include; do
-		[ -d ${dir}/$2 ] &&  [ `find ${dir}/$2 -type f -name "$1" | wc -l` != 0 ] && return 0
+		[ -d ${dir}${2:+/$2} ] && [ `find ${dir}${2:+/$2} -type f -name $1 | wc -l` != 0 ] && return 0
 	done
 	return 1
 }
@@ -786,7 +787,7 @@ unpack_archive()
 	[ -f $1.tar.gz  ] && tar xzvf $1.tar.gz  --no-same-owner --no-same-permissions -C $2 && return 0
 	[ -f $1.tar.bz2 ] && tar xjvf $1.tar.bz2 --no-same-owner --no-same-permissions -C $2 && return 0
 	[ -f $1.tar.xz  ] && tar xJvf $1.tar.xz  --no-same-owner --no-same-permissions -C $2 && return 0
-	[ -f $1.zip     ] && unzip -d $2 $1.zip         && return 0
+	[ -f $1.zip     ] && unzip -d $2 $1.zip && return 0
 	return 1
 }
 
@@ -1713,7 +1714,7 @@ install_native_emacs()
 		(cd ${emacs_org_src_dir}
 		CPPFLAGS="${CPPFLAGS} -I${prefix}/include" LDFLAGS="${LDFLAGS} -L${prefix}/lib" \
 			./configure --prefix=${prefix} --without-xpm) || return 1
-	make -C ${emacs_org_src_dir} -j ${jobs} || return 1 # LDFLAGS=-L${prefix}/lib 
+	make -C ${emacs_org_src_dir} -j ${jobs} || return 1
 	make -C ${emacs_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
@@ -1885,6 +1886,7 @@ install_native_libxml2()
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${libxml2_org_src_dir} -j ${jobs} || return 1
 	make -C ${libxml2_org_src_dir} -j ${jobs} install-strip || return 1
+	update_search_path || return 1
 }
 
 install_native_libxslt()
@@ -1931,8 +1933,8 @@ install_native_git()
 	(cd ${git_org_src_dir}
 	./configure --prefix=${prefix} --without-tcltk) || return 1
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return 1
-	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS="${LDFLAGS} -ldl" all || return 1 # doc
-	make -C ${git_org_src_dir} -j ${jobs} V=1 strip install || return 1 # install-doc install-html
+	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS="${LDFLAGS} -ldl" all || return 1 # XXX docターゲット入れたいけどエラー回避で外してる。
+	make -C ${git_org_src_dir} -j ${jobs} V=1 strip install || return 1 # XXX install-doc install-htmlターゲット入れたいけどエラー回避で外してる。
 }
 
 install_native_cmake()
@@ -1956,7 +1958,7 @@ install_native_llvm()
 	mkdir -p ${llvm_bld_dir}
 	(cd ${llvm_bld_dir}
 	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1 # CXXFLAGS="${CXXFLAGS} -mfpu=neon -mhard-float" LD_LIBRARY_PATH=${prefix}/lib
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1 # CXXFLAGS="${CXXFLAGS} -mfpu=neon -mhard-float"
 	make -C ${llvm_bld_dir} -j ${jobs} || return 1
 	make -C ${llvm_bld_dir} -j ${jobs} install/strip || return 1
 }
@@ -2257,7 +2259,7 @@ install_cross_gcc_with_c_cxx_go_functionality()
 		LIBS=-lgcc_s ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
 			--enable-languages=c,c++,go --disable-multilib --with-system-zlib --with-sysroot=${sysroot}) || return 1
 	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} || return 1
-	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k install-strip || true # XXX -stripをgotools以外に関して強制的に成功させるため、-kと|| trueで暫定対応(WA)
+	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k install-strip || true # XXX install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
 }
 
 install_cross_gcc()
