@@ -1,7 +1,5 @@
 #!/bin/sh -e
-# [TODO] install_native_gitがperl.makのPM.stampとかでmake allがこける問題。
 # [TODO] libboostが非root時に、再配置がどうのこうのでインストールできない。
-# [TODO] libxml2が非rootでinstall-stripできない問題の解決。/usr/libに書き込もうとする問題。
 
 # [TODO] mingw
 # [TODO] export不使用にする。C_INCLUDE_PATHも。
@@ -11,6 +9,7 @@
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
 #        -> xmltoの障害のせいで、gitとgiflibのmakeに障害あり。
+# [TODO] libxml2が非rootでinstall-stripできない問題の解決。/usr/libに書き込もうとする問題。
 # [TODO] install_native_clang_extra()のテスト実行が未完了。
 # [TODO] install_native_global時、libcursesがnot foundになる問題。
 # [TODO] native用とcross用にkernelとglibcのバージョンを同時に指定・最初に一括ダウンロードできるようにする。
@@ -20,6 +19,7 @@
 : ${bzip2_ver:=1.0.6}
 : ${gzip_ver:=1.8}
 : ${wget_ver:=1.17.1}
+: ${texinfo_ver:=6.1}
 : ${coreutils_ver:=8.25}
 : ${bison_ver:=3.0.4}
 : ${flex_ver:=2.6.0}
@@ -114,6 +114,8 @@ help()
 		Specify the version of GNU gzip you want, currently '${gzip_ver}'.
 	wget_ver
 		Specify the version of GNU wget you want, currently '${wget_ver}'.
+	texinfo_ver
+		Specify the version of GNU Texinfo you want, currently '${texinfo_ver}'.
 	coreutils_ver
 		Specify the version of GNU Coreutils you want, currently '${coreutils_ver}'.
 	bison_ver
@@ -272,6 +274,7 @@ clean()
 		${bzip2_org_src_dir} \
 		${gzip_org_src_dir} \
 		${wget_org_src_dir} \
+		${texinfo_org_src_dir} \
 		${coreutils_org_src_dir} \
 		${bison_org_src_dir} \
 		${flex_org_src_dir} \
@@ -423,6 +426,10 @@ set_variables()
 	wget_name=wget-${wget_ver}
 	wget_src_base=${prefix}/src/wget
 	wget_org_src_dir=${wget_src_base}/${wget_name}
+
+	texinfo_name=texinfo-${texinfo_ver}
+	texinfo_src_base=${prefix}/src/texinfo
+	texinfo_org_src_dir=${texinfo_src_base}/${texinfo_name}
 
 	coreutils_name=coreutils-${coreutils_ver}
 	coreutils_src_base=${prefix}/src/coreutils
@@ -829,6 +836,14 @@ prepare_wget_source()
 	check_archive ${wget_org_src_dir} ||
 		wget -O ${wget_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/wget/${wget_name}.tar.xz || return 1
+}
+
+prepare_texinfo_source()
+{
+	mkdir -p ${texinfo_src_base}
+	check_archive ${texinfo_org_src_dir} ||
+		wget -O ${texinfo_org_src_dir}.tar.xz \
+			http://ftp.gnu.org/gnu/texinfo/${texinfo_name}.tar.xz || return 1
 }
 
 prepare_coreutils_source()
@@ -1311,6 +1326,18 @@ install_native_wget()
 			./configure --prefix=${prefix} --build=${build} --with-ssl=openssl) || return 1
 	make -C ${wget_org_src_dir} -j ${jobs} || return 1
 	make -C ${wget_org_src_dir} -j ${jobs} install-strip || return 1
+}
+
+install_native_texinfo()
+{
+	[ -x ${prefix}/bin/makeinfo -a -z "${force_install}" ] && return 0
+	prepare_texinfo_source || return 1
+	unpack_archive ${texinfo_org_src_dir} ${texinfo_src_base} || return 1
+	[ -f ${texinfo_org_src_dir}/Makefile ] ||
+		(cd ${texinfo_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${texinfo_org_src_dir} -j ${jobs} || return 1
+	make -C ${texinfo_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
 install_native_coreutils()
@@ -2081,6 +2108,7 @@ full_native()
 	install_native_bzip2 || return 1
 	install_native_gzip || return 1
 	install_native_wget || return 1
+	install_native_texinfo || return 1
 	install_native_coreutils || return 1
 	install_native_bison || return 1
 	install_native_flex || return 1
