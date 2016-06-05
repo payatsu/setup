@@ -1,5 +1,4 @@
 #!/bin/sh -e
-# [TODO] reset後にauto実行するとinstall_native_binutilsあたりでハングする問題の調査・解決
 # [TODO] install_native_gitがperl.makのPM.stampとかでmake allがこける問題。
 # [TODO] libboostが非root時に、再配置がどうのこうのでインストールできない。
 # [TODO] libxml2が非rootでinstall-stripできない問題の解決。/usr/libに書き込もうとする問題。
@@ -366,7 +365,8 @@ reset()
 	clean
 	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src -exec rm -rf '{}' +
 	rm  -f /etc/ld.so.conf.d/`basename ${prefix}`.conf
-	[ `whoami` = root ] && ldconfig
+	[ `whoami` != root ] && return 0
+	ldconfig || return 1
 }
 
 experimental()
