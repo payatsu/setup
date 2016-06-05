@@ -5,7 +5,7 @@
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
-#        -> xmltoの障害のせいで、gitとgiflibのmakeに障害あり。
+#        -> xmltoの障害のせいで、gitのmakeに障害あり。
 # [TODO] libxml2が非rootでinstall-stripできない問題の解決。/usr/libに書き込もうとする問題。
 # [TODO] install_native_clang_extra()のテスト実行が未完了。
 # [TODO] install_native_global時、libcursesがnot foundになる問題。
@@ -2076,8 +2076,9 @@ install_native_lld()
 	unpack_archive ${lld_org_src_dir} ${lld_src_base} || return 1
 	mkdir -p ${lld_bld_dir}
 	(cd ${lld_bld_dir}
-	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${lld_org_src_dir}) || return 1
+	cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DPACKAGE_VERSION=${llvm_ver} ${lld_org_src_dir}) || return 1
 	make -C ${lld_bld_dir} -j ${jobs} || return 1
 	make -C ${lld_bld_dir} -j ${jobs} install/strip || return 1
 }
