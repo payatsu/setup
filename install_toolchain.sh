@@ -1,8 +1,5 @@
 #!/bin/sh -e
-# [TODO] libboostが非root時に、再配置がどうのこうのでインストールできない。
-
 # [TODO] mingw
-# [TODO] export不使用にする。C_INCLUDE_PATHも。
 # [TODO] bash, python, perl, LLD, LLDB, Polly, MySQL
 # [TODO] install_native_vimのconfigure見直す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
@@ -329,7 +326,7 @@ clean()
 		${clang_extra_org_src_dir} ${clang_extra_bld_dir} \
 		${lld_org_src_dir} ${lld_bld_dir} \
 		${lldb_org_src_dir} ${lldb_bld_dir} \
-		${boost_org_src_dir} \
+		${boost_org_src_dir} ${boost_bld_dir} \
 		${mingw_w64_org_src_dir} ${mingw_w64_bld_dir_hdr} ${mingw_w64_bld_dir_1st} ${mingw_w64_src_dir_hdr} ${mingw_w64_src_dir_1st}
 }
 
@@ -678,6 +675,7 @@ set_variables()
 	boost_name=boost_${boost_ver}
 	boost_src_base=${prefix}/src/boost
 	boost_org_src_dir=${boost_src_base}/${boost_name}
+	boost_bld_dir=${boost_src_base}/${boost_name}-build
 
 	mingw_w64_name=mingw-w64-v${mingw_w64_ver}
 	mingw_w64_src_base=${prefix}/src/mingw-w64
@@ -1300,6 +1298,12 @@ install_native_bzip2()
 	unpack_archive ${bzip2_org_src_dir} ${bzip2_src_base} || return 1
 	make -C ${bzip2_org_src_dir} -j ${jobs} || return 1
 	make -C ${bzip2_org_src_dir} -j ${jobs} PREFIX=${prefix} install || return 1
+	make -C ${bzip2_org_src_dir} -j ${jobs} clean || return 1
+	make -C ${bzip2_org_src_dir} -j ${jobs} -f Makefile-libbz2_so || return 1
+	cp -f ${bzip2_org_src_dir}/libbz2.so.${bzip2_ver} ${prefix}/lib || return 1
+	chmod a+r ${prefix}/lib/libbz2.so.${bzip2_ver} || return 1
+	ln -sf ./libbz2.so.${bzip2_ver} ${prefix}/lib/libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` || return 1
+	update_search_path || return 1
 }
 
 install_native_gzip()
@@ -1519,9 +1523,9 @@ install_native_glibc()
 		(cd ${glibc_bld_dir_ntv}
 		LD_LIBRARY_PATH='' ${glibc_src_dir_ntv}/configure --prefix=${prefix} --build=${build} \
 			--with-headers=/usr/include CPPFLAGS="${CPPFLAGS} -I/usr/include/${build} -D_LIBC") || return 1
-	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} install-headers || return 1
-	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} || return 1
-	C_INCLUDE_PATH=/usr/include/${build} make -C ${glibc_bld_dir_ntv} -j ${jobs} install || return 1
+	make -C ${glibc_bld_dir_ntv} -j ${jobs} install-headers || return 1
+	make -C ${glibc_bld_dir_ntv} -j ${jobs} || return 1
+	make -C ${glibc_bld_dir_ntv} -j ${jobs} install || return 1
 	update_search_path || return 1
 }
 
@@ -1676,7 +1680,7 @@ install_native_libpng()
 	[ -f ${libpng_src_dir_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_ntv}
 		./configure --prefix=${prefix} --build=${build}) || return 1
-	C_INCLUDE_PATH=${prefix}/include make -C ${libpng_src_dir_ntv} -j ${jobs} || return 1
+	make -C ${libpng_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${libpng_src_dir_ntv} -j ${jobs} install-strip || return 1
 	update_search_path || return 1
 }
@@ -2093,12 +2097,14 @@ install_native_lldb()
 install_native_boost()
 {
 	[ -d ${prefix}/include/boost -a -z "${force_install}" ] && return 0
+	search_header bzlib.h || install_native_bzip2 || return 1
 	prepare_boost_source || return 1
 	unpack_archive ${boost_org_src_dir} ${boost_src_base} || return 1
 	(cd ${boost_org_src_dir}
-	./bootstrap.sh --prefix=${prefix} || return 1
-	./b2 --prefix=${prefix} -j ${jobs}
-	./b2 --prefix=${prefix} install) || true # XXX boostはインストール完了しても終了ステータスが0でないことに対するWA.
+	./bootstrap.sh --prefix=${prefix} --with-toolset=gcc &&
+	./b2 --prefix=${prefix} --build-dir=${boost_bld_dir} \
+		--layout=system --build-type=minimal -j ${jobs} -q \
+		include=${prefix}/include library-path=${prefix}/lib install) || return 1
 }
 
 full_native()
@@ -2471,8 +2477,9 @@ install_crossed_native_libpng()
 			mv ${libpng_org_src_dir} ${libpng_src_dir_crs_ntv}) || return 1
 	[ -f ${libpng_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_crs_ntv}
-		./configure --prefix=${sysroot}/usr --host=${target}) || return 1
-	C_INCLUDE_PATH=${sysroot}/include make -C ${libpng_src_dir_crs_ntv} -j ${jobs} || return 1
+		./configure --prefix=${sysroot}/usr --host=${target} \
+			CPPFLAGS="-I ${sysroot}/include ${CPPFLAGS}") || return 1
+	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} install-strip || return 1
 }
 
