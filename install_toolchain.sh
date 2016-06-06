@@ -1,6 +1,5 @@
 #!/bin/sh -e
 # [TODO] mingw
-# [TODO] install_mingw_w64_headerでprefixとsysrootの値を見直す。
 # [TODO] fullをfindで書き直す。
 # [TODO] bash, python, perl, LLD, LLDB, Polly, MySQL
 # [TODO] install_native_vimのconfigure見直す。
@@ -2197,7 +2196,7 @@ install_cross_gcc_without_headers()
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
 			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
 		) || return 1
-	LD_LIBRARY_PATH=${prefix}/lib make -C ${gcc_bld_dir_crs_1st} -j ${jobs} all-gcc || return 1
+	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} all-gcc || return 1
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-gcc || return 1
 }
 
@@ -2339,14 +2338,10 @@ install_mingw_w64_header()
 	mkdir -p ${mingw_w64_bld_dir_hdr}
 	[ -f ${mingw_w64_bld_dir_hdr}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_hdr}
-		${mingw_w64_src_dir_hdr}/configure --prefix=${sysroot} --with-sysroot=${sysroot} --build=${build} --host=${target} \
+		${mingw_w64_src_dir_hdr}/configure --prefix=/mingw --with-sysroot=${sysroot} --build=${build} --host=${target} \
 			--disable-multilib --without-crt) || return 1
 	make -C ${mingw_w64_bld_dir_hdr} -j ${jobs} || return 1
-	make -C ${mingw_w64_bld_dir_hdr} -j ${jobs} install || return 1
-#	mkdir -p ${sysroot}/${target}/lib
-#	ln -sf ./lib ${sysroot}/${target}/lib64
-	ln -sf ./${target} ${sysroot}/mingw
-	ln -sf ../include ${sysroot}/mingw/include # 仮。
+	make -C ${mingw_w64_bld_dir_hdr} -j ${jobs} DESTDIR=${sysroot} install || return 1
 }
 
 install_mingw_w64_gcc_with_mingw_w64_header()
@@ -2373,16 +2368,17 @@ install_mingw_w64_crt()
 	mkdir -p ${mingw_w64_bld_dir_1st}
 	[ -f ${mingw_w64_bld_dir_1st}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_1st}
-		${mingw_w64_src_dir_1st}/configure --prefix=${sysroot} --with-sysroot=${sysroot} --build=${build} --host=${target} \
+		${mingw_w64_src_dir_1st}/configure --prefix=/mingw --with-sysroot=${sysroot} --build=${build} --host=${target} \
 			--disable-multilib --without-header) || return 1
 	make -C ${mingw_w64_bld_dir_1st} -j ${jobs} || return 1
-	make -C ${mingw_w64_bld_dir_1st} -j ${jobs} install || return 1
+	make -C ${mingw_w64_bld_dir_1st} -j ${jobs} DESTDIR=${sysroot} install || return 1
 }
 
 install_mingw_w64_gcc()
 {
 	prev_target=${target}; target=x86_64-w64-mingw32
 	prev_languages=${languages}; languages=c,c++
+	set_variables || return 1
 	which ${target}-as > /dev/null || install_cross_binutils || return 1
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
@@ -2394,6 +2390,7 @@ install_mingw_w64_gcc()
 	install_cross_functional_gcc || return 1
 	target=${prev_target}
 	languages=${prev_languages}
+	set_variables || return 1
 }
 
 full_cross()
