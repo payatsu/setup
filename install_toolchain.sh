@@ -1,5 +1,7 @@
 #!/bin/sh -e
 # [TODO] mingw
+# [TODO] install_mingw_w64_headerでprefixとsysrootの値を見直す。
+# [TODO] fullをfindで書き直す。
 # [TODO] bash, python, perl, LLD, LLDB, Polly, MySQL
 # [TODO] install_native_vimのconfigure見直す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
@@ -66,6 +68,7 @@
 
 : ${prefix:=/toolchains}
 : ${target:=`uname -m`-linux-gnu}
+: ${languages:=c,c++,go}
 
 usage()
 # Show usage.
@@ -685,8 +688,10 @@ set_variables()
 	mingw_w64_src_dir_hdr=${mingw_w64_src_base}/${mingw_w64_name}-src-hdr
 	mingw_w64_src_dir_1st=${mingw_w64_src_base}/${mingw_w64_name}-src-1st
 
-	echo ${PATH} | tr : '\n' | grep -q -e ^${prefix}/bin\$ || PATH=${prefix}/bin:${PATH}
-	echo ${PATH} | tr : '\n' | grep -q -e ^/sbin\$         || PATH=/sbin:${PATH}
+	echo ${PATH} | tr : '\n' | grep -q -e ^${prefix}/bin\$ \
+		|| PATH=${prefix}/bin:${PATH} \
+		&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s+${prefix}/bin++g;s+::+:+g;s+^:++;s+:\$++"`
+	echo ${PATH} | tr : '\n' | grep -q -e ^/sbin\$ || PATH=/sbin:${PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -q -e ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64:${LD_LIBRARY_PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -q -e ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib:${LD_LIBRARY_PATH}
 	export LD_LIBRARY_PATH
@@ -1592,7 +1597,7 @@ install_native_gcc()
 		(cd ${gcc_bld_dir_ntv}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			--enable-languages=c,c++,go --disable-multilib --without-isl --with-system-zlib) || return 1 # ARMの場合右記オプションが必要。--with-arch=armv6 --with-fpu=vfp --with-float=hard
+			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib) || return 1 # ARMの場合右記オプションが必要。--with-arch=armv6 --with-fpu=vfp --with-float=hard
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return 1
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install-strip || return 1
 	update_search_path || return 1
@@ -2187,7 +2192,7 @@ install_cross_gcc_without_headers()
 	[ -f ${gcc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_1st}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			--enable-languages=c --disable-multilib --with-system-zlib --without-headers \
+			--enable-languages=c --disable-multilib --without-isl --with-system-zlib --without-headers \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
 			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
@@ -2231,7 +2236,7 @@ install_cross_gcc_with_glibc_headers()
 	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_2nd}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			--enable-languages=c --disable-multilib --with-system-zlib --with-sysroot=${sysroot} --with-newlib \
+			--enable-languages=c --disable-multilib --without-isl --with-system-zlib --with-sysroot=${sysroot} --with-newlib \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
 			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
@@ -2286,14 +2291,14 @@ EOF
 	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} install || return 1
 }
 
-install_cross_gcc_with_c_cxx_go_functionality()
+install_cross_functional_gcc()
 {
 	unpack_archive ${gcc_org_src_dir} ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_crs_3rd}
 	[ -f ${gcc_bld_dir_crs_3rd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_3rd}
 		LIBS=-lgcc_s ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			--enable-languages=c,c++,go --disable-multilib --with-system-zlib --with-sysroot=${sysroot}) || return 1
+			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib --with-sysroot=${sysroot}) || return 1
 	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} || return 1
 	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k install-strip || true # XXX install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
 }
@@ -2309,7 +2314,7 @@ install_cross_gcc()
 	install_cross_glibc_headers || return 1
 	install_cross_gcc_with_glibc_headers || return 1
 	install_cross_1st_glibc || return 1
-	install_cross_gcc_with_c_cxx_go_functionality || return 1
+	install_cross_functional_gcc || return 1
 }
 
 install_cross_gdb()
@@ -2338,9 +2343,10 @@ install_mingw_w64_header()
 			--disable-multilib --without-crt) || return 1
 	make -C ${mingw_w64_bld_dir_hdr} -j ${jobs} || return 1
 	make -C ${mingw_w64_bld_dir_hdr} -j ${jobs} install || return 1
-	mkdir -p ${sysroot}/${target}/lib
+#	mkdir -p ${sysroot}/${target}/lib
+#	ln -sf ./lib ${sysroot}/${target}/lib64
 	ln -sf ./${target} ${sysroot}/mingw
-	ln -sf ./lib ${sysroot}/${target}/lib64
+	ln -sf ../include ${sysroot}/mingw/include # 仮。
 }
 
 install_mingw_w64_gcc_with_mingw_w64_header()
@@ -2349,16 +2355,14 @@ install_mingw_w64_gcc_with_mingw_w64_header()
 	mkdir -p ${gcc_bld_dir_crs_2nd}
 	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_2nd}
-		CFLAGS="${CFLAGS} -D_WIN32" ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			--enable-languages=c --disable-multilib --with-system-zlib --with-sysroot=${sysroot} \
+		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
+			--enable-languages=c --disable-multilib --without-isl --with-system-zlib --with-sysroot=${sysroot} \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
 			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
 		) || return 1
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} all-gcc || return 1
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} install-gcc || return 1
-#	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} all-target-libgcc || return 1
-#	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} install-target-libgcc || return 1
 }
 
 install_mingw_w64_crt()
@@ -2377,6 +2381,8 @@ install_mingw_w64_crt()
 
 install_mingw_w64_gcc()
 {
+	prev_target=${target}; target=x86_64-w64-mingw32
+	prev_languages=${languages}; languages=c,c++
 	which ${target}-as > /dev/null || install_cross_binutils || return 1
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
@@ -2385,7 +2391,9 @@ install_mingw_w64_gcc()
 	install_mingw_w64_header || return 1
 	install_mingw_w64_gcc_with_mingw_w64_header || return 1
 	install_mingw_w64_crt || return  1
-	install_cross_gcc_with_c_cxx_go_functionality || return 1
+	install_cross_functional_gcc || return 1
+	target=${prev_target}
+	languages=${prev_languages}
 }
 
 full_cross()
@@ -2453,7 +2461,7 @@ install_crossed_native_gcc()
 	[ -f ${gcc_bld_dir_crs_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_ntv}
 		${gcc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
-			--enable-languages=c,c++,go --with-sysroot=/ --without-isl) || return 1
+			--enable-languages=${languages} --with-sysroot=/ --without-isl) || return 1
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 }
