@@ -1,7 +1,6 @@
 #!/bin/sh -e
-# [TODO] mingw
-# [TODO] fullをfindで書き直す。
-# [TODO] bash, python, perl, LLD, LLDB, Polly, MySQL
+# [TODO] mingw. cleanさせる？
+# [TODO] bash, perl, ruby, LLD, LLDB, Polly, MySQL, expat
 # [TODO] install_native_vimのconfigure見直す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
@@ -64,6 +63,7 @@
 : ${llvm_ver:=3.8.0}
 : ${boost_ver:=1_61_0}
 : ${mingw_w64_ver:=4.0.6}
+: ${python_ver:=3.5.1}
 
 : ${prefix:=/toolchains}
 : ${target:=`uname -m`-linux-gnu}
@@ -207,6 +207,8 @@ help()
 		Specify the version of boost you want, currently '${boost_ver}'.
 	mingw_w64_ver
 		Specify the version of mingw-w64 you want, currently '${mingw_w64_ver}'.
+	python_ver
+		Specify the version of Python you want, currently '${python_ver}'.
 
 [Examples]
 	For Raspberry pi2
@@ -267,6 +269,9 @@ prepare()
 clean()
 # Delete no longer required source trees.
 {
+	find ${prefix}/src -mindepth 2 -maxdepth 2 ! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' -exec rm -rf {} +
+	return 0
+
 	rm -rf \
 		${tar_org_src_dir} \
 		${xz_org_src_dir} \
@@ -329,7 +334,8 @@ clean()
 		${lld_org_src_dir} ${lld_bld_dir} \
 		${lldb_org_src_dir} ${lldb_bld_dir} \
 		${boost_org_src_dir} ${boost_bld_dir} \
-		${mingw_w64_org_src_dir} ${mingw_w64_bld_dir_hdr} ${mingw_w64_bld_dir_1st} ${mingw_w64_src_dir_hdr} ${mingw_w64_src_dir_1st}
+		${mingw_w64_org_src_dir} ${mingw_w64_bld_dir_hdr} ${mingw_w64_bld_dir_1st} ${mingw_w64_src_dir_hdr} ${mingw_w64_src_dir_1st} \
+		${python_org_src_dir}
 }
 
 strip()
@@ -368,8 +374,7 @@ reset()
 	clean
 	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src -exec rm -rf '{}' +
 	rm  -f /etc/ld.so.conf.d/`basename ${prefix}`.conf
-	[ `whoami` != root ] && return 0
-	ldconfig || return 1
+	[ `whoami` = root ] && ldconfig || return 0
 }
 
 experimental()
@@ -687,6 +692,10 @@ set_variables()
 	mingw_w64_src_dir_hdr=${mingw_w64_src_base}/${mingw_w64_name}-src-hdr
 	mingw_w64_src_dir_1st=${mingw_w64_src_base}/${mingw_w64_name}-src-1st
 
+	python_name=Python-${python_ver}
+	python_src_base=${prefix}/src/python
+	python_org_src_dir=${python_src_base}/${python_name}
+
 	echo ${PATH} | tr : '\n' | grep -q -e ^${prefix}/bin\$ \
 		|| PATH=${prefix}/bin:${PATH} \
 		&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s+${prefix}/bin++g;s+::+:+g;s+^:++;s+:\$++"`
@@ -724,7 +733,7 @@ list_all()
 [All tags]
 #: major tags, -: internal tags(for debugging use)
 EOF
-	grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/\t- /; s/()$//; s/- \([[:alnum:]]\+\)$/# \1/'
+	grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/\t- /;s/()$//;s/- \([[:alnum:]]\+\)$/# \1/'
 }
 
 update_search_path()
@@ -760,8 +769,7 @@ install_prerequisites()
 		apt-get install -y make gcc g++ texinfo || return 1
 		apt-get install -y unifdef || return 1 # for linux kernel(microblaze)
 		apt-get install -y libgtk-3-dev || return 1 # for emacs
-		apt-get install -y python2.7-dev || return 1 # for gdb
-		apt-get install -y libperl-dev python-dev python3-dev ruby-dev || return 1 # for vim
+		apt-get install -y libperl-dev python-dev ruby-dev || return 1 # for vim
 		apt-get install -y ruby || return 1 # for vim
 		apt-get install -y lua5.2 liblua5.2-dev || return 1 # for vim
 		apt-get install -y luajit libluajit-5.1 || return 1 # for vim
@@ -770,8 +778,7 @@ install_prerequisites()
 		yum install -y make gcc gcc-c++ texinfo || return 1
 		yum install -y unifdef || return 1
 		yum install -y gtk3-devel || return 1
-		yum install -y python-devel || return 1
-		yum install -y perl-devel python-devel python3-devel ruby-devel || return 1
+		yum install -y perl-devel python-devel ruby-devel || return 1
 		yum install -y ruby || return 1
 		yum install -y lua lua-devel || return 1
 		yum install -y luajit luajit-devel || return 1
@@ -1270,6 +1277,14 @@ prepare_mingw_w64_source()
 			https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v${mingw_w64_ver}.tar.bz2/download || return 1
 }
 
+prepare_python_source()
+{
+	mkdir -p ${python_src_base}
+	check_archive ${python_org_src_dir} ||
+		wget --no-check-certificate -O ${python_org_src_dir}.tar.xz \
+			https://www.python.org/ftp/python/${python_ver}/${python_name}.tar.xz
+}
+
 install_native_tar()
 {
 	[ -x ${prefix}/bin/tar -a -z "${force_install}" ] && return 0
@@ -1649,6 +1664,7 @@ install_native_gdb()
 {
 	[ -x ${prefix}/bin/gdb -a -z "${force_install}" ] && return 0
 	search_header curses.h || install_native_ncurses || return 1
+	which python3 > /dev/null || install_native_python || return 1
 	prepare_gdb_source || return 1
 	unpack_archive ${gdb_org_src_dir} ${gdb_src_base} || return 1
 	mkdir -p ${gdb_bld_dir_ntv}
@@ -2115,62 +2131,17 @@ install_native_boost()
 
 full_native()
 {
-	install_native_tar || return 1
-	install_native_xz || return 1
-	install_native_bzip2 || return 1
-	install_native_gzip || return 1
-	install_native_wget || return 1
-	install_native_texinfo || return 1
-	install_native_coreutils || return 1
-	install_native_bison || return 1
-	install_native_flex || return 1
-	install_native_m4 || return 1
-	install_native_autoconf || return 1
-	install_native_automake || return 1
-	install_native_libtool || return 1
-	install_native_sed || return 1
-	install_native_gawk || return 1
-	install_native_make || return 1
-	install_native_binutils || return 1
-	install_native_gperf || return 1
-	install_native_gmp_mpfr_mpc || return 1
-	install_native_gcc || return 1
-	install_native_ncurses || return 1
-	install_native_gdb || return 1
-	install_native_zlib || return 1
-	install_native_libpng || return 1
-	install_native_libtiff || return 1
-	install_native_libjpeg || return 1
-	install_native_giflib || return 1
-	install_native_emacs || return 1
-	install_native_vim || return 1
-	install_native_grep || return 1
-	install_native_global || return 1
-	install_native_diffutils || return 1
-	install_native_patch || return 1
-	install_native_findutils || return 1
-	install_native_screen || return 1
-	install_native_zsh || return 1
-	install_native_openssl || return 1
-	install_native_curl || return 1
-	install_native_asciidoc || return 1
-	install_native_xmlto || return 1
-	install_native_libxml2 || return 1
-	install_native_libxslt || return 1
-	install_native_gettext || return 1
-	install_native_git || return 1
-	install_native_cmake || return 1
-	install_native_llvm || return 1
-	install_native_libcxx || return 1
-	install_native_libcxxabi || return 1
-	install_native_clang_rt || return 1
-	install_native_clang || return 1
-	install_native_boost || return 1
+	for f in `sed -e '/^install_native_[_[:alnum:]]\+()$/{s/()$//;
+		s/install_native_kernel_header//;
+		s/install_native_glibc//;
+		p};d' $0`; do
+		$f || echo `LANG=C date` : $f failed. >> ${prefix}/src/`basename $0`.log
+	done
 }
 
 install_cross_binutils()
 {
-	[ -e ${prefix}/bin/${target}-as -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/${target}-as -a -z "${force_install}" ] && return 0
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_crs} ] ||
@@ -2304,6 +2275,7 @@ install_cross_functional_gcc()
 
 install_cross_gcc()
 {
+	[ -x ${prefix}/bin/${target}-gcc -a -z "${force_install}" ] && return 0
 	which ${target}-as > /dev/null || install_cross_binutils || return 1
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
@@ -2318,7 +2290,8 @@ install_cross_gcc()
 
 install_cross_gdb()
 {
-	[ -e ${prefix}/bin/${target}-gdb -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/${target}-gdb -a -z "${force_install}" ] && return 0
+	which python3 > /dev/null || install_native_python || return 1
 	prepare_gdb_source || return 1
 	unpack_archive ${gdb_org_src_dir} ${gdb_src_base} || return 1
 	mkdir -p ${gdb_bld_dir_crs}
@@ -2379,6 +2352,7 @@ install_mingw_w64_gcc()
 	prev_target=${target}; target=x86_64-w64-mingw32
 	prev_languages=${languages}; languages=c,c++
 	set_variables || return 1
+	[ -x ${prefix}/bin/${target}-gcc -a -z "${force_install}" ] && return 0
 	which ${target}-as > /dev/null || install_cross_binutils || return 1
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
@@ -2391,6 +2365,21 @@ install_mingw_w64_gcc()
 	target=${prev_target}
 	languages=${prev_languages}
 	set_variables || return 1
+}
+
+install_native_python()
+{
+	[ -x ${prefix}/bin/python -a -z "${force_install}" ] && return 0
+	prepare_python_source || return 1
+	unpack_archive ${python_org_src_dir} ${python_src_base} || return 1
+	[ -f ${python_org_src_dir}/Makefile ] ||
+		(cd ${python_org_src_dir}
+		./configure --prefix=${prefix} --enable-shared --disable-ipv6 \
+			--with-universal-archs=all \
+			--with-signal-module --with-threads --with-doc-strings \
+			--with-tsc --with-pymalloc --with-ensurepip) || return 1 # --enable-ipv6 --with-address-sanitizer --with-system-expat --with-system-ffi
+	make -C ${python_org_src_dir} -j ${jobs} || return 1
+	make -C ${python_org_src_dir} -j ${jobs} install || return 1
 }
 
 full_cross()
