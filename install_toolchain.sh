@@ -1777,11 +1777,20 @@ install_native_vim()
 	prepare_vim_source || return 1
 	unpack_archive ${vim_org_src_dir} ${vim_src_base} || return 1
 	(cd ${vim_org_src_dir}
-	./configure --prefix=${prefix} --with-features=huge --enable-fail-if-missing \
-		--enable-perlinterp=dynamic --enable-pythoninterp=dynamic --enable-python3interp=dynamic --enable-rubyinterp=dynamic \
+	./configure --prefix=${prefix} --build=${build} \
+		--with-features=huge --enable-fail-if-missing \
+		--enable-perlinterp=dynamic \
+		--enable-pythoninterp=dynamic --enable-python3interp=dynamic \
+		--enable-rubyinterp=dynamic \
 		--enable-luainterp=dynamic --with-luajit \
-		--enable-cscope --enable-multibyte --enable-xim \
-		# --with-x --enable-fontset --enable-gui=gtk3
+		--enable-cscope --enable-multibyte \
+#		--enable-gui=gtk2 --enable-xim --enable-fontset \
+#		--enable-gtk3-check --enable-gtk2-check --enable-gnome-check \
+#		--with-x \
+#		--enable-balloon_eval --enable-browse --enable-serverclient --enable-clipboard --enable-dnd --enable-footer \
+#		--enable-mouseshape --enable-mouse_gpm --enable-mouse_jsbterm \
+#		--enable-mouse_sysmouse --enable-tag_any_white --enable-toolbar \
+#		--enable-xsmp --enable-xterm_clipboard --enable-xterm_save --enable-xpm \
 	) || return 1
 	make -C ${vim_org_src_dir} -j ${jobs} || return 1
 	make -C ${vim_org_src_dir} -j ${jobs} install || return 1
