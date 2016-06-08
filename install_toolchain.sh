@@ -28,7 +28,7 @@
 : ${gawk_ver:=4.1.3}
 : ${make_ver:=4.2}
 : ${binutils_ver:=2.26}
-: ${kernel_ver:=3.18.13}
+: ${linux_ver:=3.18.13}
 : ${gperf_ver:=3.0.4}
 : ${glibc_ver:=2.23}
 : ${gmp_ver:=6.1.0}
@@ -63,7 +63,7 @@
 : ${llvm_ver:=3.8.0}
 : ${boost_ver:=1_61_0}
 : ${mingw_w64_ver:=4.0.6}
-: ${python_ver:=3.5.1}
+: ${Python_ver:=3.5.1}
 
 : ${prefix:=/toolchains}
 : ${target:=`uname -m`-linux-gnu}
@@ -137,8 +137,8 @@ help()
 		Specify the version of GNU Make you want, currently '${make_ver}'.
 	binutils_ver
 		Specify the version of GNU Binutils you want, currently '${binutils_ver}'.
-	kernel_ver
-		Specify the version of Linux kernel you want, currently '${kernel_ver}'.
+	linux_ver
+		Specify the version of Linux kernel you want, currently '${linux_ver}'.
 	gperf_ver
 		Specify the version of gperf you want, currently '${gperf_ver}'.
 	glibc_ver
@@ -207,15 +207,15 @@ help()
 		Specify the version of boost you want, currently '${boost_ver}'.
 	mingw_w64_ver
 		Specify the version of mingw-w64 you want, currently '${mingw_w64_ver}'.
-	python_ver
-		Specify the version of Python you want, currently '${python_ver}'.
+	Python_ver
+		Specify the version of Python you want, currently '${Python_ver}'.
 
 [Examples]
 	For Raspberry pi2
-	# $0 -p /toolchains -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 kernel_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 cross
+	# $0 -p /toolchains -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 linux_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 cross
 
 	For microblaze
-	# $0 -p /toolchains -t microblaze-linux-gnu -j 8 binutils_ver=2.25 kernel_ver=4.3.3 glibc_ver=2.22 gcc_ver=5.3.0 cross
+	# $0 -p /toolchains -t microblaze-linux-gnu -j 8 binutils_ver=2.25 linux_ver=4.3.3 glibc_ver=2.22 gcc_ver=5.3.0 cross
 
 EOF
 }
@@ -270,72 +270,6 @@ clean()
 # Delete no longer required source trees.
 {
 	find ${prefix}/src -mindepth 2 -maxdepth 2 ! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' -exec rm -rf {} +
-	return 0
-
-	rm -rf \
-		${tar_org_src_dir} \
-		${xz_org_src_dir} \
-		${bzip2_org_src_dir} \
-		${gzip_org_src_dir} \
-		${wget_org_src_dir} \
-		${texinfo_org_src_dir} \
-		${coreutils_org_src_dir} \
-		${bison_org_src_dir} \
-		${flex_org_src_dir} \
-		${m4_org_src_dir} \
-		${autoconf_org_src_dir} \
-		${automake_org_src_dir} \
-		${libtool_org_src_dir} \
-		${sed_org_src_dir} \
-		${gawk_org_src_dir} \
-		${make_org_src_dir} \
-		${binutils_org_src_dir} ${binutils_src_dir_ntv} ${binutils_src_dir_crs} ${binutils_src_dir_crs_ntv} \
-		${kernel_org_src_dir} ${kernel_src_dir_ntv} ${kernel_src_dir_crs} \
-		${gperf_org_src_dir} \
-		${glibc_org_src_dir} ${glibc_bld_dir_ntv} ${glibc_src_dir_ntv} \
-		${glibc_bld_dir_crs_hdr} ${glibc_bld_dir_crs_1st} ${glibc_src_dir_crs_hdr} ${glibc_src_dir_crs_1st} \
-		${gmp_src_dir_ntv} ${gmp_src_dir_crs_ntv} \
-		${mpfr_src_dir_ntv} ${mpfr_src_dir_crs_ntv} \
-		${mpc_src_dir_ntv} ${mpc_src_dir_crs_ntv} \
-		${gcc_org_src_dir} ${gcc_bld_dir_ntv} \
-		${gcc_bld_dir_crs_1st} ${gcc_bld_dir_crs_2nd} ${gcc_bld_dir_crs_3rd} \
-		${gcc_bld_dir_crs_ntv} \
-		${ncurses_org_src_dir} \
-		${gdb_org_src_dir} ${gdb_bld_dir_ntv} ${gdb_bld_dir_crs} \
-		${libpng_src_dir_ntv} ${libpng_src_dir_crs_ntv} \
-		${libtiff_src_dir_ntv} ${libtiff_src_dir_crs_ntv} \
-		${libjpeg_src_dir_ntv} \
-		${giflib_src_dir_ntv} \
-		${emacs_org_src_dir} \
-		${vim_org_src_dir} \
-		${grep_org_src_dir} \
-		${global_org_src_dir} \
-		${diffutils_org_src_dir} \
-		${patch_org_src_dir} \
-		${findutils_org_src_dir} \
-		${screen_org_src_dir} \
-		${zsh_org_src_dir} \
-		${openssl_org_src_dir} \
-		${curl_org_src_dir} \
-		${asciidoc_org_src_dir} \
-		${xmlto_org_src_dir} \
-		${libxml2_org_src_dir} \
-		${libxslt_org_src_dir} \
-		${gettext_org_src_dir} \
-		${git_org_src_dir} \
-		${zlib_src_dir_ntv} ${zlib_src_dir_crs_ntv} \
-		${cmake_org_src_dir} \
-		${llvm_org_src_dir} ${llvm_bld_dir} \
-		${clang_org_src_dir} ${clang_bld_dir} \
-		${clang_rt_org_src_dir} ${clang_rt_bld_dir} \
-		${libcxx_org_src_dir} ${libcxx_bld_dir} \
-		${libcxxabi_org_src_dir} ${libcxxabi_bld_dir} \
-		${clang_extra_org_src_dir} ${clang_extra_bld_dir} \
-		${lld_org_src_dir} ${lld_bld_dir} \
-		${lldb_org_src_dir} ${lldb_bld_dir} \
-		${boost_org_src_dir} ${boost_bld_dir} \
-		${mingw_w64_org_src_dir} ${mingw_w64_bld_dir_hdr} ${mingw_w64_bld_dir_1st} ${mingw_w64_src_dir_hdr} ${mingw_w64_src_dir_1st} \
-		${python_org_src_dir}
 }
 
 strip()
@@ -388,6 +322,16 @@ experimental()
 	install_crossed_native_libtiff || return 1
 }
 
+set_src_directory()
+{
+	eval ${1}_name=${1}-\${${1}_ver}
+	eval ${1}_src_base=${prefix}/src/${1}
+	eval ${1}_org_src_dir=\${${1}_src_base}/\${${1}_name}
+	eval ${1}_src_dir_ntv=\${${1}_src_base}/\${${1}_name}-ntv
+	eval ${1}_src_dir_crs=\${${1}_src_base}/${target}-\${${1}_name}-crs
+	eval ${1}_src_dir_crs_ntv=\${${1}_src_base}/${target}-\${${1}_name}-crs-ntv
+}
+
 set_variables()
 {
 	prefix=`readlink -m ${prefix}`
@@ -411,86 +355,13 @@ set_variables()
 	*) echo Unknown target architecture: ${target} >&2; return 1;;
 	esac
 
-	tar_name=tar-${tar_ver}
-	tar_src_base=${prefix}/src/tar
-	tar_org_src_dir=${tar_src_base}/${tar_name}
-
-	xz_name=xz-${xz_ver}
-	xz_src_base=${prefix}/src/xz
-	xz_org_src_dir=${xz_src_base}/${xz_name}
-
-	bzip2_name=bzip2-${bzip2_ver}
-	bzip2_src_base=${prefix}/src/bzip2
-	bzip2_org_src_dir=${bzip2_src_base}/${bzip2_name}
-
-	gzip_name=gzip-${gzip_ver}
-	gzip_src_base=${prefix}/src/gzip
-	gzip_org_src_dir=${gzip_src_base}/${gzip_name}
-
-	wget_name=wget-${wget_ver}
-	wget_src_base=${prefix}/src/wget
-	wget_org_src_dir=${wget_src_base}/${wget_name}
-
-	texinfo_name=texinfo-${texinfo_ver}
-	texinfo_src_base=${prefix}/src/texinfo
-	texinfo_org_src_dir=${texinfo_src_base}/${texinfo_name}
-
-	coreutils_name=coreutils-${coreutils_ver}
-	coreutils_src_base=${prefix}/src/coreutils
-	coreutils_org_src_dir=${coreutils_src_base}/${coreutils_name}
-
-	bison_name=bison-${bison_ver}
-	bison_src_base=${prefix}/src/bison
-	bison_org_src_dir=${bison_src_base}/${bison_name}
-
-	flex_name=flex-${flex_ver}
-	flex_src_base=${prefix}/src/flex
-	flex_org_src_dir=${flex_src_base}/${flex_name}
-
-	m4_name=m4-${m4_ver}
-	m4_src_base=${prefix}/src/m4
-	m4_org_src_dir=${m4_src_base}/${m4_name}
-
-	autoconf_name=autoconf-${autoconf_ver}
-	autoconf_src_base=${prefix}/src/autoconf
-	autoconf_org_src_dir=${autoconf_src_base}/${autoconf_name}
-
-	automake_name=automake-${automake_ver}
-	automake_src_base=${prefix}/src/automake
-	automake_org_src_dir=${automake_src_base}/${automake_name}
-
-	libtool_name=libtool-${libtool_ver}
-	libtool_src_base=${prefix}/src/libtool
-	libtool_org_src_dir=${libtool_src_base}/${libtool_name}
-
-	sed_name=sed-${sed_ver}
-	sed_src_base=${prefix}/src/sed
-	sed_org_src_dir=${sed_src_base}/${sed_name}
-
-	gawk_name=gawk-${gawk_ver}
-	gawk_src_base=${prefix}/src/gawk
-	gawk_org_src_dir=${gawk_src_base}/${gawk_name}
-
-	make_name=make-${make_ver}
-	make_src_base=${prefix}/src/make
-	make_org_src_dir=${make_src_base}/${make_name}
-
-	binutils_name=binutils-${binutils_ver}
-	binutils_src_base=${prefix}/src/binutils
-	binutils_org_src_dir=${binutils_src_base}/${binutils_name}
-	binutils_src_dir_ntv=${binutils_src_base}/${binutils_name}-ntv
-	binutils_src_dir_crs=${binutils_src_base}/${target}-${binutils_name}-crs
-	binutils_src_dir_crs_ntv=${binutils_src_base}/${target}-${binutils_name}-crs-ntv
-
-	kernel_name=linux-${kernel_ver}
-	kernel_src_base=${prefix}/src/linux
-	kernel_org_src_dir=${kernel_src_base}/${kernel_name}
-	kernel_src_dir_ntv=${kernel_src_base}/${kernel_name}-ntv
-	kernel_src_dir_crs=${kernel_src_base}/${target}-${kernel_name}
-
-	gperf_name=gperf-${gperf_ver}
-	gperf_src_base=${prefix}/src/gperf
-	gperf_org_src_dir=${gperf_src_base}/${gperf_name}
+	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
+		m4 autoconf automake libtool sed gawk make binutils linux gperf \
+		gmp mpfr mpc gcc ncurses zlib libpng emacs vim grep global diffutils patch findutils \
+		screen zsh openssl curl asciidoc xmlto libxml2 libxslt gettext git \
+		cmake Python; do
+		set_src_directory ${pkg}
+	done
 
 	glibc_name=glibc-${glibc_ver}
 	glibc_src_base=${prefix}/src/glibc
@@ -502,54 +373,17 @@ set_variables()
 	glibc_src_dir_crs_hdr=${glibc_src_base}/${target}-${glibc_name}-src-hdr
 	glibc_src_dir_crs_1st=${glibc_src_base}/${target}-${glibc_name}-src-1st
 
-	gmp_name=gmp-${gmp_ver}
-	gmp_src_base=${prefix}/src/gmp
-	gmp_org_src_dir=${gmp_src_base}/${gmp_name}
-	gmp_src_dir_ntv=${gmp_src_base}/${gmp_name}-ntv
-	gmp_src_dir_crs_ntv=${gmp_src_base}/${target}-${gmp_name}-crs-ntv
-
-	mpfr_name=mpfr-${mpfr_ver}
-	mpfr_src_base=${prefix}/src/mpfr
-	mpfr_org_src_dir=${mpfr_src_base}/${mpfr_name}
-	mpfr_src_dir_ntv=${mpfr_src_base}/${mpfr_name}-ntv
-	mpfr_src_dir_crs_ntv=${mpfr_src_base}/${target}-${mpfr_name}-crs-ntv
-
-	mpc_name=mpc-${mpc_ver}
-	mpc_src_base=${prefix}/src/mpc
-	mpc_org_src_dir=${mpc_src_base}/${mpc_name}
-	mpc_src_dir_ntv=${mpc_src_base}/${mpc_name}-ntv
-	mpc_src_dir_crs_ntv=${mpc_src_base}/${target}-${mpc_name}-crs-ntv
-
-	gcc_name=gcc-${gcc_ver}
-	gcc_src_base=${prefix}/src/gcc
-	gcc_org_src_dir=${gcc_src_base}/${gcc_name}
 	gcc_bld_dir_ntv=${gcc_src_base}/${gcc_name}-ntv
 	gcc_bld_dir_crs_1st=${gcc_src_base}/${target}-${gcc_name}-1st
 	gcc_bld_dir_crs_2nd=${gcc_src_base}/${target}-${gcc_name}-2nd
 	gcc_bld_dir_crs_3rd=${gcc_src_base}/${target}-${gcc_name}-3rd
 	gcc_bld_dir_crs_ntv=${gcc_src_base}/${target}-${gcc_name}-crs-ntv
 
-	ncurses_name=ncurses-${ncurses_ver}
-	ncurses_src_base=${prefix}/src/ncurses
-	ncurses_org_src_dir=${ncurses_src_base}/${ncurses_name}
-
 	gdb_name=gdb-${gdb_ver}
 	gdb_src_base=${prefix}/src/gdb
 	gdb_org_src_dir=${gdb_src_base}/${gdb_name}
 	gdb_bld_dir_ntv=${gdb_src_base}/${gdb_name}-ntv
 	gdb_bld_dir_crs=${gdb_src_base}/${target}-${gdb_name}-crs
-
-	zlib_name=zlib-${zlib_ver}
-	zlib_src_base=${prefix}/src/zlib
-	zlib_org_src_dir=${zlib_src_base}/${zlib_name}
-	zlib_src_dir_ntv=${zlib_src_base}/${zlib_name}-ntv
-	zlib_src_dir_crs_ntv=${zlib_src_base}/${target}-${zlib_name}-crs-ntv
-
-	libpng_name=libpng-${libpng_ver}
-	libpng_src_base=${prefix}/src/libpng
-	libpng_org_src_dir=${libpng_src_base}/${libpng_name}
-	libpng_src_dir_ntv=${libpng_src_base}/${libpng_name}-ntv
-	libpng_src_dir_crs_ntv=${libpng_src_base}/${target}-${libpng_name}-crs-ntv
 
 	libtiff_name=tiff-${libtiff_ver}
 	libtiff_src_base=${prefix}/src/libtiff
@@ -567,122 +401,50 @@ set_variables()
 	giflib_org_src_dir=${giflib_src_base}/${giflib_name}
 	giflib_src_dir_ntv=${giflib_src_base}/${giflib_name}-ntv
 
-	emacs_name=emacs-${emacs_ver}
-	emacs_src_base=${prefix}/src/emacs
-	emacs_org_src_dir=${emacs_src_base}/${emacs_name}
-
-	vim_name=vim-${vim_ver}
-	vim_src_base=${prefix}/src/vim
-	vim_org_src_dir=${vim_src_base}/${vim_name}
-
-	grep_name=grep-${grep_ver}
-	grep_src_base=${prefix}/src/grep
-	grep_org_src_dir=${grep_src_base}/${grep_name}
-
-	global_name=global-${global_ver}
-	global_src_base=${prefix}/src/global
-	global_org_src_dir=${global_src_base}/${global_name}
-
-	diffutils_name=diffutils-${diffutils_ver}
-	diffutils_src_base=${prefix}/src/diffutils
-	diffutils_org_src_dir=${diffutils_src_base}/${diffutils_name}
-
-	patch_name=patch-${patch_ver}
-	patch_src_base=${prefix}/src/patch
-	patch_org_src_dir=${patch_src_base}/${patch_name}
-
-	findutils_name=findutils-${findutils_ver}
-	findutils_src_base=${prefix}/src/findutils
-	findutils_org_src_dir=${findutils_src_base}/${findutils_name}
-
-	screen_name=screen-${screen_ver}
-	screen_src_base=${prefix}/src/screen
-	screen_org_src_dir=${screen_src_base}/${screen_name}
-
-	zsh_name=zsh-${zsh_ver}
-	zsh_src_base=${prefix}/src/zsh
-	zsh_org_src_dir=${zsh_src_base}/${zsh_name}
-
-	openssl_name=openssl-${openssl_ver}
-	openssl_src_base=${prefix}/src/openssl
-	openssl_org_src_dir=${openssl_src_base}/${openssl_name}
-
-	curl_name=curl-${curl_ver}
-	curl_src_base=${prefix}/src/curl
-	curl_org_src_dir=${curl_src_base}/${curl_name}
-
-	asciidoc_name=asciidoc-${asciidoc_ver}
-	asciidoc_src_base=${prefix}/src/asciidoc
-	asciidoc_org_src_dir=${asciidoc_src_base}/${asciidoc_name}
-
-	xmlto_name=xmlto-${xmlto_ver}
-	xmlto_src_base=${prefix}/src/xmlto
-	xmlto_org_src_dir=${xmlto_src_base}/${xmlto_name}
-
-	libxml2_name=libxml2-${libxml2_ver}
-	libxml2_src_base=${prefix}/src/libxml2
-	libxml2_org_src_dir=${libxml2_src_base}/${libxml2_name}
-
-	libxslt_name=libxslt-${libxslt_ver}
-	libxslt_src_base=${prefix}/src/libxslt
-	libxslt_org_src_dir=${libxslt_src_base}/${libxslt_name}
-
-	gettext_name=gettext-${gettext_ver}
-	gettext_src_base=${prefix}/src/gettext
-	gettext_org_src_dir=${gettext_src_base}/${gettext_name}
-
-	git_name=git-${git_ver}
-	git_src_base=${prefix}/src/git
-	git_org_src_dir=${git_src_base}/${git_name}
-
-	cmake_name=cmake-${cmake_ver}
-	cmake_src_base=${prefix}/src/cmake
-	cmake_org_src_dir=${cmake_src_base}/${cmake_name}
-
 	llvm_name=llvm-${llvm_ver}.src
 	llvm_src_base=${prefix}/src/llvm
 	llvm_org_src_dir=${llvm_src_base}/${llvm_name}
-	llvm_bld_dir=${llvm_src_base}/${llvm_name}-build
+	llvm_bld_dir=${llvm_src_base}/${llvm_name}-bld
 
 	libcxx_name=libcxx-${llvm_ver}.src
-	libcxx_src_base=${prefix}/src/libc++
+	libcxx_src_base=${prefix}/src/libcxx
 	libcxx_org_src_dir=${libcxx_src_base}/${libcxx_name}
-	libcxx_bld_dir=${libcxx_src_base}/${libcxx_name}-build
+	libcxx_bld_dir=${libcxx_src_base}/${libcxx_name}-bld
 
 	libcxxabi_name=libcxxabi-${llvm_ver}.src
-	libcxxabi_src_base=${prefix}/src/libc++abi
+	libcxxabi_src_base=${prefix}/src/libcxxabi
 	libcxxabi_org_src_dir=${libcxxabi_src_base}/${libcxxabi_name}
-	libcxxabi_bld_dir=${libcxxabi_src_base}/${libcxxabi_name}-build
+	libcxxabi_bld_dir=${libcxxabi_src_base}/${libcxxabi_name}-bld
 
 	clang_rt_name=compiler-rt-${llvm_ver}.src
-	clang_rt_src_base=${prefix}/src/clang-rt
+	clang_rt_src_base=${prefix}/src/compiler-rt
 	clang_rt_org_src_dir=${clang_rt_src_base}/${clang_rt_name}
-	clang_rt_bld_dir=${clang_rt_src_base}/${clang_rt_name}-build
+	clang_rt_bld_dir=${clang_rt_src_base}/${clang_rt_name}-bld
 
 	clang_name=cfe-${llvm_ver}.src
-	clang_src_base=${prefix}/src/clang
+	clang_src_base=${prefix}/src/cfe
 	clang_org_src_dir=${clang_src_base}/${clang_name}
-	clang_bld_dir=${clang_src_base}/${clang_name}-build
+	clang_bld_dir=${clang_src_base}/${clang_name}-bld
 
 	clang_extra_name=clang-tools-extra-${llvm_ver}.src
 	clang_extra_src_base=${prefix}/src/clang-tools-extra
 	clang_extra_org_src_dir=${clang_extra_src_base}/${clang_extra_name}
-	clang_extra_bld_dir=${clang_extra_src_base}/${clang_extra_name}-build
+	clang_extra_bld_dir=${clang_extra_src_base}/${clang_extra_name}-bld
 
 	lld_name=lld-${llvm_ver}.src
 	lld_src_base=${prefix}/src/lld
 	lld_org_src_dir=${lld_src_base}/${lld_name}
-	lld_bld_dir=${lld_src_base}/${lld_name}-build
+	lld_bld_dir=${lld_src_base}/${lld_name}-bld
 
 	lldb_name=lldb-${llvm_ver}.src
 	lldb_src_base=${prefix}/src/lldb
 	lldb_org_src_dir=${lldb_src_base}/${lldb_name}
-	lldb_bld_dir=${lldb_src_base}/${lldb_name}-build
+	lldb_bld_dir=${lldb_src_base}/${lldb_name}-bld
 
 	boost_name=boost_${boost_ver}
 	boost_src_base=${prefix}/src/boost
 	boost_org_src_dir=${boost_src_base}/${boost_name}
-	boost_bld_dir=${boost_src_base}/${boost_name}-build
+	boost_bld_dir=${boost_src_base}/${boost_name}-bld
 
 	mingw_w64_name=mingw-w64-v${mingw_w64_ver}
 	mingw_w64_src_base=${prefix}/src/mingw-w64
@@ -691,10 +453,6 @@ set_variables()
 	mingw_w64_bld_dir_1st=${mingw_w64_src_base}/${mingw_w64_name}-bld-1st
 	mingw_w64_src_dir_hdr=${mingw_w64_src_base}/${mingw_w64_name}-src-hdr
 	mingw_w64_src_dir_1st=${mingw_w64_src_base}/${mingw_w64_name}-src-1st
-
-	python_name=Python-${python_ver}
-	python_src_base=${prefix}/src/python
-	python_org_src_dir=${python_src_base}/${python_name}
 
 	echo ${PATH} | tr : '\n' | grep -q -e ^${prefix}/bin\$ \
 		|| PATH=${prefix}/bin:${PATH} \
@@ -945,16 +703,16 @@ prepare_binutils_source()
 
 prepare_kernel_source()
 {
-	case `echo ${kernel_ver} | cut -f 1,2 -d .` in
+	case `echo ${linux_ver} | cut -f 1,2 -d .` in
 		2.6) dir=v2.6;;
 		3.*) dir=v3.x;;
 		4.*) dir=v4.x;;
 		*)   echo unsupported kernel version >&2; return 1;;
 	esac
-	mkdir -p ${kernel_src_base}
-	check_archive ${kernel_org_src_dir} ||
-		wget --no-check-certificate -O ${kernel_org_src_dir}.tar.xz \
-			https://www.kernel.org/pub/linux/kernel/${dir}/${kernel_name}.tar.xz || return 1
+	mkdir -p ${linux_src_base}
+	check_archive ${linux_org_src_dir} ||
+		wget --no-check-certificate -O ${linux_org_src_dir}.tar.xz \
+			https://www.kernel.org/pub/linux/kernel/${dir}/${linux_name}.tar.xz || return 1
 }
 
 prepare_gperf_source()
@@ -1279,10 +1037,10 @@ prepare_mingw_w64_source()
 
 prepare_python_source()
 {
-	mkdir -p ${python_src_base}
-	check_archive ${python_org_src_dir} ||
-		wget --no-check-certificate -O ${python_org_src_dir}.tar.xz \
-			https://www.python.org/ftp/python/${python_ver}/${python_name}.tar.xz
+	mkdir -p ${Python_src_base}
+	check_archive ${Python_org_src_dir} ||
+		wget --no-check-certificate -O ${Python_org_src_dir}.tar.xz \
+			https://www.python.org/ftp/python/${Python_ver}/${Python_name}.tar.xz
 }
 
 install_native_tar()
@@ -1507,11 +1265,11 @@ install_native_binutils()
 install_native_kernel_header()
 {
 	prepare_kernel_source || return 1
-	[ -d ${kernel_src_dir_ntv} ] ||
-		(unpack_archive ${kernel_org_src_dir} ${kernel_src_base} &&
-			mv ${kernel_org_src_dir} ${kernel_src_dir_ntv}) || return 1
-	make -C ${kernel_src_dir_ntv} -j ${jobs} mrproper || return 1
-	make -C ${kernel_src_dir_ntv} -j ${jobs} \
+	[ -d ${linux_src_dir_ntv} ] ||
+		(unpack_archive ${linux_org_src_dir} ${linux_src_base} &&
+			mv ${linux_org_src_dir} ${linux_src_dir_ntv}) || return 1
+	make -C ${linux_src_dir_ntv} -j ${jobs} mrproper || return 1
+	make -C ${linux_src_dir_ntv} -j ${jobs} \
 		ARCH=${native_linux_arch} INSTALL_HDR_PATH=${prefix} headers_install || return 1
 }
 
@@ -2183,11 +1941,11 @@ install_cross_gcc_without_headers()
 install_cross_kernel_header()
 {
 	prepare_kernel_source || return 1
-	[ -d ${kernel_src_dir_crs} ] ||
-		(unpack_archive ${kernel_org_src_dir} ${kernel_src_base} &&
-			mv ${kernel_org_src_dir} ${kernel_src_dir_crs}) || return 1
-	make -C ${kernel_src_dir_crs} -j ${jobs} mrproper || return 1
-	make -C ${kernel_src_dir_crs} -j ${jobs} \
+	[ -d ${linux_src_dir_crs} ] ||
+		(unpack_archive ${linux_org_src_dir} ${linux_src_base} &&
+			mv ${linux_org_src_dir} ${linux_src_dir_crs}) || return 1
+	make -C ${linux_src_dir_crs} -j ${jobs} mrproper || return 1
+	make -C ${linux_src_dir_crs} -j ${jobs} \
 		ARCH=${cross_linux_arch} INSTALL_HDR_PATH=${sysroot}/usr headers_install || return 1
 }
 
@@ -2380,15 +2138,15 @@ install_native_python()
 {
 	[ -x ${prefix}/bin/python -a -z "${force_install}" ] && return 0
 	prepare_python_source || return 1
-	unpack_archive ${python_org_src_dir} ${python_src_base} || return 1
-	[ -f ${python_org_src_dir}/Makefile ] ||
-		(cd ${python_org_src_dir}
+	unpack_archive ${Python_org_src_dir} ${Python_src_base} || return 1
+	[ -f ${Python_org_src_dir}/Makefile ] ||
+		(cd ${Python_org_src_dir}
 		./configure --prefix=${prefix} --enable-shared --disable-ipv6 \
 			--with-universal-archs=all \
 			--with-signal-module --with-threads --with-doc-strings \
 			--with-tsc --with-pymalloc --with-ensurepip) || return 1 # --enable-ipv6 --with-address-sanitizer --with-system-expat --with-system-ffi
-	make -C ${python_org_src_dir} -j ${jobs} || return 1
-	make -C ${python_org_src_dir} -j ${jobs} install || return 1
+	make -C ${Python_org_src_dir} -j ${jobs} || return 1
+	make -C ${Python_org_src_dir} -j ${jobs} install || return 1
 }
 
 full_cross()
