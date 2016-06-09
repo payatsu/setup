@@ -39,7 +39,7 @@
 : ${gdb_ver:=7.11}
 : ${zlib_ver:=1.2.8}
 : ${libpng_ver:=1.6.21}
-: ${libtiff_ver:=4.0.6}
+: ${tiff_ver:=4.0.6}
 : ${libjpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
 : ${emacs_ver:=24.5}
@@ -159,8 +159,8 @@ help()
 		Specify the version of zlib you want, currently '${zlib_ver}'.
 	libpng_ver
 		Specify the version of libpng you want, currently '${libpng_ver}'.
-	libtiff_ver
-		Specify the version of libtiff you want, currently '${libtiff_ver}'.
+	tiff_ver
+		Specify the version of libtiff you want, currently '${tiff_ver}'.
 	libjpeg_ver
 		Specify the version of libjpeg you want, currently '${libjpeg_ver}'.
 	giflib_ver
@@ -324,12 +324,48 @@ experimental()
 
 set_src_directory()
 {
+	case ${1} in
+		llvm|libcxx|libcxxabi|clang_rt|cfe|clang_extra|lld|lldb)
+		eval ${1}_name=${1}-${llvm_ver}.src
+		eval ${1}_src_base=${prefix}/src/${1}
+		eval ${1}_org_src_dir=\${${1}_src_base}/\${${1}_name}
+		eval ${1}_bld_dir=\${${1}_src_base}/\${${1}_name}-bld
+		return 0
+		;;
+	*)
+		;;
+	esac
+
 	eval ${1}_name=${1}-\${${1}_ver}
 	eval ${1}_src_base=${prefix}/src/${1}
 	eval ${1}_org_src_dir=\${${1}_src_base}/\${${1}_name}
-	eval ${1}_src_dir_ntv=\${${1}_src_base}/\${${1}_name}-ntv
-	eval ${1}_src_dir_crs=\${${1}_src_base}/${target}-\${${1}_name}-crs
-	eval ${1}_src_dir_crs_ntv=\${${1}_src_base}/${target}-\${${1}_name}-crs-ntv
+
+	case ${1} in
+		glibc)
+		eval ${1}_bld_dir_ntv=\${${1}_src_base}/\${${1}_name}-bld
+		eval ${1}_src_dir_ntv=\${${1}_src_base}/\${${1}_name}-src
+		eval ${1}_bld_dir_crs_hdr=\${${1}_src_base}/${target}-\${${1}_name}-bld-hdr
+		eval ${1}_bld_dir_crs_1st=\${${1}_src_base}/${target}-\${${1}_name}-bld-1st
+		eval ${1}_src_dir_crs_hdr=\${${1}_src_base}/${target}-\${${1}_name}-src-hdr
+		eval ${1}_src_dir_crs_1st=\${${1}_src_base}/${target}-\${${1}_name}-src-1st
+		;;
+		gcc)
+		eval ${1}_bld_dir_ntv=\${${1}_src_base}/\${${1}_name}-ntv
+		eval ${1}_bld_dir_crs_1st=\${${1}_src_base}/${target}-\${${1}_name}-1st
+		eval ${1}_bld_dir_crs_2nd=\${${1}_src_base}/${target}-\${${1}_name}-2nd
+		eval ${1}_bld_dir_crs_3rd=\${${1}_src_base}/${target}-\${${1}_name}-3rd
+		eval ${1}_bld_dir_crs_ntv=\${${1}_src_base}/${target}-\${${1}_name}-crs-ntv
+		;;
+		gdb)
+		eval ${1}_bld_dir_ntv=\${${1}_src_base}/\${${1}_name}-ntv
+		eval ${1}_bld_dir_crs=\${${1}_src_base}/${target}-\${${1}_name}-crs
+		;;
+		*)
+		eval ${1}_src_dir_ntv=\${${1}_src_base}/\${${1}_name}-ntv
+		eval ${1}_src_dir_crs=\${${1}_src_base}/${target}-\${${1}_name}-crs
+		eval ${1}_src_dir_crs_ntv=\${${1}_src_base}/${target}-\${${1}_name}-crs-ntv
+		;;
+	esac
 }
 
 set_variables()
@@ -356,90 +392,27 @@ set_variables()
 	esac
 
 	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
-		m4 autoconf automake libtool sed gawk make binutils linux gperf \
-		gmp mpfr mpc gcc ncurses zlib libpng emacs vim grep global diffutils patch findutils \
+		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
+		gmp mpfr mpc gcc ncurses gdb zlib libpng tiff giflib emacs vim grep global diffutils patch findutils \
 		screen zsh openssl curl asciidoc xmlto libxml2 libxslt gettext git \
-		cmake Python; do
+		cmake llvm libcxx libcxxabi cfe lld lldb Python; do
 		set_src_directory ${pkg}
 	done
-
-	glibc_name=glibc-${glibc_ver}
-	glibc_src_base=${prefix}/src/glibc
-	glibc_org_src_dir=${glibc_src_base}/${glibc_name}
-	glibc_bld_dir_ntv=${glibc_src_base}/${glibc_name}-bld
-	glibc_src_dir_ntv=${glibc_src_base}/${glibc_name}-src
-	glibc_bld_dir_crs_hdr=${glibc_src_base}/${target}-${glibc_name}-bld-hdr
-	glibc_bld_dir_crs_1st=${glibc_src_base}/${target}-${glibc_name}-bld-1st
-	glibc_src_dir_crs_hdr=${glibc_src_base}/${target}-${glibc_name}-src-hdr
-	glibc_src_dir_crs_1st=${glibc_src_base}/${target}-${glibc_name}-src-1st
-
-	gcc_bld_dir_ntv=${gcc_src_base}/${gcc_name}-ntv
-	gcc_bld_dir_crs_1st=${gcc_src_base}/${target}-${gcc_name}-1st
-	gcc_bld_dir_crs_2nd=${gcc_src_base}/${target}-${gcc_name}-2nd
-	gcc_bld_dir_crs_3rd=${gcc_src_base}/${target}-${gcc_name}-3rd
-	gcc_bld_dir_crs_ntv=${gcc_src_base}/${target}-${gcc_name}-crs-ntv
-
-	gdb_name=gdb-${gdb_ver}
-	gdb_src_base=${prefix}/src/gdb
-	gdb_org_src_dir=${gdb_src_base}/${gdb_name}
-	gdb_bld_dir_ntv=${gdb_src_base}/${gdb_name}-ntv
-	gdb_bld_dir_crs=${gdb_src_base}/${target}-${gdb_name}-crs
-
-	libtiff_name=tiff-${libtiff_ver}
-	libtiff_src_base=${prefix}/src/libtiff
-	libtiff_org_src_dir=${libtiff_src_base}/${libtiff_name}
-	libtiff_src_dir_ntv=${libtiff_src_base}/${libtiff_name}-ntv
-	libtiff_src_dir_crs_ntv=${libtiff_src_base}/${target}-${libtiff_name}-crs-ntv
 
 	libjpeg_name=jpegsrc.${libjpeg_ver}
 	libjpeg_src_base=${prefix}/src/libjpeg
 	libjpeg_org_src_dir=${libjpeg_src_base}/jpeg-`echo ${libjpeg_ver} | sed -e s/^v//`
 	libjpeg_src_dir_ntv=${libjpeg_src_base}/jpeg-`echo ${libjpeg_ver} | sed -e s/^v//`-ntv
 
-	giflib_name=giflib-${giflib_ver}
-	giflib_src_base=${prefix}/src/giflib
-	giflib_org_src_dir=${giflib_src_base}/${giflib_name}
-	giflib_src_dir_ntv=${giflib_src_base}/${giflib_name}-ntv
-
-	llvm_name=llvm-${llvm_ver}.src
-	llvm_src_base=${prefix}/src/llvm
-	llvm_org_src_dir=${llvm_src_base}/${llvm_name}
-	llvm_bld_dir=${llvm_src_base}/${llvm_name}-bld
-
-	libcxx_name=libcxx-${llvm_ver}.src
-	libcxx_src_base=${prefix}/src/libcxx
-	libcxx_org_src_dir=${libcxx_src_base}/${libcxx_name}
-	libcxx_bld_dir=${libcxx_src_base}/${libcxx_name}-bld
-
-	libcxxabi_name=libcxxabi-${llvm_ver}.src
-	libcxxabi_src_base=${prefix}/src/libcxxabi
-	libcxxabi_org_src_dir=${libcxxabi_src_base}/${libcxxabi_name}
-	libcxxabi_bld_dir=${libcxxabi_src_base}/${libcxxabi_name}-bld
-
 	clang_rt_name=compiler-rt-${llvm_ver}.src
 	clang_rt_src_base=${prefix}/src/compiler-rt
 	clang_rt_org_src_dir=${clang_rt_src_base}/${clang_rt_name}
 	clang_rt_bld_dir=${clang_rt_src_base}/${clang_rt_name}-bld
 
-	clang_name=cfe-${llvm_ver}.src
-	clang_src_base=${prefix}/src/cfe
-	clang_org_src_dir=${clang_src_base}/${clang_name}
-	clang_bld_dir=${clang_src_base}/${clang_name}-bld
-
 	clang_extra_name=clang-tools-extra-${llvm_ver}.src
 	clang_extra_src_base=${prefix}/src/clang-tools-extra
 	clang_extra_org_src_dir=${clang_extra_src_base}/${clang_extra_name}
 	clang_extra_bld_dir=${clang_extra_src_base}/${clang_extra_name}-bld
-
-	lld_name=lld-${llvm_ver}.src
-	lld_src_base=${prefix}/src/lld
-	lld_org_src_dir=${lld_src_base}/${lld_name}
-	lld_bld_dir=${lld_src_base}/${lld_name}-bld
-
-	lldb_name=lldb-${llvm_ver}.src
-	lldb_src_base=${prefix}/src/lldb
-	lldb_org_src_dir=${lldb_src_base}/${lldb_name}
-	lldb_bld_dir=${lldb_src_base}/${lldb_name}-bld
 
 	boost_name=boost_${boost_ver}
 	boost_src_base=${prefix}/src/boost
@@ -789,10 +762,10 @@ prepare_libpng_source()
 
 prepare_libtiff_source()
 {
-	mkdir -p ${libtiff_src_base}
-	check_archive ${libtiff_org_src_dir} ||
-		wget -O ${libtiff_org_src_dir}.tar.gz \
-			ftp://ftp.remotesensing.org/pub/libtiff/${libtiff_name}.tar.gz || return 1
+	mkdir -p ${tiff_src_base}
+	check_archive ${tiff_org_src_dir} ||
+		wget -O ${tiff_org_src_dir}.tar.gz \
+			ftp://ftp.remotesensing.org/pub/libtiff/${tiff_name}.tar.gz || return 1
 }
 
 prepare_libjpeg_source()
@@ -987,12 +960,12 @@ prepare_clang_rt_source()
 			http://llvm.org/releases/${llvm_ver}/${clang_rt_name}.tar.xz || return 1
 }
 
-prepare_clang_source()
+prepare_cfe_source()
 {
-	mkdir -p ${clang_src_base}
-	check_archive ${clang_org_src_dir} ||
-		wget -O ${clang_org_src_dir}.tar.xz \
-			http://llvm.org/releases/${llvm_ver}/${clang_name}.tar.xz || return 1
+	mkdir -p ${cfe_src_base}
+	check_archive ${cfe_org_src_dir} ||
+		wget -O ${cfe_org_src_dir}.tar.xz \
+			http://llvm.org/releases/${llvm_ver}/${cfe_name}.tar.xz || return 1
 }
 
 prepare_clang_extra_source()
@@ -1467,14 +1440,14 @@ install_native_libtiff()
 {
 	[ -e ${prefix}/lib/libtiff.so -a -z "${force_install}" ] && return 0
 	prepare_libtiff_source || return 1
-	[ -d ${libtiff_src_dir_ntv} ] ||
-		(unpack_archive ${libtiff_org_src_dir} ${libtiff_src_base} &&
-			mv ${libtiff_org_src_dir} ${libtiff_src_dir_ntv}) || return 1
-	[ -f ${libtiff_src_dir_ntv}/Makefile ] ||
-		(cd ${libtiff_src_dir_ntv}
+	[ -d ${tiff_src_dir_ntv} ] ||
+		(unpack_archive ${tiff_org_src_dir} ${tiff_src_base} &&
+			mv ${tiff_org_src_dir} ${tiff_src_dir_ntv}) || return 1
+	[ -f ${tiff_src_dir_ntv}/Makefile ] ||
+		(cd ${tiff_src_dir_ntv}
 		./configure --prefix=${prefix} --build=${build}) || return 1
-	make -C ${libtiff_src_dir_ntv} -j ${jobs} || return 1
-	make -C ${libtiff_src_dir_ntv} -j ${jobs} install-strip || return 1
+	make -C ${tiff_src_dir_ntv} -j ${jobs} || return 1
+	make -C ${tiff_src_dir_ntv} -j ${jobs} install-strip || return 1
 	update_search_path || return 1
 }
 
@@ -1825,7 +1798,7 @@ install_native_clang_rt()
 	make -C ${clang_rt_bld_dir} -j ${jobs} install/strip || return 1
 }
 
-install_native_clang()
+install_native_cfe()
 {
 	[ -x ${prefix}/bin/clang -a -z "${force_install}" ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
@@ -1833,14 +1806,14 @@ install_native_clang()
 	search_header iostream c++/v1 || install_native_libcxx || return 1
 	search_header ABI.h clang/Basic || install_native_libcxxabi || return 1
 	search_header allocator_interface.h sanitizer || install_native_clang_rt || return 1
-	prepare_clang_source || return 1
-	unpack_archive ${clang_org_src_dir} ${clang_src_base} || return 1
-	mkdir -p ${clang_bld_dir}
-	(cd ${clang_bld_dir}
+	prepare_cfe_source || return 1
+	unpack_archive ${cfe_org_src_dir} ${cfe_src_base} || return 1
+	mkdir -p ${cfe_bld_dir}
+	(cd ${cfe_bld_dir}
 	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_org_src_dir}) || return 1
-	make -C ${clang_bld_dir} -j ${jobs} || return 1
-	make -C ${clang_bld_dir} -j ${jobs} install/strip || return 1
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${cfe_org_src_dir}) || return 1
+	make -C ${cfe_bld_dir} -j ${jobs} || return 1
+	make -C ${cfe_bld_dir} -j ${jobs} install/strip || return 1
 }
 
 install_native_clang_extra()
@@ -2249,14 +2222,14 @@ install_crossed_native_libpng()
 install_crossed_native_libtiff()
 {
 	prepare_libtiff_source || return 1
-	[ -d ${libtiff_src_dir_crs_ntv} ] ||
-		(unpack_archive ${libtiff_org_src_dir} ${libtiff_src_base} &&
-			mv ${libtiff_org_src_dir} ${libtiff_src_dir_crs_ntv}) || return 1
-	[ -f ${libtiff_src_dir_crs_ntv}/Makefile ] ||
-		(cd ${libtiff_src_dir_crs_ntv}
+	[ -d ${tiff_src_dir_crs_ntv} ] ||
+		(unpack_archive ${tiff_org_src_dir} ${tiff_src_base} &&
+			mv ${tiff_org_src_dir} ${tiff_src_dir_crs_ntv}) || return 1
+	[ -f ${tiff_src_dir_crs_ntv}/Makefile ] ||
+		(cd ${tiff_src_dir_crs_ntv}
 		CC=${target}-gcc CXX=${target}-g++ ./configure --prefix=${sysroot}/usr --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'`) || return 1
-	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_src_dir_crs_ntv} -j ${jobs} || return 1
-	CC=${target}-gcc CXX=${target}-g++ make -C ${libtiff_src_dir_crs_ntv} -j ${jobs} install-strip || return 1
+	CC=${target}-gcc CXX=${target}-g++ make -C ${tiff_src_dir_crs_ntv} -j ${jobs} || return 1
+	CC=${target}-gcc CXX=${target}-g++ make -C ${tiff_src_dir_crs_ntv} -j ${jobs} install-strip || return 1
 }
 
 while getopts p:t:j:h arg; do
