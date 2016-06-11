@@ -8,7 +8,6 @@
 # [TODO] libxml2が非rootでinstall-stripできない問題の解決。/usr/libに書き込もうとする問題。
 # [TODO] install_native_clang_extra()のテスト実行が未完了。
 # [TODO] install_native_global時、libcursesがnot foundになる問題。
-# [TODO] native用とcross用にkernelとglibcのバージョンを同時に指定・最初に一括ダウンロードできるようにする。
 
 : ${tar_ver:=1.29}
 : ${xz_ver:=5.2.2}
@@ -213,10 +212,13 @@ help()
 		Specify the version of ruby you want, currently '${ruby_ver}'.
 
 [Examples]
-	For Raspberry pi2
+	For everything which this tool can install
+	# $0 -p /toolchains -t armv7l-linux-gnueabihf -j 8 auto
+
+	For Raspberry pi2 cross compiler
 	# $0 -p /toolchains -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 linux_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 cross
 
-	For microblaze
+	For microblaze cross compiler
 	# $0 -p /toolchains -t microblaze-linux-gnu -j 8 binutils_ver=2.25 linux_ver=4.3.3 glibc_ver=2.22 gcc_ver=5.3.0 cross
 
 EOF
@@ -467,19 +469,31 @@ list_all()
 [All tags]
 #: major tags, -: internal tags(for debugging use)
 EOF
-	grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/\t- /;s/()$//;s/- \([[:alnum:]]\+\)$/# \1/'
+	tags=`grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/\t- /;s/()$//;s/- \([[:alnum:]]\+\)$/# \1/'`
+
+	lines=`echo "${tags}" | wc -l`
+	column1_end=`expr \`expr ${lines} / 2\` + \`expr ${lines} % 2\``
+	column2_begin=`expr ${column1_end} + 1`
+
+	column1=`echo "${tags}" | sed -e "1,${column1_end}p;d"`
+	column2=`echo "${tags}" | sed -e "${column2_begin},\\$p;d"`
+
+	for i in `seq ${column1_end}`; do
+		printf '\t %c %-25s' `echo "${column1}" | sed -e "${i}p;d"`
+		printf '\t %c %-25s' `echo "${column2}" | sed -e "${i}p;d"`
+		echo
+	done
 }
 
 update_search_path()
 {
-	[ `id -ur` !=  0 ] && return 0
+	[ `whoami` != root ] && return 0
 	[ -f /etc/ld.so.conf.d/`basename ${prefix}`.conf ] ||
 		echo \
 "${prefix}/lib
 ${prefix}/lib64
 ${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return 1
 	ldconfig || return 1
-	# grep -q -e ${prefix}/share/man /etc/manpath.config || sed -e "\$s+\$+\nMANDATORY_MANPATH ${prefix}/share/man+" -i /etc/manpath.config || return 1
 }
 
 search_library()
@@ -1516,7 +1530,7 @@ install_native_vim()
 	search_header curses.h || install_native_ncurses || return 1
 	which gettext > /dev/null || install_native_gettext || return 1
 	search_header Python.h || install_native_python || return 1
-	which ruby > /dev/null || install_native_ruby || return 1
+	search_header ruby.h || install_native_ruby || return 1
 	prepare_vim_source || return 1
 	unpack_archive ${vim_org_src_dir} ${vim_src_base} || return 1
 	(cd ${vim_org_src_dir}
