@@ -1,6 +1,5 @@
 #!/bin/sh -e
-# [TODO] mingw. cleanさせる？
-# [TODO] bash, perl, ruby, LLD, LLDB, Polly, MySQL, expat
+# [TODO] bash, perl, LLD, LLDB, Polly, MySQL, expat
 # [TODO] install_native_vimのconfigure見直す。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
@@ -64,6 +63,7 @@
 : ${boost_ver:=1_61_0}
 : ${mingw_w64_ver:=4.0.6}
 : ${Python_ver:=3.5.1}
+: ${ruby_ver:=2.3.1}
 
 : ${prefix:=/toolchains}
 : ${target:=`uname -m`-linux-gnu}
@@ -209,6 +209,8 @@ help()
 		Specify the version of mingw-w64 you want, currently '${mingw_w64_ver}'.
 	Python_ver
 		Specify the version of Python you want, currently '${Python_ver}'.
+	ruby_ver
+		Specify the version of ruby you want, currently '${ruby_ver}'.
 
 [Examples]
 	For Raspberry pi2
@@ -248,6 +250,7 @@ full()
 {
 	full_native || return 1
 	full_cross || return 1
+	install_mingw_w64_gcc || return 1
 }
 
 auto()
@@ -307,7 +310,7 @@ reset()
 {
 	clean
 	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src -exec rm -rf '{}' +
-	rm  -f /etc/ld.so.conf.d/`basename ${prefix}`.conf
+	[ `whoami` = root ] && rm  -f /etc/ld.so.conf.d/`basename ${prefix}`.conf
 	[ `whoami` = root ] && ldconfig || return 0
 }
 
@@ -395,7 +398,7 @@ set_variables()
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
 		gmp mpfr mpc gcc ncurses gdb zlib libpng tiff giflib emacs vim grep global diffutils patch findutils \
 		screen zsh openssl curl asciidoc xmlto libxml2 libxslt gettext git \
-		cmake llvm libcxx libcxxabi cfe lld lldb Python; do
+		cmake llvm libcxx libcxxabi cfe lld lldb Python ruby; do
 		set_src_directory ${pkg}
 	done
 
@@ -500,8 +503,7 @@ install_prerequisites()
 		apt-get install -y make gcc g++ texinfo || return 1
 		apt-get install -y unifdef || return 1 # for linux kernel(microblaze)
 		apt-get install -y libgtk-3-dev || return 1 # for emacs
-		apt-get install -y libperl-dev python-dev ruby-dev || return 1 # for vim
-		apt-get install -y ruby || return 1 # for vim
+		apt-get install -y libperl-dev || return 1 # for vim
 		apt-get install -y lua5.2 liblua5.2-dev || return 1 # for vim
 		apt-get install -y luajit libluajit-5.1 || return 1 # for vim
 		;;
@@ -509,8 +511,7 @@ install_prerequisites()
 		yum install -y make gcc gcc-c++ texinfo || return 1
 		yum install -y unifdef || return 1
 		yum install -y gtk3-devel || return 1
-		yum install -y perl-devel python-devel ruby-devel || return 1
-		yum install -y ruby || return 1
+		yum install -y perl-devel || return 1
 		yum install -y lua lua-devel || return 1
 		yum install -y luajit luajit-devel || return 1
 		;;
@@ -1013,7 +1014,15 @@ prepare_python_source()
 	mkdir -p ${Python_src_base}
 	check_archive ${Python_org_src_dir} ||
 		wget --no-check-certificate -O ${Python_org_src_dir}.tar.xz \
-			https://www.python.org/ftp/python/${Python_ver}/${Python_name}.tar.xz
+			https://www.python.org/ftp/python/${Python_ver}/${Python_name}.tar.xz || return 1
+}
+
+prepare_ruby_source()
+{
+	mkdir -p ${ruby_src_base}
+	check_archive ${ruby_org_src_dir} ||
+		wget -O ${ruby_org_src_dir}.tar.xz \
+			http://ring.shibaura-it.ac.jp/archives/lang/ruby/${ruby_name}.tar.xz || return 1
 }
 
 install_native_tar()
@@ -1046,6 +1055,7 @@ install_native_bzip2()
 	[ -x ${prefix}/bin/bzip2 -a -z "${force_install}" ] && return 0
 	prepare_bzip2_source || return 1
 	unpack_archive ${bzip2_org_src_dir} ${bzip2_src_base} || return 1
+	sed -i -e '/^CFLAGS=/{s/ -fPIC//g;s/$/ -fPIC/}' ${bzip2_org_src_dir}/Makefile || return 1
 	make -C ${bzip2_org_src_dir} -j ${jobs} || return 1
 	make -C ${bzip2_org_src_dir} -j ${jobs} PREFIX=${prefix} install || return 1
 	make -C ${bzip2_org_src_dir} -j ${jobs} clean || return 1
@@ -1102,8 +1112,8 @@ install_native_coreutils()
 	[ -f ${coreutils_org_src_dir}/Makefile ] ||
 		(cd ${coreutils_org_src_dir}
 		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} --build=${build}) || return 1
-	make -C ${coreutils_org_src_dir} -j ${jobs} || return 1
-	make -C ${coreutils_org_src_dir} -j ${jobs} install-strip || return 1
+	make -C ${coreutils_org_src_dir} -j ${jobs} V=1 || return 1
+	make -C ${coreutils_org_src_dir} -j ${jobs} V=1 install-strip || return 1
 }
 
 install_native_bison()
@@ -1114,8 +1124,8 @@ install_native_bison()
 	[ -f ${bison_org_src_dir}/Makefile ] ||
 		(cd ${bison_org_src_dir}
 		./configure --prefix=${prefix}) || return 1
-	make -C ${bison_org_src_dir} -j ${jobs} || return 1
-	make -C ${bison_org_src_dir} -j ${jobs} install-strip || return 1
+	make -C ${bison_org_src_dir} -j ${jobs} V=1 || return 1
+	make -C ${bison_org_src_dir} -j ${jobs} V=1 install-strip || return 1
 }
 
 install_native_flex()
@@ -1395,7 +1405,7 @@ install_native_gdb()
 {
 	[ -x ${prefix}/bin/gdb -a -z "${force_install}" ] && return 0
 	search_header curses.h || install_native_ncurses || return 1
-	which python3 > /dev/null || install_native_python || return 1
+	search_header Python.h || install_native_python || return 1
 	prepare_gdb_source || return 1
 	unpack_archive ${gdb_org_src_dir} ${gdb_src_base} || return 1
 	mkdir -p ${gdb_bld_dir_ntv}
@@ -1505,6 +1515,8 @@ install_native_vim()
 	[ -x ${prefix}/bin/vim -a -z "${force_install}" ] && return 0
 	search_header curses.h || install_native_ncurses || return 1
 	which gettext > /dev/null || install_native_gettext || return 1
+	search_header Python.h || install_native_python || return 1
+	which ruby > /dev/null || install_native_ruby || return 1
 	prepare_vim_source || return 1
 	unpack_archive ${vim_org_src_dir} ${vim_src_base} || return 1
 	(cd ${vim_org_src_dir}
@@ -1670,6 +1682,7 @@ install_native_xmlto()
 install_native_libxml2()
 {
 	[ -e ${prefix}/lib/libxml2.so -a -z "${force_install}" ] && return 0
+	search_header Python.h || install_native_python || return 1
 	prepare_libxml2_source || return 1
 	unpack_archive ${libxml2_org_src_dir} ${libxml2_src_base} || return 1
 	[ -f ${libxml2_org_src_dir}/Makefile ] ||
@@ -2031,7 +2044,7 @@ install_cross_gcc()
 install_cross_gdb()
 {
 	[ -x ${prefix}/bin/${target}-gdb -a -z "${force_install}" ] && return 0
-	which python3 > /dev/null || install_native_python || return 1
+	search_header Python.h || install_native_python || return 1
 	prepare_gdb_source || return 1
 	unpack_archive ${gdb_org_src_dir} ${gdb_src_base} || return 1
 	mkdir -p ${gdb_bld_dir_crs}
@@ -2120,6 +2133,18 @@ install_native_python()
 			--with-tsc --with-pymalloc --with-ensurepip) || return 1 # --enable-ipv6 --with-address-sanitizer --with-system-expat --with-system-ffi
 	make -C ${Python_org_src_dir} -j ${jobs} || return 1
 	make -C ${Python_org_src_dir} -j ${jobs} install || return 1
+}
+
+install_native_ruby()
+{
+	[ -x ${prefix}/bin/ruby -a -z "${force_install}" ] && return 0
+	prepare_ruby_source || return 1
+	unpack_archive ${ruby_org_src_dir} ${ruby_src_base} || return 1
+	[ -f ${ruby_org_src_dir}/Makefile ] ||
+		(cd ${ruby_org_src_dir}
+		./configure --prefix=${prefix} --enable-multiarch --enable-shared --enable-rubygems) || return 1
+	make -C ${ruby_org_src_dir} -j ${jobs} || return 1
+	make -C ${ruby_org_src_dir} -j ${jobs} install || return 1
 }
 
 full_cross()
