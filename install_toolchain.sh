@@ -1,13 +1,10 @@
 #!/bin/sh -e
-# [TODO] bash, perl, LLD, LLDB, Polly, MySQL, expat
-# [TODO] install_native_vimのconfigure見直す。
+# [TODO] hg, haskell, go, bash, perl, LLD, LLDB, Polly, MySQL, expat
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
 #        -> xmltoの障害のせいで、gitのmakeに障害あり。
-# [TODO] libxml2が非rootでinstall-stripできない問題の解決。/usr/libに書き込もうとする問題。
 # [TODO] install_native_clang_extra()のテスト実行が未完了。
-# [TODO] install_native_global時、libcursesがnot foundになる問題。
 
 : ${tar_ver:=1.29}
 : ${xz_ver:=5.2.2}
@@ -516,7 +513,7 @@ install_prerequisites()
 	Debian|Ubuntu|Raspbian)
 		apt-get install -y make gcc g++ texinfo || return 1
 		apt-get install -y unifdef || return 1 # for linux kernel(microblaze)
-		apt-get install -y libgtk-3-dev || return 1 # for emacs
+		apt-get install -y libgtk-3-dev libgnome2-dev libgnomeui-dev libx11-dev libxpm-dev || return 1 # for emacs
 		apt-get install -y libperl-dev || return 1 # for vim
 		apt-get install -y lua5.2 liblua5.2-dev || return 1 # for vim
 		apt-get install -y luajit libluajit-5.1 || return 1 # for vim
@@ -1125,9 +1122,9 @@ install_native_coreutils()
 	unpack_archive ${coreutils_org_src_dir} ${coreutils_src_base} || return 1
 	[ -f ${coreutils_org_src_dir}/Makefile ] ||
 		(cd ${coreutils_org_src_dir}
-		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} --build=${build}) || return 1
-	make -C ${coreutils_org_src_dir} -j ${jobs} V=1 || return 1
-	make -C ${coreutils_org_src_dir} -j ${jobs} V=1 install-strip || return 1
+		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+	make -C ${coreutils_org_src_dir} -j ${jobs} || return 1
+	make -C ${coreutils_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
 install_native_bison()
@@ -1137,7 +1134,7 @@ install_native_bison()
 	unpack_archive ${bison_org_src_dir} ${bison_src_base} || return 1
 	[ -f ${bison_org_src_dir}/Makefile ] ||
 		(cd ${bison_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --disable-silent-rules) || return 1
 	make -C ${bison_org_src_dir} -j ${jobs} V=1 || return 1
 	make -C ${bison_org_src_dir} -j ${jobs} V=1 install-strip || return 1
 }
@@ -1541,13 +1538,11 @@ install_native_vim()
 		--enable-rubyinterp=dynamic \
 		--enable-luainterp=dynamic --with-luajit \
 		--enable-cscope --enable-multibyte \
-#		--enable-gui=gtk2 --enable-xim --enable-fontset \
-#		--enable-gtk3-check --enable-gtk2-check --enable-gnome-check \
-#		--with-x \
-#		--enable-balloon_eval --enable-browse --enable-serverclient --enable-clipboard --enable-dnd --enable-footer \
-#		--enable-mouseshape --enable-mouse_gpm --enable-mouse_jsbterm \
-#		--enable-mouse_sysmouse --enable-tag_any_white --enable-toolbar \
-#		--enable-xsmp --enable-xterm_clipboard --enable-xterm_save --enable-xpm \
+		--enable-gui=yes --enable-xim --enable-fontset \
+#		--enable-dnd --enable-footer \
+#		--enable-mouse_gpm --enable-mouse_jsbterm \
+#		--enable-mouse_sysmouse \
+#		--enable-xterm_save \
 	) || return 1
 	make -C ${vim_org_src_dir} -j ${jobs} || return 1
 	make -C ${vim_org_src_dir} -j ${jobs} install || return 1
@@ -1568,11 +1563,12 @@ install_native_grep()
 install_native_global()
 {
 	[ -x ${prefix}/bin/global -a -z "${force_install}" ] && return 0
+	search_header curses.h || install_native_ncurses || return 1
 	prepare_global_source || return 1
 	unpack_archive ${global_org_src_dir} ${global_src_base} || return 1
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
-		./configure --prefix=${prefix} --disable-gtagscscope CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1
+		./configure --prefix=${prefix} CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1
 	make -C ${global_org_src_dir} -j ${jobs} || return 1
 	make -C ${global_org_src_dir} -j ${jobs} install-strip || return 1
 }
@@ -1701,7 +1697,7 @@ install_native_libxml2()
 	unpack_archive ${libxml2_org_src_dir} ${libxml2_src_base} || return 1
 	[ -f ${libxml2_org_src_dir}/Makefile ] ||
 		(cd ${libxml2_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return 1
+		./configure --prefix=${prefix} --build=${build} --without-python --disable-silent-rules) || return 1
 	make -C ${libxml2_org_src_dir} -j ${jobs} || return 1
 	make -C ${libxml2_org_src_dir} -j ${jobs} install-strip || return 1
 	update_search_path || return 1
@@ -1916,7 +1912,7 @@ install_cross_binutils()
 			mv ${binutils_org_src_dir} ${binutils_src_dir_crs}) || return 1
 	[ -f ${binutils_src_dir_crs}/Makefile ] ||
 		(cd ${binutils_src_dir_crs}
-		./configure --prefix=${prefix} --target=${target} --with-sysroot=${sysroot} --enable-gold \
+		./configure --prefix=${prefix} --build=${build} --target=${target} --with-sysroot=${sysroot} --enable-gold \
 			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable" CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function") || return 1
 	make -C ${binutils_src_dir_crs} -j ${jobs} || return 1
 	make -C ${binutils_src_dir_crs} -j ${jobs} install-strip || return 1
@@ -2069,6 +2065,12 @@ install_cross_gdb()
 	make -C ${gdb_bld_dir_crs} -j ${jobs} install || return 1
 }
 
+full_cross()
+{
+	install_cross_gcc || return 1
+	install_cross_gdb || return 1
+}
+
 install_mingw_w64_header()
 {
 	prepare_mingw_w64_source || return 1
@@ -2159,12 +2161,6 @@ install_native_ruby()
 		./configure --prefix=${prefix} --enable-multiarch --enable-shared --enable-rubygems) || return 1
 	make -C ${ruby_org_src_dir} -j ${jobs} || return 1
 	make -C ${ruby_org_src_dir} -j ${jobs} install || return 1
-}
-
-full_cross()
-{
-	install_cross_gcc || return 1
-	install_cross_gdb || return 1
 }
 
 install_crossed_native_binutils()
