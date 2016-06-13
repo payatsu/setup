@@ -1,6 +1,8 @@
 #!/bin/sh -e
-# [TODO] hg, haskell, go, bash, perl, LLD, LLDB, Polly, MySQL, expat
+# [TODO] haskell, go, bash, LLD, LLDB, Polly, MySQL, expat
+# [TODO] allinoneなbinutils作る。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
+# [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
 #        -> xmltoの障害のせいで、gitのmakeに障害あり。
@@ -54,12 +56,15 @@
 : ${libxslt_ver:=1.1.29}
 : ${gettext_ver:=0.19.7}
 : ${git_ver:=2.8.3}
+: ${mercurial_ver:=3.8.3}
 : ${cmake_ver:=3.5.2}
 : ${llvm_ver:=3.8.0}
 : ${boost_ver:=1_61_0}
 : ${mingw_w64_ver:=4.0.6}
 : ${Python_ver:=3.5.1}
 : ${ruby_ver:=2.3.1}
+: ${go_ver:=1.6.2}
+: ${perl_ver:=5.24.0}
 
 : ${prefix:=/toolchains}
 : ${target:=`uname -m`-linux-gnu}
@@ -195,6 +200,8 @@ help()
 		Specify the version of gettext you want, currently '${gettext_ver}'.
 	git_ver
 		Specify the version of Git you want, currently '${git_ver}'.
+	mercurial_ver
+		Specify the version of Mercurial you want, currently '${mercurial_ver}'.
 	cmake_ver
 		Specify the version of Cmake you want, currently '${cmake_ver}'.
 	llvm_ver
@@ -204,9 +211,13 @@ help()
 	mingw_w64_ver
 		Specify the version of mingw-w64 you want, currently '${mingw_w64_ver}'.
 	Python_ver
-		Specify the version of Python you want, currently '${Python_ver}'.
+		Specify the version of python you want, currently '${Python_ver}'.
 	ruby_ver
 		Specify the version of ruby you want, currently '${ruby_ver}'.
+	go_ver
+		Specify the version of go you want, currently '${go_ver}'.
+	perl_ver
+		Specify the version of perl you want, currently '${perl_ver}'.
 
 [Examples]
 	For everything which this tool can install
@@ -327,7 +338,7 @@ experimental()
 set_src_directory()
 {
 	case ${1} in
-		llvm|libcxx|libcxxabi|clang_rt|cfe|clang_extra|lld|lldb)
+		llvm|libcxx|libcxxabi|cfe|lld|lldb)
 		eval ${1}_name=${1}-${llvm_ver}.src
 		eval ${1}_src_base=${prefix}/src/${1}
 		eval ${1}_org_src_dir=\${${1}_src_base}/\${${1}_name}
@@ -396,8 +407,8 @@ set_variables()
 	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
 		gmp mpfr mpc gcc ncurses gdb zlib libpng tiff giflib emacs vim grep global diffutils patch findutils \
-		screen zsh openssl curl asciidoc xmlto libxml2 libxslt gettext git \
-		cmake llvm libcxx libcxxabi cfe lld lldb Python ruby; do
+		screen zsh openssl curl asciidoc xmlto libxml2 libxslt gettext git mercurial \
+		cmake llvm libcxx libcxxabi cfe lld lldb Python ruby perl; do
 		set_src_directory ${pkg}
 	done
 
@@ -932,6 +943,14 @@ prepare_git_source()
 			https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return 1
 }
 
+prepare_mercurial_source()
+{
+	mkdir -p ${mercurial_src_base}
+	check_archive ${mercurial_org_src_dir} ||
+		wget --no-check-certificate -O ${mercurial_org_src_dir}.tar.gz \
+			https://www.mercurial-scm.org/release/${mercurial_name}.tar.gz || return 1
+}
+
 prepare_cmake_source()
 {
 	mkdir -p ${cmake_src_base}
@@ -1034,6 +1053,14 @@ prepare_ruby_source()
 	check_archive ${ruby_org_src_dir} ||
 		wget -O ${ruby_org_src_dir}.tar.xz \
 			http://ring.shibaura-it.ac.jp/archives/lang/ruby/${ruby_name}.tar.xz || return 1
+}
+
+prepare_perl_source()
+{
+	mkdir -p ${perl_src_base}
+	check_archive ${perl_org_src_dir} ||
+		wget -O ${perl_org_src_dir}.tar.gz \
+			http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return 1
 }
 
 install_native_tar()
@@ -1355,6 +1382,7 @@ install_native_gcc()
 # install_native_glibc || return 1 # DANGEROUS!! pay attention to glibc version(compatibility)
 	search_header zlib.h || install_native_zlib || return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
+	which perl > /dev/null || install_native_perl || return 1
 	prepare_gcc_source || return 1
 	make_symbolic_links || return 1
 	unpack_archive ${gcc_org_src_dir} ${gcc_src_base} || return 1
@@ -1751,6 +1779,16 @@ install_native_git()
 	make -C ${git_org_src_dir} -j ${jobs} V=1 strip install || return 1 # XXX install-doc install-htmlターゲット入れたいけどエラー回避で外してる。
 }
 
+install_native_mercurial()
+{
+	[ -x ${prefix}/bin/hg -a -z "${force_install}" ] && return 0
+	which python3 > /dev/null || install_native_python || return 1
+	prepare_mercurial_source || return 1
+	unpack_archive ${mercurial_org_src_dir} ${mercurial_src_base} || return 1
+	make -C ${mercurial_org_src_dir} -j ${jobs} all || return 1
+	make -C ${mercurial_org_src_dir} -j ${jobs} PREFIX=${prefix} install || return 1
+}
+
 install_native_cmake()
 {
 	[ -x ${prefix}/bin/cmake -a -z "${force_install}" ] && return 0
@@ -1809,6 +1847,7 @@ install_native_libcxxabi()
 
 install_native_clang_rt()
 {
+	[ -d ${prefix}/include/sanitizer -a -z "${force_install}" ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
 	search_header llvm-config.h || install_native_llvm || return 1
 	prepare_clang_rt_source || return 1
@@ -2042,6 +2081,7 @@ install_cross_gcc()
 	which ${target}-as > /dev/null || install_cross_binutils || return 1
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
+	which perl > /dev/null || install_native_perl || return 1
 	prepare_gcc_source || return 1
 	install_cross_gcc_without_headers || return 1
 	install_cross_kernel_header || return 1
@@ -2125,6 +2165,7 @@ install_mingw_w64_gcc()
 	which ${target}-as > /dev/null || install_cross_binutils || return 1
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
+	which perl > /dev/null || install_native_perl || return 1
 	prepare_gcc_source || return 1
 	install_cross_gcc_without_headers || return 1
 	install_mingw_w64_header || return 1
@@ -2138,7 +2179,7 @@ install_mingw_w64_gcc()
 
 install_native_python()
 {
-	[ -x ${prefix}/bin/python -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/python3 -a -z "${force_install}" ] && return 0
 	prepare_python_source || return 1
 	unpack_archive ${Python_org_src_dir} ${Python_src_base} || return 1
 	[ -f ${Python_org_src_dir}/Makefile ] ||
@@ -2161,6 +2202,18 @@ install_native_ruby()
 		./configure --prefix=${prefix} --enable-multiarch --enable-shared --enable-rubygems) || return 1
 	make -C ${ruby_org_src_dir} -j ${jobs} || return 1
 	make -C ${ruby_org_src_dir} -j ${jobs} install || return 1
+}
+
+install_native_perl()
+{
+	[ -x ${prefix}/bin/perl -a -z "${force_install}" ] && return 0
+	prepare_perl_source || return 1
+	unpack_archive ${perl_org_src_dir} ${perl_src_base} || return 1
+	(cd ${perl_org_src_dir}
+	./Configure -de -Dprefix=${prefix} -Dcc=${CC:-gcc} -Dusethreads -Duse64bitint -Duse64bitall) || return 1
+	make -C ${perl_org_src_dir} -j ${jobs} || return 1
+	make -C ${perl_org_src_dir} -j ${jobs} test || return 1
+	make -C ${perl_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
 install_crossed_native_binutils()
@@ -2212,7 +2265,10 @@ install_crossed_native_gmp_mpfr_mpc()
 
 install_crossed_native_gcc()
 {
+#	[ -x ${prefix}/bin/${target}-gcc -a -z "${force_install}" ] && return 0
+#	which ${target}-as > /dev/null || install_cross_binutils || return 1
 	install_crossed_native_gmp_mpfr_mpc || return 1
+	which perl > /dev/null || install_native_perl || return 1
 	prepare_gcc_source || return 1
 	unpack_archive ${gcc_org_src_dir} ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_crs_ntv}
