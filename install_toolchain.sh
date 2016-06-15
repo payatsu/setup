@@ -55,7 +55,7 @@
 : ${libxml2_ver:=2.9.4}
 : ${libxslt_ver:=1.1.29}
 : ${gettext_ver:=0.19.7}
-: ${git_ver:=2.8.3}
+: ${git_ver:=2.9.0}
 : ${mercurial_ver:=3.8.3}
 : ${cmake_ver:=3.5.2}
 : ${llvm_ver:=3.8.0}
@@ -384,7 +384,7 @@ set_src_directory()
 set_variables()
 {
 	prefix=`readlink -m ${prefix}`
-	: ${sysroot:=${prefix}/${target}/sysroot}
+	sysroot=${prefix}/${target}/sysroot
 	: ${jobs:=`grep -e processor /proc/cpuinfo | wc -l`}
 	build=`uname -m`-linux-gnu
 	os=`head -1 /etc/issue | cut -d ' ' -f 1`
@@ -408,7 +408,7 @@ set_variables()
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
 		gmp mpfr mpc gcc ncurses gdb zlib libpng tiff giflib emacs vim grep global diffutils patch findutils \
 		screen zsh openssl curl asciidoc xmlto libxml2 libxslt gettext git mercurial \
-		cmake llvm libcxx libcxxabi cfe lld lldb Python ruby perl; do
+		cmake llvm libcxx libcxxabi cfe lld lldb Python ruby go perl; do
 		set_src_directory ${pkg}
 	done
 
@@ -1061,6 +1061,14 @@ prepare_perl_source()
 	check_archive ${perl_org_src_dir} ||
 		wget -O ${perl_org_src_dir}.tar.gz \
 			http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return 1
+}
+
+prepare_go_source()
+{
+	mkdir -p ${go_src_base}
+	check_archive ${go_src_base}/go${go_ver}.src ||
+		wget --no-check-certificate -O ${go_src_base}/go${go_ver}.src.tar.gz \
+			https://storage.googleapis.com/golang/go${go_ver}.src.tar.gz || return 1
 }
 
 install_native_tar()
@@ -2202,6 +2210,19 @@ install_native_ruby()
 		./configure --prefix=${prefix} --enable-multiarch --enable-shared --enable-rubygems) || return 1
 	make -C ${ruby_org_src_dir} -j ${jobs} || return 1
 	make -C ${ruby_org_src_dir} -j ${jobs} install || return 1
+}
+
+install_native_go()
+{
+	[ -x ${prefix}/go/bin/go -a -z "${force_install}" ] && return 0
+	which git > /dev/null || install_native_git || return 1
+	prepare_go_source || return 1
+	[ -d ${go_org_src_dir} ] || unpack_archive ${go_src_base}/go${go_ver}.src ${go_src_base} || return 1
+	[ -d ${go_src_base}/go ] && mv ${go_src_base}/go ${go_org_src_dir}
+	(cd ${go_org_src_dir}/src
+	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=${prefix} GOROOT=${go_org_src_dir} GOROOT_FINAL=${prefix}/go ${go_org_src_dir}/src/make.bash) || return 1
+	mv ${go_org_src_dir} ${prefix}/go || return 1
+	${prefix}/go/bin/go get golang.org/x/tools/cmd/... || return 1
 }
 
 install_native_perl()
