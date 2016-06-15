@@ -2,6 +2,7 @@
 # [TODO] haskell, go, bash, LLD, LLDB, Polly, MySQL, expat
 # [TODO] allinoneなbinutils作る。
 # [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
+# [TODO] debugモード指定時、execでbash起動する。
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
@@ -276,20 +277,24 @@ auto()
 prepare()
 # Prepare all source files.
 {
-	for prepare_command in `grep -e '^prepare_.\+_source()$' $0 | sed -e 's/()$//'`; do ${prepare_command} || return 1; done
+	for prepare_command in `grep -e '^prepare_.\+_source()$' $0 | sed -e 's/()$//'`; do
+		${prepare_command} || return 1
+	done
 }
 
 clean()
 # Delete no longer required source trees.
 {
-	find ${prefix}/src -mindepth 2 -maxdepth 2 ! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' -exec rm -rf {} +
+	find ${prefix}/src -mindepth 2 -maxdepth 2 \
+		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' -exec rm -rf {} +
 }
 
 strip()
 # Strip all binary files.
 {
 	for strip in strip ${target}-strip; do
-		find ${prefix} -type f -perm /111 | xargs file | grep 'not stripped' | cut -f1 -d: | xargs ${strip} || true
+		find ${prefix} -type f -perm /111 | xargs file |
+			grep 'not stripped' | cut -f1 -d: | xargs ${strip} || true
 	done
 }
 
@@ -298,13 +303,15 @@ archive()
 {
 	[ ${prefix}/src = `dirname $0` ] || cp -vf $0 ${prefix}/src || return 1
 	convert_archives || return 1
-	tar cJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz -C `dirname ${prefix}` `basename ${prefix}` || return 1
+	tar cJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz \
+		-C `dirname ${prefix}` `basename ${prefix}` || return 1
 }
 
 deploy()
 # Deploy related files.
 {
-	tar xJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz --no-same-owner --no-same-permissions -C `dirname ${prefix}` || return 1
+	tar xJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz \
+		--no-same-owner --no-same-permissions -C `dirname ${prefix}` || return 1
 	update_search_path || return 1
 	echo Please add ${prefix}/bin to PATH
 }
@@ -475,7 +482,8 @@ list_all()
 {
 	cat <<EOF
 [All tags]
-#: major tags, -: internal tags(for debugging use)
+#: major tags, -: internal tags(for debugging \
+		use)
 EOF
 	tags=`grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/\t- /;s/()$//;s/- \([[:alnum:]]\+\)$/# \1/'`
 
@@ -1690,7 +1698,8 @@ install_native_curl()
 	prepare_curl_source || return 1
 	unpack_archive ${curl_org_src_dir} ${curl_src_base} || return 1
 	(cd ${curl_org_src_dir}
-	./configure --prefix=${prefix} --build=${build} --host=${build} --enable-optimize --enable-ipv6 --with-ssl) || return 1
+	./configure --prefix=${prefix} --build=${build} --host=${build} \
+		--enable-optimize --enable-ipv6 --with-ssl) || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} install || return 1
 	update_search_path || return 1
@@ -1959,8 +1968,10 @@ install_cross_binutils()
 			mv ${binutils_org_src_dir} ${binutils_src_dir_crs}) || return 1
 	[ -f ${binutils_src_dir_crs}/Makefile ] ||
 		(cd ${binutils_src_dir_crs}
-		./configure --prefix=${prefix} --build=${build} --target=${target} --with-sysroot=${sysroot} --enable-gold \
-			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable" CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function") || return 1
+		./configure --prefix=${prefix} --build=${build} --target=${target} \
+			--with-sysroot=${sysroot} --enable-64-bit-bfd --enable-gold \
+			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable" \
+			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function") || return 1
 	make -C ${binutils_src_dir_crs} -j ${jobs} || return 1
 	make -C ${binutils_src_dir_crs} -j ${jobs} install-strip || return 1
 }
@@ -1971,7 +1982,8 @@ install_cross_gcc_without_headers()
 	mkdir -p ${gcc_bld_dir_crs_1st}
 	[ -f ${gcc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_1st}
-		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
+		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
+			--with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
 			--enable-languages=c --disable-multilib --without-isl --with-system-zlib --without-headers \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
@@ -2015,8 +2027,10 @@ install_cross_gcc_with_glibc_headers()
 	mkdir -p ${gcc_bld_dir_crs_2nd}
 	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_2nd}
-		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			--enable-languages=c --disable-multilib --without-isl --with-system-zlib --with-sysroot=${sysroot} --with-newlib \
+		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
+			--with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
+			--enable-languages=c --disable-multilib --without-isl --with-system-zlib \
+			--with-sysroot=${sysroot} --with-newlib \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
 			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
@@ -2035,7 +2049,8 @@ install_cross_1st_glibc()
 		(unpack_archive ${glibc_org_src_dir} ${glibc_src_base} &&
 			mv ${glibc_org_src_dir} ${glibc_src_dir_crs_1st}) || return 1
 
-	[ ${cross_linux_arch} = microblaze ] && (cd ${glibc_src_dir_crs_1st}; patch -N -p0 -d ${glibc_src_dir_crs_1st} <<EOF || [ $? = 1 ] || return 1
+	[ ${cross_linux_arch} = microblaze ] &&
+		(cd ${glibc_src_dir_crs_1st}; patch -N -p0 -d ${glibc_src_dir_crs_1st} <<EOF || [ $? = 1 ] || return 1
 --- sysdeps/unix/sysv/linux/microblaze/sysdep.h
 +++ sysdeps/unix/sysv/linux/microblaze/sysdep.h
 @@ -16,8 +16,11 @@
@@ -2077,8 +2092,10 @@ install_cross_functional_gcc()
 	mkdir -p ${gcc_bld_dir_crs_3rd}
 	[ -f ${gcc_bld_dir_crs_3rd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_3rd}
-		LIBS=-lgcc_s ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib --with-sysroot=${sysroot}) || return 1
+		LIBS=-lgcc_s ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
+			--with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
+			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
+			--with-sysroot=${sysroot}) || return 1
 	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} || return 1
 	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k install-strip || true # XXX install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
 }
@@ -2108,7 +2125,8 @@ install_cross_gdb()
 	mkdir -p ${gdb_bld_dir_crs}
 	[ -f ${gdb_bld_dir_crs}/Makefile ] ||
 		(cd ${gdb_bld_dir_crs}
-		${gdb_org_src_dir}/configure --prefix=${prefix} --target=${target} --enable-tui --with-python --with-sysroot=${sysroot}) || return 1
+		${gdb_org_src_dir}/configure --prefix=${prefix} --target=${target} \
+			--enable-tui --with-python --with-sysroot=${sysroot}) || return 1
 	make -C ${gdb_bld_dir_crs} -j ${jobs} || return 1
 	make -C ${gdb_bld_dir_crs} -j ${jobs} install || return 1
 }
@@ -2128,8 +2146,8 @@ install_mingw_w64_header()
 	mkdir -p ${mingw_w64_bld_dir_hdr}
 	[ -f ${mingw_w64_bld_dir_hdr}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_hdr}
-		${mingw_w64_src_dir_hdr}/configure --prefix=/mingw --with-sysroot=${sysroot} --build=${build} --host=${target} \
-			--disable-multilib --without-crt) || return 1
+		${mingw_w64_src_dir_hdr}/configure --prefix=/mingw --build=${build} --host=${target} \
+			--disable-multilib --without-crt --with-sysroot=${sysroot}) || return 1
 	make -C ${mingw_w64_bld_dir_hdr} -j ${jobs} || return 1
 	make -C ${mingw_w64_bld_dir_hdr} -j ${jobs} DESTDIR=${sysroot} install || return 1
 }
@@ -2140,7 +2158,8 @@ install_mingw_w64_gcc_with_mingw_w64_header()
 	mkdir -p ${gcc_bld_dir_crs_2nd}
 	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_2nd}
-		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} --with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
+		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
+			--with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
 			--enable-languages=c --disable-multilib --without-isl --with-system-zlib --with-sysroot=${sysroot} \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
@@ -2158,8 +2177,8 @@ install_mingw_w64_crt()
 	mkdir -p ${mingw_w64_bld_dir_1st}
 	[ -f ${mingw_w64_bld_dir_1st}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_1st}
-		${mingw_w64_src_dir_1st}/configure --prefix=/mingw --with-sysroot=${sysroot} --build=${build} --host=${target} \
-			--disable-multilib --without-header) || return 1
+		${mingw_w64_src_dir_1st}/configure --prefix=/mingw --build=${build} --host=${target} \
+			--disable-multilib --without-header --with-sysroot=${sysroot}) || return 1
 	make -C ${mingw_w64_bld_dir_1st} -j ${jobs} || return 1
 	make -C ${mingw_w64_bld_dir_1st} -j ${jobs} DESTDIR=${sysroot} install || return 1
 }
@@ -2220,7 +2239,8 @@ install_native_go()
 	[ -d ${go_org_src_dir} ] || unpack_archive ${go_src_base}/go${go_ver}.src ${go_src_base} || return 1
 	[ -d ${go_src_base}/go ] && mv ${go_src_base}/go ${go_org_src_dir}
 	(cd ${go_org_src_dir}/src
-	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=${prefix} GOROOT=${go_org_src_dir} GOROOT_FINAL=${prefix}/go ${go_org_src_dir}/src/make.bash) || return 1
+	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=${prefix} \
+		GOROOT=${go_org_src_dir} GOROOT_FINAL=${prefix}/go ${go_org_src_dir}/src/make.bash) || return 1
 	mv ${go_org_src_dir} ${prefix}/go || return 1
 	${prefix}/go/bin/go get golang.org/x/tools/cmd/... || return 1
 }
@@ -2239,19 +2259,24 @@ install_native_perl()
 
 install_crossed_native_binutils()
 {
+	[ -x ${sysroot}/usr/bin/as -a -z "${force_install}" ] && return 0
+	which yacc > /dev/null || install_native_bison || return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_crs_ntv} ] ||
 		(unpack_archive ${binutils_org_src_dir} ${binutils_src_base} &&
 			mv ${binutils_org_src_dir} ${binutils_src_dir_crs_ntv}) || return 1
 	[ -f ${binutils_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_crs_ntv}
-		./configure --prefix=/usr --host=${target} --with-sysroot=/) || return 1
+		./configure --prefix=/usr --host=${target} --with-sysroot=/ --enable-64-bit-bfd --enable-gold \
+			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable"\
+			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function") || return 1
 	make -C ${binutils_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${binutils_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 }
 
 install_crossed_native_gmp_mpfr_mpc()
 {
+	[ -e ${sysroot}/usr/lib/libgmp.so -a -e ${sysroot}/usr/lib/libmpfr.so -a -e ${sysroot}/usr/lib/libmpc.so -a -z "${force_install}" ] && return 0
 	prepare_gmp_mpfr_mpc_source || return 1
 
 	[ -d ${gmp_src_dir_crs_ntv} ] ||
@@ -2263,17 +2288,18 @@ install_crossed_native_gmp_mpfr_mpc()
 	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 
-# XXX クロス先のネイティブ環境用なので、with-gmp, --with-mpfrの指定が間違ってるかも。
-
 	[ -d ${mpfr_src_dir_crs_ntv} ] ||
 		(unpack_archive ${mpfr_org_src_dir} ${mpfr_src_base} &&
 			mv ${mpfr_org_src_dir} ${mpfr_src_dir_crs_ntv}) || return 1
 	[ -f ${mpfr_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${mpfr_src_dir_crs_ntv}
 		./configure --prefix=/usr --host=${target} --with-gmp=${sysroot}/usr) || return 1
+
 	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
-
+	sed -i -e /^dependency_libs=/s/\'.\*\'\$/\'\'/ ${sysroot}/usr/lib/libmpfr.la || return 1
+	# XXX mpcビルド時に、mpfrが依存しているgmpを参照しようとしてlibmpfr.laの不整合に
+	#     引っかからないようにするために、強行的にlibmpfr.la書き換えてる。
 	[ -d ${mpc_src_dir_crs_ntv} ] ||
 		(unpack_archive ${mpc_org_src_dir} ${mpc_src_base} &&
 			mv ${mpc_org_src_dir} ${mpc_src_dir_crs_ntv}) || return 1
@@ -2286,34 +2312,34 @@ install_crossed_native_gmp_mpfr_mpc()
 
 install_crossed_native_gcc()
 {
-#	[ -x ${prefix}/bin/${target}-gcc -a -z "${force_install}" ] && return 0
-#	which ${target}-as > /dev/null || install_cross_binutils || return 1
-	install_crossed_native_gmp_mpfr_mpc || return 1
+	[ -x ${sysroot}/usr/bin/gcc -a -z "${force_install}" ] && return 0
+	install_crossed_native_zlib || return 1
+	[ -f ${sysroot}/usr/include/mpc.h ] || install_crossed_native_gmp_mpfr_mpc || return 1
 	which perl > /dev/null || install_native_perl || return 1
 	prepare_gcc_source || return 1
 	unpack_archive ${gcc_org_src_dir} ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_crs_ntv}
-	export CC_FOR_TARGET=${prefix}/bin/${target}-gcc
-	export CXX_FOR_TARGET=${prefix}/bin/${target}-g++
-	export GOC_FOR_TARGET=${prefix}/bin/${target}-gccgo
 	[ -f ${gcc_bld_dir_crs_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_ntv}
-		${gcc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
-			--enable-languages=${languages} --with-sysroot=/ --without-isl) || return 1
+		${gcc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${target} \
+			--with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
+			--enable-languages=${languages} --with-sysroot=/ --without-isl --with-system-zlib\
+			CC_FOR_TARGET=${target}-gcc CXX_FOR_TARGET=${target}-g++ GOC_FOR_TARGET=${target}-gccgo) || return 1
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 }
 
 install_crossed_native_zlib()
 {
+	[ -e ${sysroot}/usr/lib/libz.so -a -z "${force_install}" ] && return 0
 	prepare_zlib_source || return 1
 	[ -d ${zlib_src_dir_crs_ntv} ] ||
 		(unpack_archive ${zlib_org_src_dir} ${zlib_src_base} &&
 			mv ${zlib_org_src_dir} ${zlib_src_dir_crs_ntv}) || return 1
 	(cd ${zlib_src_dir_crs_ntv}
-	CC=${target}-gcc ./configure --prefix=${sysroot}/usr) || return 1
+	CC=${target}-gcc ./configure --prefix=/usr) || return 1
 	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} || return 1
-	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} install || return 1
+	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install || return 1
 }
 
 install_crossed_native_libpng()
