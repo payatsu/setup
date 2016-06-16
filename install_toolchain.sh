@@ -1,7 +1,6 @@
 #!/bin/sh -e
 # [TODO] haskell, go, bash, LLD, LLDB, Polly, MySQL, expat
 # [TODO] allinoneなbinutils作る。
-# [TODO] 作成したクロスコンパイラで、C/C++/Goのネイティブコンパイラ作ってみる。
 # [TODO] debugモード指定時、execでbash起動する。
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
@@ -262,6 +261,7 @@ full()
 	full_native || return 1
 	full_cross || return 1
 	install_mingw_w64_gcc || return 1
+	crossed || return 1
 }
 
 auto()
@@ -331,8 +331,8 @@ reset()
 	[ `whoami` = root ] && ldconfig || return 0
 }
 
-experimental()
-# Install some packages experimentally.
+crossed()
+# Install crossed native apps.
 {
 	install_crossed_native_binutils || return 1
 	install_crossed_native_gmp_mpfr_mpc || return 1
@@ -340,6 +340,14 @@ experimental()
 	install_crossed_native_zlib || return 1
 	install_crossed_native_libpng || return 1
 	install_crossed_native_libtiff || return 1
+}
+
+debug()
+# Enter debug mode.
+{
+	prev_set=$-; set -e
+	while true; do read ${BASH:+-e} -p "$1> " cmd; eval ${cmd} || true; done
+	set +e; set -${prev_set}
 }
 
 set_src_directory()
@@ -2344,6 +2352,7 @@ install_crossed_native_zlib()
 
 install_crossed_native_libpng()
 {
+	[ -e ${sysroot}/usr/lib/libpng.so -a -z "${force_install}" ] && return 0
 	install_crossed_native_zlib || return 1
 	prepare_libpng_source || return 1
 	[ -d ${libpng_src_dir_crs_ntv} ] ||
@@ -2351,23 +2360,25 @@ install_crossed_native_libpng()
 			mv ${libpng_org_src_dir} ${libpng_src_dir_crs_ntv}) || return 1
 	[ -f ${libpng_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_crs_ntv}
-		./configure --prefix=${sysroot}/usr --host=${target} \
+		./configure --prefix=/usr --host=${target} \
 			CPPFLAGS="-I ${sysroot}/include ${CPPFLAGS}") || return 1
 	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} || return 1
-	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} install-strip || return 1
+	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 }
 
 install_crossed_native_libtiff()
 {
+	[ -e ${sysroot}/usr/lib/libtiff.so -a -z "${force_install}" ] && return 0
 	prepare_libtiff_source || return 1
 	[ -d ${tiff_src_dir_crs_ntv} ] ||
 		(unpack_archive ${tiff_org_src_dir} ${tiff_src_base} &&
 			mv ${tiff_org_src_dir} ${tiff_src_dir_crs_ntv}) || return 1
 	[ -f ${tiff_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${tiff_src_dir_crs_ntv}
-		CC=${target}-gcc CXX=${target}-g++ ./configure --prefix=${sysroot}/usr --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'`) || return 1
-	CC=${target}-gcc CXX=${target}-g++ make -C ${tiff_src_dir_crs_ntv} -j ${jobs} || return 1
-	CC=${target}-gcc CXX=${target}-g++ make -C ${tiff_src_dir_crs_ntv} -j ${jobs} install-strip || return 1
+		./configure --prefix=/usr --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'` \
+			CC=${target}-gcc CXX=${target}-g++ STRIP=${target}-strip) || return 1
+	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} || return 1
+	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 }
 
 while getopts p:t:j:h arg; do
@@ -2386,7 +2397,10 @@ set_variables
 count=0
 while [ $# -gt 0 ]; do
 	case $1 in
-	debug) shift; [ $# -eq 0 ] && while true; do read -p 'debug> ' cmd; eval ${cmd} || true; done; eval $1;;
+	debug) $1 `[ -n "${BASH}" ] && echo shell || echo $1`;;
+	shell) [ -n "${BASH}" ] \
+		&& set placeholder debug \
+		|| exec bash --noprofile --norc --posix -e $0 -p ${prefix} -t ${target} -j ${jobs} shell; count=`expr ${count} + 1`;;
 	*=*)   eval $1; set_variables;;
 	*)     eval $1 || exit 1; count=`expr ${count} + 1`;;
 	esac
