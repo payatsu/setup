@@ -1386,20 +1386,6 @@ install_native_gmp_mpfr_mpc()
 	update_search_path || return 1
 }
 
-make_symbolic_links()
-{
-	case ${os} in
-	Debian|Ubuntu|Raspbian)
-		for dir in asm bits gnu sys; do
-			[ -d /usr/include/${dir} ] || ln -s ./${build}/${dir} /usr/include/${dir} || return 1
-		done
-		for obj in crt1.o crti.o crtn.o; do
-			[ -f /usr/lib/${obj} ] || ln -s ./${build}/${obj} /usr/lib/${obj} || return 1
-		done
-		;;
-	esac
-}
-
 install_native_gcc()
 {
 	[ -x ${prefix}/bin/gcc -a -z "${force_install}" ] && return 0
@@ -1408,7 +1394,6 @@ install_native_gcc()
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
 	which perl > /dev/null || install_native_perl || return 1
 	prepare_gcc_source || return 1
-	make_symbolic_links || return 1
 	unpack_archive ${gcc_org_src_dir} ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_ntv}
 	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
@@ -2193,10 +2178,10 @@ install_mingw_w64_crt()
 
 install_mingw_w64_gcc()
 {
+	[ -x ${prefix}/bin/x86_64-w64-mingw32-gcc -a -z "${force_install}" ] && return 0
 	prev_target=${target}; target=x86_64-w64-mingw32
 	prev_languages=${languages}; languages=c,c++
 	set_variables || return 1
-	[ -x ${prefix}/bin/${target}-gcc -a -z "${force_install}" ] && return 0
 	which ${target}-as > /dev/null || install_cross_binutils || return 1
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
