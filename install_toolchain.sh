@@ -292,9 +292,9 @@ clean()
 strip()
 # Strip all binary files.
 {
-	for strip in strip ${target}-strip; do
-		find ${prefix} -type f -perm /111 | xargs file |
-			grep 'not stripped' | cut -f1 -d: | xargs ${strip} || true
+	for strip in strip ${target}-strip x86_64-w64-mingw32-strip; do
+		find ${prefix} -type f \( -perm /111 -o -name '*.o' -o -name '*.a' -o -name '*.so' -o -name '*.gox' \) \
+			| xargs file | grep 'not stripped' | cut -f1 -d: | xargs -I "{}" sh -c "chmod u+w {}; ${strip} {}" || true
 	done
 }
 
@@ -1095,7 +1095,7 @@ install_native_tar()
 	unpack_archive ${tar_org_src_dir} ${tar_src_base} || return 1
 	[ -f ${tar_org_src_dir}/Makefile ] ||
 		(cd ${tar_org_src_dir}
-		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} --build=${build}) || return 1
+		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${tar_org_src_dir} -j ${jobs} || return 1
 	make -C ${tar_org_src_dir} -j ${jobs} install-strip || return 1
 }
