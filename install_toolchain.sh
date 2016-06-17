@@ -1,7 +1,6 @@
 #!/bin/sh -e
-# [TODO] haskell, go, bash, LLD, LLDB, Polly, MySQL, expat
+# [TODO] haskell, bash, LLD, LLDB, Polly, MySQL, expat
 # [TODO] allinoneなbinutils作る。
-# [TODO] debugモード指定時、execでbash起動する。
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
@@ -1236,7 +1235,7 @@ install_native_automake()
 	unpack_archive ${automake_org_src_dir} ${automake_src_base} || return 1
 	[ -f ${automake_org_src_dir}/Makefile ] ||
 		(cd ${automake_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --disable-silent-rules) || return 1
 	make -C ${automake_org_src_dir} -j ${jobs} || return 1
 	make -C ${automake_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1313,8 +1312,8 @@ install_native_kernel_header()
 	[ -d ${linux_src_dir_ntv} ] ||
 		(unpack_archive ${linux_org_src_dir} ${linux_src_base} &&
 			mv ${linux_org_src_dir} ${linux_src_dir_ntv}) || return 1
-	make -C ${linux_src_dir_ntv} -j ${jobs} mrproper || return 1
-	make -C ${linux_src_dir_ntv} -j ${jobs} \
+	make -C ${linux_src_dir_ntv} -j ${jobs} V=1 mrproper || return 1
+	make -C ${linux_src_dir_ntv} -j ${jobs} V=1 \
 		ARCH=${native_linux_arch} INSTALL_HDR_PATH=${prefix} headers_install || return 1
 }
 
@@ -1943,6 +1942,7 @@ install_native_boost()
 
 full_native()
 {
+	rm -f ${prefix}/src/`basename $0`.log
 	for f in `sed -e '/^install_native_[_[:alnum:]]\+()$/{s/()$//;
 		s/install_native_kernel_header//;
 		s/install_native_glibc//;
