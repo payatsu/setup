@@ -489,8 +489,7 @@ list_all()
 {
 	cat <<EOF
 [All tags]
-#: major tags, -: internal tags(for debugging \
-		use)
+#: major tags, -: internal tags(for debugging use)
 EOF
 	tags=`grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/\t- /;s/()$//;s/- \([[:alnum:]]\+\)$/# \1/'`
 
@@ -2386,7 +2385,7 @@ while [ $# -gt 0 ]; do
 	shell) [ -n "${BASH}" ] \
 		&& set placeholder debug \
 		|| exec bash --noprofile --norc --posix -e $0 -p ${prefix} -t ${target} -j ${jobs} shell; count=`expr ${count} + 1`;;
-	*=*)   eval $1; set_variables;;
+	*=*)   eval export $1; set_variables;;
 	*)     eval $1 || exit 1; count=`expr ${count} + 1`;;
 	esac
 	shift
