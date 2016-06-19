@@ -1,4 +1,5 @@
 #!/bin/sh -e
+# [TODO] install_{native,cross}_binutils時jobsが大きいとハングする。
 # [TODO] haskell, bash, LLD, LLDB, Polly, MySQL, expat
 # [TODO] allinoneなbinutils作る。
 # [TODO] update-alternatives
@@ -536,7 +537,7 @@ install_prerequisites()
 	[ -n "${prerequisites_have_been_already_installed}" ] && return 0
 	case ${os} in
 	Debian|Ubuntu|Raspbian)
-		apt-get install -y make gcc g++ texinfo || return 1
+		apt-get install -y make gcc g++ || return 1
 		apt-get install -y unifdef || return 1 # for linux kernel(microblaze)
 		apt-get install -y libgtk-3-dev libgnome2-dev libgnomeui-dev libx11-dev libxpm-dev || return 1 # for emacs
 		apt-get install -y libperl-dev || return 1 # for vim
@@ -1398,7 +1399,9 @@ install_native_gcc()
 		(cd ${gcc_bld_dir_ntv}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
-			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib) || return 1 # ARMの場合右記オプションが必要。--with-arch=armv6 --with-fpu=vfp --with-float=hard
+			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
+			--enable-libstdcxx-debug \
+		) || return 1 # ARMの場合右記オプションが必要。--with-arch=armv6 --with-fpu=vfp --with-float=hard
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return 1
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install-strip || return 1
 	update_search_path || return 1
@@ -1457,7 +1460,8 @@ install_native_gdb()
 	mkdir -p ${gdb_bld_dir_ntv}
 	[ -f ${gdb_bld_dir_ntv}/Makefile ] ||
 		(cd ${gdb_bld_dir_ntv}
-		${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} --enable-tui --with-python) || return 1
+		${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} \
+		--enable-tui --with-python=python3 --with-system-zlib) || return 1
 	make -C ${gdb_bld_dir_ntv} -j ${jobs} || return 1
 	make -C ${gdb_bld_dir_ntv} -j ${jobs} install || return 1
 }
@@ -1569,7 +1573,7 @@ install_native_vim()
 	./configure --prefix=${prefix} --build=${build} \
 		--with-features=huge --enable-fail-if-missing \
 		--enable-perlinterp=dynamic \
-		--enable-pythoninterp=dynamic --enable-python3interp=dynamic \
+		--enable-python3interp=dynamic \
 		--enable-rubyinterp=dynamic \
 		--enable-luainterp=dynamic --with-luajit \
 		--enable-cscope --enable-multibyte \
@@ -1603,7 +1607,7 @@ install_native_global()
 	unpack_archive ${global_org_src_dir} ${global_src_base} || return 1
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
-		./configure --prefix=${prefix} CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1
+		./configure --prefix=${prefix} --with-ncurses=${prefix} CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1
 	make -C ${global_org_src_dir} -j ${jobs} || return 1
 	make -C ${global_org_src_dir} -j ${jobs} install-strip || return 1
 }
@@ -1793,7 +1797,7 @@ install_native_mercurial()
 	which python3 > /dev/null || install_native_python || return 1
 	prepare_mercurial_source || return 1
 	unpack_archive ${mercurial_org_src_dir} ${mercurial_src_base} || return 1
-	make -C ${mercurial_org_src_dir} -j ${jobs} all || return 1
+	make -C ${mercurial_org_src_dir} -j ${jobs} PYTHON=python3 all || return 1
 	make -C ${mercurial_org_src_dir} -j ${jobs} PREFIX=${prefix} install || return 1
 }
 
@@ -2087,7 +2091,7 @@ install_cross_functional_gcc()
 		LIBS=-lgcc_s ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
 			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
-			--with-sysroot=${sysroot}) || return 1
+			--enable-libstdcxx-debug --with-sysroot=${sysroot}) || return 1
 	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} || return 1
 	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k install-strip || true # XXX install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
 }
@@ -2118,7 +2122,8 @@ install_cross_gdb()
 	[ -f ${gdb_bld_dir_crs}/Makefile ] ||
 		(cd ${gdb_bld_dir_crs}
 		${gdb_org_src_dir}/configure --prefix=${prefix} --target=${target} \
-			--enable-tui --with-python --with-sysroot=${sysroot}) || return 1
+			--enable-tui --with-python=python3 --with-system-zlib \
+			--with-sysroot=${sysroot}) || return 1
 	make -C ${gdb_bld_dir_crs} -j ${jobs} || return 1
 	make -C ${gdb_bld_dir_crs} -j ${jobs} install || return 1
 }
@@ -2316,6 +2321,7 @@ install_crossed_native_gcc()
 		${gcc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
 			--enable-languages=${languages} --with-sysroot=/ --without-isl --with-system-zlib\
+			--enable-libstdcxx-debug \
 			CC_FOR_TARGET=${target}-gcc CXX_FOR_TARGET=${target}-g++ GOC_FOR_TARGET=${target}-gccgo) || return 1
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
