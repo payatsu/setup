@@ -258,10 +258,11 @@ all()
 full()
 # Install native/cross GNU toolchain and other tools. as many as possible.
 {
+	rm -f ${prefix}/src/`basename $0`.log
 	full_native || return 1
 	full_cross || return 1
 	install_mingw_w64_gcc || return 1
-	crossed || return 1
+	full_crossed_native || return 1
 }
 
 auto()
@@ -335,11 +336,7 @@ crossed()
 # Install crossed native apps.
 {
 	install_crossed_native_binutils || return 1
-	install_crossed_native_gmp_mpfr_mpc || return 1
 	install_crossed_native_gcc || return 1
-	install_crossed_native_zlib || return 1
-	install_crossed_native_libpng || return 1
-	install_crossed_native_libtiff || return 1
 }
 
 debug()
@@ -1945,12 +1942,13 @@ install_native_boost()
 
 full_native()
 {
-	rm -f ${prefix}/src/`basename $0`.log
 	for f in `sed -e '/^install_native_[_[:alnum:]]\+()$/{s/()$//;
 		s/install_native_kernel_header//;
 		s/install_native_glibc//;
 		p};d' $0`; do
-		$f || echo `LANG=C date` : $f failed. >> ${prefix}/src/`basename $0`.log
+		$f \
+		&& echo \[`LANG=C date`\] \'$f\' succeeded. >> ${prefix}/src/`basename $0`.log \
+		|| echo \[`LANG=C date`\] \'$f\' failed.    >> ${prefix}/src/`basename $0`.log
 	done
 }
 
@@ -2130,8 +2128,11 @@ install_cross_gdb()
 
 full_cross()
 {
-	install_cross_gcc || return 1
-	install_cross_gdb || return 1
+	for f in install_cross_binutils install_cross_gcc install_cross_gdb; do
+		$f \
+		&& echo \[`LANG=C date`\] \'$f\' succeeded. >> ${prefix}/src/`basename $0`.log \
+		|| echo \[`LANG=C date`\] \'$f\' failed.    >> ${prefix}/src/`basename $0`.log
+	done
 }
 
 install_mingw_w64_header()
@@ -2175,7 +2176,8 @@ install_mingw_w64_crt()
 	[ -f ${mingw_w64_bld_dir_1st}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_1st}
 		${mingw_w64_src_dir_1st}/configure --prefix=/mingw --build=${build} --host=${target} \
-			--disable-multilib --without-header --with-sysroot=${sysroot}) || return 1
+			--disable-multilib --without-header --with-sysroot=${sysroot} \
+		) || return 1
 	make -C ${mingw_w64_bld_dir_1st} -j ${jobs} || return 1
 	make -C ${mingw_w64_bld_dir_1st} -j ${jobs} DESTDIR=${sysroot} install || return 1
 }
@@ -2369,6 +2371,15 @@ install_crossed_native_libtiff()
 			CC=${target}-gcc CXX=${target}-g++ STRIP=${target}-strip) || return 1
 	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
+}
+
+full_crossed_native()
+{
+	for f in `sed -e '/^install_crossed_native_[_[:alnum:]]\+()$/{s/()$//;p};d' $0`; do
+		$f \
+		&& echo \[`LANG=C date`\] \'$f\' succeeded. >> ${prefix}/src/`basename $0`.log \
+		|| echo \[`LANG=C date`\] \'$f\' failed.    >> ${prefix}/src/`basename $0`.log
+	done
 }
 
 while getopts p:t:j:h arg; do
