@@ -1,5 +1,6 @@
 #!/bin/sh -e
 # [TODO] install_{native,cross}_binutils時jobsが大きいとハングする。
+# [TODO] mercurial
 # [TODO] stripすると、gccでコンパイルしたバイナリがsegfaultするようになる。
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] haskell, bash, LLD, LLDB, Polly, MySQL, expat
@@ -1097,7 +1098,7 @@ prepare_go_source()
 
 install_native_tar()
 {
-	[ -x ${prefix}/bin/tar -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/tar -a "${force_install}" = yes ] && return 0
 	which xz > /dev/null || install_native_xz || return 1
 	prepare_tar_source || return 1
 	unpack_archive ${tar_org_src_dir} ${tar_src_base} || return 1
@@ -1110,7 +1111,7 @@ install_native_tar()
 
 install_native_xz()
 {
-	[ -x ${prefix}/bin/xz -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/xz -a "${force_install}" = yes ] && return 0
 	prepare_xz_source || return 1
 	unpack_archive ${xz_org_src_dir} ${xz_src_base} || return 1
 	[ -f ${xz_org_src_dir}/Makefile ] ||
@@ -1122,7 +1123,7 @@ install_native_xz()
 
 install_native_bzip2()
 {
-	[ -x ${prefix}/bin/bzip2 -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/bzip2 -a "${force_install}" = yes ] && return 0
 	prepare_bzip2_source || return 1
 	unpack_archive ${bzip2_org_src_dir} ${bzip2_src_base} || return 1
 	sed -i -e '/^CFLAGS=/{s/ -fPIC//g;s/$/ -fPIC/}' ${bzip2_org_src_dir}/Makefile || return 1
@@ -1138,7 +1139,7 @@ install_native_bzip2()
 
 install_native_gzip()
 {
-	[ -x ${prefix}/bin/gzip -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/gzip -a "${force_install}" = yes ] && return 0
 	prepare_gzip_source || return 1
 	unpack_archive ${gzip_org_src_dir} ${gzip_src_base} || return 1
 	[ -f ${gzip_org_src_dir}/Makefile ] ||
@@ -1150,7 +1151,7 @@ install_native_gzip()
 
 install_native_wget()
 {
-	[ -x ${prefix}/bin/wget -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/wget -a "${force_install}" = yes ] && return 0
 	search_header ssl.h || install_native_openssl || return 1
 	prepare_wget_source || return 1
 	unpack_archive ${wget_org_src_dir} ${wget_src_base} || return 1
@@ -1164,7 +1165,7 @@ install_native_wget()
 
 install_native_texinfo()
 {
-	[ -x ${prefix}/bin/makeinfo -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/makeinfo -a "${force_install}" = yes ] && return 0
 	prepare_texinfo_source || return 1
 	unpack_archive ${texinfo_org_src_dir} ${texinfo_src_base} || return 1
 	[ -f ${texinfo_org_src_dir}/Makefile ] ||
@@ -1176,7 +1177,7 @@ install_native_texinfo()
 
 install_native_coreutils()
 {
-	[ -x ${prefix}/bin/cat -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/cat -a "${force_install}" = yes ] && return 0
 	prepare_coreutils_source || return 1
 	unpack_archive ${coreutils_org_src_dir} ${coreutils_src_base} || return 1
 	[ -f ${coreutils_org_src_dir}/Makefile ] ||
@@ -1188,7 +1189,7 @@ install_native_coreutils()
 
 install_native_bison()
 {
-	[ -x ${prefix}/bin/bison -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/bison -a "${force_install}" = yes ] && return 0
 	prepare_bison_source || return 1
 	unpack_archive ${bison_org_src_dir} ${bison_src_base} || return 1
 	[ -f ${bison_org_src_dir}/Makefile ] ||
@@ -1200,7 +1201,7 @@ install_native_bison()
 
 install_native_flex()
 {
-	[ -x ${prefix}/bin/flex -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/flex -a "${force_install}" = yes ] && return 0
 	which yacc > /dev/null || install_native_bison || return 1
 	prepare_flex_source || return 1
 	unpack_archive ${flex_org_src_dir} ${flex_src_base} || return 1
@@ -1214,7 +1215,7 @@ install_native_flex()
 
 install_native_m4()
 {
-	[ -x ${prefix}/bin/m4 -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/m4 -a "${force_install}" = yes ] && return 0
 	prepare_m4_source || return 1
 	unpack_archive ${m4_org_src_dir} ${m4_src_base} || return 1
 	[ -f ${m4_org_src_dir}/Makefile ] ||
@@ -1226,7 +1227,7 @@ install_native_m4()
 
 install_native_autoconf()
 {
-	[ -x ${prefix}/bin/autoconf -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/autoconf -a "${force_install}" = yes ] && return 0
 	prepare_autoconf_source || return 1
 	unpack_archive ${autoconf_org_src_dir} ${autoconf_src_base} || return 1
 	[ -f ${autoconf_org_src_dir}/Makefile ] ||
@@ -1238,7 +1239,7 @@ install_native_autoconf()
 
 install_native_automake()
 {
-	[ -x ${prefix}/bin/automake -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/automake -a "${force_install}" = yes ] && return 0
 	which autoconf > /dev/null || install_native_autoconf || return 1
 	prepare_automake_source || return 1
 	unpack_archive ${automake_org_src_dir} ${automake_src_base} || return 1
@@ -1251,7 +1252,7 @@ install_native_automake()
 
 install_native_libtool()
 {
-	[ -x ${prefix}/bin/libtool -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/libtool -a "${force_install}" = yes ] && return 0
 	which flex > /dev/null || install_native_flex || return 1
 	prepare_libtool_source || return 1
 	unpack_archive ${libtool_org_src_dir} ${libtool_src_base} || return 1
@@ -1264,7 +1265,7 @@ install_native_libtool()
 
 install_native_sed()
 {
-	[ -x ${prefix}/bin/sed -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/sed -a "${force_install}" = yes ] && return 0
 	prepare_sed_source || return 1
 	unpack_archive ${sed_org_src_dir} ${sed_src_base} || return 1
 	[ -f ${sed_org_src_dir}/Makefile ] ||
@@ -1276,7 +1277,7 @@ install_native_sed()
 
 install_native_gawk()
 {
-	[ -x ${prefix}/bin/gawk -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/gawk -a "${force_install}" = yes ] && return 0
 	prepare_gawk_source || return 1
 	unpack_archive ${gawk_org_src_dir} ${gawk_src_base} || return 1
 	[ -f ${gawk_org_src_dir}/Makefile ] ||
@@ -1288,7 +1289,7 @@ install_native_gawk()
 
 install_native_make()
 {
-	[ -x ${prefix}/bin/make -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/make -a "${force_install}" = yes ] && return 0
 	prepare_make_source || return 1
 	unpack_archive ${make_org_src_dir} ${make_src_base} || return 1
 	[ -f ${make_org_src_dir}/Makefile ] ||
@@ -1300,7 +1301,7 @@ install_native_make()
 
 install_native_binutils()
 {
-	[ -x ${prefix}/bin/as -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/as -a "${force_install}" = yes ] && return 0
 	which yacc > /dev/null || install_native_bison || return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_ntv} ] ||
@@ -1330,7 +1331,7 @@ install_native_kernel_header()
 
 install_native_gperf()
 {
-	[ -x ${prefix}/bin/gperf -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/gperf -a "${force_install}" = yes ] && return 0
 	prepare_gperf_source || return 1
 	unpack_archive ${gperf_org_src_dir} ${gperf_src_base} || return 1
 	[ -f ${gperf_org_src_dir}/Makefile ] ||
@@ -1342,7 +1343,7 @@ install_native_gperf()
 
 install_native_glibc()
 {
-	[ -e ${prefix}/lib/libc.so -a -z "${force_install}" ] && return 0
+	[ -e ${prefix}/lib/libc.so -a "${force_install}" = yes ] && return 0
 	install_native_kernel_header || return 1
 	which gperf > /dev/null || install_native_gperf || return 1
 	prepare_glibc_source || return 1
@@ -1363,7 +1364,7 @@ install_native_glibc()
 
 install_native_gmp_mpfr_mpc()
 {
-	[ -e ${prefix}/lib/libgmp.so -a -e ${prefix}/lib/libmpfr.so -a -e ${prefix}/lib/libmpc.so -a -z "${force_install}" ] && return 0
+	[ -e ${prefix}/lib/libgmp.so -a -e ${prefix}/lib/libmpfr.so -a -e ${prefix}/lib/libmpc.so -a "${force_install}" = yes ] && return 0
 	prepare_gmp_mpfr_mpc_source || return 1
 
 	[ -d ${gmp_src_dir_ntv} ] ||
@@ -1398,7 +1399,7 @@ install_native_gmp_mpfr_mpc()
 
 install_native_gcc()
 {
-	[ -x ${prefix}/bin/gcc -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/gcc -a "${force_install}" = yes ] && return 0
 # install_native_glibc || return 1 # DANGEROUS!! pay attention to glibc version(compatibility)
 	search_header zlib.h || install_native_zlib || return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
@@ -1420,7 +1421,7 @@ install_native_gcc()
 
 install_native_ncurses()
 {
-	[ -e ${prefix}/lib/libncurses.so -a -z "${force_install}" ] && return 0
+	[ -e ${prefix}/lib/libncurses.so -a "${force_install}" = yes ] && return 0
 	prepare_ncurses_source || return 1
 	unpack_archive ${ncurses_org_src_dir} ${ncurses_src_base} || return 1
 
@@ -1463,7 +1464,7 @@ EOF
 
 install_native_gdb()
 {
-	[ -x ${prefix}/bin/gdb -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/gdb -a "${force_install}" = yes ] && return 0
 	search_header curses.h || install_native_ncurses || return 1
 	search_header Python.h || install_native_python || return 1
 	prepare_gdb_source || return 1
@@ -1479,7 +1480,7 @@ install_native_gdb()
 
 install_native_zlib()
 {
-	[ -e ${prefix}/lib/libz.so -a -z "${force_install}" ] && return 0
+	[ -e ${prefix}/lib/libz.so -a "${force_install}" = yes ] && return 0
 	prepare_zlib_source || return 1
 	[ -d ${zlib_src_dir_ntv} ] ||
 		(unpack_archive ${zlib_org_src_dir} ${zlib_src_base} &&
@@ -1493,7 +1494,7 @@ install_native_zlib()
 
 install_native_libpng()
 {
-	[ -e ${prefix}/lib/libpng.so -a -z "${force_install}" ] && return 0
+	[ -e ${prefix}/lib/libpng.so -a "${force_install}" = yes ] && return 0
 	search_header zlib.h || install_native_zlib || return 1
 	prepare_libpng_source || return 1
 	[ -d ${libpng_src_dir_ntv} ] ||
@@ -1509,7 +1510,7 @@ install_native_libpng()
 
 install_native_libtiff()
 {
-	[ -e ${prefix}/lib/libtiff.so -a -z "${force_install}" ] && return 0
+	[ -e ${prefix}/lib/libtiff.so -a "${force_install}" = yes ] && return 0
 	prepare_libtiff_source || return 1
 	[ -d ${tiff_src_dir_ntv} ] ||
 		(unpack_archive ${tiff_org_src_dir} ${tiff_src_base} &&
@@ -1524,7 +1525,7 @@ install_native_libtiff()
 
 install_native_libjpeg()
 {
-	[ -e ${prefix}/lib/libjpeg.so -a -z "${force_install}" ] && return 0
+	[ -e ${prefix}/lib/libjpeg.so -a "${force_install}" = yes ] && return 0
 	prepare_libjpeg_source || return 1
 	[ -d ${libjpeg_src_dir_ntv} ] ||
 		(unpack_archive ${libjpeg_org_src_dir} ${libjpeg_src_base} &&
@@ -1539,7 +1540,7 @@ install_native_libjpeg()
 
 install_native_giflib()
 {
-	[ -e ${prefix}/lib/libgif.so -a -z "${force_install}" ] && return 0
+	[ -e ${prefix}/lib/libgif.so -a "${force_install}" = yes ] && return 0
 	prepare_giflib_source || return 1
 	[ -d ${giflib_src_dir_ntv} ] ||
 		(unpack_archive ${giflib_org_src_dir} ${giflib_src_base} &&
@@ -1554,7 +1555,7 @@ install_native_giflib()
 
 install_native_emacs()
 {
-	[ -x ${prefix}/bin/emacs -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/emacs -a "${force_install}" = yes ] && return 0
 	search_header curses.h || install_native_ncurses || return 1
 	search_header zlib.h || install_native_zlib || return 1
 	search_header png.h || install_native_libpng || return 1
@@ -1573,7 +1574,7 @@ install_native_emacs()
 
 install_native_vim()
 {
-	[ -x ${prefix}/bin/vim -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/vim -a "${force_install}" = yes ] && return 0
 	search_header curses.h || install_native_ncurses || return 1
 	which gettext > /dev/null || install_native_gettext || return 1
 	search_header Python.h || install_native_python || return 1
@@ -1600,7 +1601,7 @@ install_native_vim()
 
 install_native_grep()
 {
-	[ -x ${prefix}/bin/grep -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/grep -a "${force_install}" = yes ] && return 0
 	prepare_grep_source || return 1
 	unpack_archive ${grep_org_src_dir} ${grep_src_base} || return 1
 	[ -f ${grep_org_src_dir}/Makefile ] ||
@@ -1612,7 +1613,7 @@ install_native_grep()
 
 install_native_global()
 {
-	[ -x ${prefix}/bin/global -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/global -a "${force_install}" = yes ] && return 0
 	search_header curses.h || install_native_ncurses || return 1
 	prepare_global_source || return 1
 	unpack_archive ${global_org_src_dir} ${global_src_base} || return 1
@@ -1625,7 +1626,7 @@ install_native_global()
 
 install_native_diffutils()
 {
-	[ -x ${prefix}/bin/diff -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/diff -a "${force_install}" = yes ] && return 0
 	prepare_diffutils_source || return 1
 	unpack_archive ${diffutils_org_src_dir} ${diffutils_src_base} || return 1
 	[ -f ${diffutils_org_src_dir}/Makefile ] ||
@@ -1637,7 +1638,7 @@ install_native_diffutils()
 
 install_native_patch()
 {
-	[ -x ${prefix}/bin/patch -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/patch -a "${force_install}" = yes ] && return 0
 	prepare_patch_source || return 1
 	unpack_archive ${patch_org_src_dir} ${patch_src_base} || return 1
 	[ -f ${patch_org_src_dir}/Makefile ] ||
@@ -1649,7 +1650,7 @@ install_native_patch()
 
 install_native_findutils()
 {
-	[ -x ${prefix}/bin/find -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/find -a "${force_install}" = yes ] && return 0
 	prepare_findutils_source || return 1
 	unpack_archive ${findutils_org_src_dir} ${findutils_src_base} || return 1
 	[ -f ${findutils_org_src_dir}/Makefile ] ||
@@ -1661,7 +1662,7 @@ install_native_findutils()
 
 install_native_screen()
 {
-	[ -x ${prefix}/bin/screen -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/screen -a "${force_install}" = yes ] && return 0
 	prepare_screen_source || return 1
 	unpack_archive ${screen_org_src_dir} ${screen_src_base} || return 1
 	[ -f ${screen_org_src_dir}/Makefile ] ||
@@ -1674,7 +1675,7 @@ install_native_screen()
 
 install_native_zsh()
 {
-	[ -x ${prefix}/bin/zsh -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/zsh -a "${force_install}" = yes ] && return 0
 	search_header curses.h || install_native_ncurses || return 1
 	prepare_zsh_source || return 1
 	unpack_archive ${zsh_org_src_dir} ${zsh_src_base} || return 1
@@ -1687,7 +1688,7 @@ install_native_zsh()
 
 install_native_openssl()
 {
-	[ \( -e ${prefix}/lib/libssl.so -o -e ${prefix}/lib64/libssl.so \) -a -z "${force_install}" ] && return 0
+	[ \( -e ${prefix}/lib/libssl.so -o -e ${prefix}/lib64/libssl.so \) -a "${force_install}" = yes ] && return 0
 	prepare_openssl_source || return 1
 	unpack_archive ${openssl_org_src_dir} ${openssl_src_base} || return 1
 	(cd ${openssl_org_src_dir}
@@ -1699,7 +1700,7 @@ install_native_openssl()
 
 install_native_curl()
 {
-	[ -x ${prefix}/bin/curl -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/curl -a "${force_install}" = yes ] && return 0
 	search_header ssl.h || install_native_openssl || return 1
 	prepare_curl_source || return 1
 	unpack_archive ${curl_org_src_dir} ${curl_src_base} || return 1
@@ -1713,7 +1714,7 @@ install_native_curl()
 
 install_native_asciidoc()
 {
-	[ -x ${prefix}/bin/asciidoc -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/asciidoc -a "${force_install}" = yes ] && return 0
 	prepare_asciidoc_source || return 1
 	unpack_archive ${asciidoc_org_src_dir} ${asciidoc_src_base} || return 1
 	[ -f ${asciidoc_org_src_dir}/Makefile ] ||
@@ -1725,7 +1726,7 @@ install_native_asciidoc()
 
 install_native_xmlto()
 {
-	[ -x ${prefix}/bin/xmlto -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/xmlto -a "${force_install}" = yes ] && return 0
 	prepare_xmlto_source || return 1
 	unpack_archive ${xmlto_org_src_dir} ${xmlto_src_base} || return 1
 	[ -f ${xmlto_org_src_dir}/Makefile ] ||
@@ -1742,7 +1743,7 @@ install_native_xmlto()
 
 install_native_libxml2()
 {
-	[ -e ${prefix}/lib/libxml2.so -a -z "${force_install}" ] && return 0
+	[ -e ${prefix}/lib/libxml2.so -a "${force_install}" = yes ] && return 0
 	search_header Python.h || install_native_python || return 1
 	prepare_libxml2_source || return 1
 	unpack_archive ${libxml2_org_src_dir} ${libxml2_src_base} || return 1
@@ -1756,7 +1757,7 @@ install_native_libxml2()
 
 install_native_libxslt()
 {
-	[ -e ${prefix}/lib/libxslt.so -a -z "${force_install}" ] && return 0
+	[ -e ${prefix}/lib/libxslt.so -a "${force_install}" = yes ] && return 0
 	search_header xmlversion.h || install_native_libxml2 || return 1
 	prepare_libxslt_source || return 1
 	unpack_archive ${libxslt_org_src_dir} ${libxslt_src_base} || return 1
@@ -1769,7 +1770,7 @@ install_native_libxslt()
 
 install_native_gettext()
 {
-	[ -x ${prefix}/bin/gettext -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/gettext -a "${force_install}" = yes ] && return 0
 	prepare_gettext_source || return 1
 	unpack_archive ${gettext_org_src_dir} ${gettext_src_base} || return 1
 	[ -f ${gettext_org_src_dir}/Makefile ] ||
@@ -1782,7 +1783,7 @@ install_native_gettext()
 
 install_native_git()
 {
-	[ -x ${prefix}/bin/git -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/git -a "${force_install}" = yes ] && return 0
 	which autoconf > /dev/null || install_native_autoconf || return 1
 	search_header zlib.h || install_native_zlib || return 1
 	search_header ssl.h || install_native_openssl || return 1
@@ -1804,7 +1805,7 @@ install_native_git()
 
 install_native_mercurial()
 {
-	[ -x ${prefix}/bin/hg -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/hg -a "${force_install}" = yes ] && return 0
 	which python3 > /dev/null || install_native_python || return 1
 	prepare_mercurial_source || return 1
 	unpack_archive ${mercurial_org_src_dir} ${mercurial_src_base} || return 1
@@ -1814,7 +1815,7 @@ install_native_mercurial()
 
 install_native_cmake()
 {
-	[ -x ${prefix}/bin/cmake -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/cmake -a "${force_install}" = yes ] && return 0
 	prepare_cmake_source || return 1
 	unpack_archive ${cmake_org_src_dir} ${cmake_src_base} || return 1
 	[ -f ${cmake_org_src_dir}/Makefile ] ||
@@ -1826,7 +1827,7 @@ install_native_cmake()
 
 install_native_llvm()
 {
-	[ -e ${prefix}/lib/libLLVMCore.a -a -z "${force_install}" ] && return 0
+	[ -e ${prefix}/lib/libLLVMCore.a -a "${force_install}" = yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
 	prepare_llvm_source || return 1
 	unpack_archive ${llvm_org_src_dir} ${llvm_src_base} || return 1
@@ -1840,7 +1841,7 @@ install_native_llvm()
 
 install_native_libcxx()
 {
-	[ -e ${prefix}/lib/libc++.so -a -z "${force_install}" ] && return 0
+	[ -e ${prefix}/lib/libc++.so -a "${force_install}" = yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
 	prepare_libcxx_source || return 1
 	unpack_archive ${libcxx_org_src_dir} ${libcxx_src_base} || return 1
@@ -1854,7 +1855,7 @@ install_native_libcxx()
 
 install_native_libcxxabi()
 {
-	[ -e ${prefix}/lib/libc++abi.so -a -z "${force_install}" ] && return 0
+	[ -e ${prefix}/lib/libc++abi.so -a "${force_install}" = yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
 	search_header llvm-config.h || install_native_llvm || return 1
 	search_header iostream c++/v1 || install_native_libcxx || return 1
@@ -1870,7 +1871,7 @@ install_native_libcxxabi()
 
 install_native_clang_rt()
 {
-	[ -d ${prefix}/include/sanitizer -a -z "${force_install}" ] && return 0
+	[ -d ${prefix}/include/sanitizer -a "${force_install}" = yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
 	search_header llvm-config.h || install_native_llvm || return 1
 	prepare_clang_rt_source || return 1
@@ -1885,7 +1886,7 @@ install_native_clang_rt()
 
 install_native_cfe()
 {
-	[ -x ${prefix}/bin/clang -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/clang -a "${force_install}" = yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
 	search_header llvm-config.h || install_native_llvm || return 1
 	search_header iostream c++/v1 || install_native_libcxx || return 1
@@ -1943,7 +1944,7 @@ install_native_lldb()
 
 install_native_boost()
 {
-	[ -d ${prefix}/include/boost -a -z "${force_install}" ] && return 0
+	[ -d ${prefix}/include/boost -a "${force_install}" = yes ] && return 0
 	search_header bzlib.h || install_native_bzip2 || return 1
 	prepare_boost_source || return 1
 	unpack_archive ${boost_org_src_dir} ${boost_src_base} || return 1
@@ -1968,7 +1969,7 @@ full_native()
 
 install_cross_binutils()
 {
-	[ -x ${prefix}/bin/${target}-as -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/${target}-as -a "${force_install}" = yes ] && return 0
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_crs} ] ||
@@ -2110,7 +2111,7 @@ install_cross_functional_gcc()
 
 install_cross_gcc()
 {
-	[ -x ${prefix}/bin/${target}-gcc -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/${target}-gcc -a "${force_install}" = yes ] && return 0
 	which ${target}-as > /dev/null || install_cross_binutils || return 1
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
@@ -2126,7 +2127,7 @@ install_cross_gcc()
 
 install_cross_gdb()
 {
-	[ -x ${prefix}/bin/${target}-gdb -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/${target}-gdb -a "${force_install}" = yes ] && return 0
 	search_header Python.h || install_native_python || return 1
 	prepare_gdb_source || return 1
 	unpack_archive ${gdb_org_src_dir} ${gdb_src_base} || return 1
@@ -2198,7 +2199,7 @@ install_mingw_w64_crt()
 
 install_mingw_w64_gcc()
 {
-	[ -x ${prefix}/bin/x86_64-w64-mingw32-gcc -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/x86_64-w64-mingw32-gcc -a "${force_install}" = yes ] && return 0
 	prev_target=${target}; target=x86_64-w64-mingw32
 	prev_languages=${languages}; languages=c,c++
 	set_variables || return 1
@@ -2219,7 +2220,7 @@ install_mingw_w64_gcc()
 
 install_native_python()
 {
-	[ -x ${prefix}/bin/python3 -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/python3 -a "${force_install}" = yes ] && return 0
 	prepare_python_source || return 1
 	unpack_archive ${Python_org_src_dir} ${Python_src_base} || return 1
 	[ -f ${Python_org_src_dir}/Makefile ] ||
@@ -2234,7 +2235,7 @@ install_native_python()
 
 install_native_ruby()
 {
-	[ -x ${prefix}/bin/ruby -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/ruby -a "${force_install}" = yes ] && return 0
 	prepare_ruby_source || return 1
 	unpack_archive ${ruby_org_src_dir} ${ruby_src_base} || return 1
 	[ -f ${ruby_org_src_dir}/Makefile ] ||
@@ -2246,7 +2247,7 @@ install_native_ruby()
 
 install_native_go()
 {
-	[ -x ${prefix}/go/bin/go -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/go/bin/go -a "${force_install}" = yes ] && return 0
 	which git > /dev/null || install_native_git || return 1
 	prepare_go_source || return 1
 	[ -d ${go_org_src_dir} ] || unpack_archive ${go_src_base}/go${go_ver}.src ${go_src_base} || return 1
@@ -2260,7 +2261,7 @@ install_native_go()
 
 install_native_perl()
 {
-	[ -x ${prefix}/bin/perl -a -z "${force_install}" ] && return 0
+	[ -x ${prefix}/bin/perl -a "${force_install}" = yes ] && return 0
 	prepare_perl_source || return 1
 	unpack_archive ${perl_org_src_dir} ${perl_src_base} || return 1
 	(cd ${perl_org_src_dir}
@@ -2272,7 +2273,7 @@ install_native_perl()
 
 install_crossed_native_binutils()
 {
-	[ -x ${sysroot}/usr/bin/as -a -z "${force_install}" ] && return 0
+	[ -x ${sysroot}/usr/bin/as -a "${force_install}" = yes ] && return 0
 	which yacc > /dev/null || install_native_bison || return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_crs_ntv} ] ||
@@ -2289,7 +2290,7 @@ install_crossed_native_binutils()
 
 install_crossed_native_gmp_mpfr_mpc()
 {
-	[ -e ${sysroot}/usr/lib/libgmp.so -a -e ${sysroot}/usr/lib/libmpfr.so -a -e ${sysroot}/usr/lib/libmpc.so -a -z "${force_install}" ] && return 0
+	[ -e ${sysroot}/usr/lib/libgmp.so -a -e ${sysroot}/usr/lib/libmpfr.so -a -e ${sysroot}/usr/lib/libmpc.so -a "${force_install}" = yes ] && return 0
 	prepare_gmp_mpfr_mpc_source || return 1
 
 	[ -d ${gmp_src_dir_crs_ntv} ] ||
@@ -2325,7 +2326,7 @@ install_crossed_native_gmp_mpfr_mpc()
 
 install_crossed_native_gcc()
 {
-	[ -x ${sysroot}/usr/bin/gcc -a -z "${force_install}" ] && return 0
+	[ -x ${sysroot}/usr/bin/gcc -a "${force_install}" = yes ] && return 0
 	install_crossed_native_zlib || return 1
 	[ -f ${sysroot}/usr/include/mpc.h ] || install_crossed_native_gmp_mpfr_mpc || return 1
 	which perl > /dev/null || install_native_perl || return 1
@@ -2345,7 +2346,7 @@ install_crossed_native_gcc()
 
 install_crossed_native_zlib()
 {
-	[ -e ${sysroot}/usr/lib/libz.so -a -z "${force_install}" ] && return 0
+	[ -e ${sysroot}/usr/lib/libz.so -a "${force_install}" = yes ] && return 0
 	prepare_zlib_source || return 1
 	[ -d ${zlib_src_dir_crs_ntv} ] ||
 		(unpack_archive ${zlib_org_src_dir} ${zlib_src_base} &&
@@ -2358,7 +2359,7 @@ install_crossed_native_zlib()
 
 install_crossed_native_libpng()
 {
-	[ -e ${sysroot}/usr/lib/libpng.so -a -z "${force_install}" ] && return 0
+	[ -e ${sysroot}/usr/lib/libpng.so -a "${force_install}" = yes ] && return 0
 	install_crossed_native_zlib || return 1
 	prepare_libpng_source || return 1
 	[ -d ${libpng_src_dir_crs_ntv} ] ||
@@ -2374,7 +2375,7 @@ install_crossed_native_libpng()
 
 install_crossed_native_libtiff()
 {
-	[ -e ${sysroot}/usr/lib/libtiff.so -a -z "${force_install}" ] && return 0
+	[ -e ${sysroot}/usr/lib/libtiff.so -a "${force_install}" = yes ] && return 0
 	prepare_libtiff_source || return 1
 	[ -d ${tiff_src_dir_crs_ntv} ] ||
 		(unpack_archive ${tiff_org_src_dir} ${tiff_src_base} &&
