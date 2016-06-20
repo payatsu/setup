@@ -1,5 +1,8 @@
 #!/bin/sh -e
 # [TODO] install_{native,cross}_binutils時jobsが大きいとハングする。
+# [TODO] stripすると、gccでコンパイルしたバイナリがsegfaultするようになる。
+# [TODO] .(source)してみる。
+# [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] haskell, bash, LLD, LLDB, Polly, MySQL, expat
 # [TODO] allinoneなbinutils作る。
 # [TODO] update-alternatives
@@ -232,6 +235,33 @@ help()
 EOF
 }
 
+auto()
+# Perform auto installation for all available toolchains and other tools.
+{
+	prepare || return 1
+	full || return 1
+	clean || return 1
+	strip || return 1
+	archive || return 1
+}
+
+prepare()
+# Prepare all source files.
+{
+	for prepare_command in `grep -e '^prepare_.\+_source()$' $0 | sed -e 's/()$//'`; do
+		${prepare_command} || return 1
+	done
+}
+
+unpack()
+# Unpack all source files.
+{
+	clean
+	for f in `find ${prefix}/src -name '*.tar.gz' -o -name '*.tar.bz2' -o -name '*.tar.xz' -o -name '*.zip'`; do
+		unpack_archive `echo $f | sed -e 's/\.tar\.gz$//;s/\.tar\.bz2$//;s/\.tar\.xz$//;s/\.zip$//'` `dirname $f`
+	done
+}
+
 native()
 # Install native GNU Toolchain, such as GNU binutils, GNU C/C++/Go compiler, GDB(running on and compiles for '${build}').
 {
@@ -265,22 +295,11 @@ full()
 	full_crossed_native || return 1
 }
 
-auto()
-# Perform auto installation for all available toolchains and other tools.
+crossed()
+# Install crossed native apps.
 {
-	prepare || return 1
-	full || return 1
-	clean || return 1
-	strip || return 1
-	archive || return 1
-}
-
-prepare()
-# Prepare all source files.
-{
-	for prepare_command in `grep -e '^prepare_.\+_source()$' $0 | sed -e 's/()$//'`; do
-		${prepare_command} || return 1
-	done
+	install_crossed_native_binutils || return 1
+	install_crossed_native_gcc || return 1
 }
 
 clean()
@@ -293,6 +312,8 @@ clean()
 strip()
 # Strip all binary files.
 {
+	return 0
+
 	for strip in strip ${target}-strip x86_64-w64-mingw32-strip; do
 		find ${prefix} -type f \( -perm /111 -o -name '*.o' -o -name '*.a' -o -name '*.so' -o -name '*.gox' \) \
 			| xargs file | grep 'not stripped' | cut -f1 -d: | xargs -I "{}" sh -c "chmod u+w {}; ${strip} {}" || true
@@ -327,16 +348,9 @@ reset()
 # Reset 'prefix' except 'prefix/src/'.
 {
 	clean
-	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src -exec rm -rf '{}' +
+	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src ! -name '.git' -exec rm -rf '{}' +
 	[ `whoami` = root ] && rm  -f /etc/ld.so.conf.d/`basename ${prefix}`.conf
 	[ `whoami` = root ] && ldconfig || return 0
-}
-
-crossed()
-# Install crossed native apps.
-{
-	install_crossed_native_binutils || return 1
-	install_crossed_native_gcc || return 1
 }
 
 debug()
