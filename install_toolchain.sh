@@ -1,10 +1,8 @@
 #!/bin/sh -e
 # [TODO] install_{native,cross}_binutils時jobsが大きいとハングする。
 # [TODO] stripすると、gccでコンパイルしたバイナリがsegfaultするようになる。
-# [TODO] .(source)してみる。
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] haskell, bash, LLD, LLDB, Polly, MySQL, expat
-# [TODO] allinoneなbinutils作る。
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
@@ -1310,8 +1308,10 @@ install_native_binutils()
 			mv ${binutils_org_src_dir} ${binutils_src_dir_ntv}) || return 1
 	[ -f ${binutils_src_dir_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --with-sysroot=/ --enable-64-bit-bfd --enable-gold \
-			# CFLAGS="${CFLAGS} -Wno-error=unused-const-variable" CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function"
+		./configure --prefix=${prefix} --build=${build} --with-sysroot=/ \
+			--enable-64-bit-bfd --enable-gold --enable-targets=all \
+#			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
+#			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function"
 		) || return 1
 	make -C ${binutils_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${binutils_src_dir_ntv} -j ${jobs} install-strip || return 1
@@ -1977,8 +1977,8 @@ install_cross_binutils()
 	[ -f ${binutils_src_dir_crs}/Makefile ] ||
 		(cd ${binutils_src_dir_crs}
 		./configure --prefix=${prefix} --build=${build} --target=${target} \
-			--with-sysroot=${sysroot} --enable-64-bit-bfd --enable-gold \
-			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable" \
+			--with-sysroot=${sysroot} --enable-64-bit-bfd --enable-gold --enable-targets=all \
+			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
 			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function") || return 1
 	make -C ${binutils_src_dir_crs} -j ${jobs} || return 1
 	make -C ${binutils_src_dir_crs} -j ${jobs} install-strip || return 1
@@ -2414,8 +2414,9 @@ while [ $# -gt 0 ]; do
 	case $1 in
 	debug) $1 `[ -n "${BASH}" ] && echo shell || echo $1`;;
 	shell) [ -n "${BASH}" ] \
-		&& set placeholder debug \
-		|| exec bash --noprofile --norc --posix -e $0 -p ${prefix} -t ${target} -j ${jobs} shell; count=`expr ${count} + 1`;;
+				&& set placeholder debug \
+				|| exec bash --noprofile --norc --posix -e $0 -p ${prefix} -t ${target} -j ${jobs} shell
+		   count=`expr ${count} + 1`;;
 	*=*)   eval export $1; set_variables;;
 	*)     eval $1 || exit 1; count=`expr ${count} + 1`;;
 	esac
