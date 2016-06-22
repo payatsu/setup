@@ -1,7 +1,5 @@
 #!/bin/sh -e
-# [TODO] install_{native,cross}_binutils時jobsが大きいとハングする。
-# [TODO] mercurial
-# [TODO] stripすると、gccでコンパイルしたバイナリがsegfaultするようになる。
+# [TODO] unpackしてすべてのconfigure --helpを試す。
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] haskell, bash, LLD, LLDB, Polly, MySQL, expat
 # [TODO] update-alternatives
@@ -311,7 +309,7 @@ clean()
 strip()
 # Strip all binary files.
 {
-	return 0
+	return 0 # [TODO] crtbegin.oをstripすると、gccでコンパイルしたバイナリがsegfaultするようになる。
 
 	for strip in strip ${target}-strip x86_64-w64-mingw32-strip; do
 		find ${prefix} -type f \( -perm /111 -o -name '*.o' -o -name '*.a' -o -name '*.so' -o -name '*.gox' \) \
@@ -550,7 +548,6 @@ install_prerequisites()
 		apt-get install -y make gcc g++ || return 1
 		apt-get install -y unifdef || return 1 # for linux kernel(microblaze)
 		apt-get install -y libgtk-3-dev libgnome2-dev libgnomeui-dev libx11-dev libxpm-dev || return 1 # for emacs
-		apt-get install -y libperl-dev || return 1 # for vim
 		apt-get install -y lua5.2 liblua5.2-dev || return 1 # for vim
 		apt-get install -y luajit libluajit-5.1 || return 1 # for vim
 		;;
@@ -1314,8 +1311,8 @@ install_native_binutils()
 #			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
 #			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function"
 		) || return 1
-	make -C ${binutils_src_dir_ntv} -j ${jobs} || return 1
-	make -C ${binutils_src_dir_ntv} -j ${jobs} install-strip || return 1
+	make -C ${binutils_src_dir_ntv} -j 1 || return 1
+	make -C ${binutils_src_dir_ntv} -j 1 install-strip || return 1
 }
 
 install_native_kernel_header()
@@ -1345,19 +1342,19 @@ install_native_glibc()
 {
 	[ -e ${prefix}/lib/libc.so -a "${force_install}" = yes ] && return 0
 	install_native_kernel_header || return 1
+	which awk > /dev/null || install_native_gawk || return 1
 	which gperf > /dev/null || install_native_gperf || return 1
 	prepare_glibc_source || return 1
 	[ -d ${glibc_src_dir_ntv} ] ||
 		(unpack_archive ${glibc_org_src_dir} ${glibc_src_base} &&
 			mv ${glibc_org_src_dir} ${glibc_src_dir_ntv}) || return 1
-
 	mkdir -p ${glibc_bld_dir_ntv}
 	[ -f ${glibc_bld_dir_ntv}/Makefile ] ||
 		(cd ${glibc_bld_dir_ntv}
 		LD_LIBRARY_PATH='' ${glibc_src_dir_ntv}/configure --prefix=${prefix} --build=${build} \
-			--with-headers=/usr/include CPPFLAGS="${CPPFLAGS} -I/usr/include/${build} -D_LIBC") || return 1
+			--with-headers=${prefix}/include CPPFLAGS="${CPPFLAGS} -I${prefix}/include -D_LIBC") || return 1
 	make -C ${glibc_bld_dir_ntv} -j ${jobs} install-headers || return 1
-	make -C ${glibc_bld_dir_ntv} -j ${jobs} || return 1
+	make -C ${glibc_bld_dir_ntv} -j ${jobs} CPPFLAGS=-D_LIBC || return 1
 	make -C ${glibc_bld_dir_ntv} -j ${jobs} install || return 1
 	update_search_path || return 1
 }
@@ -1400,7 +1397,6 @@ install_native_gmp_mpfr_mpc()
 install_native_gcc()
 {
 	[ -x ${prefix}/bin/gcc -a "${force_install}" = yes ] && return 0
-# install_native_glibc || return 1 # DANGEROUS!! pay attention to glibc version(compatibility)
 	search_header zlib.h || install_native_zlib || return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
 	which perl > /dev/null || install_native_perl || return 1
@@ -1413,7 +1409,7 @@ install_native_gcc()
 			--with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
 			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
 			--enable-libstdcxx-debug \
-		) || return 1 # ARMの場合右記オプションが必要。--with-arch=armv6 --with-fpu=vfp --with-float=hard
+		) || return 1 # [XXX] ARMの場合右記オプションが必要。--with-arch=armv6 --with-fpu=vfp --with-float=hard
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return 1
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install-strip || return 1
 	update_search_path || return 1
@@ -1425,7 +1421,7 @@ install_native_ncurses()
 	prepare_ncurses_source || return 1
 	unpack_archive ${ncurses_org_src_dir} ${ncurses_src_base} || return 1
 
-	# workaround for GCC 5.x
+	# [XXX] workaround for GCC 5.x
 	patch -N -p0 -d ${ncurses_org_src_dir} <<EOF || [ $? = 1 ]  || return 1
 --- ncurses/base/MKlib_gen.sh
 +++ ncurses/base/MKlib_gen.sh
@@ -1577,6 +1573,7 @@ install_native_vim()
 	[ -x ${prefix}/bin/vim -a "${force_install}" = yes ] && return 0
 	search_header curses.h || install_native_ncurses || return 1
 	which gettext > /dev/null || install_native_gettext || return 1
+	which perl > /dev/null || install_native_perl || return 1
 	search_header Python.h || install_native_python || return 1
 	search_header ruby.h || install_native_ruby || return 1
 	prepare_vim_source || return 1
@@ -1799,8 +1796,8 @@ install_native_git()
 	(cd ${git_org_src_dir}
 	./configure --prefix=${prefix} --without-tcltk) || return 1
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return 1
-	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS="${LDFLAGS} -ldl" all || return 1 # XXX docターゲット入れたいけどエラー回避で外してる。
-	make -C ${git_org_src_dir} -j ${jobs} V=1 strip install || return 1 # XXX install-doc install-htmlターゲット入れたいけどエラー回避で外してる。
+	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS="${LDFLAGS} -ldl" all || return 1 # [XXX] docターゲット入れたいけどエラー回避で外してる。
+	make -C ${git_org_src_dir} -j ${jobs} V=1 strip install || return 1 # [XXX] install-doc install-htmlターゲット入れたいけどエラー回避で外してる。
 }
 
 install_native_mercurial()
@@ -1809,6 +1806,7 @@ install_native_mercurial()
 	which python3 > /dev/null || install_native_python || return 1
 	prepare_mercurial_source || return 1
 	unpack_archive ${mercurial_org_src_dir} ${mercurial_src_base} || return 1
+# [TODO] mercurialがmakeできない。たぶんpython3使ってるせい。
 	make -C ${mercurial_org_src_dir} -j ${jobs} PYTHON=python3 all || return 1
 	make -C ${mercurial_org_src_dir} -j ${jobs} PREFIX=${prefix} install || return 1
 }
@@ -1834,7 +1832,7 @@ install_native_llvm()
 	mkdir -p ${llvm_bld_dir}
 	(cd ${llvm_bld_dir}
 	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1 # CXXFLAGS="${CXXFLAGS} -mfpu=neon -mhard-float"
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1 # [XXX] CXXFLAGS="${CXXFLAGS} -mfpu=neon -mhard-float"
 	make -C ${llvm_bld_dir} -j ${jobs} || return 1
 	make -C ${llvm_bld_dir} -j ${jobs} install/strip || return 1
 }
@@ -1981,8 +1979,8 @@ install_cross_binutils()
 			--with-sysroot=${sysroot} --enable-64-bit-bfd --enable-gold --enable-targets=all \
 			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
 			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function") || return 1
-	make -C ${binutils_src_dir_crs} -j ${jobs} || return 1
-	make -C ${binutils_src_dir_crs} -j ${jobs} install-strip || return 1
+	make -C ${binutils_src_dir_crs} -j 1 || return 1
+	make -C ${binutils_src_dir_crs} -j 1 install-strip || return 1
 }
 
 install_cross_gcc_without_headers()
@@ -2106,7 +2104,7 @@ install_cross_functional_gcc()
 			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
 			--enable-libstdcxx-debug --with-sysroot=${sysroot}) || return 1
 	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} || return 1
-	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k install-strip || true # XXX install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
+	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k install-strip || true # [XXX] install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
 }
 
 install_cross_gcc()
@@ -2281,11 +2279,12 @@ install_crossed_native_binutils()
 			mv ${binutils_org_src_dir} ${binutils_src_dir_crs_ntv}) || return 1
 	[ -f ${binutils_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_crs_ntv}
-		./configure --prefix=/usr --host=${target} --with-sysroot=/ --enable-64-bit-bfd --enable-gold \
+		./configure --prefix=/usr --host=${target} --with-sysroot=/ \
+			--enable-64-bit-bfd --enable-gold --enable-targets=all \
 			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable"\
 			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function") || return 1
-	make -C ${binutils_src_dir_crs_ntv} -j ${jobs} || return 1
-	make -C ${binutils_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
+	make -C ${binutils_src_dir_crs_ntv} -j 1 || return 1
+	make -C ${binutils_src_dir_crs_ntv} -j 1 DESTDIR=${sysroot} install-strip || return 1
 }
 
 install_crossed_native_gmp_mpfr_mpc()
@@ -2312,8 +2311,8 @@ install_crossed_native_gmp_mpfr_mpc()
 	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 	sed -i -e /^dependency_libs=/s/\'.\*\'\$/\'\'/ ${sysroot}/usr/lib/libmpfr.la || return 1
-	# XXX mpcビルド時に、mpfrが依存しているgmpを参照しようとしてlibmpfr.laの不整合に
-	#     引っかからないようにするために、強行的にlibmpfr.la書き換えてる。
+	# [XXX] mpcビルド時に、mpfrが依存しているgmpを参照しようとしてlibmpfr.laの不整合に
+	#       引っかからないようにするために、強行的にlibmpfr.la書き換えてる。
 	[ -d ${mpc_src_dir_crs_ntv} ] ||
 		(unpack_archive ${mpc_org_src_dir} ${mpc_src_base} &&
 			mv ${mpc_org_src_dir} ${mpc_src_dir_crs_ntv}) || return 1
