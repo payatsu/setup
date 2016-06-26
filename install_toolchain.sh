@@ -1,5 +1,4 @@
 #!/bin/sh -e
-# [TODO] unpackしてすべてのconfigure --helpを試す。
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] haskell, bash, LLD, LLDB, Polly, MySQL, expat
 # [TODO] update-alternatives
@@ -238,7 +237,7 @@ auto()
 	prepare || return 1
 	full || return 1
 	clean || return 1
-	strip || return 1
+#	strip || return 1 # [TODO] crtbegin.oをstripすると、gccでコンパイルしたバイナリがsegfaultするようになる。
 	archive || return 1
 }
 
@@ -286,6 +285,7 @@ full()
 # Install native/cross GNU toolchain and other tools. as many as possible.
 {
 	rm -f ${prefix}/src/`basename $0`.log
+	touch ${prefix}/src/`basename $0`.log
 	full_native || return 1
 	full_cross || return 1
 	install_mingw_w64_gcc || return 1
@@ -309,8 +309,6 @@ clean()
 strip()
 # Strip all binary files.
 {
-	return 0 # [TODO] crtbegin.oをstripすると、gccでコンパイルしたバイナリがsegfaultするようになる。
-
 	for strip in strip ${target}-strip x86_64-w64-mingw32-strip; do
 		find ${prefix} -type f \( -perm /111 -o -name '*.o' -o -name '*.a' -o -name '*.so' -o -name '*.gox' \) \
 			| xargs file | grep 'not stripped' | cut -f1 -d: | xargs -I "{}" sh -c "chmod u+w {}; ${strip} {}" || true
@@ -1192,8 +1190,8 @@ install_native_bison()
 	[ -f ${bison_org_src_dir}/Makefile ] ||
 		(cd ${bison_org_src_dir}
 		./configure --prefix=${prefix} --disable-silent-rules) || return 1
-	make -C ${bison_org_src_dir} -j ${jobs} V=1 || return 1
-	make -C ${bison_org_src_dir} -j ${jobs} V=1 install-strip || return 1
+	make -C ${bison_org_src_dir} -j ${jobs} || return 1
+	make -C ${bison_org_src_dir} -j ${jobs} install-strip || return 1
 }
 
 install_native_flex()
@@ -1628,7 +1626,7 @@ install_native_diffutils()
 	unpack_archive ${diffutils_org_src_dir} ${diffutils_src_base} || return 1
 	[ -f ${diffutils_org_src_dir}/Makefile ] ||
 		(cd ${diffutils_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --disable-silent-rules) || return 1
 	make -C ${diffutils_org_src_dir} -j ${jobs} || return 1
 	make -C ${diffutils_org_src_dir} -j ${jobs} install-strip || return 1
 }
@@ -1960,9 +1958,10 @@ full_native()
 		s/install_native_glibc//;
 		p};d' $0`; do
 		$f \
-		&& echo \[`LANG=C date`\] \'$f\' succeeded. >> ${prefix}/src/`basename $0`.log \
-		|| echo \[`LANG=C date`\] \'$f\' failed.    >> ${prefix}/src/`basename $0`.log
+			&& echo \[`LANG=C date`\] \'$f\' succeeded. >> ${prefix}/src/`basename $0`.log \
+			|| echo \[`LANG=C date`\] \'$f\' failed.    >> ${prefix}/src/`basename $0`.log
 	done
+	return 0
 }
 
 install_cross_binutils()
@@ -2143,9 +2142,10 @@ full_cross()
 {
 	for f in install_cross_binutils install_cross_gcc install_cross_gdb; do
 		$f \
-		&& echo \[`LANG=C date`\] \'$f\' succeeded. >> ${prefix}/src/`basename $0`.log \
-		|| echo \[`LANG=C date`\] \'$f\' failed.    >> ${prefix}/src/`basename $0`.log
+			&& echo \[`LANG=C date`\] \'$f\' succeeded. >> ${prefix}/src/`basename $0`.log \
+			|| echo \[`LANG=C date`\] \'$f\' failed.    >> ${prefix}/src/`basename $0`.log
 	done
+	return 0
 }
 
 install_mingw_w64_header()
@@ -2281,7 +2281,7 @@ install_crossed_native_binutils()
 		(cd ${binutils_src_dir_crs_ntv}
 		./configure --prefix=/usr --host=${target} --with-sysroot=/ \
 			--enable-64-bit-bfd --enable-gold --enable-targets=all --with-system-zlib \
-			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable"\
+			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
 			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function") || return 1
 	make -C ${binutils_src_dir_crs_ntv} -j 1 || return 1
 	make -C ${binutils_src_dir_crs_ntv} -j 1 DESTDIR=${sysroot} install-strip || return 1
@@ -2336,7 +2336,7 @@ install_crossed_native_gcc()
 		(cd ${gcc_bld_dir_crs_ntv}
 		${gcc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
-			--enable-languages=${languages} --with-sysroot=/ --without-isl --with-system-zlib\
+			--enable-languages=${languages} --with-sysroot=/ --without-isl --with-system-zlib \
 			--enable-libstdcxx-debug \
 			CC_FOR_TARGET=${target}-gcc CXX_FOR_TARGET=${target}-g++ GOC_FOR_TARGET=${target}-gccgo) || return 1
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} || return 1
@@ -2351,7 +2351,7 @@ install_crossed_native_zlib()
 		(unpack_archive ${zlib_org_src_dir} ${zlib_src_base} &&
 			mv ${zlib_org_src_dir} ${zlib_src_dir_crs_ntv}) || return 1
 	(cd ${zlib_src_dir_crs_ntv}
-	CC=${target}-gcc ./configure --prefix=/usr) || return 1
+	CC=${target}-gcc AR=${target}-ar RANLIB=${target}-ranlib ./configure --prefix=/usr) || return 1
 	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install || return 1
 }
@@ -2382,7 +2382,7 @@ install_crossed_native_libtiff()
 	[ -f ${tiff_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${tiff_src_dir_crs_ntv}
 		./configure --prefix=/usr --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'` \
-			CC=${target}-gcc CXX=${target}-g++ STRIP=${target}-strip) || return 1
+			CC=${target}-gcc CXX=${target}-g++ STRIP=${target}-strip RANLIB=${target}-ranlib) || return 1
 	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 }
@@ -2391,9 +2391,10 @@ full_crossed_native()
 {
 	for f in `sed -e '/^install_crossed_native_[_[:alnum:]]\+()$/{s/()$//;p};d' $0`; do
 		$f \
-		&& echo \[`LANG=C date`\] \'$f\' succeeded. >> ${prefix}/src/`basename $0`.log \
-		|| echo \[`LANG=C date`\] \'$f\' failed.    >> ${prefix}/src/`basename $0`.log
+			&& echo \[`LANG=C date`\] \'$f\' succeeded. >> ${prefix}/src/`basename $0`.log \
+			|| echo \[`LANG=C date`\] \'$f\' failed.    >> ${prefix}/src/`basename $0`.log
 	done
+	return 0
 }
 
 while getopts p:t:j:h arg; do
