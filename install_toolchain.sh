@@ -1350,10 +1350,12 @@ install_native_glibc()
 	[ -f ${glibc_bld_dir_ntv}/Makefile ] ||
 		(cd ${glibc_bld_dir_ntv}
 		LD_LIBRARY_PATH='' ${glibc_src_dir_ntv}/configure --prefix=${prefix} --build=${build} \
-			--with-headers=${prefix}/include --without-selinux CPPFLAGS="${CPPFLAGS} -I${prefix}/include -D_LIBC") || return 1
+			--with-headers=${prefix}/include --without-selinux --enable-add-ons \
+			CPPFLAGS="${CPPFLAGS} -I${prefix}/include -D_LIBC") || return 1
 	make -C ${glibc_bld_dir_ntv} -j ${jobs} install-headers || return 1
 	make -C ${glibc_bld_dir_ntv} -j ${jobs} || return 1
 	make -C ${glibc_bld_dir_ntv} -j ${jobs} install || return 1
+	make -C ${glibc_bld_dir_ntv} -j ${jobs} localedata/install-locales || return 1
 	update_search_path || return 1
 }
 
