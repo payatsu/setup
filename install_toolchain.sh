@@ -327,7 +327,7 @@ archive()
 deploy()
 # Deploy related files.
 {
-	tar xJvf --no-same-owner --no-same-permissions `echo ${prefix} | sed -e 's+/$++'`.tar.xz \
+	tar xJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz \
 		--no-same-owner --no-same-permissions -C `dirname ${prefix}` || return 1
 	update_search_path || return 1
 	echo Please add ${prefix}/bin to PATH
