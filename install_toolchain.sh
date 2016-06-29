@@ -463,7 +463,7 @@ set_variables()
 
 	echo ${PATH} | tr : '\n' | grep -q -e ^${prefix}/bin\$ \
 		|| PATH=${prefix}/bin:${PATH} \
-		&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s+${prefix}/bin++g;s+::+:+g;s+^:++;s+:\$++"`
+		&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s+\(^\|:\)${prefix}/bin\(\$\|:\)+\1\2+g;s+::+:+g;s+^:++;s+:\$++"`
 	echo ${PATH} | tr : '\n' | grep -q -e ^/sbin\$ || PATH=/sbin:${PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -q -e ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64:${LD_LIBRARY_PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -q -e ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib:${LD_LIBRARY_PATH}
