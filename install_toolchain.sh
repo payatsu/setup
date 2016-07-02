@@ -2384,7 +2384,7 @@ install_crossed_native_libtiff()
 	[ -f ${tiff_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${tiff_src_dir_crs_ntv}
 		./configure --prefix=/usr --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'` \
-			CC=${target}-gcc CXX=${target}-g++ STRIP=${target}-strip RANLIB=${target}-ranlib) || return 1
+			CC=${target}-gcc CXX=${target}-g++ AS=${target}-as STRIP=${target}-strip RANLIB=${target}-ranlib) || return 1
 	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install-strip || return 1
 }
