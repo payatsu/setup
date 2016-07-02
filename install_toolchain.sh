@@ -1297,6 +1297,7 @@ install_native_make()
 install_native_binutils()
 {
 	[ -x ${prefix}/bin/as -a "${force_install}" != yes ] && return 0
+	search_header zlib.h || install_native_zlib || return 1
 	which yacc > /dev/null || install_native_bison || return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_ntv} ] ||
@@ -1970,6 +1971,7 @@ install_cross_binutils()
 {
 	[ -x ${prefix}/bin/${target}-as -a "${force_install}" != yes ] && return 0
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
+	search_header zlib.h || install_native_zlib || return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_crs} ] ||
 		(unpack_archive ${binutils_org_src_dir} ${binutils_src_base} &&
@@ -2274,6 +2276,7 @@ install_native_perl()
 install_crossed_native_binutils()
 {
 	[ -x ${sysroot}/usr/bin/as -a "${force_install}" != yes ] && return 0
+	search_header zlib.h || install_native_zlib || return 1
 	which yacc > /dev/null || install_native_bison || return 1
 	prepare_binutils_source || return 1
 	[ -d ${binutils_src_dir_crs_ntv} ] ||
