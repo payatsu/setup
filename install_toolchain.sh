@@ -1544,7 +1544,7 @@ install_native_giflib()
 			mv ${giflib_org_src_dir} ${giflib_src_dir_ntv}) || return 1
 	[ -f ${giflib_src_dir_ntv}/Makefile ] ||
 		(cd ${giflib_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build}) || return 1
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${giflib_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${giflib_src_dir_ntv} -j ${jobs} install-strip || return 1
 	update_search_path || return 1
