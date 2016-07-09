@@ -1,6 +1,6 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
-# [TODO] haskell, bash, LLD, LLDB, Polly, MySQL, expat
+# [TODO] haskell, bash, tmux, LLD, LLDB, Polly, MySQL, expat
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
@@ -23,7 +23,7 @@
 : ${sed_ver:=4.2.2}
 : ${gawk_ver:=4.1.3}
 : ${make_ver:=4.2}
-: ${binutils_ver:=2.26}
+: ${binutils_ver:=2.26.1}
 : ${linux_ver:=3.18.13}
 : ${gperf_ver:=3.0.4}
 : ${glibc_ver:=2.23}
@@ -32,7 +32,7 @@
 : ${mpc_ver:=1.0.3}
 : ${gcc_ver:=6.1.0}
 : ${ncurses_ver:=6.0}
-: ${gdb_ver:=7.11}
+: ${gdb_ver:=7.11.1}
 : ${zlib_ver:=1.2.8}
 : ${libpng_ver:=1.6.21}
 : ${tiff_ver:=4.0.6}
