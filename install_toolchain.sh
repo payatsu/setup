@@ -288,7 +288,7 @@ full()
 	touch ${prefix}/src/`basename $0`.log
 	full_native || return 1
 	full_cross || return 1
-	install_mingw_w64_gcc || return 1
+	full_mingw_w64 || return 1
 	full_crossed_native || return 1
 }
 
@@ -2152,6 +2152,16 @@ full_cross()
 	return 0
 }
 
+install_mingw_w64_binutils()
+{
+	[ -x ${prefix}/bin/x86_64-w64-mingw32-as -a "${force_install}" != yes ] && return 0
+	prev_target=${target}; target=x86_64-w64-mingw32
+	set_variables || return 1
+	install_cross_binutils || return 1
+	target=${prev_target}
+	set_variables || return 1
+}
+
 install_mingw_w64_header()
 {
 	prepare_mingw_w64_source || return 1
@@ -2205,7 +2215,7 @@ install_mingw_w64_gcc()
 	prev_target=${target}; target=x86_64-w64-mingw32
 	prev_languages=${languages}; languages=c,c++
 	set_variables || return 1
-	which ${target}-as > /dev/null || install_cross_binutils || return 1
+	install_cross_binutils || return 1
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
 	which perl > /dev/null || install_native_perl || return 1
@@ -2218,6 +2228,16 @@ install_mingw_w64_gcc()
 	target=${prev_target}
 	languages=${prev_languages}
 	set_variables || return 1
+}
+
+full_mingw_w64()
+{
+	for f in install_mingw_w64_binutils install_mingw_w64_gcc; do
+		$f \
+			&& echo \[`LANG=C date`\] \'$f\' succeeded. >> ${prefix}/src/`basename $0`.log \
+			|| echo \[`LANG=C date`\] \'$f\' failed.    >> ${prefix}/src/`basename $0`.log
+	done
+	return 0
 }
 
 install_native_python()
