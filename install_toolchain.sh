@@ -54,7 +54,7 @@
 : ${libxml2_ver:=2.9.4}
 : ${libxslt_ver:=1.1.29}
 : ${gettext_ver:=0.19.7}
-: ${git_ver:=2.9.0}
+: ${git_ver:=2.9.2}
 : ${mercurial_ver:=3.8.3}
 : ${cmake_ver:=3.5.2}
 : ${llvm_ver:=3.8.0}
