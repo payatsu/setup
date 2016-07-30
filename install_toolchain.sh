@@ -1,4 +1,5 @@
 #!/bin/sh -e
+# [TODO] subversion入れられるようにする(git-svn)。
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] haskell, bash, tmux, LLD, LLDB, Polly, MySQL, expat
 # [TODO] update-alternatives
