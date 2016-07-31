@@ -1,7 +1,7 @@
 #!/bin/sh -e
 # [TODO] subversion入れられるようにする(git-svn)。
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
-# [TODO] haskell, bash, tmux, LLD, LLDB, Polly, MySQL, expat
+# [TODO] haskell, bash, LLD, LLDB, Polly, MySQL, expat
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
@@ -47,6 +47,8 @@
 : ${patch_ver:=2.7.5}
 : ${findutils_ver:=4.6.0}
 : ${screen_ver:=4.3.1}
+: ${libevent_ver:=2.0.22}
+: ${tmux_ver:=2.2}
 : ${zsh_ver:=5.2}
 : ${openssl_ver:=1.0.2f}
 : ${curl_ver:=7.49.0}
@@ -182,6 +184,10 @@ help()
 		Specify the version of GNU findutils you want, currently'${findutils_ver}'.
 	screen_ver
 		Specify the version of GNU Screen you want, currently '${screen_ver}'.
+	libevent_ver
+		Specify the version of libevent you want, currently '${libevent_ver}'.
+	tmux_ver
+		Specify the version of tmux you want, currently '${tmux_ver}'.
 	zsh_ver
 		Specify the version of Zsh you want, currently '${zsh_ver}'.
 	openssl_ver
@@ -429,7 +435,7 @@ set_variables()
 	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
 		gmp mpfr mpc gcc ncurses gdb zlib libpng tiff giflib emacs vim grep global diffutils patch findutils \
-		screen zsh openssl curl asciidoc xmlto libxml2 libxslt gettext git mercurial \
+		screen libevent tmux zsh openssl curl asciidoc xmlto libxml2 libxslt gettext git mercurial \
 		cmake llvm libcxx libcxxabi cfe lld lldb Python ruby go perl; do
 		set_src_directory ${pkg}
 	done
@@ -892,6 +898,22 @@ prepare_screen_source()
 			http://ftp.gnu.org/gnu/screen/${screen_name}.tar.gz || return 1
 }
 
+prepare_libevent_source()
+{
+	mkdir -p ${libevent_src_base}
+	check_archive ${libevent_org_src_dir}-stable ||
+		wget --no-check-certificate -O ${libevent_org_src_dir}-stable.tar.gz \
+			https://github.com/libevent/libevent/releases/download/release-${libevent_ver}-stable/${libevent_name}-stable.tar.gz || return 1
+}
+
+prepare_tmux_source()
+{
+	mkdir -p ${tmux_src_base}
+	check_archive ${tmux_org_src_dir} ||
+		wget --no-check-certificate -O ${tmux_org_src_dir}.tar.gz \
+			https://github.com/tmux/tmux/releases/download/${tmux_ver}/${tmux_name}.tar.gz || return 1
+}
+
 prepare_zsh_source()
 {
 	mkdir -p ${zsh_src_base}
@@ -1073,7 +1095,7 @@ prepare_ruby_source()
 	mkdir -p ${ruby_src_base}
 	check_archive ${ruby_org_src_dir} ||
 		wget -O ${ruby_org_src_dir}.tar.xz \
-			http://ring.shibaura-it.ac.jp/archives/lang/ruby/${ruby_name}.tar.xz || return 1
+			http://cache.ruby-lang.org/pub/ruby/${ruby_name}.tar.xz || return 1
 }
 
 prepare_perl_source()
@@ -1140,7 +1162,7 @@ install_native_gzip()
 	unpack_archive ${gzip_org_src_dir} ${gzip_src_base} || return 1
 	[ -f ${gzip_org_src_dir}/Makefile ] ||
 		(cd ${gzip_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --disable-silent-rules) || return 1
 	make -C ${gzip_org_src_dir} -j ${jobs} || return 1
 	make -C ${gzip_org_src_dir} -j ${jobs} install-strip || return 1
 }
@@ -1254,7 +1276,7 @@ install_native_libtool()
 	unpack_archive ${libtool_org_src_dir} ${libtool_src_base} || return 1
 	[ -f ${libtool_org_src_dir}/Makefile ] ||
 		(cd ${libtool_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --disable-silent-rules) || return 1
 	make -C ${libtool_org_src_dir} -j ${jobs} || return 1
 	make -C ${libtool_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1530,7 +1552,7 @@ install_native_libjpeg()
 			mv ${libjpeg_org_src_dir} ${libjpeg_src_dir_ntv}) || return 1
 	[ -f ${libjpeg_src_dir_ntv}/Makefile ] ||
 		(cd ${libjpeg_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build}) || return 1
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${libjpeg_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${libjpeg_src_dir_ntv} -j ${jobs} install-strip || return 1
 	update_search_path || return 1
@@ -1662,6 +1684,7 @@ install_native_findutils()
 install_native_screen()
 {
 	[ -x ${prefix}/bin/screen -a "${force_install}" != yes ] && return 0
+	search_header curses.h || install_native_ncurses || return 1
 	prepare_screen_source || return 1
 	unpack_archive ${screen_org_src_dir} ${screen_src_base} || return 1
 	[ -f ${screen_org_src_dir}/Makefile ] ||
@@ -1670,6 +1693,33 @@ install_native_screen()
 	make -C ${screen_org_src_dir} -j ${jobs} || return 1
 	mkdir -p ${prefix}/share/screen/utf8encodings || return 1
 	make -C ${screen_org_src_dir} -j ${jobs} install || return 1
+}
+
+install_native_libevent()
+{
+	[ -e ${prefix}/lib/libevent.so -a "${force_install}" != yes ] && return 0
+	prepare_libevent_source || return 1
+	unpack_archive ${libevent_org_src_dir}-stable ${libevent_src_base} || return 1
+	[ -f ${libevent_org_src_dir}-stable/Makefile ] ||
+		(cd ${libevent_org_src_dir}-stable
+		./configure --prefix=${prefix}) || return 1
+	make -C ${libevent_org_src_dir}-stable -j ${jobs} || return 1
+	make -C ${libevent_org_src_dir}-stable -j ${jobs} install || return 1
+	update_search_path || return 1
+}
+
+install_native_tmux()
+{
+	[ -x ${prefix}/bin/tmux -a "${force_install}" != yes ] && return 0
+	search_header curses.h || install_native_ncurses || return 1
+	search_header event.h event2 || install_native_libevent || return 1
+	prepare_tmux_source || return 1
+	unpack_archive ${tmux_org_src_dir} ${tmux_src_base} || return 1
+	[ -f ${tmux_org_src_dir}/Makefile ] ||
+		(cd ${tmux_org_src_dir}
+		./configure --prefix=${prefix} CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1
+	make -C ${tmux_org_src_dir} -j ${jobs} || return 1
+	make -C ${tmux_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_zsh()
