@@ -65,7 +65,7 @@
 : ${mingw_w64_ver:=4.0.6}
 : ${Python_ver:=3.5.1}
 : ${ruby_ver:=2.3.1}
-: ${go_ver:=1.6.2}
+: ${go_ver:=1.7}
 : ${perl_ver:=5.24.0}
 
 : ${prefix:=/toolchains}
@@ -2328,6 +2328,7 @@ install_native_go()
 	(cd ${go_org_src_dir}/src
 	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=${prefix} \
 		GOROOT=${go_org_src_dir} GOROOT_FINAL=${prefix}/go ${go_org_src_dir}/src/make.bash) || return 1
+	[ ! -d ${prefix}/go ] || rm -rf ${prefix}/go || return 1
 	mv ${go_org_src_dir} ${prefix}/go || return 1
 	${prefix}/go/bin/go get golang.org/x/tools/cmd/... || return 1
 }
