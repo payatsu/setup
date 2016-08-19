@@ -291,8 +291,6 @@ all()
 full()
 # Install native/cross GNU toolchain and other tools. as many as possible.
 {
-	rm -f ${prefix}/src/`basename $0`.log
-	touch ${prefix}/src/`basename $0`.log
 	full_native || return 1
 	full_cross || return 1
 	full_mingw_w64 || return 1
@@ -2012,8 +2010,8 @@ full_native()
 		s/install_native_glibc//;
 		p};d' $0`; do
 		$f \
-			&& echo \[`LANG=C date`\] \'$f\' succeeded. >> ${prefix}/src/`basename $0`.log \
-			|| echo \[`LANG=C date`\] \'$f\' failed.    >> ${prefix}/src/`basename $0`.log
+			&& echo \'$f\' succeeded. | logger -p user.notice -t `basename $0` \
+			|| echo \'$f\' failed.    | logger -p user.notice -t `basename $0`
 	done
 	return 0
 }
@@ -2197,8 +2195,8 @@ full_cross()
 {
 	for f in install_cross_binutils install_cross_gcc install_cross_gdb; do
 		$f \
-			&& echo \[`LANG=C date`\] \'$f\' succeeded. >> ${prefix}/src/`basename $0`.log \
-			|| echo \[`LANG=C date`\] \'$f\' failed.    >> ${prefix}/src/`basename $0`.log
+			&& echo \'$f\' succeeded. | logger -p user.notice -t `basename $0` \
+			|| echo \'$f\' failed.    | logger -p user.notice -t `basename $0`
 	done
 	return 0
 }
@@ -2285,8 +2283,8 @@ full_mingw_w64()
 {
 	for f in install_mingw_w64_binutils install_mingw_w64_gcc; do
 		$f \
-			&& echo \[`LANG=C date`\] \'$f\' succeeded. >> ${prefix}/src/`basename $0`.log \
-			|| echo \[`LANG=C date`\] \'$f\' failed.    >> ${prefix}/src/`basename $0`.log
+			&& echo \'$f\' succeeded. | logger -p user.notice -t `basename $0` \
+			|| echo \'$f\' failed.    | logger -p user.notice -t `basename $0`
 	done
 	return 0
 }
@@ -2468,8 +2466,8 @@ full_crossed_native()
 {
 	for f in `sed -e '/^install_crossed_native_[_[:alnum:]]\+()$/{s/()$//;p};d' $0`; do
 		$f \
-			&& echo \[`LANG=C date`\] \'$f\' succeeded. >> ${prefix}/src/`basename $0`.log \
-			|| echo \[`LANG=C date`\] \'$f\' failed.    >> ${prefix}/src/`basename $0`.log
+			&& echo \'$f\' succeeded.  | logger -p user.notice -t `basename $0` \
+			|| echo \'$f\' failed.     | logger -p user.notice -t `basename $0`
 	done
 	return 0
 }
