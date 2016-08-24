@@ -31,7 +31,7 @@
 : ${gmp_ver:=6.1.0}
 : ${mpfr_ver:=3.1.4}
 : ${mpc_ver:=1.0.3}
-: ${gcc_ver:=6.1.0}
+: ${gcc_ver:=6.2.0}
 : ${ncurses_ver:=6.0}
 : ${gdb_ver:=7.11.1}
 : ${zlib_ver:=1.2.8}
@@ -40,7 +40,7 @@
 : ${libjpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
 : ${emacs_ver:=24.5}
-: ${vim_ver:=7.4.1849}
+: ${vim_ver:=7.4.2243}
 : ${grep_ver:=2.25}
 : ${global_ver:=6.5.4}
 : ${diffutils_ver:=3.3}
@@ -2311,7 +2311,7 @@ install_native_ruby()
 	unpack_archive ${ruby_org_src_dir} ${ruby_src_base} || return 1
 	[ -f ${ruby_org_src_dir}/Makefile ] ||
 		(cd ${ruby_org_src_dir}
-		./configure --prefix=${prefix} --enable-multiarch --enable-shared --enable-rubygems) || return 1
+		./configure --prefix=${prefix} --enable-multiarch --enable-shared --disable-silent-rules) || return 1
 	make -C ${ruby_org_src_dir} -j ${jobs} || return 1
 	make -C ${ruby_org_src_dir} -j ${jobs} install || return 1
 }
