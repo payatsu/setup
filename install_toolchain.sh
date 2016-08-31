@@ -479,9 +479,9 @@ set_variables()
 
 convert_archives()
 {
-	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.tar.gz'  -execdir sh -c '[ -f `basename {} .gz`.xz      ] && exit 0; gzip  -cdv {} | xz -c > `basename {} .gz`.xz'  \; -delete || return 1
-	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.tar.bz2' -execdir sh -c '[ -f `basename {} .bz2`.xz     ] && exit 0; bzip2 -cdv {} | xz -c > `basename {} .bz2`.xz' \; -delete || return 1
-	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.zip'     -execdir sh -c '[ -f `basename {} .zip`.tar.xz ] && exit 0; unzip      {} && tar cJvf `basename {} .zip`.tar.xz `basename {} .zip`' \; -delete || return 1
+	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.tar.gz'  -exec sh -c '[ -f `basename {} .gz`.xz  ] && exit 0; echo {}:; gzip  -cd {} | xz -cv > `basename {} .gz`.xz'  \; -delete || return 1
+	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.tar.bz2' -exec sh -c '[ -f `basename {} .bz2`.xz ] && exit 0; echo {}:; bzip2 -cd {} | xz -cv > `basename {} .bz2`.xz' \; -delete || return 1
+	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.zip'  -execdir sh -c '[ -f `basename {} .zip`.tar.xz ] && exit 0; unzip {} && tar cJvf `basename {} .zip`.tar.xz `basename {} .zip`' \; -delete || return 1
 }
 
 archive_sources()
