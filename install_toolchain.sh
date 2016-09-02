@@ -6,7 +6,7 @@
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
 #        -> xmltoの障害のせいで、gitのmakeに障害あり。
-# [TODO] install_native_clang_extra()のテスト実行が未完了。
+# [TODO] install_native_clang_tools_extra()のテスト実行が未完了。
 
 : ${tar_ver:=1.29}
 : ${xz_ver:=5.2.2}
@@ -374,19 +374,19 @@ debug()
 
 set_src_directory()
 {
+	_1=`echo ${1} | tr - _`
+
 	case ${1} in
-		llvm|libcxx|libcxxabi|cfe|lld|lldb)
-		eval ${1}_name=${1}-${llvm_ver}.src
-		eval ${1}_src_base=${prefix}/src/${1}
-		eval ${1}_org_src_dir=\${${1}_src_base}/\${${1}_name}
-		eval ${1}_bld_dir=\${${1}_src_base}/\${${1}_name}-bld
+		llvm|libcxx|libcxxabi|compiler-rt|cfe|clang-tools-extra|lld|lldb)
+		eval ${_1}_name=${1}-${llvm_ver}.src
+		eval ${_1}_src_base=${prefix}/src/${1}
+		eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
+		eval ${_1}_bld_dir=\${${_1}_src_base}/\${${_1}_name}-bld
 		return 0
 		;;
 	*)
 		;;
 	esac
-
-	_1=`echo ${1} | tr - _`
 
 	eval ${_1}_name=${1}-\${${_1}_ver}
 	eval ${_1}_src_base=${prefix}/src/${1}
@@ -447,7 +447,7 @@ set_variables()
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
 		gmp mpfr mpc gcc ncurses gdb zlib libpng tiff giflib emacs vim grep global diffutils patch findutils \
 		screen libevent tmux zsh openssl curl asciidoc xmlto libxml2 libxslt gettext git mercurial apr apr-util subversion \
-		cmake llvm libcxx libcxxabi cfe lld lldb Python ruby go perl; do
+		cmake llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb Python ruby go perl; do
 		set_src_directory ${pkg}
 	done
 
@@ -455,16 +455,6 @@ set_variables()
 	libjpeg_src_base=${prefix}/src/libjpeg
 	libjpeg_org_src_dir=${libjpeg_src_base}/jpeg-`echo ${libjpeg_ver} | sed -e s/^v//`
 	libjpeg_src_dir_ntv=${libjpeg_src_base}/jpeg-`echo ${libjpeg_ver} | sed -e s/^v//`-ntv
-
-	clang_rt_name=compiler-rt-${llvm_ver}.src
-	clang_rt_src_base=${prefix}/src/compiler-rt
-	clang_rt_org_src_dir=${clang_rt_src_base}/${clang_rt_name}
-	clang_rt_bld_dir=${clang_rt_src_base}/${clang_rt_name}-bld
-
-	clang_extra_name=clang-tools-extra-${llvm_ver}.src
-	clang_extra_src_base=${prefix}/src/clang-tools-extra
-	clang_extra_org_src_dir=${clang_extra_src_base}/${clang_extra_name}
-	clang_extra_bld_dir=${clang_extra_src_base}/${clang_extra_name}-bld
 
 	boost_name=boost_${boost_ver}
 	boost_src_base=${prefix}/src/boost
@@ -1061,12 +1051,12 @@ prepare_libcxxabi_source()
 			http://llvm.org/releases/${llvm_ver}/${libcxxabi_name}.tar.xz || return 1
 }
 
-prepare_clang_rt_source()
+prepare_compiler_rt_source()
 {
-	mkdir -p ${clang_rt_src_base}
-	check_archive ${clang_rt_org_src_dir} ||
-		wget -O ${clang_rt_org_src_dir}.tar.xz \
-			http://llvm.org/releases/${llvm_ver}/${clang_rt_name}.tar.xz || return 1
+	mkdir -p ${compiler_rt_src_base}
+	check_archive ${compiler_rt_org_src_dir} ||
+		wget -O ${compiler_rt_org_src_dir}.tar.xz \
+			http://llvm.org/releases/${llvm_ver}/${compiler_rt_name}.tar.xz || return 1
 }
 
 prepare_cfe_source()
@@ -1077,12 +1067,12 @@ prepare_cfe_source()
 			http://llvm.org/releases/${llvm_ver}/${cfe_name}.tar.xz || return 1
 }
 
-prepare_clang_extra_source()
+prepare_clang_tools_extra_source()
 {
-	mkdir -p ${clang_extra_src_base}
-	check_archive ${clang_extra_org_src_dir} ||
-		wget -O ${clang_extra_org_src_dir}.tar.xz \
-			http://llvm.org/releases/${llvm_ver}/${clang_extra_name}.tar.xz || return 1
+	mkdir -p ${clang_tools_extra_src_base}
+	check_archive ${clang_tools_extra_org_src_dir} ||
+		wget -O ${clang_tools_extra_org_src_dir}.tar.xz \
+			http://llvm.org/releases/${llvm_ver}/${clang_tools_extra_name}.tar.xz || return 1
 }
 
 prepare_lld_source()
@@ -1998,19 +1988,19 @@ install_native_libcxxabi()
 	make -C ${libcxxabi_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
 
-install_native_clang_rt()
+install_native_compiler_rt()
 {
 	[ -d ${prefix}/include/sanitizer -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
 	search_header llvm-config.h || install_native_llvm || return 1
-	prepare_clang_rt_source || return 1
-	unpack_archive ${clang_rt_org_src_dir} ${clang_rt_src_base} || return 1
-	mkdir -p ${clang_rt_bld_dir}
-	(cd ${clang_rt_bld_dir}
+	prepare_compiler_rt_source || return 1
+	unpack_archive ${compiler_rt_org_src_dir} ${compiler_rt_src_base} || return 1
+	mkdir -p ${compiler_rt_bld_dir}
+	(cd ${compiler_rt_bld_dir}
 	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_rt_org_src_dir}) || return 1
-	make -C ${clang_rt_bld_dir} -j ${jobs} || return 1
-	make -C ${clang_rt_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${compiler_rt_org_src_dir}) || return 1
+	make -C ${compiler_rt_bld_dir} -j ${jobs} || return 1
+	make -C ${compiler_rt_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
 
 install_native_cfe()
@@ -2020,7 +2010,7 @@ install_native_cfe()
 	search_header llvm-config.h || install_native_llvm || return 1
 	search_header iostream c++/v1 || install_native_libcxx || return 1
 	search_header ABI.h clang/Basic || install_native_libcxxabi || return 1
-	search_header allocator_interface.h sanitizer || install_native_clang_rt || return 1
+	search_header allocator_interface.h sanitizer || install_native_compiler_rt || return 1
 	prepare_cfe_source || return 1
 	unpack_archive ${cfe_org_src_dir} ${cfe_src_base} || return 1
 	mkdir -p ${cfe_bld_dir}
@@ -2031,17 +2021,17 @@ install_native_cfe()
 	make -C ${cfe_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
 
-install_native_clang_extra()
+install_native_clang_tools_extra()
 {
 	which cmake > /dev/null || install_native_cmake || return 1
-	prepare_clang_extra_source || return 1
-	unpack_archive ${clang_extra_org_src_dir} ${clang_extra_src_base} || return 1
-	mkdir -p ${clang_extra_bld_dir}
-	(cd ${clang_extra_bld_dir}
+	prepare_clang_tools_extra_source || return 1
+	unpack_archive ${clang_tools_extra_org_src_dir} ${clang_tools_extra_src_base} || return 1
+	mkdir -p ${clang_tools_extra_bld_dir}
+	(cd ${clang_tools_extra_bld_dir}
 	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_extra_org_src_dir}) || return 1
-	make -C ${clang_extra_bld_dir} -j ${jobs} || return 1
-	make -C ${clang_extra_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_tools_extra_org_src_dir}) || return 1
+	make -C ${clang_tools_extra_bld_dir} -j ${jobs} || return 1
+	make -C ${clang_tools_extra_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
 
 install_native_lld()
