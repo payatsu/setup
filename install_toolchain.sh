@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# [TODO] subversion入れられるようにする(git-svn)。
+# [TODO] subversion入れられるようにする(git-svn)。SQLite, libserfも.
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] haskell, bash, LLD, LLDB, Polly, MySQL, expat
 # [TODO] update-alternatives
@@ -59,6 +59,9 @@
 : ${gettext_ver:=0.19.7}
 : ${git_ver:=2.9.2}
 : ${mercurial_ver:=3.8.3}
+: ${apr_ver:=1.5.2}
+: ${apr_util_ver:=1.5.4}
+: ${subversion_ver:=1.9.4}
 : ${cmake_ver:=3.5.2}
 : ${llvm_ver:=3.8.0}
 : ${boost_ver:=1_61_0}
@@ -210,6 +213,12 @@ help()
 		Specify the version of Git you want, currently '${git_ver}'.
 	mercurial_ver
 		Specify the version of Mercurial you want, currently '${mercurial_ver}'.
+	apr_ver
+		Specify the version of apr you want, currently '${apr_ver}'.
+	apr_util_ver
+		Specify the version of apr-util you want, currently '${apr_util_ver}'.
+	subversion_ver
+		Specify the version of Subversion you want, currently '${subversion_ver}'.
 	cmake_ver
 		Specify the version of Cmake you want, currently '${cmake_ver}'.
 	llvm_ver
@@ -377,34 +386,36 @@ set_src_directory()
 		;;
 	esac
 
-	eval ${1}_name=${1}-\${${1}_ver}
-	eval ${1}_src_base=${prefix}/src/${1}
-	eval ${1}_org_src_dir=\${${1}_src_base}/\${${1}_name}
+	_1=`echo ${1} | tr - _`
 
-	case ${1} in
+	eval ${_1}_name=${1}-\${${_1}_ver}
+	eval ${_1}_src_base=${prefix}/src/${1}
+	eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
+
+	case ${_1} in
 		glibc)
-		eval ${1}_bld_dir_ntv=\${${1}_src_base}/\${${1}_name}-bld
-		eval ${1}_src_dir_ntv=\${${1}_src_base}/\${${1}_name}-src
-		eval ${1}_bld_dir_crs_hdr=\${${1}_src_base}/${target}-\${${1}_name}-bld-hdr
-		eval ${1}_bld_dir_crs_1st=\${${1}_src_base}/${target}-\${${1}_name}-bld-1st
-		eval ${1}_src_dir_crs_hdr=\${${1}_src_base}/${target}-\${${1}_name}-src-hdr
-		eval ${1}_src_dir_crs_1st=\${${1}_src_base}/${target}-\${${1}_name}-src-1st
+		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
+		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-src
+		eval ${_1}_bld_dir_crs_hdr=\${${_1}_src_base}/${target}-\${${_1}_name}-bld-hdr
+		eval ${_1}_bld_dir_crs_1st=\${${_1}_src_base}/${target}-\${${_1}_name}-bld-1st
+		eval ${_1}_src_dir_crs_hdr=\${${_1}_src_base}/${target}-\${${_1}_name}-src-hdr
+		eval ${_1}_src_dir_crs_1st=\${${_1}_src_base}/${target}-\${${_1}_name}-src-1st
 		;;
 		gcc)
-		eval ${1}_bld_dir_ntv=\${${1}_src_base}/\${${1}_name}-ntv
-		eval ${1}_bld_dir_crs_1st=\${${1}_src_base}/${target}-\${${1}_name}-1st
-		eval ${1}_bld_dir_crs_2nd=\${${1}_src_base}/${target}-\${${1}_name}-2nd
-		eval ${1}_bld_dir_crs_3rd=\${${1}_src_base}/${target}-\${${1}_name}-3rd
-		eval ${1}_bld_dir_crs_ntv=\${${1}_src_base}/${target}-\${${1}_name}-crs-ntv
+		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-ntv
+		eval ${_1}_bld_dir_crs_1st=\${${_1}_src_base}/${target}-\${${_1}_name}-1st
+		eval ${_1}_bld_dir_crs_2nd=\${${_1}_src_base}/${target}-\${${_1}_name}-2nd
+		eval ${_1}_bld_dir_crs_3rd=\${${_1}_src_base}/${target}-\${${_1}_name}-3rd
+		eval ${_1}_bld_dir_crs_ntv=\${${_1}_src_base}/${target}-\${${_1}_name}-crs-ntv
 		;;
 		gdb)
-		eval ${1}_bld_dir_ntv=\${${1}_src_base}/\${${1}_name}-ntv
-		eval ${1}_bld_dir_crs=\${${1}_src_base}/${target}-\${${1}_name}-crs
+		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-ntv
+		eval ${_1}_bld_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-crs
 		;;
 		*)
-		eval ${1}_src_dir_ntv=\${${1}_src_base}/\${${1}_name}-ntv
-		eval ${1}_src_dir_crs=\${${1}_src_base}/${target}-\${${1}_name}-crs
-		eval ${1}_src_dir_crs_ntv=\${${1}_src_base}/${target}-\${${1}_name}-crs-ntv
+		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-ntv
+		eval ${_1}_src_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-crs
+		eval ${_1}_src_dir_crs_ntv=\${${_1}_src_base}/${target}-\${${_1}_name}-crs-ntv
 		;;
 	esac
 }
@@ -435,7 +446,7 @@ set_variables()
 	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
 		gmp mpfr mpc gcc ncurses gdb zlib libpng tiff giflib emacs vim grep global diffutils patch findutils \
-		screen libevent tmux zsh openssl curl asciidoc xmlto libxml2 libxslt gettext git mercurial \
+		screen libevent tmux zsh openssl curl asciidoc xmlto libxml2 libxslt gettext git mercurial apr apr-util subversion \
 		cmake llvm libcxx libcxxabi cfe lld lldb Python ruby go perl; do
 		set_src_directory ${pkg}
 	done
@@ -540,7 +551,7 @@ search_library()
 search_header()
 {
 	for dir in ${prefix}/include /usr/local/include /opt/include /usr/include; do
-		[ -d ${dir}${2:+/$2} ] && [ `find ${dir}${2:+/$2} -type f -name $1 | wc -l` != 0 ] && return 0
+		[ -f ${dir}${2:+/$2}/$1 ] && echo ${dir}${2:+/$2}/$1 && return 0
 	done
 	return 1
 }
@@ -994,6 +1005,30 @@ prepare_mercurial_source()
 			https://www.mercurial-scm.org/release/${mercurial_name}.tar.gz || return 1
 }
 
+prepare_apr_source()
+{
+	mkdir -p ${apr_src_base}
+	check_archive ${apr_org_src_dir} ||
+		wget -O ${apr_org_src_dir}.tar.bz2 \
+			http://ftp.tsukuba.wide.ad.jp/software/apache/apr/${apr_name}.tar.bz2 || return 1
+}
+
+prepare_apr_util_source()
+{
+	mkdir -p ${apr_util_src_base}
+	check_archive ${apr_util_org_src_dir} ||
+		wget -O ${apr_util_org_src_dir}.tar.bz2 \
+			http://ftp.tsukuba.wide.ad.jp/software/apache/apr/${apr_util_name}.tar.bz2 || return 1
+}
+
+prepare_subversion_source()
+{
+	mkdir -p ${subversion_src_base}
+	check_archive ${subversion_org_src_dir} ||
+		wget -O ${subversion_org_src_dir}.tar.bz2 \
+			http://ftp.tsukuba.wide.ad.jp/software/apache/subversion/${subversion_name}.tar.bz2 || return 1
+}
+
 prepare_cmake_source()
 {
 	mkdir -p ${cmake_src_base}
@@ -1385,7 +1420,7 @@ install_native_glibc()
 
 install_native_gmp_mpfr_mpc()
 {
-	[ -e ${prefix}/lib/libgmp.so -a -e ${prefix}/lib/libmpfr.so -a -e ${prefix}/lib/libmpc.so -a "${force_install}" != yes ] && return 0
+	[ -f ${prefix}/include/gmp.h -a -f ${prefix}/include/mpfr.h -a -f ${prefix}/include/mpc.h -a "${force_install}" != yes ] && return 0
 	prepare_gmp_mpfr_mpc_source || return 1
 
 	[ -d ${gmp_src_dir_ntv} ] ||
@@ -1441,7 +1476,7 @@ install_native_gcc()
 
 install_native_ncurses()
 {
-	[ -e ${prefix}/lib/libncurses.so -a "${force_install}" != yes ] && return 0
+	[ -f ${prefix}/include/ncurses/curses.h -a "${force_install}" != yes ] && return 0
 	prepare_ncurses_source || return 1
 	unpack_archive ${ncurses_org_src_dir} ${ncurses_src_base} || return 1
 
@@ -1500,7 +1535,7 @@ install_native_gdb()
 
 install_native_zlib()
 {
-	[ -e ${prefix}/lib/libz.so -a "${force_install}" != yes ] && return 0
+	[ -f ${prefix}/include/zlib.h -a "${force_install}" != yes ] && return 0
 	prepare_zlib_source || return 1
 	[ -d ${zlib_src_dir_ntv} ] ||
 		(unpack_archive ${zlib_org_src_dir} ${zlib_src_base} &&
@@ -1514,7 +1549,7 @@ install_native_zlib()
 
 install_native_libpng()
 {
-	[ -e ${prefix}/lib/libpng.so -a "${force_install}" != yes ] && return 0
+	[ -f ${prefix}/include/png.h -a "${force_install}" != yes ] && return 0
 	search_header zlib.h || install_native_zlib || return 1
 	prepare_libpng_source || return 1
 	[ -d ${libpng_src_dir_ntv} ] ||
@@ -1530,7 +1565,7 @@ install_native_libpng()
 
 install_native_libtiff()
 {
-	[ -e ${prefix}/lib/libtiff.so -a "${force_install}" != yes ] && return 0
+	[ -f ${prefix}/include/tiffio.h -a "${force_install}" != yes ] && return 0
 	prepare_libtiff_source || return 1
 	[ -d ${tiff_src_dir_ntv} ] ||
 		(unpack_archive ${tiff_org_src_dir} ${tiff_src_base} &&
@@ -1545,7 +1580,7 @@ install_native_libtiff()
 
 install_native_libjpeg()
 {
-	[ -e ${prefix}/lib/libjpeg.so -a "${force_install}" != yes ] && return 0
+	[ -f ${prefix}/include/jpeglib.h -a "${force_install}" != yes ] && return 0
 	prepare_libjpeg_source || return 1
 	[ -d ${libjpeg_src_dir_ntv} ] ||
 		(unpack_archive ${libjpeg_org_src_dir} ${libjpeg_src_base} &&
@@ -1560,7 +1595,7 @@ install_native_libjpeg()
 
 install_native_giflib()
 {
-	[ -e ${prefix}/lib/libgif.so -a "${force_install}" != yes ] && return 0
+	[ -f ${prefix}/include/gif_lib.h -a "${force_install}" != yes ] && return 0
 	prepare_giflib_source || return 1
 	[ -d ${giflib_src_dir_ntv} ] ||
 		(unpack_archive ${giflib_org_src_dir} ${giflib_src_base} &&
@@ -1697,7 +1732,7 @@ install_native_screen()
 
 install_native_libevent()
 {
-	[ -e ${prefix}/lib/libevent.so -a "${force_install}" != yes ] && return 0
+	[ -f ${prefix}/include/event2/event.h -a "${force_install}" != yes ] && return 0
 	prepare_libevent_source || return 1
 	unpack_archive ${libevent_org_src_dir}-stable ${libevent_src_base} || return 1
 	[ -f ${libevent_org_src_dir}-stable/Makefile ] ||
@@ -1737,7 +1772,7 @@ install_native_zsh()
 
 install_native_openssl()
 {
-	[ \( -e ${prefix}/lib/libssl.so -o -e ${prefix}/lib64/libssl.so \) -a "${force_install}" != yes ] && return 0
+	[ -d ${prefix}/include/openssl -a "${force_install}" != yes ] && return 0
 	prepare_openssl_source || return 1
 	unpack_archive ${openssl_org_src_dir} ${openssl_src_base} || return 1
 	(cd ${openssl_org_src_dir}
@@ -1792,7 +1827,7 @@ install_native_xmlto()
 
 install_native_libxml2()
 {
-	[ -e ${prefix}/lib/libxml2.so -a "${force_install}" != yes ] && return 0
+	[ -d ${prefix}/include/libxml2 -a "${force_install}" != yes ] && return 0
 	search_header Python.h || install_native_python || return 1
 	prepare_libxml2_source || return 1
 	unpack_archive ${libxml2_org_src_dir} ${libxml2_src_base} || return 1
@@ -1806,7 +1841,7 @@ install_native_libxml2()
 
 install_native_libxslt()
 {
-	[ -e ${prefix}/lib/libxslt.so -a "${force_install}" != yes ] && return 0
+	[ -d ${prefix}/include/libxslt -a "${force_install}" != yes ] && return 0
 	search_header xmlversion.h || install_native_libxml2 || return 1
 	prepare_libxslt_source || return 1
 	unpack_archive ${libxslt_org_src_dir} ${libxslt_src_base} || return 1
@@ -1863,6 +1898,50 @@ install_native_mercurial()
 	make -C ${mercurial_org_src_dir} -j ${jobs} PREFIX=${prefix} install || return 1
 }
 
+install_native_apr()
+{
+	[ -d ${prefix}/include/apr-1 -a "${force_install}" != yes ] && return 0
+	prepare_apr_source || return 1
+	unpack_archive ${apr_org_src_dir} ${apr_src_base} || return 1
+	[ -f ${apr_org_src_dir}/Makefile ] ||
+		(cd ${apr_org_src_dir}
+		./configure --prefix=${prefix} --enable-threads --enable-posix-shm --enable-other-child) || return 1
+	make -C ${apr_org_src_dir} -j ${jobs} || return 1
+	make -C ${apr_org_src_dir} -j ${jobs} install || return 1
+}
+
+install_native_apr_util()
+{
+	[ -f ${prefix}/include/apr-1/apu.h -a "${force_install}" != yes ] && return 0
+	search_header apr.h apr-1 || install_native_apr || return 1
+	prepare_apr_util_source || return 1
+	unpack_archive ${apr_util_org_src_dir} ${apr_util_src_base} || return 1
+	[ -f ${apr_util_org_src_dir}/Makefile ] ||
+		(cd ${apr_util_org_src_dir}
+		./configure --prefix=${prefix} --with-apr=`search_header apr.h apr-1 | sed -e 's/\/include\/apr-1.*$//'` --with-crypto --with-openssl --with-sqlite3) || return 1
+	make -C ${apr_util_org_src_dir} -j ${jobs} || return 1
+	make -C ${apr_util_org_src_dir} -j ${jobs} install || return 1
+}
+
+install_native_subversion()
+{
+	[ -x ${prefix}/bin/svn -a "${force_install}" != yes ] && return 0
+	search_header apr.h apr-1 || install_native_apr || return 1
+	search_header apu.h apr-1 || install_native_apr_util || return 1
+	search_header zlib.h || install_native_zlib || return 1
+	search_header ssl.h || install_native_openssl || return 1
+	which python3 > /dev/null || install_native_python || return 1
+	which perl > /dev/null || install_native_perl || return 1
+	which ruby > /dev/null || install_native_ruby || return 1
+	prepare_subversion_source || return 1
+	unpack_archive ${subversion_org_src_dir} ${subversion_src_base} || return 1
+	[ -f ${subversion_org_src_dir}/Makefile ] ||
+		(cd ${subversion_org_src_dir}
+		./configure --prefix=${prefix} --with-zlib ${strip:+--enable-optimize}) || return 1 # [TODO] stripしないときは、--enable-debugつけてみたい。
+	make -C ${subversion_org_src_dir} -j ${jobs} || return 1
+	make -C ${subversion_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+}
+
 install_native_cmake()
 {
 	[ -x ${prefix}/bin/cmake -a "${force_install}" != yes ] && return 0
@@ -1877,7 +1956,7 @@ install_native_cmake()
 
 install_native_llvm()
 {
-	[ -e ${prefix}/lib/libLLVMCore.a -a "${force_install}" != yes ] && return 0
+	[ -d ${prefix}/include/llvm -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
 	prepare_llvm_source || return 1
 	unpack_archive ${llvm_org_src_dir} ${llvm_src_base} || return 1
@@ -2366,7 +2445,7 @@ install_crossed_native_binutils()
 
 install_crossed_native_gmp_mpfr_mpc()
 {
-	[ -e ${sysroot}/usr/lib/libgmp.so -a -e ${sysroot}/usr/lib/libmpfr.so -a -e ${sysroot}/usr/lib/libmpc.so -a "${force_install}" != yes ] && return 0
+	[ -f ${sysroot}/usr/include/gmp.h -a -f ${sysroot}/usr/include/mpfr.h -a -f ${sysroot}/usr/include/mpc.h -a "${force_install}" != yes ] && return 0
 	prepare_gmp_mpfr_mpc_source || return 1
 
 	[ -d ${gmp_src_dir_crs_ntv} ] ||
@@ -2422,7 +2501,7 @@ install_crossed_native_gcc()
 
 install_crossed_native_zlib()
 {
-	[ -e ${sysroot}/usr/lib/libz.so -a "${force_install}" != yes ] && return 0
+	[ -f ${sysroot}/usr/include/zlib.h -a "${force_install}" != yes ] && return 0
 	prepare_zlib_source || return 1
 	[ -d ${zlib_src_dir_crs_ntv} ] ||
 		(unpack_archive ${zlib_org_src_dir} ${zlib_src_base} &&
@@ -2435,7 +2514,7 @@ install_crossed_native_zlib()
 
 install_crossed_native_libpng()
 {
-	[ -e ${sysroot}/usr/lib/libpng.so -a "${force_install}" != yes ] && return 0
+	[ -f ${sysroot}/usr/include/png.h -a "${force_install}" != yes ] && return 0
 	install_crossed_native_zlib || return 1
 	prepare_libpng_source || return 1
 	[ -d ${libpng_src_dir_crs_ntv} ] ||
@@ -2451,7 +2530,7 @@ install_crossed_native_libpng()
 
 install_crossed_native_libtiff()
 {
-	[ -e ${sysroot}/usr/lib/libtiff.so -a "${force_install}" != yes ] && return 0
+	[ -f ${sysroot}/usr/include/tiffio.h -a "${force_install}" != yes ] && return 0
 	prepare_libtiff_source || return 1
 	[ -d ${tiff_src_dir_crs_ntv} ] ||
 		(unpack_archive ${tiff_org_src_dir} ${tiff_src_base} &&
