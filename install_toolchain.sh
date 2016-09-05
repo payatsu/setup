@@ -1,5 +1,4 @@
 #!/bin/sh -e
-# [TODO] subversion入れられるようにする(git-svn)。SQLite, libserfも.
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] haskell, bash, LLD, LLDB, Polly, MySQL, expat
 # [TODO] update-alternatives
@@ -59,6 +58,7 @@
 : ${gettext_ver:=0.19.7}
 : ${git_ver:=2.9.2}
 : ${mercurial_ver:=3.8.3}
+: ${sqlite_autoconf_ver:=3140100}
 : ${apr_ver:=1.5.2}
 : ${apr_util_ver:=1.5.4}
 : ${subversion_ver:=1.9.4}
@@ -213,6 +213,8 @@ help()
 		Specify the version of Git you want, currently '${git_ver}'.
 	mercurial_ver
 		Specify the version of Mercurial you want, currently '${mercurial_ver}'.
+	sqlite_autoconf_ver
+		Specify the version of SQLite you want, currently '${sqlite_autoconf_ver}'.
 	apr_ver
 		Specify the version of apr you want, currently '${apr_ver}'.
 	apr_util_ver
@@ -359,7 +361,7 @@ reset()
 # Reset 'prefix' except 'prefix/src/'.
 {
 	clean
-	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src ! -name '.git' -exec rm -rf '{}' +
+	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src ! -name .git -exec rm -rf '{}' +
 	[ `whoami` = root ] && rm  -f /etc/ld.so.conf.d/`basename ${prefix}`.conf
 	[ `whoami` = root ] && ldconfig || return 0
 }
@@ -446,7 +448,7 @@ set_variables()
 	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
 		gmp mpfr mpc gcc ncurses gdb zlib libpng tiff giflib emacs vim grep global diffutils patch findutils \
-		screen libevent tmux zsh openssl curl asciidoc xmlto libxml2 libxslt gettext git mercurial apr apr-util subversion \
+		screen libevent tmux zsh openssl curl asciidoc xmlto libxml2 libxslt gettext git mercurial sqlite-autoconf apr apr-util subversion \
 		cmake llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb Python ruby go perl; do
 		set_src_directory ${pkg}
 	done
@@ -993,6 +995,14 @@ prepare_mercurial_source()
 	check_archive ${mercurial_org_src_dir} ||
 		wget --no-check-certificate -O ${mercurial_org_src_dir}.tar.gz \
 			https://www.mercurial-scm.org/release/${mercurial_name}.tar.gz || return 1
+}
+
+prepare_sqlite_source()
+{
+	mkdir -p ${sqlite_autoconf_src_base}
+	check_archive ${sqlite_autoconf_org_src_dir} ||
+		wget --no-check-certificate -O ${sqlite_autoconf_org_src_dir}.tar.gz \
+			https://www.sqlite.org/2016/${sqlite_autoconf_name}.tar.gz || return 1
 }
 
 prepare_apr_source()
@@ -1888,6 +1898,18 @@ install_native_mercurial()
 	make -C ${mercurial_org_src_dir} -j ${jobs} PREFIX=${prefix} install || return 1
 }
 
+install_native_sqlite()
+{
+	[ -f ${prefix}/include/sqlite3.h -a "${force_install}" != yes ] && return 0
+	prepare_sqlite_source || return 1
+	unpack_archive ${sqlite_autoconf_org_src_dir} ${sqlite_autoconf_src_base} || return 1
+	[ -f ${sqlite_autoconf_org_src_dir}/Makefile ] ||
+		(cd ${sqlite_autoconf_org_src_dir}
+		./configure --prefix=${prefix}) || return 1
+	make -C ${sqlite_autoconf_org_src_dir} -j ${jobs} || return 1
+	make -C ${sqlite_autoconf_org_src_dir} -j ${jobs} install || return 1
+}
+
 install_native_apr()
 {
 	[ -d ${prefix}/include/apr-1 -a "${force_install}" != yes ] && return 0
@@ -1904,11 +1926,13 @@ install_native_apr_util()
 {
 	[ -f ${prefix}/include/apr-1/apu.h -a "${force_install}" != yes ] && return 0
 	search_header apr.h apr-1 || install_native_apr || return 1
+	search_header sqlite3.h || install_native_sqlite || return 1
 	prepare_apr_util_source || return 1
 	unpack_archive ${apr_util_org_src_dir} ${apr_util_src_base} || return 1
 	[ -f ${apr_util_org_src_dir}/Makefile ] ||
 		(cd ${apr_util_org_src_dir}
-		./configure --prefix=${prefix} --with-apr=`search_header apr.h apr-1 | sed -e 's/\/include\/apr-1.*$//'` --with-crypto --with-openssl --with-sqlite3) || return 1
+		./configure --prefix=${prefix} --with-apr=`search_header apr.h apr-1 | sed -e 's/\/include\/apr-1.*$//'` \
+					--with-crypto --with-openssl --with-sqlite3=`search_header sqlite3.h | sed -e 's/\/include\/.*//'`) || return 1
 	make -C ${apr_util_org_src_dir} -j ${jobs} || return 1
 	make -C ${apr_util_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1927,9 +1951,10 @@ install_native_subversion()
 	unpack_archive ${subversion_org_src_dir} ${subversion_src_base} || return 1
 	[ -f ${subversion_org_src_dir}/Makefile ] ||
 		(cd ${subversion_org_src_dir}
-		./configure --prefix=${prefix} --with-zlib ${strip:+--enable-optimize}) || return 1 # [TODO] stripしないときは、--enable-debugつけてみたい。
+		./configure --prefix=${prefix} --with-zlib --with-sqlite=`search_header sqlite3.h | sed -e 's/\/include\/.*//'` \
+					${strip:+--enable-optimize}) || return 1 # [TODO] stripしないときは、--enable-debugつけてみたい。
 	make -C ${subversion_org_src_dir} -j ${jobs} || return 1
-	make -C ${subversion_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	make -C ${subversion_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_cmake()
