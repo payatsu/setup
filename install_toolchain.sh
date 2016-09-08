@@ -56,7 +56,7 @@
 : ${libxml2_ver:=2.9.4}
 : ${libxslt_ver:=1.1.29}
 : ${gettext_ver:=0.19.7}
-: ${git_ver:=2.9.2}
+: ${git_ver:=2.10.0}
 : ${mercurial_ver:=3.8.3}
 : ${sqlite_autoconf_ver:=3140100}
 : ${apr_ver:=1.5.2}
@@ -66,7 +66,7 @@
 : ${llvm_ver:=3.8.0}
 : ${boost_ver:=1_61_0}
 : ${mingw_w64_ver:=4.0.6}
-: ${Python_ver:=3.5.1}
+: ${Python_ver:=3.5.2}
 : ${ruby_ver:=2.3.1}
 : ${go_ver:=1.7}
 : ${perl_ver:=5.24.0}
@@ -1179,7 +1179,7 @@ install_native_bzip2()
 	[ -x ${prefix}/bin/bzip2 -a "${force_install}" != yes ] && return 0
 	prepare_bzip2_source || return 1
 	unpack_archive ${bzip2_org_src_dir} ${bzip2_src_base} || return 1
-	sed -i -e '/^CFLAGS=/{s/ -fPIC//g;s/$/ -fPIC/}' ${bzip2_org_src_dir}/Makefile || return 1
+	sed -i -e '/^CFLAGS=/{s/ -fPIC//g;s/$/ -fPIC/};s/ln -s -f \$(PREFIX)\/bin\//ln -s -f /' ${bzip2_org_src_dir}/Makefile || return 1
 	make -C ${bzip2_org_src_dir} -j ${jobs} || return 1
 	make -C ${bzip2_org_src_dir} -j ${jobs} PREFIX=${prefix} install || return 1
 	make -C ${bzip2_org_src_dir} -j ${jobs} clean || return 1
@@ -1468,7 +1468,7 @@ install_native_gcc()
 			--with-gmp=${prefix} --with-mpfr=${prefix} --with-mpc=${prefix} \
 			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
 			--enable-libstdcxx-debug \
-		) || return 1 # [XXX] ARMの場合右記オプションが必要。--with-arch=armv6 --with-fpu=vfp --with-float=hard
+		) || return 1
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return 1
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
@@ -1877,6 +1877,7 @@ install_native_git()
 	search_header xmlversion.h || install_native_libxml2 || return 1
 	search_header xslt.h || install_native_libxslt || return 1
 	which gettext > /dev/null || install_native_gettext || return 1
+	which perl > /dev/null || install_native_curl || return 1
 	prepare_git_source || return 1
 	unpack_archive ${git_org_src_dir} ${git_src_base} || return 1
 	make -C ${git_org_src_dir} -j ${jobs} configure || return 1
@@ -1977,8 +1978,8 @@ install_native_llvm()
 	unpack_archive ${llvm_org_src_dir} ${llvm_src_base} || return 1
 	mkdir -p ${llvm_bld_dir}
 	(cd ${llvm_bld_dir}
-	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1 # [XXX] CXXFLAGS="${CXXFLAGS} -mfpu=neon -mhard-float"
+	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1
 	make -C ${llvm_bld_dir} -j ${jobs} || return 1
 	make -C ${llvm_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
@@ -1991,7 +1992,7 @@ install_native_libcxx()
 	unpack_archive ${libcxx_org_src_dir} ${libcxx_src_base} || return 1
 	mkdir -p ${libcxx_bld_dir}
 	(cd ${libcxx_bld_dir}
-	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxx_org_src_dir}) || return 1
 	make -C ${libcxx_bld_dir} -j ${jobs} || return 1
 	make -C ${libcxx_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
@@ -2007,7 +2008,7 @@ install_native_libcxxabi()
 	unpack_archive ${libcxxabi_org_src_dir} ${libcxxabi_src_base} || return 1
 	mkdir -p ${libcxxabi_bld_dir}
 	(cd ${libcxxabi_bld_dir}
-	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxxabi_org_src_dir}) || return 1
 	make -C ${libcxxabi_bld_dir} -j ${jobs} || return 1
 	make -C ${libcxxabi_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
@@ -2022,7 +2023,7 @@ install_native_compiler_rt()
 	unpack_archive ${compiler_rt_org_src_dir} ${compiler_rt_src_base} || return 1
 	mkdir -p ${compiler_rt_bld_dir}
 	(cd ${compiler_rt_bld_dir}
-	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${compiler_rt_org_src_dir}) || return 1
 	make -C ${compiler_rt_bld_dir} -j ${jobs} || return 1
 	make -C ${compiler_rt_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
@@ -2040,7 +2041,7 @@ install_native_cfe()
 	unpack_archive ${cfe_org_src_dir} ${cfe_src_base} || return 1
 	mkdir -p ${cfe_bld_dir}
 	(cd ${cfe_bld_dir}
-	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${cfe_org_src_dir}) || return 1
 	make -C ${cfe_bld_dir} -j ${jobs} || return 1
 	make -C ${cfe_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
@@ -2053,7 +2054,7 @@ install_native_clang_tools_extra()
 	unpack_archive ${clang_tools_extra_org_src_dir} ${clang_tools_extra_src_base} || return 1
 	mkdir -p ${clang_tools_extra_bld_dir}
 	(cd ${clang_tools_extra_bld_dir}
-	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_tools_extra_org_src_dir}) || return 1
 	make -C ${clang_tools_extra_bld_dir} -j ${jobs} || return 1
 	make -C ${clang_tools_extra_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
@@ -2061,28 +2062,39 @@ install_native_clang_tools_extra()
 
 install_native_lld()
 {
+	[ -x ${prefix}/bin/lld -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
+	prepare_llvm_source || return 1
+	unpack_archive ${llvm_org_src_dir} ${llvm_src_base} || return 1
 	prepare_lld_source || return 1
-	unpack_archive ${lld_org_src_dir} ${lld_src_base} || return 1
+	[ -d ${llvm_org_src_dir}/tools/lld ] ||
+		(unpack_archive ${lld_org_src_dir} ${lld_src_base} &&
+		mv ${lld_org_src_dir} ${llvm_org_src_dir}/tools/lld) || return 1
 	mkdir -p ${lld_bld_dir}
 	(cd ${lld_bld_dir}
-	cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DPACKAGE_VERSION=${llvm_ver} ${lld_org_src_dir}) || return 1
+	cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1
 	make -C ${lld_bld_dir} -j ${jobs} || return 1
+	make -C ${lld_bld_dir} -j ${jobs} check-lld || return 1
 	make -C ${lld_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
 
 install_native_lldb()
 {
+	[ -x ${prefix}/bin/lldb -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
+	prepare_llvm_source || return 1
+	unpack_archive ${llvm_org_src_dir} ${llvm_src_base} || return 1
 	prepare_lldb_source || return 1
-	unpack_archive ${lldb_org_src_dir} ${lldb_src_base} || return 1
+	[ -d ${llvm_org_src_dir}/tools/lldb ] ||
+		(unpack_archive ${lldb_org_src_dir} ${lldb_src_base} &&
+		mv ${lldb_org_src_dir} ${llvm_org_src_dir}/tools/lldb) || return 1
 	mkdir -p ${lldb_bld_dir}
 	(cd ${lldb_bld_dir}
-	cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREIFX=${prefix} ${lldb_org_src_dir}) || return 1
+	cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREIFX=${prefix} ${llvm_org_src_dir}) || return 1
 	make -C ${lldb_bld_dir} -j ${jobs} || return 1
+	make -C ${lld_bld_dir} -j ${jobs} check-lldb || return 1
 	make -C ${lldb_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
 
