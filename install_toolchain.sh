@@ -23,7 +23,7 @@
 : ${sed_ver:=4.2.2}
 : ${gawk_ver:=4.1.3}
 : ${make_ver:=4.2}
-: ${binutils_ver:=2.26.1}
+: ${binutils_ver:=2.27}
 : ${linux_ver:=3.18.13}
 : ${gperf_ver:=3.0.4}
 : ${glibc_ver:=2.23}
@@ -63,6 +63,7 @@
 : ${apr_util_ver:=1.5.4}
 : ${subversion_ver:=1.9.4}
 : ${cmake_ver:=3.5.2}
+: ${swig_ver:=3.0.10}
 : ${llvm_ver:=3.8.0}
 : ${boost_ver:=1_61_0}
 : ${mingw_w64_ver:=4.0.6}
@@ -223,6 +224,8 @@ help()
 		Specify the version of Subversion you want, currently '${subversion_ver}'.
 	cmake_ver
 		Specify the version of Cmake you want, currently '${cmake_ver}'.
+	swig_ver
+		Specify the version of SWIG you want, currently '${swig_ver}'.
 	llvm_ver
 		Specify the version of llvm you want, currently '${llvm_ver}'.
 	boost_ver
@@ -449,7 +452,7 @@ set_variables()
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
 		gmp mpfr mpc gcc ncurses gdb zlib libpng tiff giflib emacs vim grep global diffutils patch findutils \
 		screen libevent tmux zsh openssl curl asciidoc xmlto libxml2 libxslt gettext git mercurial sqlite-autoconf apr apr-util subversion \
-		cmake llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb Python ruby go perl; do
+		cmake swig llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb Python ruby go perl; do
 		set_src_directory ${pkg}
 	done
 
@@ -508,7 +511,7 @@ list_all()
 [All tags]
 #: major tags, -: internal tags(for debugging use)
 EOF
-	tags=`grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/\t- /;s/()$//;s/- \([[:alnum:]]\+\)$/# \1/'`
+	tags=`grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/    - /;s/()$//;s/- \([[:alnum:]]\+\)$/# \1/'`
 
 	lines=`echo "${tags}" | wc -l`
 	column1_end=`expr \`expr ${lines} / 2\` + \`expr ${lines} % 2\``
@@ -518,8 +521,8 @@ EOF
 	column2=`echo "${tags}" | sed -e "${column2_begin},\\$p;d"`
 
 	for i in `seq ${column1_end}`; do
-		printf '\t %c %-25s' `echo "${column1}" | sed -e "${i}p;d"`
-		printf '\t %c %-25s' `echo "${column2}" | sed -e "${i}p;d"`
+		printf '    %c %-32s' `echo "${column1}" | sed -e "${i}p;d"`
+		printf '    %c %-s'   `echo "${column2}" | sed -e "${i}p;d"`
 		echo
 	done
 }
@@ -574,20 +577,20 @@ install_prerequisites()
 
 check_archive()
 {
-	[ -f $1.tar.gz  ] && return 0
-	[ -f $1.tar.bz2 ] && return 0
-	[ -f $1.tar.xz  ] && return 0
-	[ -f $1.zip     ] && return 0
+	[ -f $1.tar.gz  -a -s $1.tar.gz  ] && return 0
+	[ -f $1.tar.bz2 -a -s $1.tar.bz2 ] && return 0
+	[ -f $1.tar.xz  -a -s $1.tar.xz  ] && return 0
+	[ -f $1.zip     -a -s $1.zip     ] && return 0
 	return 1
 }
 
 unpack_archive()
 {
 	[ -d $1 ] && return 0
-	[ -f $1.tar.gz  ] && tar xzvf $1.tar.gz  --no-same-owner --no-same-permissions -C $2 && return 0
-	[ -f $1.tar.bz2 ] && tar xjvf $1.tar.bz2 --no-same-owner --no-same-permissions -C $2 && return 0
-	[ -f $1.tar.xz  ] && tar xJvf $1.tar.xz  --no-same-owner --no-same-permissions -C $2 && return 0
-	[ -f $1.zip     ] && unzip -d $2 $1.zip && return 0
+	[ -f $1.tar.gz  -a -s $1.tar.gz  ] && tar xzvf $1.tar.gz  --no-same-owner --no-same-permissions -C $2 && return 0
+	[ -f $1.tar.bz2 -a -s $1.tar.bz2 ] && tar xjvf $1.tar.bz2 --no-same-owner --no-same-permissions -C $2 && return 0
+	[ -f $1.tar.xz  -a -s $1.tar.xz  ] && tar xJvf $1.tar.xz  --no-same-owner --no-same-permissions -C $2 && return 0
+	[ -f $1.zip     -a -s $1.zip     ] && unzip -d $2 $1.zip && return 0
 	return 1
 }
 
@@ -1035,6 +1038,14 @@ prepare_cmake_source()
 	check_archive ${cmake_org_src_dir} ||
 		wget --no-check-certificate -O ${cmake_org_src_dir}.tar.gz \
 			https://cmake.org/files/v`echo ${cmake_ver} | cut -f1,2 -d.`/${cmake_name}.tar.gz || return 1
+}
+
+prepare_swig_source()
+{
+	mkdir -p ${swig_src_base}
+	check_archive ${swig_org_src_dir} ||
+		wget --no-check-certificate --trust-server-names -O ${swig_org_src_dir}.tar.gz \
+			https://sourceforge.net/projects/swig/files/swig/${swig_name}/${swig_name}.tar.gz/download || return 1
 }
 
 prepare_llvm_source()
@@ -1662,7 +1673,7 @@ install_native_grep()
 	unpack_archive ${grep_org_src_dir} ${grep_src_base} || return 1
 	[ -f ${grep_org_src_dir}/Makefile ] ||
 		(cd ${grep_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --disable-silent-rules) || return 1
 	make -C ${grep_org_src_dir} -j ${jobs} || return 1
 	make -C ${grep_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1970,6 +1981,18 @@ install_native_cmake()
 	make -C ${cmake_org_src_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
 
+install_native_swig()
+{
+	[ -x ${prefix}/bin/swig -a "${force_install}" != yes ] && return 0
+	prepare_swig_source || return 1
+	unpack_archive ${swig_org_src_dir} ${swig_src_base} || return 1
+	[ -f ${swig_org_src_dir}/Makefile ] ||
+		(cd ${swig_org_src_dir}
+		./configure --prefix=${prefix} --enable-cpp11-testing) || return 1
+	make -C ${swig_org_src_dir} -j ${jobs} || return 1
+	make -C ${swig_org_src_dir} -j ${jobs} install || return 1
+}
+
 install_native_llvm()
 {
 	[ -d ${prefix}/include/llvm -a "${force_install}" != yes ] && return 0
@@ -2083,6 +2106,7 @@ install_native_lldb()
 {
 	[ -x ${prefix}/bin/lldb -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
+	which swig > /dev/null || install_native_swig || return 1
 	prepare_llvm_source || return 1
 	unpack_archive ${llvm_org_src_dir} ${llvm_src_base} || return 1
 	prepare_lldb_source || return 1
