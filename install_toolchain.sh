@@ -1,6 +1,6 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
-# [TODO] haskell, bash, LLDB, Polly, MySQL, expat, Guile
+# [TODO] haskell, bash, LLDB, Polly, MySQL, expat, OpenCV, Guile, Doxygen
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
@@ -1191,7 +1191,7 @@ install_native_xz()
 	unpack_archive ${xz_org_src_dir} ${xz_src_base} || return 1
 	[ -f ${xz_org_src_dir}/Makefile ] ||
 		(cd ${xz_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${xz_org_src_dir} -j ${jobs} || return 1
 	make -C ${xz_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1219,7 +1219,7 @@ install_native_gzip()
 	unpack_archive ${gzip_org_src_dir} ${gzip_src_base} || return 1
 	[ -f ${gzip_org_src_dir}/Makefile ] ||
 		(cd ${gzip_org_src_dir}
-		./configure --prefix=${prefix} --disable-silent-rules) || return 1
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${gzip_org_src_dir} -j ${jobs} || return 1
 	make -C ${gzip_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1245,7 +1245,7 @@ install_native_texinfo()
 	unpack_archive ${texinfo_org_src_dir} ${texinfo_src_base} || return 1
 	[ -f ${texinfo_org_src_dir}/Makefile ] ||
 		(cd ${texinfo_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${texinfo_org_src_dir} -j ${jobs} || return 1
 	make -C ${texinfo_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1269,7 +1269,7 @@ install_native_bison()
 	unpack_archive ${bison_org_src_dir} ${bison_src_base} || return 1
 	[ -f ${bison_org_src_dir}/Makefile ] ||
 		(cd ${bison_org_src_dir}
-		./configure --prefix=${prefix} --disable-silent-rules) || return 1
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${bison_org_src_dir} -j ${jobs} || return 1
 	make -C ${bison_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1282,7 +1282,7 @@ install_native_flex()
 	unpack_archive ${flex_org_src_dir} ${flex_src_base} || return 1
 	[ -f ${flex_org_src_dir}/Makefile ] ||
 		(cd ${flex_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${flex_org_src_dir} -j ${jobs} || return 1
 	make -C ${flex_org_src_dir} -j ${jobs} install${strip:+-${strip}} install-man || return 1
 	update_search_path || return 1
@@ -1295,7 +1295,7 @@ install_native_m4()
 	unpack_archive ${m4_org_src_dir} ${m4_src_base} || return 1
 	[ -f ${m4_org_src_dir}/Makefile ] ||
 		(cd ${m4_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${m4_org_src_dir} -j ${jobs} || return 1
 	make -C ${m4_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1307,7 +1307,7 @@ install_native_autoconf()
 	unpack_archive ${autoconf_org_src_dir} ${autoconf_src_base} || return 1
 	[ -f ${autoconf_org_src_dir}/Makefile ] ||
 		(cd ${autoconf_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${autoconf_org_src_dir} -j ${jobs} || return 1
 	make -C ${autoconf_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1320,7 +1320,7 @@ install_native_automake()
 	unpack_archive ${automake_org_src_dir} ${automake_src_base} || return 1
 	[ -f ${automake_org_src_dir}/Makefile ] ||
 		(cd ${automake_org_src_dir}
-		./configure --prefix=${prefix} --disable-silent-rules) || return 1
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${automake_org_src_dir} -j ${jobs} || return 1
 	make -C ${automake_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1333,7 +1333,7 @@ install_native_libtool()
 	unpack_archive ${libtool_org_src_dir} ${libtool_src_base} || return 1
 	[ -f ${libtool_org_src_dir}/Makefile ] ||
 		(cd ${libtool_org_src_dir}
-		./configure --prefix=${prefix} --disable-silent-rules) || return 1
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${libtool_org_src_dir} -j ${jobs} || return 1
 	make -C ${libtool_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1345,7 +1345,7 @@ install_native_sed()
 	unpack_archive ${sed_org_src_dir} ${sed_src_base} || return 1
 	[ -f ${sed_org_src_dir}/Makefile ] ||
 		(cd ${sed_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${sed_org_src_dir} -j ${jobs} || return 1
 	make -C ${sed_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1357,7 +1357,7 @@ install_native_gawk()
 	unpack_archive ${gawk_org_src_dir} ${gawk_src_base} || return 1
 	[ -f ${gawk_org_src_dir}/Makefile ] ||
 		(cd ${gawk_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${gawk_org_src_dir} -j ${jobs} || return 1
 	make -C ${gawk_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1412,7 +1412,7 @@ install_native_gperf()
 	unpack_archive ${gperf_org_src_dir} ${gperf_src_base} || return 1
 	[ -f ${gperf_org_src_dir}/Makefile ] ||
 		(cd ${gperf_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${gperf_org_src_dir} -j ${jobs} || return 1
 	make -C ${gperf_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1450,7 +1450,7 @@ install_native_gmp_mpfr_mpc()
 			mv ${gmp_org_src_dir} ${gmp_src_dir_ntv}) || return 1
 	[ -f ${gmp_src_dir_ntv}/Makefile ] ||
 		(cd ${gmp_src_dir_ntv}
-		./configure --prefix=${prefix} --enable-cxx) || return 1
+		./configure --prefix=${prefix} --build=${build} --enable-cxx) || return 1
 	make -C ${gmp_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${gmp_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return 1
 
@@ -1459,7 +1459,7 @@ install_native_gmp_mpfr_mpc()
 			mv ${mpfr_org_src_dir} ${mpfr_src_dir_ntv}) || return 1
 	[ -f ${mpfr_src_dir_ntv}/Makefile ] ||
 		(cd ${mpfr_src_dir_ntv}
-		./configure --prefix=${prefix} --with-gmp=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build} --with-gmp=${prefix}) || return 1
 	make -C ${mpfr_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${mpfr_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return 1
 
@@ -1468,7 +1468,7 @@ install_native_gmp_mpfr_mpc()
 			mv ${mpc_org_src_dir} ${mpc_src_dir_ntv}) || return 1
 	[ -f ${mpc_src_dir_ntv}/Makefile ] ||
 		(cd ${mpc_src_dir_ntv}
-		./configure --prefix=${prefix} --with-gmp=${prefix} --with-mpfr=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build} --with-gmp=${prefix} --with-mpfr=${prefix}) || return 1
 	make -C ${mpc_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${mpc_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return 1
 
@@ -1533,7 +1533,7 @@ EOF
 
 	[ -f ${ncurses_org_src_dir}/Makefile ] ||
 		(cd ${ncurses_org_src_dir}
-		./configure --prefix=${prefix} --with-libtool --with-shared --with-cxx-shared) || return 1
+		./configure --prefix=${prefix} --build=${build} --with-libtool --with-shared --with-cxx-shared) || return 1
 	make -C ${ncurses_org_src_dir} -j ${jobs} || return 1
 	make -C ${ncurses_org_src_dir} -j ${jobs} install || return 1
 	update_search_path || return 1
@@ -1644,7 +1644,7 @@ install_native_emacs()
 	[ -f ${emacs_org_src_dir}/Makefile ] ||
 		(cd ${emacs_org_src_dir}
 		CPPFLAGS="${CPPFLAGS} -I${prefix}/include" LDFLAGS="${LDFLAGS} -L${prefix}/lib" \
-			./configure --prefix=${prefix} --without-xpm) || return 1
+			./configure --prefix=${prefix} --build=${build} --without-xpm) || return 1
 	make -C ${emacs_org_src_dir} -j ${jobs} || return 1
 	make -C ${emacs_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1684,7 +1684,7 @@ install_native_grep()
 	unpack_archive ${grep_org_src_dir} ${grep_src_base} || return 1
 	[ -f ${grep_org_src_dir}/Makefile ] ||
 		(cd ${grep_org_src_dir}
-		./configure --prefix=${prefix} --disable-silent-rules) || return 1
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${grep_org_src_dir} -j ${jobs} || return 1
 	make -C ${grep_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1697,7 +1697,7 @@ install_native_global()
 	unpack_archive ${global_org_src_dir} ${global_src_base} || return 1
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
-		./configure --prefix=${prefix} --with-ncurses=${prefix} CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1
+		./configure --prefix=${prefix} --build=${build} --with-ncurses=${prefix} CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1
 	make -C ${global_org_src_dir} -j ${jobs} || return 1
 	make -C ${global_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1709,7 +1709,7 @@ install_native_diffutils()
 	unpack_archive ${diffutils_org_src_dir} ${diffutils_src_base} || return 1
 	[ -f ${diffutils_org_src_dir}/Makefile ] ||
 		(cd ${diffutils_org_src_dir}
-		./configure --prefix=${prefix} --disable-silent-rules) || return 1
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${diffutils_org_src_dir} -j ${jobs} || return 1
 	make -C ${diffutils_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1721,7 +1721,7 @@ install_native_patch()
 	unpack_archive ${patch_org_src_dir} ${patch_src_base} || return 1
 	[ -f ${patch_org_src_dir}/Makefile ] ||
 		(cd ${patch_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${patch_org_src_dir} -j ${jobs} || return 1
 	make -C ${patch_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1733,7 +1733,7 @@ install_native_findutils()
 	unpack_archive ${findutils_org_src_dir} ${findutils_src_base} || return 1
 	[ -f ${findutils_org_src_dir}/Makefile ] ||
 		(cd ${findutils_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${findutils_org_src_dir} -j ${jobs} || return 1
 	make -C ${findutils_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1746,7 +1746,7 @@ install_native_screen()
 	unpack_archive ${screen_org_src_dir} ${screen_src_base} || return 1
 	[ -f ${screen_org_src_dir}/Makefile ] ||
 		(cd ${screen_org_src_dir}
-		./configure --prefix=${prefix} --enable-colors256 --enable-rxvt_osc) || return 1
+		./configure --prefix=${prefix} --build=${build} --enable-colors256 --enable-rxvt_osc) || return 1
 	make -C ${screen_org_src_dir} -j ${jobs} || return 1
 	mkdir -p ${prefix}/share/screen/utf8encodings || return 1
 	make -C ${screen_org_src_dir} -j ${jobs} install || return 1
@@ -1759,7 +1759,7 @@ install_native_libevent()
 	unpack_archive ${libevent_org_src_dir}-stable ${libevent_src_base} || return 1
 	[ -f ${libevent_org_src_dir}-stable/Makefile ] ||
 		(cd ${libevent_org_src_dir}-stable
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${libevent_org_src_dir}-stable -j ${jobs} || return 1
 	make -C ${libevent_org_src_dir}-stable -j ${jobs} install || return 1
 	update_search_path || return 1
@@ -1774,7 +1774,7 @@ install_native_tmux()
 	unpack_archive ${tmux_org_src_dir} ${tmux_src_base} || return 1
 	[ -f ${tmux_org_src_dir}/Makefile ] ||
 		(cd ${tmux_org_src_dir}
-		./configure --prefix=${prefix} CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1
+		./configure --prefix=${prefix} --build=${build} CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1
 	make -C ${tmux_org_src_dir} -j ${jobs} || return 1
 	make -C ${tmux_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1787,7 +1787,7 @@ install_native_zsh()
 	unpack_archive ${zsh_org_src_dir} ${zsh_src_base} || return 1
 	[ -f ${zsh_org_src_dir}/Makefile ] ||
 		(cd ${zsh_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${build}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${zsh_org_src_dir} -j ${jobs} || return 1
 	make -C ${zsh_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1811,7 +1811,7 @@ install_native_curl()
 	prepare_curl_source || return 1
 	unpack_archive ${curl_org_src_dir} ${curl_src_base} || return 1
 	(cd ${curl_org_src_dir}
-	./configure --prefix=${prefix} --build=${build} --host=${build} \
+	./configure --prefix=${prefix} --build=${build} \
 		--enable-optimize --enable-ipv6 --with-ssl) || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} install || return 1
@@ -1825,7 +1825,7 @@ install_native_asciidoc()
 	unpack_archive ${asciidoc_org_src_dir} ${asciidoc_src_base} || return 1
 	[ -f ${asciidoc_org_src_dir}/Makefile ] ||
 		(cd ${asciidoc_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${asciidoc_org_src_dir} -j ${jobs} || return 1
 	make -C ${asciidoc_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1837,7 +1837,7 @@ install_native_xmlto()
 	unpack_archive ${xmlto_org_src_dir} ${xmlto_src_base} || return 1
 	[ -f ${xmlto_org_src_dir}/Makefile ] ||
 		(cd ${xmlto_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${xmlto_org_src_dir} -j ${jobs} || return 1
 	make -C ${xmlto_org_src_dir} -j ${jobs} install || return 1
 
@@ -1881,7 +1881,7 @@ install_native_gettext()
 	unpack_archive ${gettext_org_src_dir} ${gettext_src_base} || return 1
 	[ -f ${gettext_org_src_dir}/Makefile ] ||
 		(cd ${gettext_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${gettext_org_src_dir} -j ${jobs} || return 1
 	make -C ${gettext_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
@@ -1904,7 +1904,7 @@ install_native_git()
 	unpack_archive ${git_org_src_dir} ${git_src_base} || return 1
 	make -C ${git_org_src_dir} -j ${jobs} configure || return 1
 	(cd ${git_org_src_dir}
-	./configure --prefix=${prefix} --without-tcltk) || return 1
+	./configure --prefix=${prefix} --build=${build} --without-tcltk) || return 1
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return 1
 	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS="${LDFLAGS} -ldl" all || return 1 # [XXX] docターゲット入れたいけどエラー回避で外してる。
 	make -C ${git_org_src_dir} -j ${jobs} V=1 ${strip} install || return 1 # [XXX] install-doc install-htmlターゲット入れたいけどエラー回避で外してる。
@@ -1928,7 +1928,7 @@ install_native_sqlite()
 	unpack_archive ${sqlite_autoconf_org_src_dir} ${sqlite_autoconf_src_base} || return 1
 	[ -f ${sqlite_autoconf_org_src_dir}/Makefile ] ||
 		(cd ${sqlite_autoconf_org_src_dir}
-		./configure --prefix=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${sqlite_autoconf_org_src_dir} -j ${jobs} || return 1
 	make -C ${sqlite_autoconf_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1940,7 +1940,7 @@ install_native_apr()
 	unpack_archive ${apr_org_src_dir} ${apr_src_base} || return 1
 	[ -f ${apr_org_src_dir}/Makefile ] ||
 		(cd ${apr_org_src_dir}
-		./configure --prefix=${prefix} --enable-threads --enable-posix-shm --enable-other-child) || return 1
+		./configure --prefix=${prefix} --build=${build} --enable-threads --enable-posix-shm --enable-other-child) || return 1
 	make -C ${apr_org_src_dir} -j ${jobs} || return 1
 	make -C ${apr_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1974,7 +1974,7 @@ install_native_subversion()
 	unpack_archive ${subversion_org_src_dir} ${subversion_src_base} || return 1
 	[ -f ${subversion_org_src_dir}/Makefile ] ||
 		(cd ${subversion_org_src_dir}
-		./configure --prefix=${prefix} --with-zlib --with-sqlite=`search_header sqlite3.h | sed -e 's/\/include\/.*//'` \
+		./configure --prefix=${prefix} --build=${build} --with-zlib --with-sqlite=`search_header sqlite3.h | sed -e 's/\/include\/.*//'` \
 					${strip:+--enable-optimize}) || return 1 # [TODO] stripしないときは、--enable-debugつけてみたい。
 	make -C ${subversion_org_src_dir} -j ${jobs} || return 1
 	make -C ${subversion_org_src_dir} -j ${jobs} install || return 1
@@ -2000,7 +2000,7 @@ install_native_libedit()
 	unpack_archive ${libedit_org_src_dir} ${libedit_src_base} || return 1
 	[ -f ${libedit_org_src_dir}/Makefile ] ||
 		(cd ${libedit_org_src_dir}
-		./configure --prefix=${prefix} --disable-silent-rules CFLAGS="${CFLAGS} -I${prefix}/include/ncurses") || return 1
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules CFLAGS="${CFLAGS} -I${prefix}/include/ncurses") || return 1
 	make -C ${libedit_org_src_dir} -j ${jobs} || return 1
 	make -C ${libedit_org_src_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
@@ -2012,7 +2012,7 @@ install_native_swig()
 	unpack_archive ${swig_org_src_dir} ${swig_src_base} || return 1
 	[ -f ${swig_org_src_dir}/Makefile ] ||
 		(cd ${swig_org_src_dir}
-		./configure --prefix=${prefix} --enable-cpp11-testing) || return 1
+		./configure --prefix=${prefix} --build=${build} --enable-cpp11-testing) || return 1
 	make -C ${swig_org_src_dir} -j ${jobs} || return 1
 	make -C ${swig_org_src_dir} -j ${jobs} install || return 1
 }
@@ -2143,7 +2143,7 @@ install_native_lldb()
 	cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
 		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREIFX=${prefix} ${llvm_org_src_dir}) || return 1
 	make -C ${lldb_bld_dir} -j ${jobs} || return 1
-	make -C ${lld_bld_dir} -j ${jobs} check-lldb || return 1
+	make -C ${lldb_bld_dir} -j ${jobs} check-lldb || return 1
 	make -C ${lldb_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
 
@@ -2453,7 +2453,7 @@ install_native_python()
 	unpack_archive ${Python_org_src_dir} ${Python_src_base} || return 1
 	[ -f ${Python_org_src_dir}/Makefile ] ||
 		(cd ${Python_org_src_dir}
-		./configure --prefix=${prefix} --enable-shared --disable-ipv6 \
+		./configure --prefix=${prefix} --build=${build} --enable-shared --disable-ipv6 \
 			--with-universal-archs=all \
 			--with-signal-module --with-threads --with-doc-strings \
 			--with-tsc --with-pymalloc --with-ensurepip) || return 1 # --enable-ipv6 --with-address-sanitizer --with-system-expat --with-system-ffi
@@ -2468,7 +2468,7 @@ install_native_ruby()
 	unpack_archive ${ruby_org_src_dir} ${ruby_src_base} || return 1
 	[ -f ${ruby_org_src_dir}/Makefile ] ||
 		(cd ${ruby_org_src_dir}
-		./configure --prefix=${prefix} --enable-multiarch --enable-shared --disable-silent-rules) || return 1
+		./configure --prefix=${prefix} --build=${build} --enable-multiarch --enable-shared --disable-silent-rules) || return 1
 	make -C ${ruby_org_src_dir} -j ${jobs} || return 1
 	make -C ${ruby_org_src_dir} -j ${jobs} install || return 1
 }
@@ -2511,7 +2511,7 @@ install_crossed_native_binutils()
 			mv ${binutils_org_src_dir} ${binutils_src_dir_crs_ntv}) || return 1
 	[ -f ${binutils_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_crs_ntv}
-		./configure --prefix=/usr --host=${target} --with-sysroot=/ \
+		./configure --prefix=/usr --build=${build} --host=${target} --with-sysroot=/ \
 			--enable-64-bit-bfd --enable-gold --enable-targets=all --with-system-zlib \
 			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
 			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function") || return 1
@@ -2529,7 +2529,7 @@ install_crossed_native_gmp_mpfr_mpc()
 			mv ${gmp_org_src_dir} ${gmp_src_dir_crs_ntv}) || return 1
 	[ -f ${gmp_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${gmp_src_dir_crs_ntv}
-		./configure --prefix=/usr --host=${target} --enable-cxx) || return 1
+		./configure --prefix=/usr --build=${build} --host=${target} --enable-cxx) || return 1
 	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return 1
 
@@ -2538,7 +2538,7 @@ install_crossed_native_gmp_mpfr_mpc()
 			mv ${mpfr_org_src_dir} ${mpfr_src_dir_crs_ntv}) || return 1
 	[ -f ${mpfr_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${mpfr_src_dir_crs_ntv}
-		./configure --prefix=/usr --host=${target} --with-gmp=${sysroot}/usr) || return 1
+		./configure --prefix=/usr --build=${build} --host=${target} --with-gmp=${sysroot}/usr) || return 1
 
 	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return 1
@@ -2550,7 +2550,7 @@ install_crossed_native_gmp_mpfr_mpc()
 			mv ${mpc_org_src_dir} ${mpc_src_dir_crs_ntv}) || return 1
 	[ -f ${mpc_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${mpc_src_dir_crs_ntv}
-		./configure --prefix=/usr --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr) || return 1
+		./configure --prefix=/usr --build=${build} --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr) || return 1
 	make -C ${mpc_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${mpc_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return 1
 }
@@ -2598,7 +2598,7 @@ install_crossed_native_libpng()
 			mv ${libpng_org_src_dir} ${libpng_src_dir_crs_ntv}) || return 1
 	[ -f ${libpng_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_crs_ntv}
-		./configure --prefix=/usr --host=${target} \
+		./configure --prefix=/usr --build=${build} --host=${target} \
 			CPPFLAGS="-I ${sysroot}/include ${CPPFLAGS}") || return 1
 	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return 1
@@ -2613,7 +2613,7 @@ install_crossed_native_libtiff()
 			mv ${tiff_org_src_dir} ${tiff_src_dir_crs_ntv}) || return 1
 	[ -f ${tiff_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${tiff_src_dir_crs_ntv}
-		./configure --prefix=/usr --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'` \
+		./configure --prefix=/usr --build=${build} --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'` \
 			CC=${target}-gcc CXX=${target}-g++ AS=${target}-as STRIP=${target}-strip RANLIB=${target}-ranlib) || return 1
 	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return 1
