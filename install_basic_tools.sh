@@ -13,7 +13,7 @@ case ${os} in
 		apt-get install -y bison flex m4 autoconf automake libtool binutils gcc g++ gdb make git 
 		apt-get install -y llvm-dev clang libclang-dev cmake
 		apt-get install -y lv nkf ghostscript gv manpages-ja manpages-ja-dev
-		apt-get install -y python3
+		apt-get install -y python3 python3-dev ruby ruby-dev
 		apt-get install -y doxygen graphviz
 		;;
 	Red|CentOS|\\S)
@@ -23,7 +23,7 @@ case ${os} in
 		yum install -y screen
 		yum install -y wget curl zip
 		yum install -y bison flex m4 autoconf automake libtool binutils gcc gcc-c++ gdb make git
-		yum install -y python
+		yum install -y python ruby
 		yum install -y doxygen graphviz
 		;;
 	*)
