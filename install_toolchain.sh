@@ -1,6 +1,7 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
-# [TODO] haskell, bash, LLDB, Polly, MySQL, expat, OpenCV, Guile, Doxygen
+# [TODO] haskell, bash, LLDB, Polly, MySQL, expat, OpenCV, Guile, Doxygen, ffmpeg(libav)
+# [TODO] build_typeを可変にする。Release/Debug
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
@@ -72,6 +73,7 @@
 : ${ruby_ver:=2.3.1}
 : ${go_ver:=1.7}
 : ${perl_ver:=5.24.0}
+: ${opencv_ver:=3.1.0}
 
 : ${prefix:=/toolchains}
 : ${jobs:=`grep -e processor /proc/cpuinfo | wc -l`}
@@ -245,6 +247,8 @@ help()
 		Specify the version of go you want, currently '${go_ver}'.
 	perl_ver
 		Specify the version of perl you want, currently '${perl_ver}'.
+	opencv_ver
+		Specify the version of OpenCV you want, currently '${opencv_ver}'.
 
 [Examples]
 	For everything which this tool can install
@@ -412,19 +416,20 @@ set_src_directory()
 		eval ${_1}_src_dir_crs_1st=\${${_1}_src_base}/${target}-\${${_1}_name}-src-1st
 		;;
 		gcc)
-		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-ntv
+		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_bld_dir_crs_1st=\${${_1}_src_base}/${target}-\${${_1}_name}-1st
 		eval ${_1}_bld_dir_crs_2nd=\${${_1}_src_base}/${target}-\${${_1}_name}-2nd
 		eval ${_1}_bld_dir_crs_3rd=\${${_1}_src_base}/${target}-\${${_1}_name}-3rd
 		eval ${_1}_bld_dir_crs_ntv=\${${_1}_src_base}/${target}-\${${_1}_name}-crs-ntv
 		;;
 		gdb)
-		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-ntv
-		eval ${_1}_bld_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-crs
+		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
+		eval ${_1}_bld_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-bld
 		;;
 		*)
-		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-ntv
-		eval ${_1}_src_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-crs
+		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
+		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-src
+		eval ${_1}_src_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-src
 		eval ${_1}_src_dir_crs_ntv=\${${_1}_src_base}/${target}-\${${_1}_name}-crs-ntv
 		;;
 	esac
@@ -453,9 +458,11 @@ set_variables()
 
 	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
-		gmp mpfr mpc gcc ncurses gdb zlib libpng tiff giflib emacs vim grep global diffutils patch findutils \
-		screen libevent tmux zsh openssl curl asciidoc xmlto libxml2 libxslt gettext git mercurial sqlite-autoconf apr apr-util subversion \
-		cmake libedit swig llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb Python ruby go perl; do
+		gmp mpfr mpc gcc ncurses gdb zlib libpng tiff giflib emacs vim grep \
+		global diffutils patch findutils screen libevent tmux zsh openssl curl \
+		asciidoc xmlto libxml2 libxslt gettext git mercurial sqlite-autoconf \
+		apr apr-util subversion cmake libedit swig llvm libcxx libcxxabi \
+		compiler-rt cfe clang-tools-extra lld lldb Python ruby go perl opencv; do
 		set_src_directory ${pkg}
 	done
 
@@ -1163,6 +1170,14 @@ prepare_perl_source()
 			http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return 1
 }
 
+prepare_opencv_source()
+{
+	mkdir -p ${opencv_src_base}
+	check_archive ${opencv_org_src_dir} ||
+		wget --no-check-certificate -O ${opencv_org_src_dir}.tar.gz \
+			https://github.com/opencv/opencv/archive/${opencv_ver}.tar.gz || return 1
+}
+
 prepare_go_source()
 {
 	mkdir -p ${go_src_base}
@@ -1209,6 +1224,8 @@ install_native_bzip2()
 	cp -f ${bzip2_org_src_dir}/libbz2.so.${bzip2_ver} ${prefix}/lib || return 1
 	chmod a+r ${prefix}/lib/libbz2.so.${bzip2_ver} || return 1
 	ln -sf ./libbz2.so.${bzip2_ver} ${prefix}/lib/libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` || return 1
+	cp -f ${bzip2_org_src_dir}/bzlib.h ${prefix}/include || return 1
+	cp -f ${bzip2_org_src_dir}/bzlib_private.h ${prefix}/include || return 1
 	update_search_path || return 1
 }
 
@@ -1227,7 +1244,7 @@ install_native_gzip()
 install_native_wget()
 {
 	[ -x ${prefix}/bin/wget -a "${force_install}" != yes ] && return 0
-	search_header ssl.h || install_native_openssl || return 1
+	search_header ssl.h openssl || install_native_openssl || return 1
 	prepare_wget_source || return 1
 	unpack_archive ${wget_org_src_dir} ${wget_src_base} || return 1
 	[ -f ${wget_org_src_dir}/Makefile ] ||
@@ -1542,7 +1559,7 @@ EOF
 install_native_gdb()
 {
 	[ -x ${prefix}/bin/gdb -a "${force_install}" != yes ] && return 0
-	search_header curses.h || install_native_ncurses || return 1
+	search_header curses.h ncurses || install_native_ncurses || return 1
 	search_header Python.h || install_native_python || return 1
 	prepare_gdb_source || return 1
 	unpack_archive ${gdb_org_src_dir} ${gdb_src_base} || return 1
@@ -1633,7 +1650,7 @@ install_native_giflib()
 install_native_emacs()
 {
 	[ -x ${prefix}/bin/emacs -a "${force_install}" != yes ] && return 0
-	search_header curses.h || install_native_ncurses || return 1
+	search_header curses.h ncurses || install_native_ncurses || return 1
 	search_header zlib.h || install_native_zlib || return 1
 	search_header png.h || install_native_libpng || return 1
 	search_header tiff.h || install_native_libtiff || return 1
@@ -1652,7 +1669,7 @@ install_native_emacs()
 install_native_vim()
 {
 	[ -x ${prefix}/bin/vim -a "${force_install}" != yes ] && return 0
-	search_header curses.h || install_native_ncurses || return 1
+	search_header curses.h ncurses || install_native_ncurses || return 1
 	which gettext > /dev/null || install_native_gettext || return 1
 	which perl > /dev/null || install_native_perl || return 1
 	search_header Python.h || install_native_python || return 1
@@ -1692,12 +1709,13 @@ install_native_grep()
 install_native_global()
 {
 	[ -x ${prefix}/bin/global -a "${force_install}" != yes ] && return 0
-	search_header curses.h || install_native_ncurses || return 1
+	search_header curses.h ncurses || install_native_ncurses || return 1
 	prepare_global_source || return 1
 	unpack_archive ${global_org_src_dir} ${global_src_base} || return 1
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --with-ncurses=${prefix} CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1
+		./configure --prefix=${prefix} --build=${build} \
+			--with-ncurses=${prefix} CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1
 	make -C ${global_org_src_dir} -j ${jobs} || return 1
 	make -C ${global_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1741,12 +1759,13 @@ install_native_findutils()
 install_native_screen()
 {
 	[ -x ${prefix}/bin/screen -a "${force_install}" != yes ] && return 0
-	search_header curses.h || install_native_ncurses || return 1
+	search_header curses.h ncurses || install_native_ncurses || return 1
 	prepare_screen_source || return 1
 	unpack_archive ${screen_org_src_dir} ${screen_src_base} || return 1
 	[ -f ${screen_org_src_dir}/Makefile ] ||
 		(cd ${screen_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --enable-colors256 --enable-rxvt_osc) || return 1
+		./configure --prefix=${prefix} --build=${build} \
+			--enable-colors256 --enable-rxvt_osc) || return 1
 	make -C ${screen_org_src_dir} -j ${jobs} || return 1
 	mkdir -p ${prefix}/share/screen/utf8encodings || return 1
 	make -C ${screen_org_src_dir} -j ${jobs} install || return 1
@@ -1768,13 +1787,14 @@ install_native_libevent()
 install_native_tmux()
 {
 	[ -x ${prefix}/bin/tmux -a "${force_install}" != yes ] && return 0
-	search_header curses.h || install_native_ncurses || return 1
+	search_header curses.h ncurses || install_native_ncurses || return 1
 	search_header event.h event2 || install_native_libevent || return 1
 	prepare_tmux_source || return 1
 	unpack_archive ${tmux_org_src_dir} ${tmux_src_base} || return 1
 	[ -f ${tmux_org_src_dir}/Makefile ] ||
 		(cd ${tmux_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1
+		./configure --prefix=${prefix} --build=${build} \
+			CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return 1
 	make -C ${tmux_org_src_dir} -j ${jobs} || return 1
 	make -C ${tmux_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1782,7 +1802,7 @@ install_native_tmux()
 install_native_zsh()
 {
 	[ -x ${prefix}/bin/zsh -a "${force_install}" != yes ] && return 0
-	search_header curses.h || install_native_ncurses || return 1
+	search_header curses.h ncurses || install_native_ncurses || return 1
 	prepare_zsh_source || return 1
 	unpack_archive ${zsh_org_src_dir} ${zsh_src_base} || return 1
 	[ -f ${zsh_org_src_dir}/Makefile ] ||
@@ -1807,12 +1827,17 @@ install_native_openssl()
 install_native_curl()
 {
 	[ -x ${prefix}/bin/curl -a "${force_install}" != yes ] && return 0
-	search_header ssl.h || install_native_openssl || return 1
+	search_header ssl.h openssl || install_native_openssl || return 1
 	prepare_curl_source || return 1
 	unpack_archive ${curl_org_src_dir} ${curl_src_base} || return 1
 	(cd ${curl_org_src_dir}
 	./configure --prefix=${prefix} --build=${build} \
-		--enable-optimize --enable-ipv6 --with-ssl) || return 1
+		--enable-optimize --disable-silent-rules \
+		--enable-http --enable-ftp --enable-file \
+		--enable-ldap --enable-ldaps --enable-rtsp --enable-proxy \
+		--enable-dict --enable-telnet --enable-tftp --enable-pop3 \
+		--enable-imap --enable-smb --enable-smtp --enable-gopher \
+		--enable-manual --enable-ipv6 --with-ssl) || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} install || return 1
 	update_search_path || return 1
@@ -1855,7 +1880,8 @@ install_native_libxml2()
 	unpack_archive ${libxml2_org_src_dir} ${libxml2_src_base} || return 1
 	[ -f ${libxml2_org_src_dir}/Makefile ] ||
 		(cd ${libxml2_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --without-python --disable-silent-rules) || return 1
+		./configure --prefix=${prefix} --build=${build} \
+			--without-python --disable-silent-rules) || return 1
 	make -C ${libxml2_org_src_dir} -j ${jobs} || return 1
 	make -C ${libxml2_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
@@ -1864,7 +1890,7 @@ install_native_libxml2()
 install_native_libxslt()
 {
 	[ -d ${prefix}/include/libxslt -a "${force_install}" != yes ] && return 0
-	search_header xmlversion.h || install_native_libxml2 || return 1
+	search_header xmlversion.h libxml2/libxml || install_native_libxml2 || return 1
 	prepare_libxslt_source || return 1
 	unpack_archive ${libxslt_org_src_dir} ${libxslt_src_base} || return 1
 	[ -f ${libxslt_org_src_dir}/Makefile ] ||
@@ -1892,12 +1918,12 @@ install_native_git()
 	[ -x ${prefix}/bin/git -a "${force_install}" != yes ] && return 0
 	which autoconf > /dev/null || install_native_autoconf || return 1
 	search_header zlib.h || install_native_zlib || return 1
-	search_header ssl.h || install_native_openssl || return 1
+	search_header ssl.h openssl || install_native_openssl || return 1
 	search_header curl.h curl || install_native_curl || return 1
 	which asciidoc > /dev/null || install_native_asciidoc || return 1
 	which xmlto > /dev/null || install_native_xmlto || return 1
-	search_header xmlversion.h || install_native_libxml2 || return 1
-	search_header xslt.h || install_native_libxslt || return 1
+	search_header xmlversion.h libxml2/libxml || install_native_libxml2 || return 1
+	search_header xslt.h libxslt || install_native_libxslt || return 1
 	which gettext > /dev/null || install_native_gettext || return 1
 	which perl > /dev/null || install_native_curl || return 1
 	prepare_git_source || return 1
@@ -1940,7 +1966,8 @@ install_native_apr()
 	unpack_archive ${apr_org_src_dir} ${apr_src_base} || return 1
 	[ -f ${apr_org_src_dir}/Makefile ] ||
 		(cd ${apr_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --enable-threads --enable-posix-shm --enable-other-child) || return 1
+		./configure --prefix=${prefix} --build=${build} \
+			--enable-threads --enable-posix-shm --enable-other-child) || return 1
 	make -C ${apr_org_src_dir} -j ${jobs} || return 1
 	make -C ${apr_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1955,7 +1982,7 @@ install_native_apr_util()
 	[ -f ${apr_util_org_src_dir}/Makefile ] ||
 		(cd ${apr_util_org_src_dir}
 		./configure --prefix=${prefix} --with-apr=`search_header apr.h apr-1 | sed -e 's/\/include\/apr-1.*$//'` \
-					--with-crypto --with-openssl --with-sqlite3=`search_header sqlite3.h | sed -e 's/\/include\/.*//'`) || return 1
+			--with-crypto --with-openssl --with-sqlite3=`search_header sqlite3.h | sed -e 's/\/include\/.*//'`) || return 1
 	make -C ${apr_util_org_src_dir} -j ${jobs} || return 1
 	make -C ${apr_util_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1966,7 +1993,7 @@ install_native_subversion()
 	search_header apr.h apr-1 || install_native_apr || return 1
 	search_header apu.h apr-1 || install_native_apr_util || return 1
 	search_header zlib.h || install_native_zlib || return 1
-	search_header ssl.h || install_native_openssl || return 1
+	search_header ssl.h openssl || install_native_openssl || return 1
 	which python3 > /dev/null || install_native_python || return 1
 	which perl > /dev/null || install_native_perl || return 1
 	which ruby > /dev/null || install_native_ruby || return 1
@@ -1974,8 +2001,9 @@ install_native_subversion()
 	unpack_archive ${subversion_org_src_dir} ${subversion_src_base} || return 1
 	[ -f ${subversion_org_src_dir}/Makefile ] ||
 		(cd ${subversion_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --with-zlib --with-sqlite=`search_header sqlite3.h | sed -e 's/\/include\/.*//'` \
-					${strip:+--enable-optimize}) || return 1 # [TODO] stripしないときは、--enable-debugつけてみたい。
+		./configure --prefix=${prefix} --build=${build} --with-zlib=`search_header zlib.h | sed -e 's/\/include\/.*//'` \
+			--with-sqlite=`search_header sqlite3.h | sed -e 's/\/include\/.*//'` \
+			${strip:+--enable-optimize}) || return 1 # [TODO] stripしないときは、--enable-debugつけてみたい。
 	make -C ${subversion_org_src_dir} -j ${jobs} || return 1
 	make -C ${subversion_org_src_dir} -j ${jobs} install || return 1
 }
@@ -1983,11 +2011,16 @@ install_native_subversion()
 install_native_cmake()
 {
 	[ -x ${prefix}/bin/cmake -a "${force_install}" != yes ] && return 0
+	search_header curl.h curl || install_native_curl || return 1
+	search_header zlib.h || install_native_zlib || return 1
+	search_header bzlib.h || install_native_bzip2 || return 1
+	search_header lzma.h || install_native_xz || return 1
 	prepare_cmake_source || return 1
 	unpack_archive ${cmake_org_src_dir} ${cmake_src_base} || return 1
 	[ -f ${cmake_org_src_dir}/Makefile ] ||
 		(cd ${cmake_org_src_dir}
-		./bootstrap --prefix=${prefix} --parallel=${jobs}) || return 1
+		./bootstrap --prefix=${prefix} --parallel=${jobs} \
+			--system-curl --system-zlib --system-bzip2 --system-liblzma) || return 1
 	make -C ${cmake_org_src_dir} -j ${jobs} || return 1
 	make -C ${cmake_org_src_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
@@ -1995,12 +2028,13 @@ install_native_cmake()
 install_native_libedit()
 {
 	[ -f ${prefix}/include/histedit.h -a "${force_install}" != yes ] && return 0
-	search_header curses.h || install_native_ncurses || return 1
+	search_header curses.h ncurses || install_native_ncurses || return 1
 	prepare_libedit_source || return 1
 	unpack_archive ${libedit_org_src_dir} ${libedit_src_base} || return 1
 	[ -f ${libedit_org_src_dir}/Makefile ] ||
 		(cd ${libedit_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules CFLAGS="${CFLAGS} -I${prefix}/include/ncurses") || return 1
+		./configure --prefix=${prefix} --build=${build} \
+			--disable-silent-rules CFLAGS="${CFLAGS} -I${prefix}/include/ncurses") || return 1
 	make -C ${libedit_org_src_dir} -j ${jobs} || return 1
 	make -C ${libedit_org_src_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
@@ -2049,7 +2083,7 @@ install_native_libcxxabi()
 {
 	[ -e ${prefix}/lib/libc++abi.so -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
-	search_header llvm-config.h || install_native_llvm || return 1
+	search_header llvm-config.h llvm/Config || install_native_llvm || return 1
 	search_header iostream c++/v1 || install_native_libcxx || return 1
 	prepare_libcxxabi_source || return 1
 	unpack_archive ${libcxxabi_org_src_dir} ${libcxxabi_src_base} || return 1
@@ -2065,7 +2099,7 @@ install_native_compiler_rt()
 {
 	[ -d ${prefix}/include/sanitizer -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
-	search_header llvm-config.h || install_native_llvm || return 1
+	search_header llvm-config.h llvm/Config || install_native_llvm || return 1
 	prepare_compiler_rt_source || return 1
 	unpack_archive ${compiler_rt_org_src_dir} ${compiler_rt_src_base} || return 1
 	mkdir -p ${compiler_rt_bld_dir}
@@ -2080,7 +2114,7 @@ install_native_cfe()
 {
 	[ -x ${prefix}/bin/clang -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
-	search_header llvm-config.h || install_native_llvm || return 1
+	search_header llvm-config.h llvm/Config || install_native_llvm || return 1
 	search_header iostream c++/v1 || install_native_libcxx || return 1
 	search_header ABI.h clang/Basic || install_native_libcxxabi || return 1
 	search_header allocator_interface.h sanitizer || install_native_compiler_rt || return 1
@@ -2468,7 +2502,8 @@ install_native_ruby()
 	unpack_archive ${ruby_org_src_dir} ${ruby_src_base} || return 1
 	[ -f ${ruby_org_src_dir}/Makefile ] ||
 		(cd ${ruby_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --enable-multiarch --enable-shared --disable-silent-rules) || return 1
+		./configure --prefix=${prefix} --build=${build} \
+			--enable-multiarch --enable-shared --disable-silent-rules) || return 1
 	make -C ${ruby_org_src_dir} -j ${jobs} || return 1
 	make -C ${ruby_org_src_dir} -j ${jobs} install || return 1
 }
@@ -2498,6 +2533,27 @@ install_native_perl()
 	make -C ${perl_org_src_dir} -j ${jobs} || return 1
 	make -C ${perl_org_src_dir} -j ${jobs} test || return 1
 	make -C ${perl_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+}
+
+install_native_opencv()
+{
+	[ -f ${prefix}/include/opencv2/opencv.hpp -a "${force_install}" != yes ] && return 0
+	which cmake > /dev/null || install_native_cmake || return 1
+	search_header png.h || install_native_libpng || return 1
+	search_header tiff.h || install_native_libtiff || return 1
+	search_header jpeglib.h || install_native_libjpeg || return 1
+	prepare_opencv_source || return 1
+	unpack_archive ${opencv_org_src_dir} ${opencv_src_base} || return 1
+	mkdir -p ${opencv_bld_dir_ntv}
+	(cd ${opencv_bld_dir_ntv}
+	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS} -L${prefix}/lib" \
+		-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} -L${prefix}/lib" \
+		-DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS} -L${prefix}/lib" \
+		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DENABLE_PRECOMPILED_HEADERS=OFF ${opencv_org_src_dir}) || return 1
+	make -C ${opencv_bld_dir_ntv} -j ${jobs} || return 1
+	make -C ${opencv_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return 1
 }
 
 install_crossed_native_binutils()
