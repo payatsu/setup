@@ -2,6 +2,8 @@
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] haskell, bash, LLDB, Polly, MySQL, expat, OpenCV, Guile, Doxygen, ffmpeg(libav)
 # [TODO] build_typeを可変にする。Release/Debug
+# [TODO] --with-hoge=fugaを--with-hoge=`get_prefix`に改める。
+# [TODO] -L${prefix}/lib -I${prefix}/includeがget_prefixなどで代替できないか検討する。
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
@@ -550,7 +552,17 @@ ${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return 1
 
 search_library()
 {
-	ldconfig -p | grep -q -e "\<$1\>" || return 1
+	for dir in ${prefix}/lib64 ${prefix}/lib `LANG=C ${CC:-gcc} -print-search-dirs |
+		sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs readlink -m`; do
+		[ -f ${dir}/$1 ] && echo ${dir}/$1 && return 0
+	done
+	return 1
+}
+
+search_library_dir()
+{
+	path=`search_library $@`
+	[ $? = 0 ] && dirname ${path} || return 1
 }
 
 search_header()
@@ -559,6 +571,12 @@ search_header()
 		[ -f ${dir}${2:+/$2}/$1 ] && echo ${dir}${2:+/$2}/$1 && return 0
 	done
 	return 1
+}
+
+get_prefix()
+{
+	path=`search_header $@`
+	[ $? = 0 ] && echo ${path} | sed -e 's/\/include\/.\+//' || return 1
 }
 
 install_prerequisites()
@@ -1981,8 +1999,8 @@ install_native_apr_util()
 	unpack_archive ${apr_util_org_src_dir} ${apr_util_src_base} || return 1
 	[ -f ${apr_util_org_src_dir}/Makefile ] ||
 		(cd ${apr_util_org_src_dir}
-		./configure --prefix=${prefix} --with-apr=`search_header apr.h apr-1 | sed -e 's/\/include\/apr-1.*$//'` \
-			--with-crypto --with-openssl --with-sqlite3=`search_header sqlite3.h | sed -e 's/\/include\/.*//'`) || return 1
+		./configure --prefix=${prefix} --with-apr=`get_prefix apr.h apr-1` \
+			--with-crypto --with-openssl --with-sqlite3=`get_prefix sqlite3.h`) || return 1
 	make -C ${apr_util_org_src_dir} -j ${jobs} || return 1
 	make -C ${apr_util_org_src_dir} -j ${jobs} install || return 1
 }
@@ -2001,8 +2019,8 @@ install_native_subversion()
 	unpack_archive ${subversion_org_src_dir} ${subversion_src_base} || return 1
 	[ -f ${subversion_org_src_dir}/Makefile ] ||
 		(cd ${subversion_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --with-zlib=`search_header zlib.h | sed -e 's/\/include\/.*//'` \
-			--with-sqlite=`search_header sqlite3.h | sed -e 's/\/include\/.*//'` \
+		./configure --prefix=${prefix} --build=${build} --with-zlib=`get_prefix zlib.h` \
+			--with-sqlite=`get_prefix sqlite3.h` \
 			${strip:+--enable-optimize}) || return 1 # [TODO] stripしないときは、--enable-debugつけてみたい。
 	make -C ${subversion_org_src_dir} -j ${jobs} || return 1
 	make -C ${subversion_org_src_dir} -j ${jobs} install || return 1
@@ -2547,9 +2565,9 @@ install_native_opencv()
 	mkdir -p ${opencv_bld_dir_ntv}
 	(cd ${opencv_bld_dir_ntv}
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS} -L${prefix}/lib" \
-		-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} -L${prefix}/lib" \
-		-DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS} -L${prefix}/lib" \
+		-DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS} -L`search_library_dir libpng.so` -L`search_library_dir libtiff.so` -L`search_library_dir libjpeg.so` -L${prefix}/lib" \
+		-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} -L`search_library_dir libpng.so` -L`search_library_dir libtiff.so` -L`search_library_dir libjpeg.so` -L${prefix}/lib" \
+		-DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS} -L`search_library_dir libpng.so` -L`search_library_dir libtiff.so` -L`search_library_dir libjpeg.so` -L${prefix}/lib" \
 		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DENABLE_PRECOMPILED_HEADERS=OFF ${opencv_org_src_dir}) || return 1
 	make -C ${opencv_bld_dir_ntv} -j ${jobs} || return 1
