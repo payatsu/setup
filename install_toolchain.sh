@@ -1,7 +1,6 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] haskell, bash, LLDB, Polly, MySQL, expat, OpenCV, Guile, Doxygen, ffmpeg(libav)
-# [TODO] build_typeを可変にする。Release/Debug
 # [TODO] --with-hoge=fugaを--with-hoge=`get_prefix`に改める。
 # [TODO] -L${prefix}/lib -I${prefix}/includeがget_prefixなどで代替できないか検討する。
 # [TODO] update-alternatives
@@ -42,7 +41,7 @@
 : ${libjpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
 : ${emacs_ver:=24.5}
-: ${vim_ver:=7.4.2243}
+: ${vim_ver:=8.0.0003}
 : ${grep_ver:=2.25}
 : ${global_ver:=6.5.4}
 : ${diffutils_ver:=3.3}
@@ -76,6 +75,7 @@
 : ${go_ver:=1.7}
 : ${perl_ver:=5.24.0}
 : ${opencv_ver:=3.1.0}
+: ${opencv_contrib_ver:=3.1.0}
 
 : ${prefix:=/toolchains}
 : ${jobs:=`grep -e processor /proc/cpuinfo | wc -l`}
@@ -84,6 +84,7 @@
 : ${languages:=c,c++,go}
 
 : ${strip=strip}
+: ${cmake_build_type:=Release}
 
 usage()
 # Show usage.
@@ -251,6 +252,8 @@ help()
 		Specify the version of perl you want, currently '${perl_ver}'.
 	opencv_ver
 		Specify the version of OpenCV you want, currently '${opencv_ver}'.
+	opencv_contrib_ver
+		Specify the version of OpenCV contrib you want, currently '${opencv_contrib_ver}'.
 
 [Examples]
 	For everything which this tool can install
@@ -442,6 +445,7 @@ set_variables()
 	prefix=`readlink -m ${prefix}`
 	sysroot=${prefix}/${target}/sysroot
 	os=`head -1 /etc/issue | cut -d ' ' -f 1`
+	[ "${strip}" = strip ] || cmake_build_type=Debug
 
 	case ${build} in
 	arm*)        native_linux_arch=arm;;
@@ -464,7 +468,7 @@ set_variables()
 		global diffutils patch findutils screen libevent tmux zsh openssl curl \
 		asciidoc xmlto libxml2 libxslt gettext git mercurial sqlite-autoconf \
 		apr apr-util subversion cmake libedit swig llvm libcxx libcxxabi \
-		compiler-rt cfe clang-tools-extra lld lldb Python ruby go perl opencv; do
+		compiler-rt cfe clang-tools-extra lld lldb Python ruby go perl opencv opencv_contrib; do
 		set_src_directory ${pkg}
 	done
 
@@ -788,20 +792,35 @@ prepare_glibc_source()
 			http://ftp.gnu.org/gnu/glibc/${glibc_name}.tar.xz || return 1
 }
 
-prepare_gmp_mpfr_mpc_source()
+prepare_gmp_source()
 {
 	mkdir -p ${gmp_src_base}
 	check_archive ${gmp_org_src_dir} ||
 		wget -O ${gmp_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/gmp/${gmp_name}.tar.xz || return 1
+}
+
+prepare_mpfr_source()
+{
 	mkdir -p ${mpfr_src_base}
 	check_archive ${mpfr_org_src_dir} ||
 		wget -O ${mpfr_org_src_dir}.tar.xz \
 			http://www.mpfr.org/${mpfr_name}/${mpfr_name}.tar.xz || return 1
+}
+
+prepare_mpc_source()
+{
 	mkdir -p ${mpc_src_base}
 	check_archive ${mpc_org_src_dir} ||
 		wget -O ${mpc_org_src_dir}.tar.gz \
 			http://ftp.gnu.org/gnu/mpc/${mpc_name}.tar.gz || return 1
+}
+
+prepare_gmp_mpfr_mpc_source()
+{
+	prepare_gmp_source || return 1
+	prepare_mpfr_source || return 1
+	prepare_mpc_source || return 1
 }
 
 prepare_gcc_source()
@@ -1196,6 +1215,14 @@ prepare_opencv_source()
 			https://github.com/opencv/opencv/archive/${opencv_ver}.tar.gz || return 1
 }
 
+prepare_opencv_contrib_source()
+{
+	mkdir -p ${opencv_contrib_src_base}
+	check_archive ${opencv_contrib_org_src_dir} ||
+		wget --no-check-certificate -O ${opencv_contrib_org_src_dir}.tar.gz \
+			https://github.com/opencv/opencv_contrib/archive/${opencv_ver}.tar.gz || return 1
+}
+
 prepare_go_source()
 {
 	mkdir -p ${go_src_base}
@@ -1475,11 +1502,10 @@ install_native_glibc()
 	update_search_path || return 1
 }
 
-install_native_gmp_mpfr_mpc()
+install_native_gmp()
 {
-	[ -f ${prefix}/include/gmp.h -a -f ${prefix}/include/mpfr.h -a -f ${prefix}/include/mpc.h -a "${force_install}" != yes ] && return 0
-	prepare_gmp_mpfr_mpc_source || return 1
-
+	[ -f ${prefix}/include/gmp.h -a "${force_install}" != yes ] && return 0
+	prepare_gmp_source || return 1
 	[ -d ${gmp_src_dir_ntv} ] ||
 		(unpack_archive ${gmp_org_src_dir} ${gmp_src_base} &&
 			mv ${gmp_org_src_dir} ${gmp_src_dir_ntv}) || return 1
@@ -1488,7 +1514,13 @@ install_native_gmp_mpfr_mpc()
 		./configure --prefix=${prefix} --build=${build} --enable-cxx) || return 1
 	make -C ${gmp_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${gmp_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
 
+install_native_mpfr()
+{
+	[ -f ${prefix}/include/mpfr.h -a "${force_install}" != yes ] && return 0
+	prepare_mpfr_source || return 1
 	[ -d ${mpfr_src_dir_ntv} ] ||
 		(unpack_archive ${mpfr_org_src_dir} ${mpfr_src_base} &&
 			mv ${mpfr_org_src_dir} ${mpfr_src_dir_ntv}) || return 1
@@ -1497,7 +1529,13 @@ install_native_gmp_mpfr_mpc()
 		./configure --prefix=${prefix} --build=${build} --with-gmp=${prefix}) || return 1
 	make -C ${mpfr_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${mpfr_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
 
+install_native_mpc()
+{
+	[ -f ${prefix}/include/mpc.h -a "${force_install}" != yes ] && return 0
+	prepare_mpc_source || return 1
 	[ -d ${mpc_src_dir_ntv} ] ||
 		(unpack_archive ${mpc_org_src_dir} ${mpc_src_base} &&
 			mv ${mpc_org_src_dir} ${mpc_src_dir_ntv}) || return 1
@@ -1506,7 +1544,6 @@ install_native_gmp_mpfr_mpc()
 		./configure --prefix=${prefix} --build=${build} --with-gmp=${prefix} --with-mpfr=${prefix}) || return 1
 	make -C ${mpc_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${mpc_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return 1
-
 	update_search_path || return 1
 }
 
@@ -1514,7 +1551,9 @@ install_native_gcc()
 {
 	[ -x ${prefix}/bin/gcc -a "${force_install}" != yes ] && return 0
 	search_header zlib.h || install_native_zlib || return 1
-	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
+	search_header gmp.h || install_native_gmp || return 1
+	search_header mpfr.h || install_native_mpfr || return 1
+	search_header mpc.h || install_native_mpc || return 1
 	which perl > /dev/null || install_native_perl || return 1
 	prepare_gcc_source || return 1
 	unpack_archive ${gcc_org_src_dir} ${gcc_src_base} || return 1
@@ -2078,7 +2117,7 @@ install_native_llvm()
 	mkdir -p ${llvm_bld_dir}
 	(cd ${llvm_bld_dir}
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1
 	make -C ${llvm_bld_dir} -j ${jobs} || return 1
 	make -C ${llvm_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
@@ -2092,7 +2131,7 @@ install_native_libcxx()
 	mkdir -p ${libcxx_bld_dir}
 	(cd ${libcxx_bld_dir}
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxx_org_src_dir}) || return 1
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxx_org_src_dir}) || return 1
 	make -C ${libcxx_bld_dir} -j ${jobs} || return 1
 	make -C ${libcxx_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
@@ -2108,7 +2147,7 @@ install_native_libcxxabi()
 	mkdir -p ${libcxxabi_bld_dir}
 	(cd ${libcxxabi_bld_dir}
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxxabi_org_src_dir}) || return 1
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxxabi_org_src_dir}) || return 1
 	make -C ${libcxxabi_bld_dir} -j ${jobs} || return 1
 	make -C ${libcxxabi_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
@@ -2123,7 +2162,7 @@ install_native_compiler_rt()
 	mkdir -p ${compiler_rt_bld_dir}
 	(cd ${compiler_rt_bld_dir}
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${compiler_rt_org_src_dir}) || return 1
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${compiler_rt_org_src_dir}) || return 1
 	make -C ${compiler_rt_bld_dir} -j ${jobs} || return 1
 	make -C ${compiler_rt_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
@@ -2141,7 +2180,7 @@ install_native_cfe()
 	mkdir -p ${cfe_bld_dir}
 	(cd ${cfe_bld_dir}
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${cfe_org_src_dir}) || return 1
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${cfe_org_src_dir}) || return 1
 	make -C ${cfe_bld_dir} -j ${jobs} || return 1
 	make -C ${cfe_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
@@ -2154,7 +2193,7 @@ install_native_clang_tools_extra()
 	mkdir -p ${clang_tools_extra_bld_dir}
 	(cd ${clang_tools_extra_bld_dir}
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_tools_extra_org_src_dir}) || return 1
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_tools_extra_org_src_dir}) || return 1
 	make -C ${clang_tools_extra_bld_dir} -j ${jobs} || return 1
 	make -C ${clang_tools_extra_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
@@ -2172,7 +2211,7 @@ install_native_lld()
 	mkdir -p ${lld_bld_dir}
 	(cd ${lld_bld_dir}
 	cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1
 	make -C ${lld_bld_dir} -j ${jobs} || return 1
 	make -C ${lld_bld_dir} -j ${jobs} check-lld || return 1
 	make -C ${lld_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
@@ -2193,7 +2232,7 @@ install_native_lldb()
 	mkdir -p ${lldb_bld_dir}
 	(cd ${lldb_bld_dir}
 	cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREIFX=${prefix} ${llvm_org_src_dir}) || return 1
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREIFX=${prefix} ${llvm_org_src_dir}) || return 1
 	make -C ${lldb_bld_dir} -j ${jobs} || return 1
 	make -C ${lldb_bld_dir} -j ${jobs} check-lldb || return 1
 	make -C ${lldb_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
@@ -2373,7 +2412,9 @@ install_cross_gcc()
 	[ -x ${prefix}/bin/${target}-gcc -a "${force_install}" != yes ] && return 0
 	which ${target}-as > /dev/null || install_cross_binutils || return 1
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
-	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
+	search_header gmp.h || install_native_gmp || return 1
+	search_header mpfr.h || install_native_mpfr || return 1
+	search_header mpc.h || install_native_mpc || return 1
 	which perl > /dev/null || install_native_perl || return 1
 	prepare_gcc_source || return 1
 	install_cross_gcc_without_headers || return 1
@@ -2475,7 +2516,9 @@ install_mingw_w64_gcc()
 	set_variables || return 1
 	install_cross_binutils || return 1
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
-	search_header mpc.h || install_native_gmp_mpfr_mpc || return 1
+	search_header gmp.h || install_native_gmp || return 1
+	search_header mpfr.h || install_native_mpfr || return 1
+	search_header mpc.h || install_native_mpc || return 1
 	which perl > /dev/null || install_native_perl || return 1
 	prepare_gcc_source || return 1
 	install_cross_gcc_without_headers || return 1
@@ -2557,19 +2600,23 @@ install_native_opencv()
 {
 	[ -f ${prefix}/include/opencv2/opencv.hpp -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
-	search_header png.h || install_native_libpng || return 1
+	search_header png.h || install_native_libpng || return 1 # systemのlibpngだと古いかも。
 	search_header tiff.h || install_native_libtiff || return 1
-	search_header jpeglib.h || install_native_libjpeg || return 1
+	search_header jpeglib.h || install_native_libjpeg || return 1 # systemのlibjpegだと古いかも。
 	prepare_opencv_source || return 1
 	unpack_archive ${opencv_org_src_dir} ${opencv_src_base} || return 1
+	prepare_opencv_contrib_source || return 1
+	unpack_archive ${opencv_contrib_org_src_dir} ${opencv_contrib_src_base} || return 1
 	mkdir -p ${opencv_bld_dir_ntv}
 	(cd ${opencv_bld_dir_ntv}
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS} -L`search_library_dir libpng.so` -L`search_library_dir libtiff.so` -L`search_library_dir libjpeg.so` -L${prefix}/lib" \
 		-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} -L`search_library_dir libpng.so` -L`search_library_dir libtiff.so` -L`search_library_dir libjpeg.so` -L${prefix}/lib" \
 		-DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS} -L`search_library_dir libpng.so` -L`search_library_dir libtiff.so` -L`search_library_dir libjpeg.so` -L${prefix}/lib" \
-		-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DENABLE_PRECOMPILED_HEADERS=OFF ${opencv_org_src_dir}) || return 1
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DENABLE_PRECOMPILED_HEADERS=OFF \
+		-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_org_src_dir}/modules ${opencv_org_src_dir}) || return 1
+	make -C ${opencv_bld_dir_ntv} -j ${jobs} -k || return 1 # make 一発じゃだめっぽいので2回。
 	make -C ${opencv_bld_dir_ntv} -j ${jobs} || return 1
 	make -C ${opencv_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return 1
 }
@@ -2593,11 +2640,10 @@ install_crossed_native_binutils()
 	make -C ${binutils_src_dir_crs_ntv} -j 1 DESTDIR=${sysroot} install${strip:+-${strip}} || return 1
 }
 
-install_crossed_native_gmp_mpfr_mpc()
+install_crossed_native_gmp()
 {
-	[ -f ${sysroot}/usr/include/gmp.h -a -f ${sysroot}/usr/include/mpfr.h -a -f ${sysroot}/usr/include/mpc.h -a "${force_install}" != yes ] && return 0
-	prepare_gmp_mpfr_mpc_source || return 1
-
+	[ -f ${sysroot}/usr/include/gmp.h -a "${force_install}" != yes ] && return 0
+	prepare_gmp_source || return 1
 	[ -d ${gmp_src_dir_crs_ntv} ] ||
 		(unpack_archive ${gmp_org_src_dir} ${gmp_src_base} &&
 			mv ${gmp_org_src_dir} ${gmp_src_dir_crs_ntv}) || return 1
@@ -2606,19 +2652,29 @@ install_crossed_native_gmp_mpfr_mpc()
 		./configure --prefix=/usr --build=${build} --host=${target} --enable-cxx) || return 1
 	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return 1
+}
 
+install_crossed_native_mpfr()
+{
+	[ -f ${sysroot}/usr/include/mpfr.h -a "${force_install}" != yes ] && return 0
+	prepare_mpfr_source || return 1
 	[ -d ${mpfr_src_dir_crs_ntv} ] ||
 		(unpack_archive ${mpfr_org_src_dir} ${mpfr_src_base} &&
 			mv ${mpfr_org_src_dir} ${mpfr_src_dir_crs_ntv}) || return 1
 	[ -f ${mpfr_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${mpfr_src_dir_crs_ntv}
 		./configure --prefix=/usr --build=${build} --host=${target} --with-gmp=${sysroot}/usr) || return 1
-
 	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} || return 1
 	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return 1
 	sed -i -e /^dependency_libs=/s/\'.\*\'\$/\'\'/ ${sysroot}/usr/lib/libmpfr.la || return 1
 	# [XXX] mpcビルド時に、mpfrが依存しているgmpを参照しようとしてlibmpfr.laの不整合に
 	#       引っかからないようにするために、強行的にlibmpfr.la書き換えてる。
+}
+
+install_crossed_native_mpc()
+{
+	[ -f ${sysroot}/usr/include/mpc.h -a "${force_install}" != yes ] && return 0
+	prepare_mpc_source || return 1
 	[ -d ${mpc_src_dir_crs_ntv} ] ||
 		(unpack_archive ${mpc_org_src_dir} ${mpc_src_base} &&
 			mv ${mpc_org_src_dir} ${mpc_src_dir_crs_ntv}) || return 1
@@ -2633,7 +2689,9 @@ install_crossed_native_gcc()
 {
 	[ -x ${sysroot}/usr/bin/gcc -a "${force_install}" != yes ] && return 0
 	install_crossed_native_zlib || return 1
-	[ -f ${sysroot}/usr/include/mpc.h ] || install_crossed_native_gmp_mpfr_mpc || return 1
+	[ -f ${sysroot}/usr/include/gmp.h ] || install_crossed_native_gmp || return 1
+	[ -f ${sysroot}/usr/include/mpfr.h ] || install_crossed_native_mpfr || return 1
+	[ -f ${sysroot}/usr/include/mpc.h ] || install_crossed_native_mpc || return 1
 	which perl > /dev/null || install_native_perl || return 1
 	prepare_gcc_source || return 1
 	unpack_archive ${gcc_org_src_dir} ${gcc_src_base} || return 1
