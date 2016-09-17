@@ -1,6 +1,6 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
-# [TODO] haskell, bash, LLDB, Polly, MySQL, expat, Guile, libav
+# [TODO] haskell(stack->(ghc, cabal)), bash, LLDB, Polly, MySQL, expat, Guile, libav
 # [TODO] graphviz <- Doxygen
 # [TODO] --with-hoge=fugaを--with-hoge=`get_prefix`に改める。
 # [TODO] -L${prefix}/lib -I${prefix}/includeがget_prefixなどで代替できないか検討する。
@@ -1852,7 +1852,7 @@ install_native_pcre2()
 	unpack_archive ${pcre2_org_src_dir} ${pcre2_src_base} || return 1
 	[ -f ${pcre2_org_src_dir}/Makefile ] ||
 		(cd ${pcre2_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return 1
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${pcre2_org_src_dir} -j ${jobs} || return 1
 	make -C ${pcre2_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -2739,16 +2739,62 @@ install_native_x265()
 
 install_native_libav()
 {
-	false
+	[ -x ${prefix}/bin/avconv -a "${force_install}" != yes ] && return 0
+	which yasm > /dev/null || install_native_yasm || return 1
+	search_header x264.h || install_native_x264 || return 1
+	search_header x265.h || install_native_x265 || return 1
+	fetch_libav_source || return 1
+	[ -d ${libav_org_src_dir} ] ||
+		unpack_archive ${libav_org_src_dir} ${libav_src_base} || return 1
+	(cd ${libav_org_src_dir}
+	./configure --prefix=${prefix} --enable-gpl --enable-version3 --enable-nonfree --enable-shared \
+		--enable-gray \
+		\
+		--enable-bzlib \
+		--enable-frei0r \
+		--enable-libbs2b \
+		--enable-libcdio \
+		--enable-libdc1394 \
+		--enable-libfaac \
+		--enable-libfdk-aac \
+		--enable-libfreetype \
+		--enable-libgsm \
+		--enable-libilbc \
+		--enable-libmp3lame \
+		--enable-libopencore-amrnb \
+		--enable-libopencv \
+		--enable-libopus \
+		--enable-libpulse \
+		--enable-librtmp \
+		--enable-libschroedinger \
+		--enable-libspeex \
+		--enable-libtheora \
+		--enable-libtwolame \
+		--enable-libvo-aacenc \
+		--enable-libvo-amrwbenc \
+		--enable-libvorbis \
+		--enable-libvpx \
+		--enable-libwavpack \
+		--enable-libwebp \
+		--enable-libx264 \
+		--enable-libx265 \
+		--enable-libxavs \
+		--enable-libxvid \
+		--enable-openssl \
+		--enable-zlib \
+#		--enable-avisynth \
+	) || return 1
+	make -C ${libav_org_src_dir} -j ${jobs} || return 1
+	make -C ${libav_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_opencv()
 {
 	[ -f ${prefix}/include/opencv2/opencv.hpp -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
-	search_header png.h || install_native_libpng || return 1 # systemのlibpngだと古いかも。
+	search_header png.h || install_native_libpng || return 1 # systemのlibpngだと古くて新規インストール必須かも。
 	search_header tiff.h || install_native_libtiff || return 1
-	search_header jpeglib.h || install_native_libjpeg || return 1 # systemのlibjpegだと古いかも。
+	search_header jpeglib.h || install_native_libjpeg || return 1 # systemのlibjpegだと古くて新規インストール必須かも。
 	fetch_opencv_source || return 1
 	unpack_archive ${opencv_org_src_dir} ${opencv_src_base} || return 1
 	fetch_opencv_contrib_source || return 1
