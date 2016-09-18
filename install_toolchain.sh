@@ -1,7 +1,10 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
-# [TODO] haskell(stack->(ghc, cabal)), bash, LLDB, Polly, MySQL, expat, Guile, libav
-# [TODO] graphviz <- Doxygen
+# [TODO] haskell(stack<-(ghc, cabal))
+# [TODO] libav<-
+# [TODO] tcl/tk
+# [TODO] openssh
+# [TODO] bash, LLDB, Polly, MySQL, expat, Guile
 # [TODO] --with-hoge=fugaを--with-hoge=`get_prefix`に改める。
 # [TODO] -L${prefix}/lib -I${prefix}/includeがget_prefixなどで代替できないか検討する。
 # [TODO] update-alternatives
@@ -41,12 +44,14 @@
 : ${tiff_ver:=4.0.6}
 : ${libjpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
-: ${emacs_ver:=24.5}
+: ${emacs_ver:=25.1}
 : ${vim_ver:=8.0.0003}
 : ${grep_ver:=2.25}
 : ${global_ver:=6.5.4}
 : ${pcre2_ver:=10.22}
 : ${the_silver_searcher_ver:=0.32.0}
+: ${graphviz_ver:=2.38.0}
+: ${doxygen_ver:=1.8.12}
 : ${diffutils_ver:=3.3}
 : ${patch_ver:=2.7.5}
 : ${findutils_ver:=4.6.0}
@@ -201,6 +206,10 @@ help()
 		Specify the version of PCRE2 you want, currently '${pcre2_ver}'.
 	the_silver_searcher_ver
 		Specify the version of the silver searcher you want, currently '${the_silver_searcher_ver}'.
+	graphviz_ver
+		Specify the version of Graphviz you want, currently '${graphviz_ver}'.
+	doxygen_ver
+		Specify the version of Doxygen you want, currently '${doxygen_ver}'.
 	diffutils_ver
 		Specify the version of GNU diffutils you want, currently '${diffutils_ver}'.
 	patch_ver
@@ -484,7 +493,7 @@ set_variables()
 	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
 		gmp mpfr mpc gcc ncurses gdb zlib libpng tiff giflib emacs vim grep \
-		global pcre2 the_silver_searcher diffutils patch findutils screen \
+		global pcre2 the_silver_searcher graphviz doxygen diffutils patch findutils screen \
 		libevent tmux zsh openssl curl asciidoc xmlto libxml2 libxslt gettext \
 		git mercurial sqlite-autoconf apr apr-util subversion cmake libedit \
 		swig llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb \
@@ -953,6 +962,22 @@ fetch_the_silver_searcher_source()
 	check_archive ${the_silver_searcher_org_src_dir} ||
 		wget -O ${the_silver_searcher_org_src_dir}.tar.gz \
 			http://geoff.greer.fm/ag/releases/${the_silver_searcher_name}.tar.gz || return 1
+}
+
+fetch_graphviz_source()
+{
+	mkdir -p ${graphviz_src_base}
+	check_archive ${graphviz_org_src_dir} ||
+		wget -O ${graphviz_org_src_dir}.tar.gz \
+			http://www.graphviz.org/pub/graphviz/stable/SOURCES/${graphviz_name}.tar.gz || return 1
+}
+
+fetch_doxygen_source()
+{
+	mkdir -p ${doxygen_src_base}
+	check_archive ${doxygen_org_src_dir} ||
+		wget -O ${doxygen_org_src_dir}.tar.gz \
+			http://ftp.stack.nl/pub/users/dimitri/${doxygen_name}.src.tar.gz || return 1
 }
 
 fetch_diffutils_source()
@@ -1873,6 +1898,38 @@ install_native_the_silver_searcher()
 	make -C ${the_silver_searcher_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
 
+install_native_graphviz()
+{
+	[ -x ${prefix}/bin/dot -a "${force_install}" != yes ] && return 0
+	which swig > /dev/null || install_native_swig || return 1
+	fetch_graphviz_source || return 1
+	unpack_archive ${graphviz_org_src_dir} ${graphviz_src_base} || return 1
+	[ -f ${graphviz_org_src_dir}/Makefile ] ||
+		(cd ${graphviz_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			--enable-swig --enable-go --enable-perl --enable-python \
+			--enable-ruby ) || return 1
+	make -C ${graphviz_org_src_dir} -j ${jobs} || return 1
+	make -C ${graphviz_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+}
+
+install_native_doxygen()
+{
+	[ -x ${prefix}/bin/doxygen -a "${force_install}" != yes ] && return 0
+	which cmake > /dev/null || install_native_cmake || return 1
+	which clang > /dev/null || install_native_clang || return 1
+	fetch_doxygen_source || return 1
+	unpack_archive ${doxygen_org_src_dir} ${doxygen_src_base} || return 1
+	mkdir -p ${doxygen_bld_dir_ntv}
+	(cd ${doxygen_bld_dir_ntv}
+	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-Dbuild_doc=ON -Duse_libclang=ON ${doxygen_org_src_dir}) || return 1 # [TODO] Xapian入れられたら、build_search=ONにする・・・かも。
+	make -C ${doxygen_bld_dir_ntv} -j ${jobs} || return 1
+	make -C ${doxygen_bld_dir_ntv} -j ${jobs} docs || return 1
+	make -C ${doxygen_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return 1
+}
+
 install_native_diffutils()
 {
 	[ -x ${prefix}/bin/diff -a "${force_install}" != yes ] && return 0
@@ -2686,7 +2743,9 @@ install_native_perl()
 	fetch_perl_source || return 1
 	unpack_archive ${perl_org_src_dir} ${perl_src_base} || return 1
 	(cd ${perl_org_src_dir}
-	./Configure -de -Dprefix=${prefix} -Dcc=${CC:-gcc} -Dusethreads -Duse64bitint -Duse64bitall) || return 1
+	./Configure -de -Dprefix=${prefix} -Dcc=${CC:-gcc} \
+		-Dusethreads -Duse64bitint -Duse64bitall -Dusemorebits \
+		-Duseshrplib) || return 1
 	make -C ${perl_org_src_dir} -j ${jobs} || return 1
 	make -C ${perl_org_src_dir} -j ${jobs} test || return 1
 	make -C ${perl_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
@@ -2730,7 +2789,8 @@ install_native_x265()
 		(unpack_archive ${x265_org_src_dir} ${x265_src_base} &&
 		mv ${x265_src_base}/x265_${x265_ver} ${x265_org_src_dir}) || return 1
 	(cd ${x265_org_src_dir}/source
-	cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 		-DNATIVE_BUILD=ON) || return 1
 	make -C ${x265_org_src_dir}/source -j ${jobs} || return 1
