@@ -3,8 +3,7 @@
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] libav<-
 # [TODO] tcl/tk
-# [TODO] openssh
-# [TODO] bash, LLDB, Polly, MySQL, expat, Guile
+# [TODO] LLDB, Polly, MySQL, expat, Guile
 # [TODO] --with-hoge=fugaを--with-hoge=`get_prefix`に改める。
 # [TODO] -L${prefix}/lib -I${prefix}/includeがget_prefixなどで代替できないか検討する。
 # [TODO] update-alternatives
@@ -59,7 +58,9 @@
 : ${libevent_ver:=2.0.22}
 : ${tmux_ver:=2.2}
 : ${zsh_ver:=5.2}
+: ${bash_ver:=4.4}
 : ${openssl_ver:=1.0.2f}
+: ${openssh_ver:=7.3p1}
 : ${curl_ver:=7.49.0}
 : ${asciidoc_ver:=8.6.9}
 : ${xmlto_ver:=0.0.28}
@@ -103,7 +104,7 @@ usage()
 {
 	cat <<EOF
 [Usage]
-	$0 [-p prefix] [-t target] [-j jobs] [-h] [variable=value]... tags...
+	$0 [-p prefix] [-t target] [-j jobs] [-h] [variable=value]... commands...
 
 [Options]
 	-p prefix
@@ -122,7 +123,7 @@ usage()
 		Show detailed help.
 
 EOF
-	list_major_tags
+	list_major_commands
 	echo
 }
 
@@ -224,8 +225,12 @@ help()
 		Specify the version of tmux you want, currently '${tmux_ver}'.
 	zsh_ver
 		Specify the version of Zsh you want, currently '${zsh_ver}'.
+	bash_ver
+		Specify the version of Bash you want, currently '${bash_ver}'.
 	openssl_ver
 		Specify the version of openssl you want, currently '${openssl_ver}'.
+	openssh_ver
+		Specify the version of openssh you want, currently '${openssh_ver}'.
 	curl_ver
 		Specify the version of Curl you want, currently '${libcur_ver}'.
 	asciidoc_ver
@@ -397,7 +402,7 @@ deploy()
 }
 
 list()
-# List all tags, which include the ones not listed here.
+# List all commands, which include the ones not listed here.
 {
 	list_all
 }
@@ -494,7 +499,7 @@ set_variables()
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
 		gmp mpfr mpc gcc ncurses gdb zlib libpng tiff giflib emacs vim grep \
 		global pcre2 the_silver_searcher graphviz doxygen diffutils patch findutils screen \
-		libevent tmux zsh openssl curl asciidoc xmlto libxml2 libxslt gettext \
+		libevent tmux zsh bash openssl openssh curl asciidoc xmlto libxml2 libxslt gettext \
 		git mercurial sqlite-autoconf apr apr-util subversion cmake libedit \
 		swig llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb \
 		Python ruby go perl yasm x264 x265 libav opencv opencv_contrib; do
@@ -543,9 +548,9 @@ archive_sources()
 	tar cJvf ${prefix}/src.tar.xz -C ${prefix} src
 }
 
-list_major_tags()
+list_major_commands()
 {
-	echo '[Available tags]'
+	echo '[Available commands]'
 	eval "`grep -A 1 -e '^[[:alnum:]]\+()$' $0 |
 		sed -e '/^--$/d; /^{$/d; s/()$//; s/^# /\t/; s/^/\t/; 1s/^/echo "/; $s/$/"/'`"
 }
@@ -553,17 +558,17 @@ list_major_tags()
 list_all()
 {
 	cat <<EOF
-[All tags]
-#: major tags, -: internal tags(for debugging use)
+[All commands]
+#: major commands, -: internal commands(for debugging use)
 EOF
-	tags=`grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/    - /;s/()$//;s/- \([[:alnum:]]\+\)$/# \1/'`
+	commands=`grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/    - /;s/()$//;s/- \([[:alnum:]]\+\)$/# \1/'`
 
-	lines=`echo "${tags}" | wc -l`
+	lines=`echo "${commands}" | wc -l`
 	column1_end=`expr \`expr ${lines} / 2\` + \`expr ${lines} % 2\``
 	column2_begin=`expr ${column1_end} + 1`
 
-	column1=`echo "${tags}" | sed -e "1,${column1_end}p;d"`
-	column2=`echo "${tags}" | sed -e "${column2_begin},\\$p;d"`
+	column1=`echo "${commands}" | sed -e "1,${column1_end}p;d"`
+	column2=`echo "${commands}" | sed -e "${column2_begin},\\$p;d"`
 
 	for i in `seq ${column1_end}`; do
 		printf '    %c %-32s' `echo "${column1}" | sed -e "${i}p;d"`
@@ -1036,12 +1041,28 @@ fetch_zsh_source()
 			https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return 1
 }
 
+fetch_bash_source()
+{
+	mkdir -p ${bash_src_base}
+	check_archive ${bash_org_src_dir} ||
+		wget -O ${bash_org_src_dir}.tar.gz \
+		http://ftp.gnu.org/gnu/bash/${bash_name}.tar.gz || return 1
+}
+
 fetch_openssl_source()
 {
 	mkdir -p ${openssl_src_base}
 	check_archive ${openssl_org_src_dir} ||
 		wget --no-check-certificate -O ${openssl_org_src_dir}.tar.gz \
 			http://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return 1
+}
+
+fetch_openssh_source()
+{
+	mkdir -p ${openssh_src_base}
+	check_archive ${openssh_org_src_dir} ||
+		wget -O ${openssh_org_src_dir}.tar.gz \
+			http://ftp.jaist.ac.jp/pub/OpenBSD/OpenSSH/portable/${openssh_name}.tar.gz || return 1
 }
 
 fetch_curl_source()
@@ -2022,6 +2043,18 @@ install_native_zsh()
 	make -C ${zsh_org_src_dir} -j ${jobs} install || return 1
 }
 
+install_native_bash()
+{
+	[ -x ${prefix}/bin/bash -a "${force_install}" != yes ] && return 0
+	fetch_bash_source || return 1
+	unpack_archive ${bash_org_src_dir} ${bash_src_base} || return 1
+	[ -f ${bash_org_src_dir}/Makefile ] ||
+		(cd ${bash_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return 1
+	make -C ${bash_org_src_dir} -j ${jobs} || return 1
+	make -C ${bash_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+}
+
 install_native_openssl()
 {
 	[ -d ${prefix}/include/openssl -a "${force_install}" != yes ] && return 0
@@ -2032,6 +2065,20 @@ install_native_openssl()
 	make -C ${openssl_org_src_dir} -j ${jobs} || return 1
 	make -C ${openssl_org_src_dir} -j ${jobs} install || return 1
 	update_search_path || return 1
+}
+
+install_native_openssh()
+{
+	[ -x ${prefix}/bin/ssh -a "${force_install}" != yes ] && return 0
+	search_header zlib.h || install_native_zlib || return 1
+	search_header ssl.h openssl || install_native_openssl || return 1
+	fetch_openssh_source || return 1
+	unpack_archive ${openssh_org_src_dir} ${openssh_src_base} || return 1
+	[ -f ${openssh_org_src_dir}/Makefile ] ||
+		(cd ${openssh_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return 1
+	make -C ${openssh_org_src_dir} -j ${jobs} || return 1
+	make -C ${openssh_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_curl()
