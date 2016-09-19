@@ -1046,7 +1046,7 @@ fetch_bash_source()
 	mkdir -p ${bash_src_base}
 	check_archive ${bash_org_src_dir} ||
 		wget -O ${bash_org_src_dir}.tar.gz \
-		http://ftp.gnu.org/gnu/bash/${bash_name}.tar.gz || return 1
+			http://ftp.gnu.org/gnu/bash/${bash_name}.tar.gz || return 1
 }
 
 fetch_openssl_source()
