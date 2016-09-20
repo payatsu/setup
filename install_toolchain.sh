@@ -1353,7 +1353,8 @@ install_native_tar()
 	unpack_archive ${tar_org_src_dir} ${tar_src_base} || return 1
 	[ -f ${tar_org_src_dir}/Makefile ] ||
 		(cd ${tar_org_src_dir}
-		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} \
+			--build=${build} --disable-silent-rules) || return 1
 	make -C ${tar_org_src_dir} -j ${jobs} || return 1
 	make -C ${tar_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1375,7 +1376,12 @@ install_native_bzip2()
 	[ -x ${prefix}/bin/bzip2 -a "${force_install}" != yes ] && return 0
 	fetch_bzip2_source || return 1
 	unpack_archive ${bzip2_org_src_dir} ${bzip2_src_base} || return 1
-	sed -i -e '/^CFLAGS=/{s/ -fPIC//g;s/$/ -fPIC/};s/ln -s -f \$(PREFIX)\/bin\//ln -s -f /' ${bzip2_org_src_dir}/Makefile || return 1
+	sed -i -e \
+			'/^CFLAGS=/{
+				s/ -fPIC//g
+				s/$/ -fPIC/
+			}
+			s/ln -s -f \$(PREFIX)\/bin\//ln -s -f /' ${bzip2_org_src_dir}/Makefile || return 1
 	make -C ${bzip2_org_src_dir} -j ${jobs} || return 1
 	make -C ${bzip2_org_src_dir} -j ${jobs} PREFIX=${prefix} install || return 1
 	make -C ${bzip2_org_src_dir} -j ${jobs} clean || return 1
@@ -1433,7 +1439,8 @@ install_native_coreutils()
 	unpack_archive ${coreutils_org_src_dir} ${coreutils_src_base} || return 1
 	[ -f ${coreutils_org_src_dir}/Makefile ] ||
 		(cd ${coreutils_org_src_dir}
-		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} \
+			--build=${build} --disable-silent-rules) || return 1
 	make -C ${coreutils_org_src_dir} -j ${jobs} || return 1
 	make -C ${coreutils_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1606,7 +1613,8 @@ install_native_glibc()
 	mkdir -p ${glibc_bld_dir_ntv}
 	[ -f ${glibc_bld_dir_ntv}/Makefile ] ||
 		(cd ${glibc_bld_dir_ntv}
-		LD_LIBRARY_PATH='' ${glibc_src_dir_ntv}/configure --prefix=${prefix} --build=${build} \
+		LD_LIBRARY_PATH='' ${glibc_src_dir_ntv}/configure \
+			--prefix=${prefix} --build=${build} \
 			--with-headers=${prefix}/include --without-selinux --enable-add-ons \
 			CPPFLAGS="${CPPFLAGS} -I${prefix}/include -D_LIBC") || return 1
 	make -C ${glibc_bld_dir_ntv} -j ${jobs} install-headers || return 1
@@ -1655,7 +1663,8 @@ install_native_mpc()
 			mv ${mpc_org_src_dir} ${mpc_src_dir_ntv}) || return 1
 	[ -f ${mpc_src_dir_ntv}/Makefile ] ||
 		(cd ${mpc_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --with-gmp=${prefix} --with-mpfr=${prefix}) || return 1
+		./configure --prefix=${prefix} --build=${build} \
+			--with-gmp=${prefix} --with-mpfr=${prefix}) || return 1
 	make -C ${mpc_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${mpc_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
@@ -1721,7 +1730,8 @@ EOF
 
 	[ -f ${ncurses_org_src_dir}/Makefile ] ||
 		(cd ${ncurses_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --with-libtool --with-shared --with-cxx-shared) || return 1
+		./configure --prefix=${prefix} --build=${build} \
+			--with-libtool --with-shared --with-cxx-shared) || return 1
 	make -C ${ncurses_org_src_dir} -j ${jobs} || return 1
 	make -C ${ncurses_org_src_dir} -j ${jobs} install || return 1
 	update_search_path || return 1
@@ -1738,7 +1748,8 @@ install_native_gdb()
 	[ -f ${gdb_bld_dir_ntv}/Makefile ] ||
 		(cd ${gdb_bld_dir_ntv}
 		${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} \
-		--enable-targets=all --enable-tui --with-python=python3 --with-system-zlib) || return 1
+			--enable-targets=all --enable-tui --with-python=python3 \
+			--with-system-zlib) || return 1
 	make -C ${gdb_bld_dir_ntv} -j ${jobs} || return 1
 	make -C ${gdb_bld_dir_ntv} -j ${jobs} install || return 1
 }
