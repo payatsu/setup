@@ -2304,7 +2304,7 @@ install_native_libedit()
 		./configure --prefix=${prefix} --build=${build} \
 			--disable-silent-rules CFLAGS="${CFLAGS} -I${prefix}/include/ncurses") || return 1
 	make -C ${libedit_org_src_dir} -j ${jobs} || return 1
-	make -C ${libedit_org_src_dir} -j ${jobs} install${strip:+/${strip}} || return 1
+	make -C ${libedit_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_swig()
