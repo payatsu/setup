@@ -36,6 +36,7 @@
 : ${mpfr_ver:=3.1.4}
 : ${mpc_ver:=1.0.3}
 : ${gcc_ver:=6.2.0}
+: ${readline_ver:=7.0}
 : ${ncurses_ver:=6.0}
 : ${gdb_ver:=7.11.1}
 : ${zlib_ver:=1.2.8}
@@ -76,7 +77,7 @@
 : ${cmake_ver:=3.5.2}
 : ${libedit_ver:=20160903-3.1}
 : ${swig_ver:=3.0.10}
-: ${llvm_ver:=3.8.0}
+: ${llvm_ver:=3.9.0}
 : ${boost_ver:=1_61_0}
 : ${mingw_w64_ver:=4.0.6}
 : ${Python_ver:=3.5.2}
@@ -181,6 +182,8 @@ help()
 		Specify the version of GNU MPC Library you want, currently '${mpc_ver}'.
 	gcc_ver
 		Specify the version of GNU Compiler Collection you want, currently '${gcc_ver}'.
+	readline_ver
+		Specify the version of GNU Readline Library you want, currently '${readline_ver}'.
 	ncurses_ver
 		Specify the version of ncurses you want, currently '${ncurses_ver}'.
 	gdb_ver
@@ -497,7 +500,7 @@ set_variables()
 
 	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
-		gmp mpfr mpc gcc ncurses gdb zlib libpng tiff giflib emacs vim grep \
+		gmp mpfr mpc gcc readline ncurses gdb zlib libpng tiff giflib emacs vim grep \
 		global pcre2 the_silver_searcher graphviz doxygen diffutils patch findutils screen \
 		libevent tmux zsh bash openssl openssh curl asciidoc xmlto libxml2 libxslt gettext \
 		git mercurial sqlite-autoconf apr apr-util subversion cmake libedit \
@@ -863,6 +866,14 @@ fetch_gcc_source()
 	check_archive ${gcc_org_src_dir} ||
 		wget -O ${gcc_org_src_dir}.tar.bz2 \
 			http://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.bz2 || return 1
+}
+
+fetch_readline_source()
+{
+	mkdir -p ${readline_src_base}
+	check_archive ${readline_org_src_dir} ||
+		wget -O ${readline_org_src_dir}.tar.gz \
+			http://ftp.gnu.org/gnu/readline/${readline_name}.tar.gz || return 1
 }
 
 fetch_ncurses_source()
@@ -1693,6 +1704,19 @@ install_native_gcc()
 	update_search_path || return 1
 }
 
+install_native_readline()
+{
+	[ -f ${prefix}/include/readline/readline.h -a "${force_install}" != yes ] && return 0
+	fetch_readline_source || return 1
+	unpack_archive ${readline_org_src_dir} ${readline_src_base} || return 1
+	[ -f ${readline_org_src_dir}/Makefile ] ||
+		(cd ${readline_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return 1
+	make -C ${readline_org_src_dir} -j ${jobs} || return 1
+	make -C ${readline_org_src_dir} -j ${jobs} install || return 1
+	update_search_path || return 1
+}
+
 install_native_ncurses()
 {
 	[ -f ${prefix}/include/ncurses/curses.h -a "${force_install}" != yes ] && return 0
@@ -1740,6 +1764,7 @@ EOF
 install_native_gdb()
 {
 	[ -x ${prefix}/bin/gdb -a "${force_install}" != yes ] && return 0
+	search_header readline.h readline || install_native_readline || return 1
 	search_header curses.h ncurses || install_native_ncurses || return 1
 	search_header Python.h || install_native_python || return 1
 	fetch_gdb_source || return 1
@@ -1749,9 +1774,10 @@ install_native_gdb()
 		(cd ${gdb_bld_dir_ntv}
 		${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--enable-targets=all --enable-tui --with-python=python3 \
-			--with-system-zlib) || return 1
+			--with-system-zlib --with-system-readline) || return 1
 	make -C ${gdb_bld_dir_ntv} -j ${jobs} || return 1
 	make -C ${gdb_bld_dir_ntv} -j ${jobs} install || return 1
+	make -C ${gdb_bld_dir_ntv}/gdb -j ${jobs} install${strip:+-${strip}} || return 1
 }
 
 install_native_zlib()
@@ -2328,7 +2354,8 @@ install_native_llvm()
 	mkdir -p ${llvm_bld_dir}
 	(cd ${llvm_bld_dir}
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return 1
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DLLVM_LINK_LLVM_DYLIB=ON ${llvm_org_src_dir}) || return 1
 	make -C ${llvm_bld_dir} -j ${jobs} || return 1
 	make -C ${llvm_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
@@ -2342,7 +2369,8 @@ install_native_libcxx()
 	mkdir -p ${libcxx_bld_dir}
 	(cd ${libcxx_bld_dir}
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxx_org_src_dir}) || return 1
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DLLVM_LINK_LLVM_DYLIB=ON ${libcxx_org_src_dir}) || return 1
 	make -C ${libcxx_bld_dir} -j ${jobs} || return 1
 	make -C ${libcxx_bld_dir} -j ${jobs} install${strip:+/${strip}} || return 1
 }
@@ -2639,17 +2667,21 @@ install_cross_gcc()
 install_cross_gdb()
 {
 	[ -x ${prefix}/bin/${target}-gdb -a "${force_install}" != yes ] && return 0
+	search_header readline.h readline || install_native_readline || return 1
+	search_header curses.h ncurses || install_native_ncurses || return 1
 	search_header Python.h || install_native_python || return 1
 	fetch_gdb_source || return 1
 	unpack_archive ${gdb_org_src_dir} ${gdb_src_base} || return 1
 	mkdir -p ${gdb_bld_dir_crs}
 	[ -f ${gdb_bld_dir_crs}/Makefile ] ||
 		(cd ${gdb_bld_dir_crs}
-		${gdb_org_src_dir}/configure --prefix=${prefix} --target=${target} \
-			--enable-targets=all --enable-tui --with-python=python3 --with-system-zlib \
-			--with-sysroot=${sysroot}) || return 1
+		${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
+			--enable-targets=all --enable-tui --with-python=python3 \
+			--with-system-zlib --with-system-readline --with-sysroot=${sysroot}) || return 1
 	make -C ${gdb_bld_dir_crs} -j ${jobs} || return 1
 	make -C ${gdb_bld_dir_crs} -j ${jobs} install || return 1
+	make -C ${gdb_bld_dir_crs}/gdb -j ${jobs} install${strip:+-${strip}} || return 1
+	make -C ${gdb_bld_dir_crs}/sim -j ${jobs} install${strip:+-${strip}} || return 1
 }
 
 full_cross()
