@@ -432,7 +432,7 @@ set_src_directory()
 	_1=`echo ${1} | tr - _`
 
 	case ${1} in
-		llvm|libcxx|libcxxabi|compiler-rt|cfe|clang-tools-extra|lld|lldb)
+	llvm|libcxx|libcxxabi|compiler-rt|cfe|clang-tools-extra|lld|lldb)
 		eval ${_1}_name=${1}-${llvm_ver}.src
 		eval ${_1}_src_base=${prefix}/src/${1}
 		eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
@@ -448,7 +448,7 @@ set_src_directory()
 	eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
 
 	case ${_1} in
-		glibc)
+	glibc)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-src
 		eval ${_1}_bld_dir_crs_hdr=\${${_1}_src_base}/${target}-\${${_1}_name}-bld-hdr
@@ -456,18 +456,18 @@ set_src_directory()
 		eval ${_1}_src_dir_crs_hdr=\${${_1}_src_base}/${target}-\${${_1}_name}-src-hdr
 		eval ${_1}_src_dir_crs_1st=\${${_1}_src_base}/${target}-\${${_1}_name}-src-1st
 		;;
-		gcc)
+	gcc)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_bld_dir_crs_1st=\${${_1}_src_base}/${target}-\${${_1}_name}-1st
 		eval ${_1}_bld_dir_crs_2nd=\${${_1}_src_base}/${target}-\${${_1}_name}-2nd
 		eval ${_1}_bld_dir_crs_3rd=\${${_1}_src_base}/${target}-\${${_1}_name}-3rd
 		eval ${_1}_bld_dir_crs_ntv=\${${_1}_src_base}/${target}-\${${_1}_name}-crs-ntv
 		;;
-		gdb)
+	gdb)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_bld_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-bld
 		;;
-		*)
+	*)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-src
 		eval ${_1}_src_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-src
@@ -496,6 +496,13 @@ set_variables()
 	microblaze*) cross_linux_arch=microblaze;;
 	x86_64*)     cross_linux_arch=x86;;
 	*) echo Unknown target architecture: ${target} >&2; return 1;;
+	esac
+
+	case `echo ${linux_ver} | cut -f 1,2 -d .` in
+	2.6) kernel_major_ver=v2.6;;
+	3.*) kernel_major_ver=v3.x;;
+	4.*) kernel_major_ver=v4.x;;
+	*)   echo unsupported kernel version >&2; return 1;;
 	esac
 
 	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
@@ -609,7 +616,9 @@ search_library_dir()
 search_header()
 {
 	for dir in ${prefix}/include /usr/local/include /opt/include /usr/include; do
-		[ -f ${dir}${2:+/$2}/$1 ] && echo ${dir}${2:+/$2}/$1 && return 0
+		[ -d ${dir}${2:+/$2} ] || continue
+		candidates=`find ${dir}${2:+/$2} -type f -name $1`
+		[ -n "${candidates}" ] && echo "${candidates}" | head -n 1 && return 0
 	done
 	return 1
 }
@@ -801,16 +810,10 @@ fetch_binutils_source()
 
 fetch_kernel_source()
 {
-	case `echo ${linux_ver} | cut -f 1,2 -d .` in
-		2.6) dir=v2.6;;
-		3.*) dir=v3.x;;
-		4.*) dir=v4.x;;
-		*)   echo unsupported kernel version >&2; return 1;;
-	esac
 	mkdir -p ${linux_src_base}
 	check_archive ${linux_org_src_dir} ||
 		wget --no-check-certificate -O ${linux_org_src_dir}.tar.xz \
-			https://www.kernel.org/pub/linux/kernel/${dir}/${linux_name}.tar.xz || return 1
+			https://www.kernel.org/pub/linux/kernel/${kernel_major_ver}/${linux_name}.tar.xz || return 1
 }
 
 fetch_gperf_source()
