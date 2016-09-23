@@ -4,7 +4,6 @@
 # [TODO] libav<-
 # [TODO] tcl/tk
 # [TODO] LLDB, Polly, MySQL, expat, Guile
-# [TODO] -L${prefix}/lib -I${prefix}/includeがget_prefixなどで代替できないか検討する。
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_xmltoのリファクタリング。
@@ -111,8 +110,9 @@ usage()
 		Installation directory, currently '${prefix}'.
 		'/usr/local' is NOT strongly recommended.
 	-t target
-		Target-triplet of new toolchain, currently '${target}'.
-		ex. armv7l-linux-gnueabihf
+		Target-triplet of new cross toolchain, currently '${target}'.
+		ex.
+			armv7l-linux-gnueabihf
 			x86_64-linux-gnu
 			i686-unknown-linux
 			microblaze-none-linux
@@ -406,11 +406,11 @@ deploy()
 list()
 # List all commands, which include the ones not listed here.
 {
-	list_all
+	list_all_commands
 }
 
 reset()
-# Reset 'prefix' except 'prefix/src/'.
+# Reset '${prefix}' except '${prefix}/src/'.
 {
 	clean
 	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src ! -name .git -exec rm -rf '{}' +
@@ -477,6 +477,8 @@ set_src_directory()
 
 set_variables()
 {
+	tabs -4
+
 	prefix=`readlink -m ${prefix}`
 	sysroot=${prefix}/${target}/sysroot
 	os=`head -1 /etc/issue | cut -d ' ' -f 1`
@@ -564,7 +566,7 @@ list_major_commands()
 		sed -e '/^--$/d; /^{$/d; s/()$//; s/^# /\t/; s/^/\t/; 1s/^/echo "/; $s/$/"/'`"
 }
 
-list_all()
+list_all_commands()
 {
 	cat <<EOF
 [All commands]
@@ -584,6 +586,14 @@ EOF
 		printf '    %c %-s'   `echo "${column2}" | sed -e "${i}p;d"`
 		echo
 	done
+}
+
+list_repositories()
+{
+	cat <<EOF
+[All repositories]
+EOF
+	eval echo `grep -e '^[[:space:]]\+\(https\?\|ftp\)://.\+/' $0 | sed -e 's/ || return 1$//;s/^[[:space:]]\+//'` | tr ' ' '\n'
 }
 
 update_search_path()
@@ -2955,10 +2965,11 @@ install_native_opencv()
 	unpack_archive ${opencv_contrib_org_src_dir} ${opencv_contrib_src_base} || return 1
 	mkdir -p ${opencv_bld_dir_ntv}
 	(cd ${opencv_bld_dir_ntv}
+	libdirs="-L`search_library_dir libpng.so` -L`search_library_dir libtiff.so` -L`search_library_dir libjpeg.so` -L${prefix}/lib"
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS} -L`search_library_dir libpng.so` -L`search_library_dir libtiff.so` -L`search_library_dir libjpeg.so` -L${prefix}/lib" \
-		-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} -L`search_library_dir libpng.so` -L`search_library_dir libtiff.so` -L`search_library_dir libjpeg.so` -L${prefix}/lib" \
-		-DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS} -L`search_library_dir libpng.so` -L`search_library_dir libtiff.so` -L`search_library_dir libjpeg.so` -L${prefix}/lib" \
+		-DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
+		-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
+		-DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DENABLE_PRECOMPILED_HEADERS=OFF \
 		-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_org_src_dir}/modules ${opencv_org_src_dir}) || return 1
