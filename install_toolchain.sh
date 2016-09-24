@@ -3,6 +3,8 @@
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] libav<-
 # [TODO] tcl/tk
+# [TODO] xpm
+# [TODO] ctags
 # [TODO] LLDB, Polly, MySQL, expat, Guile
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
@@ -40,12 +42,12 @@
 : ${zlib_ver:=1.2.8}
 : ${libpng_ver:=1.6.21}
 : ${tiff_ver:=4.0.6}
-: ${libjpeg_ver:=v9b}
+: ${jpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
 : ${emacs_ver:=25.1}
 : ${vim_ver:=8.0.0003}
 : ${grep_ver:=2.25}
-: ${global_ver:=6.5.4}
+: ${global_ver:=6.5.5}
 : ${pcre2_ver:=10.22}
 : ${the_silver_searcher_ver:=0.32.0}
 : ${graphviz_ver:=2.38.0}
@@ -193,8 +195,8 @@ help()
 		Specify the version of libpng you want, currently '${libpng_ver}'.
 	tiff_ver
 		Specify the version of libtiff you want, currently '${tiff_ver}'.
-	libjpeg_ver
-		Specify the version of libjpeg you want, currently '${libjpeg_ver}'.
+	jpeg_ver
+		Specify the version of libjpeg you want, currently '${jpeg_ver}'.
 	giflib_ver
 		Specify the version of giflib you want, currently '${giflib_ver}'.
 	emacs_ver
@@ -441,12 +443,14 @@ set_src_directory()
 	esac
 
 	case ${1} in
+	jpeg)
+		eval ${_1}_name=${1}src.\${${_1}_ver};;
+	boost)
+		eval ${_1}_name=${1}_\${${_1}_ver};;
 	mingw-w64)
-		eval ${_1}_name=${1}-v\${${_1}_ver}
-		;;
+		eval ${_1}_name=${1}-v\${${_1}_ver};;
 	*)
-		eval ${_1}_name=${1}-\${${_1}_ver}
-		;;
+		eval ${_1}_name=${1}-\${${_1}_ver};;
 	esac
 
 	eval ${_1}_src_base=${prefix}/src/${1}
@@ -471,6 +475,10 @@ set_src_directory()
 	gdb)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_bld_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-bld
+		;;
+	jpeg)
+		eval ${_1}_org_src_dir=\${${_1}_src_base}/${_1}-\`echo \${${_1}_ver} \| sed -e 's/^v//'\`
+		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/${_1}-\`echo \${${_1}_ver} \| sed -e 's/^v//'\`-ntv
 		;;
 	*)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
@@ -512,24 +520,15 @@ set_variables()
 
 	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
-		gmp mpfr mpc gcc readline ncurses gdb zlib libpng tiff giflib emacs vim grep \
+		gmp mpfr mpc gcc readline ncurses gdb zlib libpng tiff jpeg giflib emacs vim grep \
 		global pcre2 the_silver_searcher graphviz doxygen diffutils patch findutils screen \
 		libevent tmux zsh bash openssl openssh curl asciidoc xmlto libxml2 libxslt gettext \
 		git mercurial sqlite-autoconf apr apr-util subversion cmake libedit \
-		swig llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb mingw-w64 \
+		swig llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb boost mingw-w64 \
 		Python ruby go perl yasm x264 x265 libav opencv opencv_contrib; do
 		set_src_directory ${pkg}
 	done
 
-	libjpeg_name=jpegsrc.${libjpeg_ver}
-	libjpeg_src_base=${prefix}/src/libjpeg
-	libjpeg_org_src_dir=${libjpeg_src_base}/jpeg-`echo ${libjpeg_ver} | sed -e s/^v//`
-	libjpeg_src_dir_ntv=${libjpeg_src_base}/jpeg-`echo ${libjpeg_ver} | sed -e s/^v//`-ntv
-
-	boost_name=boost_${boost_ver}
-	boost_src_base=${prefix}/src/boost
-	boost_org_src_dir=${boost_src_base}/${boost_name}
-	boost_bld_dir=${boost_src_base}/${boost_name}-bld
 
 	echo ${PATH} | tr : '\n' | grep -q -e ^${prefix}/bin\$ \
 		|| PATH=${prefix}/bin:${PATH} \
@@ -926,10 +925,10 @@ fetch_libtiff_source()
 
 fetch_libjpeg_source()
 {
-	mkdir -p ${libjpeg_src_base}
-	check_archive ${libjpeg_org_src_dir} ||
-		wget -O ${libjpeg_org_src_dir}.tar.gz \
-			http://www.ijg.org/files/${libjpeg_name}.tar.gz || return 1
+	mkdir -p ${jpeg_src_base}
+	check_archive ${jpeg_org_src_dir} ||
+		wget -O ${jpeg_org_src_dir}.tar.gz \
+			http://www.ijg.org/files/${jpeg_name}.tar.gz || return 1
 }
 
 fetch_giflib_source()
@@ -1839,14 +1838,14 @@ install_native_libjpeg()
 {
 	[ -f ${prefix}/include/jpeglib.h -a "${force_install}" != yes ] && return 0
 	fetch_libjpeg_source || return 1
-	[ -d ${libjpeg_src_dir_ntv} ] ||
-		(unpack_archive ${libjpeg_org_src_dir} ${libjpeg_src_base} &&
-			mv ${libjpeg_org_src_dir} ${libjpeg_src_dir_ntv}) || return 1
-	[ -f ${libjpeg_src_dir_ntv}/Makefile ] ||
-		(cd ${libjpeg_src_dir_ntv}
+	[ -d ${jpeg_src_dir_ntv} ] ||
+		(unpack_archive ${jpeg_org_src_dir} ${jpeg_src_base} &&
+			mv ${jpeg_org_src_dir} ${jpeg_src_dir_ntv}) || return 1
+	[ -f ${jpeg_src_dir_ntv}/Makefile ] ||
+		(cd ${jpeg_src_dir_ntv}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${libjpeg_src_dir_ntv} -j ${jobs} || return 1
-	make -C ${libjpeg_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return 1
+	make -C ${jpeg_src_dir_ntv} -j ${jobs} || return 1
+	make -C ${jpeg_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
 }
 
@@ -2495,7 +2494,7 @@ install_native_boost()
 	unpack_archive ${boost_org_src_dir} ${boost_src_base} || return 1
 	(cd ${boost_org_src_dir}
 	./bootstrap.sh --prefix=${prefix} --with-toolset=gcc &&
-	./b2 --prefix=${prefix} --build-dir=${boost_bld_dir} \
+	./b2 --prefix=${prefix} --build-dir=${boost_bld_dir_ntv} \
 		--layout=system --build-type=minimal -j ${jobs} -q \
 		include=${prefix}/include library-path=${prefix}/lib install) || return 1
 }
