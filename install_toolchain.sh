@@ -2,9 +2,10 @@
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] libav<-
+# [TODO] webkitgtk<-
 # [TODO] tcl/tk
-# [TODO] xpm
-# [TODO] ctags
+# [TODO] xpm, rsvg, imagemagick
+# [TODO] pkg-config
 # [TODO] LLDB, Polly, MySQL, expat, Guile
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
@@ -44,8 +45,10 @@
 : ${tiff_ver:=4.0.6}
 : ${jpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
+: ${webkitgtk_ver:=2.14.0}
 : ${emacs_ver:=25.1}
 : ${vim_ver:=8.0.0003}
+: ${ctags_ver:=5.8}
 : ${grep_ver:=2.25}
 : ${global_ver:=6.5.5}
 : ${pcre2_ver:=10.22}
@@ -199,10 +202,14 @@ help()
 		Specify the version of libjpeg you want, currently '${jpeg_ver}'.
 	giflib_ver
 		Specify the version of giflib you want, currently '${giflib_ver}'.
+	webkitgtk_ver
+		Specify the version of WebKitGTK+ you want, currenty '${webkitgtk_ver}'.
 	emacs_ver
 		Specify the version of GNU Emacs you want, currently '${emacs_ver}'.
 	vim_ver
-		Specify the version of Vim, currently '${vim_ver}'.
+		Specify the version of Vim you want, currently '${vim_ver}'.
+	ctags_ver
+		Specify the version of ctags you want, currently '${ctags_ver}'.
 	grep_ver
 		Specify the version of GNU Grep you want, currently '${grep_ver}'.
 	global_ver
@@ -520,7 +527,7 @@ set_variables()
 
 	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
-		gmp mpfr mpc gcc readline ncurses gdb zlib libpng tiff jpeg giflib emacs vim grep \
+		gmp mpfr mpc gcc readline ncurses gdb zlib libpng tiff jpeg giflib webkitgtk emacs vim ctags grep \
 		global pcre2 the_silver_searcher graphviz doxygen diffutils patch findutils screen \
 		libevent tmux zsh bash openssl openssh curl asciidoc xmlto libxml2 libxslt gettext \
 		git mercurial sqlite-autoconf apr apr-util subversion cmake libedit \
@@ -641,6 +648,7 @@ install_prerequisites()
 		apt-get install -y make gcc g++ || return 1
 		apt-get install -y unifdef || return 1 # for linux kernel(microblaze)
 		apt-get install -y libgtk-3-dev libgnome2-dev libgnomeui-dev libx11-dev libxpm-dev || return 1 # for emacs
+		apt-get install -y libwebkitgtk-3.0-dev # libicu-dev # for emacs(xwidgets)
 		apt-get install -y lua5.2 liblua5.2-dev || return 1 # for vim
 		apt-get install -y luajit libluajit-5.1 || return 1 # for vim
 		;;
@@ -939,6 +947,14 @@ fetch_giflib_source()
 			https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1
 }
 
+fetch_webkitgtk_source()
+{
+	mkdir -p ${webkitgtk_src_base}
+	check_archive ${webkitgtk_org_src_dir} ||
+		wget --no-check-certificate -O ${webkitgtk_org_src_dir}.tar.xz \
+			https://webkitgtk.org/releases/${webkitgtk_name}.tar.xz || return 1
+}
+
 fetch_emacs_source()
 {
 	mkdir -p ${emacs_src_base}
@@ -953,6 +969,14 @@ fetch_vim_source()
 	check_archive ${vim_org_src_dir} ||
 		wget --no-check-certificate -O ${vim_org_src_dir}.tar.gz \
 			http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return 1
+}
+
+fetch_ctags_source()
+{
+	mkdir -p ${ctags_src_base}
+	check_archive ${ctags_org_src_dir} ||
+		wget --trust-server-names -O ${ctags_org_src_dir}.tar.gz \
+			http://prdownloads.sourceforge.net/ctags/${ctags_name}.tar.gz || return 1
 }
 
 fetch_grep_source()
@@ -1864,6 +1888,21 @@ install_native_giflib()
 	update_search_path || return 1
 }
 
+install_native_webkitgtk()
+{
+#	[ -x ${prefix}/bin/gawk -a "${force_install}" != yes ] && return 0
+	fetch_webkitgtk_source || return 1
+	unpack_archive ${webkitgtk_org_src_dir} ${webkitgtk_src_base} || return 1
+	mkdir -p ${webkitgtk_bld_dir_ntv}
+	(cd ${webkitgtk_bld_dir_ntv}
+	PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DPORT=GTK -DRUBY_LIBRARY=${prefix}/lib/x86_64-linux \
+		${webkitgtk_org_src_dir}) || return 1
+	make -C ${webkitgtk_org_src_dir} -j ${jobs} || return 1
+	make -C ${webkitgtk_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+}
+
 install_native_emacs()
 {
 	[ -x ${prefix}/bin/emacs -a "${force_install}" != yes ] && return 0
@@ -1878,7 +1917,8 @@ install_native_emacs()
 	[ -f ${emacs_org_src_dir}/Makefile ] ||
 		(cd ${emacs_org_src_dir}
 		CPPFLAGS="${CPPFLAGS} -I${prefix}/include" LDFLAGS="${LDFLAGS} -L${prefix}/lib" \
-			./configure --prefix=${prefix} --build=${build} --without-xpm) || return 1
+			./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			--with-modules --with-xwidgets --without-xpm) || return 1
 	make -C ${emacs_org_src_dir} -j ${jobs} || return 1
 	make -C ${emacs_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1909,6 +1949,18 @@ install_native_vim()
 	) || return 1
 	make -C ${vim_org_src_dir} -j ${jobs} || return 1
 	make -C ${vim_org_src_dir} -j ${jobs} install || return 1
+}
+
+install_native_ctags()
+{
+	[ -x ${prefix}/bin/ctags -a "${force_install}" != yes ] && return 0
+	fetch_ctags_source || return 1
+	unpack_archive ${ctags_org_src_dir} ${ctags_src_base} || return 1
+	[ -f ${ctags_org_src_dir}/Makefile ] ||
+		(cd ${ctags_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return 1
+	make -C ${ctags_org_src_dir} -j ${jobs} || return 1
+	make -C ${ctags_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
 
 install_native_grep()
