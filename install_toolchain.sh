@@ -438,16 +438,22 @@ set_src_directory()
 		eval ${_1}_bld_dir=\${${_1}_src_base}/\${${_1}_name}-bld
 		return 0
 		;;
+	esac
+
+	case ${1} in
+	mingw-w64)
+		eval ${_1}_name=${1}-v\${${_1}_ver}
+		;;
 	*)
+		eval ${_1}_name=${1}-\${${_1}_ver}
 		;;
 	esac
 
-	eval ${_1}_name=${1}-\${${_1}_ver}
 	eval ${_1}_src_base=${prefix}/src/${1}
 	eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
 
-	case ${_1} in
-	glibc)
+	case ${1} in
+	glibc|mingw-w64)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-src
 		eval ${_1}_bld_dir_crs_hdr=\${${_1}_src_base}/${target}-\${${_1}_name}-bld-hdr
@@ -477,8 +483,6 @@ set_src_directory()
 
 set_variables()
 {
-	tabs -4
-
 	prefix=`readlink -m ${prefix}`
 	sysroot=${prefix}/${target}/sysroot
 	os=`head -1 /etc/issue | cut -d ' ' -f 1`
@@ -512,7 +516,7 @@ set_variables()
 		global pcre2 the_silver_searcher graphviz doxygen diffutils patch findutils screen \
 		libevent tmux zsh bash openssl openssh curl asciidoc xmlto libxml2 libxslt gettext \
 		git mercurial sqlite-autoconf apr apr-util subversion cmake libedit \
-		swig llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb \
+		swig llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb mingw-w64 \
 		Python ruby go perl yasm x264 x265 libav opencv opencv_contrib; do
 		set_src_directory ${pkg}
 	done
@@ -526,14 +530,6 @@ set_variables()
 	boost_src_base=${prefix}/src/boost
 	boost_org_src_dir=${boost_src_base}/${boost_name}
 	boost_bld_dir=${boost_src_base}/${boost_name}-bld
-
-	mingw_w64_name=mingw-w64-v${mingw_w64_ver}
-	mingw_w64_src_base=${prefix}/src/mingw-w64
-	mingw_w64_org_src_dir=${mingw_w64_src_base}/${mingw_w64_name}
-	mingw_w64_bld_dir_hdr=${mingw_w64_src_base}/${mingw_w64_name}-bld-hdr
-	mingw_w64_bld_dir_1st=${mingw_w64_src_base}/${mingw_w64_name}-bld-1st
-	mingw_w64_src_dir_hdr=${mingw_w64_src_base}/${mingw_w64_name}-src-hdr
-	mingw_w64_src_dir_1st=${mingw_w64_src_base}/${mingw_w64_name}-src-1st
 
 	echo ${PATH} | tr : '\n' | grep -q -e ^${prefix}/bin\$ \
 		|| PATH=${prefix}/bin:${PATH} \
@@ -2721,16 +2717,16 @@ install_mingw_w64_binutils()
 install_mingw_w64_header()
 {
 	fetch_mingw_w64_source || return 1
-	[ -d ${mingw_w64_src_dir_hdr} ] ||
+	[ -d ${mingw_w64_src_dir_crs_hdr} ] ||
 		(unpack_archive ${mingw_w64_org_src_dir} ${mingw_w64_src_base} &&
-			mv ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_hdr}) || return 1
-	mkdir -p ${mingw_w64_bld_dir_hdr}
-	[ -f ${mingw_w64_bld_dir_hdr}/Makefile ] ||
-		(cd ${mingw_w64_bld_dir_hdr}
-		${mingw_w64_src_dir_hdr}/configure --prefix=/mingw --build=${build} --host=${target} \
+			mv ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_crs_hdr}) || return 1
+	mkdir -p ${mingw_w64_bld_dir_crs_hdr}
+	[ -f ${mingw_w64_bld_dir_crs_hdr}/Makefile ] ||
+		(cd ${mingw_w64_bld_dir_crs_hdr}
+		${mingw_w64_src_dir_crs_hdr}/configure --prefix=/mingw --build=${build} --host=${target} \
 			--disable-multilib --without-crt --with-sysroot=${sysroot}) || return 1
-	make -C ${mingw_w64_bld_dir_hdr} -j ${jobs} || return 1
-	make -C ${mingw_w64_bld_dir_hdr} -j ${jobs} DESTDIR=${sysroot} install || return 1
+	make -C ${mingw_w64_bld_dir_crs_hdr} -j ${jobs} || return 1
+	make -C ${mingw_w64_bld_dir_crs_hdr} -j ${jobs} DESTDIR=${sysroot} install || return 1
 }
 
 install_mingw_w64_gcc_with_mingw_w64_header()
@@ -2752,17 +2748,17 @@ install_mingw_w64_gcc_with_mingw_w64_header()
 
 install_mingw_w64_crt()
 {
-	[ -d ${mingw_w64_src_dir_1st} ] ||
+	[ -d ${mingw_w64_src_dir_crs_1st} ] ||
 		(unpack_archive ${mingw_w64_org_src_dir} ${mingw_w64_src_base} &&
-			mv ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_1st}) || return 1
-	mkdir -p ${mingw_w64_bld_dir_1st}
-	[ -f ${mingw_w64_bld_dir_1st}/Makefile ] ||
-		(cd ${mingw_w64_bld_dir_1st}
-		${mingw_w64_src_dir_1st}/configure --prefix=/mingw --build=${build} --host=${target} \
+			mv ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_crs_1st}) || return 1
+	mkdir -p ${mingw_w64_bld_dir_crs_1st}
+	[ -f ${mingw_w64_bld_dir_crs_1st}/Makefile ] ||
+		(cd ${mingw_w64_bld_dir_crs_1st}
+		${mingw_w64_src_dir_crs_1st}/configure --prefix=/mingw --build=${build} --host=${target} \
 			--disable-multilib --without-header --with-sysroot=${sysroot} \
 		) || return 1
-	make -C ${mingw_w64_bld_dir_1st} -j ${jobs} || return 1
-	make -C ${mingw_w64_bld_dir_1st} -j ${jobs} DESTDIR=${sysroot} install || return 1
+	make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} || return 1
+	make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} install || return 1
 }
 
 install_mingw_w64_gcc()
