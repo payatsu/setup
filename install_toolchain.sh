@@ -4,9 +4,9 @@
 # [TODO] libav<-
 # [TODO] webkitgtk<-libsoup
 # [TODO] libmount, dtrace (GLib)
-# [TODO] libegl, libgl, libXt (for libepoxy)
+# [TODO] libegl, libgl, (for libepoxy)
 # [TODO] tcl/tk
-# [TODO] xpm, rsvg, imagemagick
+# [TODO] rsvg, imagemagick
 # [TODO] pkg-config
 # [TODO] LLDB, Polly, MySQL, expat, Guile
 # [TODO] update-alternatives
@@ -47,6 +47,7 @@
 : ${tiff_ver:=4.0.6}
 : ${jpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
+: ${libXpm_ver:=3.5.11}
 : ${libwebp_ver:=0.5.1}
 : ${libffi_ver:=3.2.1}
 : ${glib_ver:=2.50.0}
@@ -54,6 +55,7 @@
 : ${gdk_pixbuf_ver:=2.36.0}
 : ${atk_ver:=2.22.0}
 : ${gobject_introspection_ver:=1.50.0}
+: ${libXt_ver:=1.1.5}
 : ${libepoxy_ver:=1.3.1}
 : ${gtk_ver:=3.22.0}
 : ${webkitgtk_ver:=2.14.0}
@@ -213,6 +215,8 @@ help()
 		Specify the version of libjpeg you want, currently '${jpeg_ver}'.
 	giflib_ver
 		Specify the version of giflib you want, currently '${giflib_ver}'.
+	libXpm_ver
+		Specify the version of libXpm you want, currently '${libXpm_ver}'.
 	libwebp_ver
 		Specify the version of libwebp you want, currently '${libwebp_ver}'.
 	libffi_ver
@@ -227,6 +231,8 @@ help()
 		Specify the version of ATK you want, currently '${atk_ver}'.
 	gobject_introspection_ver
 		Specify the version of GObject-Introspection you want, currently '${gobject_introspection_ver}'.
+	libXt_ver
+		Specify the version of X11 Toolkit you want, currently '${libXt_ver}'.
 	libepoxy_ver
 		Specify the version of libepoxy you want, currently '${libepoxy_ver}'.
 	gtk_ver
@@ -558,8 +564,8 @@ set_variables()
 
 	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
-		gmp mpfr mpc gcc readline ncurses gdb zlib libpng tiff jpeg giflib libwebp libffi \
-		glib pango gdk-pixbuf atk gobject-introspection libepoxy gtk webkitgtk emacs vim ctags grep \
+		gmp mpfr mpc gcc readline ncurses gdb zlib libpng tiff jpeg giflib libXpm libwebp libffi \
+		glib pango gdk-pixbuf atk gobject-introspection libXt libepoxy gtk webkitgtk emacs vim ctags grep \
 		global pcre2 the_silver_searcher graphviz doxygen diffutils patch findutils screen \
 		libevent tmux zsh bash openssl openssh curl asciidoc xmlto libxml2 libxslt gettext \
 		git mercurial sqlite-autoconf apr apr-util subversion cmake libedit \
@@ -643,7 +649,10 @@ ${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return 1
 
 update_pkg_config_path()
 {
-	export PKG_CONFIG_PATH=`find ${prefix}/lib ${prefix}/share /usr/lib -type d -name pkgconfig | tr '\n' : | sed -e 's/:$//'`
+	PKG_CONFIG_PATH=`([ -d ${prefix}/lib ] && find ${prefix}/lib -type d -name pkgconfig
+						[ -d ${prefix}/share ] && find ${prefix}/share -type d -name pkgconfig
+						find /usr/lib -type d -name pkgconfig) | tr '\n' : | sed -e 's/:$//'`
+	export PKG_CONFIG_PATH
 }
 
 search_library()
@@ -684,8 +693,8 @@ install_prerequisites()
 	Debian|Ubuntu|Raspbian)
 		apt-get install -y make gcc g++ || return 1
 		apt-get install -y unifdef || return 1 # for linux kernel(microblaze)
-		apt-get install -y libgtk-3-dev libgnome2-dev libgnomeui-dev libx11-dev libxpm-dev || return 1 # for emacs
-		apt-get install -y libgl1-mesa-dev libegl1-mesa-dev libXt-dev # for emacs(gtk(libepoxy))
+		apt-get install -y libgtk-3-dev libgnome2-dev libgnomeui-dev libx11-dev || return 1 # for emacs
+		apt-get install -y libgl1-mesa-dev libegl1-mesa-dev # for emacs(gtk(libepoxy))
 		apt-get install -y libwebkitgtk-3.0-dev python-dev # libicu-dev # for emacs(xwidgets)
 		apt-get install -y lua5.2 liblua5.2-dev || return 1 # for vim
 		apt-get install -y luajit libluajit-5.1 || return 1 # for vim
@@ -984,6 +993,14 @@ fetch_giflib_source()
 			https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1
 }
 
+fetch_libXpm_source()
+{
+	mkdir -p ${libXpm_src_base}
+	check_archive ${libXpm_org_src_dir} ||
+		wget --no-check-certificate -O ${libXpm_org_src_dir}.tar.bz2 \
+			https://www.x.org/releases/individual/lib/${libXpm_name}.tar.bz2 || return 1
+}
+
 fetch_libwebp_source()
 {
 	mkdir -p ${libwebp_src_base}
@@ -1038,6 +1055,14 @@ fetch_gobject_introspection_source()
 	check_archive ${gobject_introspection_org_src_dir} ||
 		wget -O ${gobject_introspection_org_src_dir}.tar.xz \
 			http://ftp.gnome.org/pub/gnome/sources/gobject-introspection/`echo ${gobject_introspection_ver} | cut -f-2 -d.`/${gobject_introspection_name}.tar.xz || return 1
+}
+
+fetch_libXt_source()
+{
+	mkdir -p ${libXt_src_base}
+	check_archive ${libXt_org_src_dir} ||
+		wget --no-check-certificate -O ${libXt_org_src_dir}.tar.bz2 \
+			https://www.x.org/releases/individual/lib/${libXt_name}.tar.bz2 || return 1
 }
 
 fetch_libepoxy_source()
@@ -1997,6 +2022,19 @@ install_native_giflib()
 	update_search_path || return 1
 }
 
+install_native_libXpm()
+{
+	[ -f ${prefix}/include/X11/xpm.h -a "${force_install}" != yes ] && return 0
+	fetch_libXpm_source || return 1
+	unpack_archive ${libXpm_org_src_dir} ${libXpm_src_base} || return 1
+	[ -f ${libXpm_org_src_dir}/Makefile ] ||
+		(cd ${libXpm_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+	make -C ${libXpm_org_src_dir} -j ${jobs} || return 1
+	make -C ${libXpm_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
+
 install_native_libwebp()
 {
 	[ -f ${prefix}/include/webp/decode.h -a "${force_install}" != yes ] && return 0
@@ -2106,9 +2144,23 @@ install_native_gobject_introspection()
 	update_search_path || return 1
 }
 
+install_native_libXt()
+{
+	[ -f ${prefix}/include/X11/Core.h -a "${force_install}" != yes ] && return 0
+	fetch_libXt_source || return 1
+	unpack_archive ${libXt_org_src_dir} ${libXt_src_base} || return 1
+	[ -f ${libXt_org_src_dir}/Makefile ] ||
+		(cd ${libXt_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+	make -C ${libXt_org_src_dir} -j ${jobs} || return 1
+	make -C ${libXt_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
+
 install_native_libepoxy()
 {
 	[ -f ${prefix}/include/epoxy/egl.h -a "${force_install}" != yes ] && return 0
+	search_header Core.h X11 > /dev/null || install_native_libXt || return 1
 	fetch_libepoxy_source || return 1
 	unpack_archive ${libepoxy_org_src_dir} ${libepoxy_src_base} || return 1
 	[ -f ${libepoxy_org_src_dir}/Makefile ] ||
@@ -2121,7 +2173,7 @@ install_native_libepoxy()
 
 install_native_gtk()
 {
-	[ -d ${prefix}/include/gtk-3.0/gtk/gtk.h -a "${force_install}" != yes ] && return 0
+	[ -f ${prefix}/include/gtk-3.0/gtk/gtk.h -a "${force_install}" != yes ] && return 0
 	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
 	search_header pango.h pango-1.0/pango > /dev/null || install_native_pango || return 1
 	search_header gdk-pixbuf.h gdk-pixbuf-2.0/gdk-pixbuf > /dev/null || install_native_gdk_pixbuf || return 1
@@ -2175,13 +2227,14 @@ install_native_emacs()
 	search_header tiff.h > /dev/null || install_native_libtiff || return 1
 	search_header jpeglib.h > /dev/null || install_native_libjpeg || return 1
 	search_header gif_lib.h > /dev/null || install_native_giflib || return 1
+	search_header xpm.h X11 > /dev/null || install_native_libXpm || return 1
 	fetch_emacs_source || return 1
 	unpack_archive ${emacs_org_src_dir} ${emacs_src_base} || return 1
 	[ -f ${emacs_org_src_dir}/Makefile ] ||
 		(cd ${emacs_org_src_dir}
 		CPPFLAGS="${CPPFLAGS} -I${prefix}/include" LDFLAGS="${LDFLAGS} -L${prefix}/lib" \
 			./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
-			--with-modules --with-xwidgets --without-xpm) || return 1
+			--with-modules --with-xwidgets) || return 1
 	make -C ${emacs_org_src_dir} -j ${jobs} || return 1
 	make -C ${emacs_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
