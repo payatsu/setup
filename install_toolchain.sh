@@ -2,9 +2,9 @@
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] libav<-
-# [TODO] webkitgtk
+# [TODO] webkitgtk<-libsoup
 # [TODO] libmount, dtrace (GLib)
-# [TODO] libegl(for libepoxy)
+# [TODO] libegl, libgl, libXt (for libepoxy)
 # [TODO] tcl/tk
 # [TODO] xpm, rsvg, imagemagick
 # [TODO] pkg-config
@@ -47,6 +47,7 @@
 : ${tiff_ver:=4.0.6}
 : ${jpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
+: ${libwebp_ver:=0.5.1}
 : ${libffi_ver:=3.2.1}
 : ${glib_ver:=2.50.0}
 : ${pango_ver:=1.40.3}
@@ -212,6 +213,8 @@ help()
 		Specify the version of libjpeg you want, currently '${jpeg_ver}'.
 	giflib_ver
 		Specify the version of giflib you want, currently '${giflib_ver}'.
+	libwebp_ver
+		Specify the version of libwebp you want, currently '${libwebp_ver}'.
 	libffi_ver
 		Specify the version of libffi you want, currently '${libffi_ver}'.
 	glib_ver
@@ -555,7 +558,7 @@ set_variables()
 
 	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
-		gmp mpfr mpc gcc readline ncurses gdb zlib libpng tiff jpeg giflib libffi \
+		gmp mpfr mpc gcc readline ncurses gdb zlib libpng tiff jpeg giflib libwebp libffi \
 		glib pango gdk-pixbuf atk gobject-introspection libepoxy gtk webkitgtk emacs vim ctags grep \
 		global pcre2 the_silver_searcher graphviz doxygen diffutils patch findutils screen \
 		libevent tmux zsh bash openssl openssh curl asciidoc xmlto libxml2 libxslt gettext \
@@ -565,14 +568,14 @@ set_variables()
 		set_src_directory ${pkg}
 	done
 
-
 	echo ${PATH} | tr : '\n' | grep -q -e ^${prefix}/bin\$ \
 		|| PATH=${prefix}/bin:${PATH} \
-		&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s+\(^\|:\)${prefix}/bin\(\$\|:\)+\1\2+g;s+::+:+g;s+^:++;s+:\$++"`
+		&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s+\(^\|:\)${prefix}/bin\(\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\$//"`
 	echo ${PATH} | tr : '\n' | grep -q -e ^/sbin\$ || PATH=/sbin:${PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -q -e ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64:${LD_LIBRARY_PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -q -e ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib:${LD_LIBRARY_PATH}
 	export LD_LIBRARY_PATH
+	update_pkg_config_path
 }
 
 convert_archives()
@@ -638,6 +641,11 @@ ${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return 1
 	ldconfig || return 1
 }
 
+update_pkg_config_path()
+{
+	export PKG_CONFIG_PATH=`find ${prefix}/lib ${prefix}/share /usr/lib -type d -name pkgconfig | tr '\n' : | sed -e 's/:$//'`
+}
+
 search_library()
 {
 	for dir in ${prefix}/lib64 ${prefix}/lib `LANG=C ${CC:-gcc} -print-search-dirs |
@@ -677,7 +685,7 @@ install_prerequisites()
 		apt-get install -y make gcc g++ || return 1
 		apt-get install -y unifdef || return 1 # for linux kernel(microblaze)
 		apt-get install -y libgtk-3-dev libgnome2-dev libgnomeui-dev libx11-dev libxpm-dev || return 1 # for emacs
-		apt-get install -y libegl1-mesa-dev # for emacs(gtk(libepoxy))
+		apt-get install -y libgl1-mesa-dev libegl1-mesa-dev libXt-dev # for emacs(gtk(libepoxy))
 		apt-get install -y libwebkitgtk-3.0-dev python-dev # libicu-dev # for emacs(xwidgets)
 		apt-get install -y lua5.2 liblua5.2-dev || return 1 # for vim
 		apt-get install -y luajit libluajit-5.1 || return 1 # for vim
@@ -974,6 +982,14 @@ fetch_giflib_source()
 	check_archive ${giflib_org_src_dir} ||
 		wget --trust-server-names --no-check-certificate -O ${giflib_org_src_dir}.tar.bz2 \
 			https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1
+}
+
+fetch_libwebp_source()
+{
+	mkdir -p ${libwebp_src_base}
+	check_archive ${libwebp_org_src_dir} ||
+		wget --no-check-certificate -O ${libwebp_org_src_dir}.tar.gz \
+			https://storage.googleapis.com/downloads.webmproject.org/releases/webp/${libwebp_name}.tar.gz || return 1
 }
 
 fetch_libffi_source()
@@ -1981,6 +1997,23 @@ install_native_giflib()
 	update_search_path || return 1
 }
 
+install_native_libwebp()
+{
+	[ -f ${prefix}/include/webp/decode.h -a "${force_install}" != yes ] && return 0
+	search_header png.h > /dev/null || install_native_libpng || return 1
+	search_header tiff.h > /dev/null || install_native_libtiff || return 1
+	search_header jpeglib.h > /dev/null || install_native_libjpeg || return 1
+	search_header gif_lib.h > /dev/null || install_native_giflib || return 1
+	fetch_libwebp_source || return 1
+	unpack_archive ${libwebp_org_src_dir} ${libwebp_src_base} || return 1
+	[ -f ${libwebp_org_src_dir}/Makefile ] ||
+		(cd ${libwebp_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+	make -C ${libwebp_org_src_dir} -j ${jobs} || return 1
+	make -C ${libwebp_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
+
 install_native_libffi()
 {
 	[ -f ${prefix}/lib/libffi-*/include/ffi.h -a "${force_install}" != yes ] && return 0
@@ -2003,9 +2036,9 @@ install_native_glib()
 	unpack_archive ${glib_org_src_dir} ${glib_src_base} || return 1
 	[ -f ${glib_org_src_dir}/Makefile ] ||
 		(cd ${glib_org_src_dir}
+		update_pkg_config_path
 		./configure --prefix=${prefix} --build=${build} --enable-static \
-			--disable-silent-rules --disable-libmount --disable-dtrace --enable-systemtap \
-			PKG_CONFIG_PATH=${prefix}/lib/pkgconfig) || return 1
+			--disable-silent-rules --disable-libmount --disable-dtrace --enable-systemtap) || return 1
 	make -C ${glib_org_src_dir} -j ${jobs} || return 1
 	make -C ${glib_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
@@ -2033,8 +2066,9 @@ install_native_gdk_pixbuf()
 	unpack_archive ${gdk_pixbuf_org_src_dir} ${gdk_pixbuf_src_base} || return 1
 	[ -f ${gdk_pixbuf_org_src_dir}/Makefile ] ||
 		(cd ${gdk_pixbuf_org_src_dir}
+		update_pkg_config_path
 		./configure --prefix=${prefix} --build=${build} --enable-static \
-			--disable-silent-rules PKG_CONFIG_PATH=${prefix}/lib/pkgconfig) || return 1
+			--disable-silent-rules) || return 1
 	make -C ${gdk_pixbuf_org_src_dir} -j ${jobs} || return 1
 	make -C ${gdk_pixbuf_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
@@ -2048,8 +2082,9 @@ install_native_atk()
 	unpack_archive ${atk_org_src_dir} ${atk_src_base} || return 1
 	[ -f ${atk_org_src_dir}/Makefile ] ||
 		(cd ${atk_org_src_dir}
+		update_pkg_config_path
 		./configure --prefix=${prefix} --build=${build} --enable-static \
-			--disable-silent-rules PKG_CONFIG_PATH=${prefix}/lib/pkgconfig) || return 1
+			--disable-silent-rules) || return 1
 	make -C ${atk_org_src_dir} -j ${jobs} || return 1
 	make -C ${atk_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
@@ -2063,8 +2098,9 @@ install_native_gobject_introspection()
 	unpack_archive ${gobject_introspection_org_src_dir} ${gobject_introspection_src_base} || return 1
 	[ -f ${gobject_introspection_org_src_dir}/Makefile ] ||
 		(cd ${gobject_introspection_org_src_dir}
+		update_pkg_config_path
 		./configure --prefix=${prefix} --build=${build} \
-			--disable-silent-rules PKG_CONFIG_PATH=${prefix}/lib/pkgconfig) || return 1
+			--disable-silent-rules) || return 1
 	make -C ${gobject_introspection_org_src_dir} -j ${jobs} || return 1
 	make -C ${gobject_introspection_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
@@ -2096,8 +2132,9 @@ install_native_gtk()
 	unpack_archive ${gtk_org_src_dir} ${gtk_src_base} || return 1
 	[ -f ${gtk_org_src_dir}/Makefile ] ||
 		(cd ${gtk_org_src_dir}
+		update_pkg_config_path
 		./configure --prefix=${prefix} --build=${build} --enable-static \
-			--disable-silent-rules PKG_CONFIG_PATH=${prefix}/lib/pkgconfig) || return 1
+			--disable-silent-rules) || return 1
 	make -C ${gtk_org_src_dir} -j ${jobs} || return 1
 	make -C ${gtk_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
@@ -2107,16 +2144,26 @@ install_native_webkitgtk()
 {
 #	[ -x ${prefix}/bin/gawk -a "${force_install}" != yes ] && return 0
 	search_header gtk.h gtk-3.0/gtk > /dev/null || install_native_gtk || return 1
+	search_header sqlite3.h > /dev/null || install_native_sqlite || return 1
+	search_header png.h > /dev/null || install_native_libpng || return 1
+	search_header tiff.h > /dev/null || install_native_libtiff || return 1
+	search_header jpeglib.h > /dev/null || install_native_libjpeg || return 1
+	search_header gif_lib.h > /dev/null || install_native_giflib || return 1
+	search_header decode.h webp > /dev/null || install_native_libwebp || return 1
 	fetch_webkitgtk_source || return 1
 	unpack_archive ${webkitgtk_org_src_dir} ${webkitgtk_src_base} || return 1
 	mkdir -p ${webkitgtk_bld_dir_ntv}
 	(cd ${webkitgtk_bld_dir_ntv}
-	PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+	update_pkg_config_path
+	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} -L${prefix}/lib" \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DPORT=GTK -DRUBY_LIBRARY=${prefix}/lib/x86_64-linux \
+		-DPORT=GTK -DENABLE_CREDENTIAL_STORAGE=OFF \
+		-DENABLE_SPELLCHECK=OFF -DENABLE_WEB_AUDIO=OFF -DENABLE_VIDEO=OFF \
+		-DUSE_LIBNOTIFY=OFF -DUSE_LIBHYPHEN=OFF \
 		${webkitgtk_org_src_dir}) || return 1
-	make -C ${webkitgtk_org_src_dir} -j ${jobs} || return 1
-	make -C ${webkitgtk_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	make -C ${webkitgtk_bld_dir_ntv} -j ${jobs} || return 1
+	make -C ${webkitgtk_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return 1
 }
 
 install_native_emacs()
@@ -2227,8 +2274,9 @@ install_native_the_silver_searcher()
 	unpack_archive ${the_silver_searcher_org_src_dir} ${the_silver_searcher_src_base} || return 1
 	[ -f ${the_silver_searcher_org_src_dir}/Makefile ] ||
 		(cd ${the_silver_searcher_org_src_dir}
+		update_pkg_config_path
 		./configure --prefix=${prefix} --build=${build} \
-			--disable-silent-rules PKG_CONFIG_PATH=${prefix}/lib/pkgconfig) || return 1
+			--disable-silent-rules) || return 1
 	make -C ${the_silver_searcher_org_src_dir} -j ${jobs} || return 1
 	make -C ${the_silver_searcher_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
