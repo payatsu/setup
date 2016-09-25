@@ -2,7 +2,9 @@
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] libav<-
-# [TODO] webkitgtk<-
+# [TODO] webkitgtk
+# [TODO] libmount, dtrace (GLib)
+# [TODO] libegl(for libepoxy)
 # [TODO] tcl/tk
 # [TODO] xpm, rsvg, imagemagick
 # [TODO] pkg-config
@@ -45,6 +47,14 @@
 : ${tiff_ver:=4.0.6}
 : ${jpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
+: ${libffi_ver:=3.2.1}
+: ${glib_ver:=2.50.0}
+: ${pango_ver:=1.40.3}
+: ${gdk_pixbuf_ver:=2.36.0}
+: ${atk_ver:=2.22.0}
+: ${gobject_introspection_ver:=1.50.0}
+: ${libepoxy_ver:=1.3.1}
+: ${gtk_ver:=3.22.0}
 : ${webkitgtk_ver:=2.14.0}
 : ${emacs_ver:=25.1}
 : ${vim_ver:=8.0.0003}
@@ -202,6 +212,22 @@ help()
 		Specify the version of libjpeg you want, currently '${jpeg_ver}'.
 	giflib_ver
 		Specify the version of giflib you want, currently '${giflib_ver}'.
+	libffi_ver
+		Specify the version of libffi you want, currently '${libffi_ver}'.
+	glib_ver
+		Specify the version of GLib you want, currently '${glib_ver}'.
+	pango_ver
+		Specify the version of Pango you want, currently '${pango_ver}'.
+	gdk_pixbuf_ver
+		Specify the version of Gdk-Pixbuf you want, currently '${gdk_pixbuf_ver}'.
+	atk_ver
+		Specify the version of ATK you want, currently '${atk_ver}'.
+	gobject_introspection_ver
+		Specify the version of GObject-Introspection you want, currently '${gobject_introspection_ver}'.
+	libepoxy_ver
+		Specify the version of libepoxy you want, currently '${libepoxy_ver}'.
+	gtk_ver
+		Specify the version of GTK+ you want, currently '${gtk_ver}'.
 	webkitgtk_ver
 		Specify the version of WebKitGTK+ you want, currenty '${webkitgtk_ver}'.
 	emacs_ver
@@ -452,6 +478,8 @@ set_src_directory()
 	case ${1} in
 	jpeg)
 		eval ${_1}_name=${1}src.\${${_1}_ver};;
+	gtk)
+		eval ${_1}_name=${1}+-\${${_1}_ver};;
 	boost)
 		eval ${_1}_name=${1}_\${${_1}_ver};;
 	mingw-w64)
@@ -527,7 +555,8 @@ set_variables()
 
 	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
-		gmp mpfr mpc gcc readline ncurses gdb zlib libpng tiff jpeg giflib webkitgtk emacs vim ctags grep \
+		gmp mpfr mpc gcc readline ncurses gdb zlib libpng tiff jpeg giflib libffi \
+		glib pango gdk-pixbuf atk gobject-introspection libepoxy gtk webkitgtk emacs vim ctags grep \
 		global pcre2 the_silver_searcher graphviz doxygen diffutils patch findutils screen \
 		libevent tmux zsh bash openssl openssh curl asciidoc xmlto libxml2 libxslt gettext \
 		git mercurial sqlite-autoconf apr apr-util subversion cmake libedit \
@@ -626,7 +655,7 @@ search_library_dir()
 
 search_header()
 {
-	for dir in ${prefix}/include /usr/local/include /opt/include /usr/include; do
+	for dir in ${prefix}/include ${prefix}/lib/libffi-*/include /usr/local/include /opt/include /usr/include; do
 		[ -d ${dir}${2:+/$2} ] || continue
 		candidates=`find ${dir}${2:+/$2} -type f -name $1`
 		[ -n "${candidates}" ] && echo "${candidates}" | head -n 1 && return 0
@@ -648,15 +677,15 @@ install_prerequisites()
 		apt-get install -y make gcc g++ || return 1
 		apt-get install -y unifdef || return 1 # for linux kernel(microblaze)
 		apt-get install -y libgtk-3-dev libgnome2-dev libgnomeui-dev libx11-dev libxpm-dev || return 1 # for emacs
-		apt-get install -y libwebkitgtk-3.0-dev # libicu-dev # for emacs(xwidgets)
+		apt-get install -y libegl1-mesa-dev # for emacs(gtk(libepoxy))
+		apt-get install -y libwebkitgtk-3.0-dev python-dev # libicu-dev # for emacs(xwidgets)
 		apt-get install -y lua5.2 liblua5.2-dev || return 1 # for vim
 		apt-get install -y luajit libluajit-5.1 || return 1 # for vim
 		;;
 	Red|CentOS|\\S)
-		yum install -y make gcc gcc-c++ texinfo || return 1
+		yum install -y make gcc gcc-c++ || return 1
 		yum install -y unifdef || return 1
 		yum install -y gtk3-devel || return 1
-		yum install -y perl-devel || return 1
 		yum install -y lua lua-devel || return 1
 		yum install -y luajit luajit-devel || return 1
 		;;
@@ -945,6 +974,70 @@ fetch_giflib_source()
 	check_archive ${giflib_org_src_dir} ||
 		wget --trust-server-names --no-check-certificate -O ${giflib_org_src_dir}.tar.bz2 \
 			https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1
+}
+
+fetch_libffi_source()
+{
+	mkdir -p ${libffi_src_base}
+	check_archive ${libffi_org_src_dir} ||
+		wget -O ${libffi_org_src_dir}.tar.gz \
+			ftp://sourceware.org/pub/libffi/${libffi_name}.tar.gz || return 1
+}
+
+fetch_glib_source()
+{
+	mkdir -p ${glib_src_base}
+	check_archive ${glib_org_src_dir} ||
+		wget -O ${glib_org_src_dir}.tar.xz \
+			http://ftp.gnome.org/pub/gnome/sources/glib/`echo ${glib_ver} | cut -f-2 -d.`/${glib_name}.tar.xz || return 1
+}
+
+fetch_pango_source()
+{
+	mkdir -p ${pango_src_base}
+	check_archive ${pango_org_src_dir} ||
+		wget -O ${pango_org_src_dir}.tar.xz \
+			http://ftp.gnome.org/pub/gnome/sources/pango/`echo ${pango_ver} | cut -f-2 -d.`/${pango_name}.tar.xz || return 1
+}
+
+fetch_gdk_pixbuf_source()
+{
+	mkdir -p ${gdk_pixbuf_src_base}
+	check_archive ${gdk_pixbuf_org_src_dir} ||
+		wget -O ${gdk_pixbuf_org_src_dir}.tar.xz \
+			http://ftp.gnome.org/pub/gnome/sources/gdk-pixbuf/`echo ${gdk_pixbuf_ver} | cut -f-2 -d.`/${gdk_pixbuf_name}.tar.xz || return 1
+}
+
+fetch_atk_source()
+{
+	mkdir -p ${atk_src_base}
+	check_archive ${atk_org_src_dir} ||
+		wget -O ${atk_org_src_dir}.tar.xz \
+			http://ftp.gnome.org/pub/gnome/sources/atk/`echo ${atk_ver} | cut -f-2 -d.`/${atk_name}.tar.xz || return 1
+}
+
+fetch_gobject_introspection_source()
+{
+	mkdir -p ${gobject_introspection_src_base}
+	check_archive ${gobject_introspection_org_src_dir} ||
+		wget -O ${gobject_introspection_org_src_dir}.tar.xz \
+			http://ftp.gnome.org/pub/gnome/sources/gobject-introspection/`echo ${gobject_introspection_ver} | cut -f-2 -d.`/${gobject_introspection_name}.tar.xz || return 1
+}
+
+fetch_libepoxy_source()
+{
+	mkdir -p ${libepoxy_src_base}
+	check_archive ${libepoxy_org_src_dir} ||
+		wget --no-check-certificate -O ${libepoxy_org_src_dir}.tar.bz2 \
+			https://github.com/anholt/libepoxy/releases/download/v${libepoxy_ver}/${libepoxy_name}.tar.bz2 || return 1
+}
+
+fetch_gtk_source()
+{
+	mkdir -p ${gtk_src_base}
+	check_archive ${gtk_org_src_dir} ||
+		wget -O ${gtk_org_src_dir}.tar.xz \
+			http://ftp.gnome.org/pub/gnome/sources/gtk+/`echo ${gtk_ver} | cut -f-2 -d.`/${gtk_name}.tar.xz || return 1
 }
 
 fetch_webkitgtk_source()
@@ -1888,9 +1981,132 @@ install_native_giflib()
 	update_search_path || return 1
 }
 
+install_native_libffi()
+{
+	[ -f ${prefix}/lib/libffi-*/include/ffi.h -a "${force_install}" != yes ] && return 0
+	fetch_libffi_source || return 1
+	unpack_archive ${libffi_org_src_dir} ${libffi_src_base} || return 1
+	[ -f ${libffi_org_src_dir}/Makefile ] ||
+		(cd ${libffi_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return 1
+	make -C ${libffi_org_src_dir} -j ${jobs} || return 1
+	make -C ${libffi_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
+
+install_native_glib()
+{
+	[ -f ${prefix}/include/glib-2.0/glib.h -a "${force_install}" != yes ] && return 0
+	search_header ffi.h > /dev/null || install_native_libffi || return 1
+	search_header pcre2.h > /dev/null || install_native_pcre2 || return 1
+	fetch_glib_source || return 1
+	unpack_archive ${glib_org_src_dir} ${glib_src_base} || return 1
+	[ -f ${glib_org_src_dir}/Makefile ] ||
+		(cd ${glib_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --enable-static \
+			--disable-silent-rules --disable-libmount --disable-dtrace --enable-systemtap \
+			PKG_CONFIG_PATH=${prefix}/lib/pkgconfig) || return 1
+	make -C ${glib_org_src_dir} -j ${jobs} || return 1
+	make -C ${glib_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
+
+install_native_pango()
+{
+	[ -f ${prefix}/include/pango-1.0/pango/pango.h -a "${force_install}" != yes ] && return 0
+	fetch_pango_source || return 1
+	unpack_archive ${pango_org_src_dir} ${pango_src_base} || return 1
+	[ -f ${pango_org_src_dir}/Makefile ] ||
+		(cd ${pango_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --enable-static \
+			--disable-silent-rules) || return 1
+	make -C ${pango_org_src_dir} -j ${jobs} || return 1
+	make -C ${pango_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
+
+install_native_gdk_pixbuf()
+{
+	[ -f ${prefix}/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h -a "${force_install}" != yes ] && return 0
+	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
+	fetch_gdk_pixbuf_source || return 1
+	unpack_archive ${gdk_pixbuf_org_src_dir} ${gdk_pixbuf_src_base} || return 1
+	[ -f ${gdk_pixbuf_org_src_dir}/Makefile ] ||
+		(cd ${gdk_pixbuf_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --enable-static \
+			--disable-silent-rules PKG_CONFIG_PATH=${prefix}/lib/pkgconfig) || return 1
+	make -C ${gdk_pixbuf_org_src_dir} -j ${jobs} || return 1
+	make -C ${gdk_pixbuf_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
+
+install_native_atk()
+{
+	[ -f ${prefix}/include/atk-1.0/atk/atk.h -a "${force_install}" != yes ] && return 0
+	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
+	fetch_atk_source || return 1
+	unpack_archive ${atk_org_src_dir} ${atk_src_base} || return 1
+	[ -f ${atk_org_src_dir}/Makefile ] ||
+		(cd ${atk_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --enable-static \
+			--disable-silent-rules PKG_CONFIG_PATH=${prefix}/lib/pkgconfig) || return 1
+	make -C ${atk_org_src_dir} -j ${jobs} || return 1
+	make -C ${atk_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
+
+install_native_gobject_introspection()
+{
+	[ -d ${prefix}/include/gobject_introspection-1.0 -a "${force_install}" != yes ] && return 0
+	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
+	fetch_gobject_introspection_source || return 1
+	unpack_archive ${gobject_introspection_org_src_dir} ${gobject_introspection_src_base} || return 1
+	[ -f ${gobject_introspection_org_src_dir}/Makefile ] ||
+		(cd ${gobject_introspection_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} \
+			--disable-silent-rules PKG_CONFIG_PATH=${prefix}/lib/pkgconfig) || return 1
+	make -C ${gobject_introspection_org_src_dir} -j ${jobs} || return 1
+	make -C ${gobject_introspection_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
+
+install_native_libepoxy()
+{
+	[ -f ${prefix}/include/epoxy/egl.h -a "${force_install}" != yes ] && return 0
+	fetch_libepoxy_source || return 1
+	unpack_archive ${libepoxy_org_src_dir} ${libepoxy_src_base} || return 1
+	[ -f ${libepoxy_org_src_dir}/Makefile ] ||
+		(cd ${libepoxy_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+	make -C ${libepoxy_org_src_dir} -j ${jobs} || return 1
+	make -C ${libepoxy_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
+
+install_native_gtk()
+{
+	[ -d ${prefix}/include/gtk-3.0/gtk/gtk.h -a "${force_install}" != yes ] && return 0
+	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
+	search_header pango.h pango-1.0/pango > /dev/null || install_native_pango || return 1
+	search_header gdk-pixbuf.h gdk-pixbuf-2.0/gdk-pixbuf > /dev/null || install_native_gdk_pixbuf || return 1
+	search_header atk.h atk-1.0/atk > /dev/null || install_native_atk || return 1
+	search_header giversionmacros.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return 1
+	search_header egl.h epoxy > /dev/null || install_native_libepoxy || return 1
+	fetch_gtk_source || return 1
+	unpack_archive ${gtk_org_src_dir} ${gtk_src_base} || return 1
+	[ -f ${gtk_org_src_dir}/Makefile ] ||
+		(cd ${gtk_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --enable-static \
+			--disable-silent-rules PKG_CONFIG_PATH=${prefix}/lib/pkgconfig) || return 1
+	make -C ${gtk_org_src_dir} -j ${jobs} || return 1
+	make -C ${gtk_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
+
 install_native_webkitgtk()
 {
 #	[ -x ${prefix}/bin/gawk -a "${force_install}" != yes ] && return 0
+	search_header gtk.h gtk-3.0/gtk > /dev/null || install_native_gtk || return 1
 	fetch_webkitgtk_source || return 1
 	unpack_archive ${webkitgtk_org_src_dir} ${webkitgtk_src_base} || return 1
 	mkdir -p ${webkitgtk_bld_dir_ntv}
