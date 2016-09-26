@@ -7,7 +7,6 @@
 # [TODO] libegl, libgl, (for libepoxy)
 # [TODO] tcl/tk
 # [TODO] rsvg, imagemagick
-# [TODO] pkg-config
 # [TODO] LLDB, Polly, MySQL, expat, Guile
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
@@ -20,6 +19,7 @@
 : ${bzip2_ver:=1.0.6}
 : ${gzip_ver:=1.8}
 : ${wget_ver:=1.17.1}
+: ${pkg_config_ver:=0.29.1}
 : ${texinfo_ver:=6.1}
 : ${coreutils_ver:=8.25}
 : ${bison_ver:=3.0.4}
@@ -56,6 +56,12 @@
 : ${atk_ver:=2.22.0}
 : ${gobject_introspection_ver:=1.50.0}
 : ${libXt_ver:=1.1.5}
+: ${glproto_ver:=1.4.17}
+: ${libpciaccess_ver:=0.13.4}
+: ${libdrm_ver:=2.4.70}
+: ${dri3proto_ver:=1.0}
+: ${presentproto_ver:=1.0}
+: ${mesa_ver:=12.0.3}
 : ${libepoxy_ver:=1.3.1}
 : ${gtk_ver:=3.22.0}
 : ${webkitgtk_ver:=2.14.0}
@@ -76,7 +82,7 @@
 : ${tmux_ver:=2.2}
 : ${zsh_ver:=5.2}
 : ${bash_ver:=4.4}
-: ${openssl_ver:=1.0.2f}
+: ${openssl_ver:=1.1.0a}
 : ${openssh_ver:=7.3p1}
 : ${curl_ver:=7.49.0}
 : ${asciidoc_ver:=8.6.9}
@@ -161,6 +167,8 @@ help()
 		Specify the version of GNU gzip you want, currently '${gzip_ver}'.
 	wget_ver
 		Specify the version of GNU wget you want, currently '${wget_ver}'.
+	pkg_config_ver
+		Specify the version of pkg-config you want, currently '${pkg_config_ver}'.
 	texinfo_ver
 		Specify the version of GNU Texinfo you want, currently '${texinfo_ver}'.
 	coreutils_ver
@@ -233,6 +241,18 @@ help()
 		Specify the version of GObject-Introspection you want, currently '${gobject_introspection_ver}'.
 	libXt_ver
 		Specify the version of X11 Toolkit you want, currently '${libXt_ver}'.
+	glproto_ver
+		Specify the version of glproto you want, currently '${glproto_ver}'.
+	libpciaccess_ver
+		Specify the verrsion of libpciaccess you want, currently '${libpciaccess_ver}'.
+	libdrm_ver
+		Specify the version of libdrm you want, currently '${libdrm_ver}'.
+	dri3proto_ver
+		Specify the version of dri3proto you want, currently '${dri3proto_ver}'.
+	presentproto_ver
+		Specify the version of presentproto you want, currently ''${presentproto_ver}.
+	mesa_ver
+		Specify the version of mesa you want, currently '${mesa_ver}'.
 	libepoxy_ver
 		Specify the version of libepoxy you want, currently '${libepoxy_ver}'.
 	gtk_ver
@@ -562,12 +582,13 @@ set_variables()
 	*)   echo unsupported kernel version >&2; return 1;;
 	esac
 
-	for pkg in tar xz bzip2 gzip wget texinfo coreutils bison flex \
+	for pkg in tar xz bzip2 gzip wget pkg-config texinfo coreutils bison flex \
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
 		gmp mpfr mpc gcc readline ncurses gdb zlib libpng tiff jpeg giflib libXpm libwebp libffi \
-		glib pango gdk-pixbuf atk gobject-introspection libXt libepoxy gtk webkitgtk emacs vim ctags grep \
-		global pcre2 the_silver_searcher graphviz doxygen diffutils patch findutils screen \
-		libevent tmux zsh bash openssl openssh curl asciidoc xmlto libxml2 libxslt gettext \
+		glib pango gdk-pixbuf atk gobject-introspection libXt glproto libpciaccess libdrm dri3proto presentproto mesa \
+		libepoxy gtk webkitgtk emacs vim ctags grep global pcre2 the_silver_searcher \
+		graphviz doxygen diffutils patch findutils screen libevent tmux zsh bash \
+		openssl openssh curl asciidoc xmlto libxml2 libxslt gettext \
 		git mercurial sqlite-autoconf apr apr-util subversion cmake libedit \
 		swig llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb boost mingw-w64 \
 		Python ruby go perl yasm x264 x265 libav opencv opencv_contrib; do
@@ -768,6 +789,14 @@ fetch_wget_source()
 	check_archive ${wget_org_src_dir} ||
 		wget -O ${wget_org_src_dir}.tar.xz \
 			http://ftp.gnu.org/gnu/wget/${wget_name}.tar.xz || return 1
+}
+
+fetch_pkg_config_source()
+{
+	mkdir -p ${pkg_config_src_base}
+	check_archive ${pkg_config_org_src_dir} ||
+		wget --no-check-certificate -O ${pkg_config_org_src_dir}.tar.gz \
+			https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return 1
 }
 
 fetch_texinfo_source()
@@ -1063,6 +1092,54 @@ fetch_libXt_source()
 	check_archive ${libXt_org_src_dir} ||
 		wget --no-check-certificate -O ${libXt_org_src_dir}.tar.bz2 \
 			https://www.x.org/releases/individual/lib/${libXt_name}.tar.bz2 || return 1
+}
+
+fetch_glproto_source()
+{
+	mkdir -p ${glproto_src_base}
+	check_archive ${glproto_org_src_dir} ||
+		wget -O ${glproto_org_src_dir}.tar.bz2 \
+			ftp://ftp.freedesktop.org/pub/individual/proto/${glproto_name}.tar.bz2 || return 1
+}
+
+fetch_libpciaccess_source()
+{
+	mkdir -p ${libpciaccess_src_base}
+	check_archive ${libpciaccess_org_src_dir} ||
+		wget -O ${libpciaccess_org_src_dir}.tar.bz2 \
+			ftp://ftp.freedesktop.org/pub/individual/lib/${libpciaccess_name}.tar.bz2 || return 1
+}
+
+fetch_libdrm_source()
+{
+	mkdir -p ${libdrm_src_base}
+	check_archive ${libdrm_org_src_dir} ||
+		wget --no-check-certificate -O ${libdrm_org_src_dir}.tar.bz2 \
+			https://dri.freedesktop.org/libdrm/${libdrm_name}.tar.bz2 || return 1
+}
+
+fetch_dri3proto_source()
+{
+	mkdir -p ${dri3proto_src_base}
+	check_archive ${dri3proto_org_src_dir} ||
+		wget -O ${dri3proto_org_src_dir}.tar.bz2 \
+			ftp://ftp.freedesktop.org/pub/individual/proto/${dri3proto_name}.tar.bz2 || return 1
+}
+
+fetch_presentproto_source()
+{
+	mkdir -p ${presentproto_src_base}
+	check_archive ${presentproto_org_src_dir} ||
+		wget -O ${presentproto_org_src_dir}.tar.bz2 \
+			ftp://ftp.freedesktop.org/pub/individual/proto/${presentproto_name}.tar.bz2 || return 1
+}
+
+fetch_mesa_source()
+{
+	mkdir -p ${mesa_src_base}
+	check_archive ${mesa_org_src_dir} ||
+		wget -O ${mesa_org_src_dir}.tar.xz \
+			ftp://ftp.freedesktop.org/pub/mesa/${mesa_ver}/${mesa_name}.tar.xz || return 1
 }
 
 fetch_libepoxy_source()
@@ -1594,6 +1671,18 @@ install_native_wget()
 			./configure --prefix=${prefix} --build=${build} --with-ssl=openssl) || return 1
 	make -C ${wget_org_src_dir} -j ${jobs} || return 1
 	make -C ${wget_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+}
+
+install_native_pkg_config()
+{
+	[ -x ${prefix}/bin/pkg-config -a "${force_install}" != yes ] && return 0
+	fetch_pkg_config_source || return 1
+	unpack_archive ${pkg_config_org_src_dir} ${pkg_config_src_base} || return 1
+	[ -f ${pkg_config_org_src_dir}/Makefile ] ||
+		(cd ${pkg_config_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+	make -C ${pkg_config_org_src_dir} -j ${jobs} || return 1
+	make -C ${pkg_config_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
 
 install_native_texinfo()
@@ -2154,6 +2243,87 @@ install_native_libXt()
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${libXt_org_src_dir} -j ${jobs} || return 1
 	make -C ${libXt_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
+
+install_native_glproto()
+{
+	[ -f ${prefix}/include/GL/glxproto.h -a "${force_install}" != yes ] && return 0
+	fetch_glproto_source || return 1
+	unpack_archive ${glproto_org_src_dir} ${glproto_src_base} || return 1
+	[ -f ${glproto_org_src_dir}/Makefile ] ||
+		(cd ${glproto_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+	make -C ${glproto_org_src_dir} -j ${jobs} || return 1
+	make -C ${glproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+}
+
+install_native_libpciaccess()
+{
+	[ -f ${prefix}/include/pciaccess.h -a "${force_install}" != yes ] && return 0
+	fetch_libpciaccess_source || return 1
+	unpack_archive ${libpciaccess_org_src_dir} ${libpciaccess_src_base} || return 1
+	[ -f ${libpciaccess_org_src_dir}/Makefile ] ||
+		(cd ${libpciaccess_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+	make -C ${libpciaccess_org_src_dir} -j ${jobs} || return 1
+	make -C ${libpciaccess_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
+
+install_native_libdrm()
+{
+	[ -f ${prefix}/include/xf86drm.h -a "${force_install}" != yes ] && return 0
+	search_header pciaccess.h > /dev/null || install_native_libpciaccess || return 1
+	fetch_libdrm_source || return 1
+	unpack_archive ${libdrm_org_src_dir} ${libdrm_src_base} || return 1
+	[ -f ${libdrm_org_src_dir}/Makefile ] ||
+		(cd ${libdrm_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			--enable-static) || return 1
+	make -C ${libdrm_org_src_dir} -j ${jobs} || return 1
+	make -C ${libdrm_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_search_path || return 1
+}
+
+install_native_dri3proto()
+{
+	[ -f ${prefix}/include/X11/extensions/dri3proto.h -a "${force_install}" != yes ] && return 0
+	fetch_dri3proto_source || return 1
+	unpack_archive ${dri3proto_org_src_dir} ${dri3proto_src_base} || return 1
+	[ -f ${dri3proto_org_src_dir}/Makefile ] ||
+		(cd ${dri3proto_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+	make -C ${dri3proto_org_src_dir} -j ${jobs} || return 1
+	make -C ${dri3proto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+}
+
+install_native_presentproto()
+{
+	[ -f ${prefix}/include/X11/extensions/presentproto.h -a "${force_install}" != yes ] && return 0
+	fetch_presentproto_source || return 1
+	unpack_archive ${presentproto_org_src_dir} ${presentproto_src_base} || return 1
+	[ -f ${presentproto_org_src_dir}/Makefile ] ||
+		(cd ${presentproto_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+	make -C ${presentproto_org_src_dir} -j ${jobs} || return 1
+	make -C ${presentproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+}
+
+install_native_mesa()
+{
+#	[ -f ${prefix}/include/epoxy/egl.h -a "${force_install}" != yes ] && return 0
+	search_header glxproto.h GL > /dev/null || install_native_glproto || return 1
+	search_header xf86drm.h > /dev/null || install_native_libdrm || return 1
+	search_header dri3proto.h X11/extensions > /dev/null || install_native_dri3proto || return 1
+	search_header presentproto.h X11/extensions > /dev/null || install_native_presentproto || return 1
+	fetch_mesa_source || return 1
+	unpack_archive ${mesa_org_src_dir} ${mesa_src_base} || return 1
+	[ -f ${mesa_org_src_dir}/Makefile ] ||
+		(cd ${mesa_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+	make -C ${mesa_org_src_dir} -j ${jobs} || return 1
+	make -C ${mesa_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
 }
 
