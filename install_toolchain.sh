@@ -1,17 +1,17 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
+# [TODO] X window system関係のライブラリ何かを入れると、OS起動時GUIが立ち上がらなくなる。
+# [TODO] install_native_xmltoのリファクタリング。
+#        -> xmltoの障害のせいで、gitのmakeに障害あり。
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] libav<-
 # [TODO] webkitgtk<-libsoup
 # [TODO] libmount, dtrace (GLib)
-# [TODO] libegl, libgl, (for libepoxy)
 # [TODO] tcl/tk
 # [TODO] rsvg, imagemagick
 # [TODO] LLDB, Polly, MySQL, expat, Guile
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
-# [TODO] install_native_xmltoのリファクタリング。
-#        -> xmltoの障害のせいで、gitのmakeに障害あり。
 # [TODO] install_native_clang_tools_extra()のテスト実行が未完了。
 
 : ${tar_ver:=1.29}
