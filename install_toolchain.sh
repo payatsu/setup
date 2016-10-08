@@ -4,6 +4,7 @@
 # [TODO] install_native_xmltoのリファクタリング。
 #        -> xmltoの障害のせいで、gitのmakeに障害あり。
 # [TODO] haskell(stack<-(ghc, cabal))
+# [TODO] X11, gtk周りのインストールが未完成＆不安定
 # [TODO] libav<-
 # [TODO] webkitgtk<-libsoup
 # [TODO] libmount, dtrace (GLib)
@@ -107,7 +108,7 @@
 : ${libxml2_ver:=2.9.4}
 : ${libxslt_ver:=1.1.29}
 : ${gettext_ver:=0.19.7}
-: ${git_ver:=2.10.0}
+: ${git_ver:=2.10.1}
 : ${mercurial_ver:=3.8.3}
 : ${sqlite_autoconf_ver:=3140100}
 : ${apr_ver:=1.5.2}
@@ -157,6 +158,7 @@ usage()
 			x86_64-linux-gnu
 			i686-unknown-linux
 			microblaze-none-linux
+			nios2-none-linux (linux_ver=4.8.1)
 	-j jobs
 		The number of processes invoked simultaneously by 'make', currently '${jobs}'.
 		Recommended not to be more than the number of CPU cores.
@@ -622,6 +624,7 @@ set_variables()
 	arm*)        cross_linux_arch=arm;;
 	i?86*)       cross_linux_arch=x86;;
 	microblaze*) cross_linux_arch=microblaze;;
+	nios2*)      cross_linux_arch=nios2;;
 	x86_64*)     cross_linux_arch=x86;;
 	*) echo Unknown target architecture: ${target} >&2; return 1;;
 	esac
@@ -2963,7 +2966,7 @@ install_native_doxygen()
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-Dbuild_doc=ON -Duse_libclang=ON ${doxygen_org_src_dir}) || return 1 # [TODO] Xapian入れられたら、build_search=ONにする・・・かも。
 	make -C ${doxygen_bld_dir_ntv} -j ${jobs} || return 1
-	make -C ${doxygen_bld_dir_ntv} -j ${jobs} docs || return 1
+#	make -C ${doxygen_bld_dir_ntv} -j ${jobs} docs || return 1
 	make -C ${doxygen_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return 1
 }
 
@@ -3198,7 +3201,7 @@ install_native_git()
 	which xmlto > /dev/null || install_native_xmlto || return 1
 	search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return 1
 	search_header xslt.h libxslt > /dev/null || install_native_libxslt || return 1
-	which gettext > /dev/null || install_native_gettext || return 1
+	which msgfmt > /dev/null || install_native_gettext || return 1
 	which perl > /dev/null || install_native_perl || return 1
 	fetch_git_source || return 1
 	unpack_archive ${git_org_src_dir} ${git_src_base} || return 1
