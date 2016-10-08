@@ -117,7 +117,7 @@
 : ${libedit_ver:=20160903-3.1}
 : ${swig_ver:=3.0.10}
 : ${llvm_ver:=3.9.0}
-: ${boost_ver:=1_61_0}
+: ${boost_ver:=1_62_0}
 : ${mingw_w64_ver:=4.0.6}
 : ${Python_ver:=3.5.2}
 : ${ruby_ver:=2.3.1}
@@ -1865,6 +1865,7 @@ install_native_wget()
 install_native_pkg_config()
 {
 	[ -x ${prefix}/bin/pkg-config -a "${force_install}" != yes ] && return 0
+	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
 	fetch_pkg_config_source || return 1
 	unpack_archive ${pkg_config_org_src_dir} ${pkg_config_src_base} || return 1
 	[ -f ${pkg_config_org_src_dir}/Makefile ] ||
@@ -2288,6 +2289,7 @@ install_native_libjpeg()
 install_native_giflib()
 {
 	[ -f ${prefix}/include/gif_lib.h -a "${force_install}" != yes ] && return 0
+	which xmlto > /dev/null || install_native_xmlto || return 1
 	fetch_giflib_source || return 1
 	[ -d ${giflib_src_dir_ntv} ] ||
 		(unpack_archive ${giflib_org_src_dir} ${giflib_src_base} &&
@@ -2305,6 +2307,7 @@ install_native_libXpm()
 	[ -f ${prefix}/include/X11/xpm.h -a "${force_install}" != yes ] && return 0
 	search_header Xproto.h X11 > /dev/null || install_native_xproto || return 1
 	search_header XKBproto.h X11 > /dev/null || install_native_kbproto || return 1
+	search_header Xlib.h X11 > /dev/null || install_native_libX11 || return 1
 	fetch_libXpm_source || return 1
 	unpack_archive ${libXpm_org_src_dir} ${libXpm_src_base} || return 1
 	[ -f ${libXpm_org_src_dir}/Makefile ] ||
@@ -2481,8 +2484,10 @@ install_native_xtrans()
 install_native_libX11()
 {
 	[ -f ${prefix}/include/X11/Xlib.h -a "${force_install}" != yes ] && return 0
-	search_header XI.h X11/extensions || install_native_inputproto || return 1
-	search_header Xtrans.h X11/Xtrans || install_native_xtrans || return 1
+	search_header XI.h X11/extensions > /dev/null || install_native_inputproto || return 1
+	search_header Xtrans.h X11/Xtrans > /dev/null || install_native_xtrans || return 1
+	search_header lbx.h X11/extensions > /dev/null || install_native_xextproto || return 1
+	search_header xcb.h xcb > /dev/null || install_native_libxcb || return 1
 	fetch_libX11_source || return 1
 	unpack_archive ${libX11_org_src_dir} ${libX11_src_base} || return 1
 	[ -f ${libX11_org_src_dir}/Makefile ] ||
@@ -2949,7 +2954,7 @@ install_native_doxygen()
 {
 	[ -x ${prefix}/bin/doxygen -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
-	which clang > /dev/null || install_native_clang || return 1
+	which clang > /dev/null || install_native_cfe || return 1
 	fetch_doxygen_source || return 1
 	unpack_archive ${doxygen_org_src_dir} ${doxygen_src_base} || return 1
 	mkdir -p ${doxygen_bld_dir_ntv}
@@ -2981,7 +2986,7 @@ install_native_patch()
 	unpack_archive ${patch_org_src_dir} ${patch_src_base} || return 1
 	[ -f ${patch_org_src_dir}/Makefile ] ||
 		(cd ${patch_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return 1
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${patch_org_src_dir} -j ${jobs} || return 1
 	make -C ${patch_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -3126,6 +3131,7 @@ install_native_asciidoc()
 install_native_xmlto()
 {
 	[ -x ${prefix}/bin/xmlto -a "${force_install}" != yes ] && return 0
+	search_header xslt.h libxslt > /dev/null || install_native_libxslt || return 1
 	fetch_xmlto_source || return 1
 	unpack_archive ${xmlto_org_src_dir} ${xmlto_src_base} || return 1
 	[ -f ${xmlto_org_src_dir}/Makefile ] ||
@@ -3163,7 +3169,7 @@ install_native_libxslt()
 	unpack_archive ${libxslt_org_src_dir} ${libxslt_src_base} || return 1
 	[ -f ${libxslt_org_src_dir}/Makefile ] ||
 		(cd ${libxslt_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return 1
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${libxslt_org_src_dir} -j ${jobs} || return 1
 	make -C ${libxslt_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -3193,7 +3199,7 @@ install_native_git()
 	search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return 1
 	search_header xslt.h libxslt > /dev/null || install_native_libxslt || return 1
 	which gettext > /dev/null || install_native_gettext || return 1
-	which perl > /dev/null || install_native_curl || return 1
+	which perl > /dev/null || install_native_perl || return 1
 	fetch_git_source || return 1
 	unpack_archive ${git_org_src_dir} ${git_src_base} || return 1
 	make -C ${git_org_src_dir} -j ${jobs} configure || return 1
@@ -3210,8 +3216,8 @@ install_native_mercurial()
 	which python3 > /dev/null || install_native_python || return 1
 	fetch_mercurial_source || return 1
 	unpack_archive ${mercurial_org_src_dir} ${mercurial_src_base} || return 1
-# [TODO] mercurialがmakeできない。たぶんpython3使ってるせい。
-	make -C ${mercurial_org_src_dir} -j ${jobs} PYTHON=python3 all || return 1
+	pip install docutils || return 1
+	make -C ${mercurial_org_src_dir} -j ${jobs} PYTHON=python all || return 1
 	make -C ${mercurial_org_src_dir} -j ${jobs} PREFIX=${prefix} install || return 1
 }
 
@@ -3766,7 +3772,7 @@ install_native_python()
 	[ -f ${Python_org_src_dir}/Makefile ] ||
 		(cd ${Python_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --enable-shared --disable-ipv6 \
-			--with-universal-archs=all \
+			--with-universal-archs=all --enable-universalsdk \
 			--with-signal-module --with-threads --with-doc-strings \
 			--with-tsc --with-pymalloc --with-ensurepip) || return 1 # --enable-ipv6 --with-address-sanitizer --with-system-expat --with-system-ffi
 	make -C ${Python_org_src_dir} -j ${jobs} || return 1
@@ -3789,6 +3795,7 @@ install_native_ruby()
 install_native_go()
 {
 	[ -x ${prefix}/go/bin/go -a "${force_install}" != yes ] && return 0
+	[ -z "${GOPATH}" ] && echo Error. GOPATH not set. >&2 && return 1
 	which git > /dev/null || install_native_git || return 1
 	fetch_go_source || return 1
 	[ -d ${go_org_src_dir} ] || unpack_archive ${go_src_base}/go${go_ver}.src ${go_src_base} || return 1
