@@ -3482,8 +3482,42 @@ install_native_boost()
 full_native()
 {
 	for f in `sed -e '/^install_native_[_[:alnum:]]\+()$/{s/()$//;
+		s/install_native_pkg_config//;
 		s/install_native_kernel_header//;
 		s/install_native_glibc//;
+		s/install_native_libXpm//;
+		s/install_native_glib//;
+		s/install_native_cairo//;
+		s/install_native_pixman//;
+		s/install_native_pango//;
+		s/install_native_gdk_pixbuf//;
+		s/install_native_atk//;
+		s/install_native_gobject_introspection//;
+		s/install_native_inputproto//;
+		s/install_native_xtrans//;
+		s/install_native_libX11//;
+		s/install_native_libxcb//;
+		s/install_native_xcb_proto//;
+		s/install_native_xextproto//;
+		s/install_native_libXext//;
+		s/install_native_fixesproto//;
+		s/install_native_libXfixes//;
+		s/install_native_damageproto//;
+		s/install_native_libXdamage//;
+		s/install_native_libXt//;
+		s/install_native_xproto//;
+		s/install_native_kbproto//;
+		s/install_native_glproto//;
+		s/install_native_libpciaccess//;
+		s/install_native_libdrm//;
+		s/install_native_dri2proto//;
+		s/install_native_dri3proto//;
+		s/install_native_presentproto//;
+		s/install_native_libxshmfence//;
+		s/install_native_mesa//;
+		s/install_native_libepoxy//;
+		s/install_native_gtk//;
+		s/install_native_webkitgtk//;
 		p};d' $0`; do
 		$f \
 			&& echo \'$f\' succeeded. | logger -p user.notice -t `basename $0` \
