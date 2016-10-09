@@ -689,18 +689,24 @@ list_all_commands()
 [All commands]
 #: major commands, -: internal commands(for debugging use)
 EOF
-	commands=`grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/    - /;s/()$//;s/- \([[:alnum:]]\+\)$/# \1/'`
+	commands=`grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/- /;s/()$//;s/- \([[:alnum:]]\+\)$/# \1/'`
 
 	lines=`echo "${commands}" | wc -l`
-	column1_end=`expr \`expr ${lines} / 2\` + \`expr ${lines} % 2\``
+	n=3
+	column1_end=`expr \`expr ${lines} / ${n}\` + \`expr ${lines} % ${n}\``
 	column2_begin=`expr ${column1_end} + 1`
+	column2_end=`expr \`expr ${lines} / ${n}\` + ${column1_end}`
+	column3_begin=`expr ${column2_end} + 1`
 
 	column1=`echo "${commands}" | sed -e "1,${column1_end}p;d"`
-	column2=`echo "${commands}" | sed -e "${column2_begin},\\$p;d"`
+	column2=`echo "${commands}" | sed -e "${column2_begin},${column2_end}p;d"`
+	column3=`echo "${commands}" | sed -e "${column3_begin},\\$p;d"`
 
+	width=36
 	for i in `seq ${column1_end}`; do
-		printf '    %c %-32s' `echo "${column1}" | sed -e "${i}p;d"`
-		printf '    %c %-s'   `echo "${column2}" | sed -e "${i}p;d"`
+		printf " %c %-${width}s" `echo "${column1}" | sed -e "${i}p;d"`
+		printf " %c %-${width}s" `echo "${column2}" | sed -e "${i}p;d"`
+		printf " %c %-${width}s" `echo "${column3}" | sed -e "${i}p;d"`
 		echo
 	done
 }
