@@ -1,8 +1,6 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] X window system関係のライブラリ何かを入れると、OS起動時GUIが立ち上がらなくなる。
-# [TODO] install_native_xmltoのリファクタリング。
-#        -> xmltoの障害のせいで、gitのmakeに障害あり。
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] X11, gtk周りのインストールが未完成＆不安定
 # [TODO] libav<-
@@ -19,9 +17,9 @@
 : ${xz_ver:=5.2.2}
 : ${bzip2_ver:=1.0.6}
 : ${gzip_ver:=1.8}
-: ${wget_ver:=1.17.1}
+: ${wget_ver:=1.18}
 : ${pkg_config_ver:=0.29.1}
-: ${texinfo_ver:=6.1}
+: ${texinfo_ver:=6.3}
 : ${coreutils_ver:=8.25}
 : ${bison_ver:=3.0.4}
 : ${flex_ver:=2.6.0}
@@ -30,21 +28,21 @@
 : ${automake_ver:=1.15}
 : ${libtool_ver:=2.4.6}
 : ${sed_ver:=4.2.2}
-: ${gawk_ver:=4.1.3}
+: ${gawk_ver:=4.1.4}
 : ${make_ver:=4.2}
 : ${binutils_ver:=2.27}
 : ${linux_ver:=3.18.13}
 : ${gperf_ver:=3.0.4}
-: ${glibc_ver:=2.23}
-: ${gmp_ver:=6.1.0}
-: ${mpfr_ver:=3.1.4}
+: ${glibc_ver:=2.24}
+: ${gmp_ver:=6.1.1}
+: ${mpfr_ver:=3.1.5}
 : ${mpc_ver:=1.0.3}
 : ${gcc_ver:=6.2.0}
 : ${readline_ver:=7.0}
 : ${ncurses_ver:=6.0}
-: ${gdb_ver:=7.11.1}
+: ${gdb_ver:=7.12}
 : ${zlib_ver:=1.2.8}
-: ${libpng_ver:=1.6.21}
+: ${libpng_ver:=1.6.25}
 : ${tiff_ver:=4.0.6}
 : ${jpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
@@ -84,37 +82,37 @@
 : ${gtk_ver:=3.22.0}
 : ${webkitgtk_ver:=2.14.0}
 : ${emacs_ver:=25.1}
-: ${vim_ver:=8.0.0003}
+: ${vim_ver:=8.0.0027}
 : ${ctags_ver:=5.8}
-: ${grep_ver:=2.25}
+: ${grep_ver:=2.26}
 : ${global_ver:=6.5.5}
 : ${pcre2_ver:=10.22}
-: ${the_silver_searcher_ver:=0.32.0}
+: ${the_silver_searcher_ver:=0.33.0}
 : ${graphviz_ver:=2.38.0}
 : ${doxygen_ver:=1.8.12}
-: ${diffutils_ver:=3.3}
+: ${diffutils_ver:=3.5}
 : ${patch_ver:=2.7.5}
 : ${findutils_ver:=4.6.0}
-: ${screen_ver:=4.3.1}
+: ${screen_ver:=4.4.0}
 : ${libevent_ver:=2.0.22}
-: ${tmux_ver:=2.2}
+: ${tmux_ver:=2.3}
 : ${zsh_ver:=5.2}
 : ${bash_ver:=4.4}
 : ${openssl_ver:=1.1.0a}
 : ${openssh_ver:=7.3p1}
-: ${curl_ver:=7.49.0}
+: ${curl_ver:=7.50.3}
 : ${asciidoc_ver:=8.6.9}
 : ${xmlto_ver:=0.0.28}
 : ${libxml2_ver:=2.9.4}
 : ${libxslt_ver:=1.1.29}
-: ${gettext_ver:=0.19.7}
+: ${gettext_ver:=0.19.8}
 : ${git_ver:=2.10.1}
-: ${mercurial_ver:=3.8.3}
-: ${sqlite_autoconf_ver:=3140100}
+: ${mercurial_ver:=3.9.2}
+: ${sqlite_autoconf_ver:=3140200}
 : ${apr_ver:=1.5.2}
 : ${apr_util_ver:=1.5.4}
 : ${subversion_ver:=1.9.4}
-: ${cmake_ver:=3.5.2}
+: ${cmake_ver:=3.6.2}
 : ${libedit_ver:=20160903-3.1}
 : ${swig_ver:=3.0.10}
 : ${llvm_ver:=3.9.0}
@@ -122,7 +120,7 @@
 : ${mingw_w64_ver:=4.0.6}
 : ${Python_ver:=3.5.2}
 : ${ruby_ver:=2.3.1}
-: ${go_ver:=1.7}
+: ${go_ver:=1.7.1}
 : ${perl_ver:=5.24.0}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
@@ -1065,7 +1063,7 @@ fetch_libtiff_source()
 	mkdir -p ${tiff_src_base}
 	check_archive ${tiff_org_src_dir} ||
 		wget -O ${tiff_org_src_dir}.tar.gz \
-			ftp://ftp.remotesensing.org/pub/libtiff/${tiff_name}.tar.gz || return 1
+			http://download.osgeo.org/libtiff/${tiff_name}.tar.gz || return 1
 }
 
 fetch_libjpeg_source()
@@ -3148,11 +3146,8 @@ install_native_xmlto()
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${xmlto_org_src_dir} -j ${jobs} || return 1
 	make -C ${xmlto_org_src_dir} -j ${jobs} install || return 1
-
-# FIXME
-# [ -d ${prefix}/share/docbook-xsl-1.79.1 ] || wget --trust-server-names -O- http://sourceforge.net/projects/docbook/files/docbook-xsl/1.79.1/docbook-xsl-1.79.1.tar.bz2/download | tar xjvf - -C ${prefix}/share
-# [ -f ${prefix}/share/catalog.xml ] || (wget -O /tmp/hoge.zip http://www.oasis-open.org/docbook/xml/4.2/docbook-xml-4.2.zip && unzip -d ${prefix}/share /tmp/hoge.zip)
-# export XML_CATALOG_FILES="${prefix}/share/catalog.xml ${prefix}/share/docbook-xsl-1.79.1/catalog.xml"
+	cp -n ${prefix}/bin/xmlto ${prefix}/bin/xmlto.bak || return 1
+	sed -ie 's/ --nonet//g' ${prefix}/bin/xmlto || return 1
 }
 
 install_native_libxml2()
@@ -3211,18 +3206,20 @@ install_native_git()
 	which perl > /dev/null || install_native_perl || return 1
 	fetch_git_source || return 1
 	unpack_archive ${git_org_src_dir} ${git_src_base} || return 1
-	make -C ${git_org_src_dir} -j ${jobs} configure || return 1
+	make -C ${git_org_src_dir} -j ${jobs} V=1 configure || return 1
 	(cd ${git_org_src_dir}
 	./configure --prefix=${prefix} --build=${build} --without-tcltk) || return 1
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return 1
-	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS="${LDFLAGS} -ldl" all || return 1 # [XXX] docターゲット入れたいけどエラー回避で外してる。
-	make -C ${git_org_src_dir} -j ${jobs} V=1 ${strip} install || return 1 # [XXX] install-doc install-htmlターゲット入れたいけどエラー回避で外してる。
+	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS="${LDFLAGS} -ldl" all || return 1
+	make -C ${git_org_src_dir} -j ${jobs} V=1 doc || return 1
+	make -C ${git_org_src_dir} -j ${jobs} V=1 ${strip} install || return 1
+	make -C ${git_org_src_dir} -j ${jobs} V=1 ${strip} install-doc install-html || return 1
 }
 
 install_native_mercurial()
 {
 	[ -x ${prefix}/bin/hg -a "${force_install}" != yes ] && return 0
-	which python3 > /dev/null || install_native_python || return 1
+	which python > /dev/null || install_native_python || return 1
 	fetch_mercurial_source || return 1
 	unpack_archive ${mercurial_org_src_dir} ${mercurial_src_base} || return 1
 	pip install docutils || return 1
@@ -3372,6 +3369,7 @@ install_native_libcxxabi()
 	search_header iostream c++/v1 > /dev/null || install_native_libcxx || return 1
 	fetch_libcxxabi_source || return 1
 	unpack_archive ${libcxxabi_org_src_dir} ${libcxxabi_src_base} || return 1
+	sed -ie '/set(LLVM_CMAKE_PATH /s%share/llvm/cmake%lib/cmake/llvm%' ${libcxxabi_org_src_dir}/CMakeLists.txt || return 1 # [XXX] workaround for LLVM 3.9.0
 	mkdir -p ${libcxxabi_bld_dir}
 	(cd ${libcxxabi_bld_dir}
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
