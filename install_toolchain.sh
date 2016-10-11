@@ -102,9 +102,9 @@
 : ${openssh_ver:=7.3p1}
 : ${curl_ver:=7.50.3}
 : ${asciidoc_ver:=8.6.9}
-: ${xmlto_ver:=0.0.28}
 : ${libxml2_ver:=2.9.4}
 : ${libxslt_ver:=1.1.29}
+: ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
 : ${git_ver:=2.10.1}
 : ${mercurial_ver:=3.9.2}
@@ -352,12 +352,12 @@ help()
 		Specify the version of Curl you want, currently '${libcur_ver}'.
 	asciidoc_ver
 		Specify the version of asciidoc you want, currently '${asciidoc_ver}'.
-	xmlto_ver
-		Specify the version of xmlto you want, currently '${xmlto_ver}'.
 	libxml2_ver
 		Specify the version of libxml2 you want, currently '${libxml2_ver}'.
 	libxslt_ver
 		Specify the version of libxslt you want, currently '${libxslt_ver}'.
+	xmlto_ver
+		Specify the version of xmlto you want, currently '${xmlto_ver}'.
 	gettext_ver
 		Specify the version of gettext you want, currently '${gettext_ver}'.
 	git_ver
@@ -642,7 +642,7 @@ set_variables()
 		xproto kbproto glproto libpciaccess libdrm dri2proto dri3proto presentproto libxshmfence mesa \
 		libepoxy gtk webkitgtk emacs vim ctags grep global pcre2 the_silver_searcher \
 		graphviz doxygen diffutils patch findutils screen libevent tmux zsh bash \
-		openssl openssh curl asciidoc xmlto libxml2 libxslt gettext \
+		openssl openssh curl asciidoc libxml2 libxslt xmlto gettext \
 		git mercurial sqlite-autoconf apr apr-util subversion cmake libedit \
 		swig llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb boost mingw-w64 \
 		Python ruby go perl yasm x264 x265 libav opencv opencv_contrib; do
@@ -1530,14 +1530,6 @@ fetch_asciidoc_source()
 			https://sourceforge.net/projects/asciidoc/files/asciidoc/${asciidoc_ver}/${asciidoc_name}.tar.gz/download || return 1
 }
 
-fetch_xmlto_source()
-{
-	mkdir -p ${xmlto_src_base}
-	check_archive ${xmlto_org_src_dir} ||
-		wget --no-check-certificate -O ${xmlto_org_src_dir}.tar.bz2 \
-			https://fedorahosted.org/releases/x/m/xmlto/${xmlto_name}.tar.bz2 || return 1
-}
-
 fetch_libxml2_source()
 {
 	mkdir -p ${libxml2_src_base}
@@ -1552,6 +1544,14 @@ fetch_libxslt_source()
 	check_archive ${libxslt_org_src_dir} ||
 		wget -O ${libxslt_org_src_dir}.tar.gz \
 			ftp://xmlsoft.org/libxml2/${libxslt_name}.tar.gz || return 1
+}
+
+fetch_xmlto_source()
+{
+	mkdir -p ${xmlto_src_base}
+	check_archive ${xmlto_org_src_dir} ||
+		wget --no-check-certificate -O ${xmlto_org_src_dir}.tar.bz2 \
+			https://fedorahosted.org/releases/x/m/xmlto/${xmlto_name}.tar.bz2 || return 1
 }
 
 fetch_gettext_source()
@@ -3135,21 +3135,6 @@ install_native_asciidoc()
 	make -C ${asciidoc_org_src_dir} -j ${jobs} install || return 1
 }
 
-install_native_xmlto()
-{
-	[ -x ${prefix}/bin/xmlto -a "${force_install}" != yes ] && return 0
-	search_header xslt.h libxslt > /dev/null || install_native_libxslt || return 1
-	fetch_xmlto_source || return 1
-	unpack_archive ${xmlto_org_src_dir} ${xmlto_src_base} || return 1
-	[ -f ${xmlto_org_src_dir}/Makefile ] ||
-		(cd ${xmlto_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return 1
-	make -C ${xmlto_org_src_dir} -j ${jobs} || return 1
-	make -C ${xmlto_org_src_dir} -j ${jobs} install || return 1
-	cp -n ${prefix}/bin/xmlto ${prefix}/bin/xmlto.bak || return 1
-	sed -ie 's/ --nonet//g' ${prefix}/bin/xmlto || return 1
-}
-
 install_native_libxml2()
 {
 	[ -d ${prefix}/include/libxml2 -a "${force_install}" != yes ] && return 0
@@ -3176,6 +3161,19 @@ install_native_libxslt()
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${libxslt_org_src_dir} -j ${jobs} || return 1
 	make -C ${libxslt_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+}
+
+install_native_xmlto()
+{
+	[ -x ${prefix}/bin/xmlto -a "${force_install}" != yes ] && return 0
+	search_header xslt.h libxslt > /dev/null || install_native_libxslt || return 1
+	fetch_xmlto_source || return 1
+	unpack_archive ${xmlto_org_src_dir} ${xmlto_src_base} || return 1
+	[ -f ${xmlto_org_src_dir}/Makefile ] ||
+		(cd ${xmlto_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return 1
+	make -C ${xmlto_org_src_dir} -j ${jobs} || return 1
+	make -C ${xmlto_org_src_dir} -j ${jobs} install || return 1
 }
 
 install_native_gettext()
