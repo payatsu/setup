@@ -143,7 +143,7 @@ usage()
 {
 	cat <<EOF
 [Usage]
-	$0 [-p prefix] [-t target] [-j jobs] [-h] [variable=value]... commands...
+	${0} [-p prefix] [-t target] [-j jobs] [-h] [variable=value]... commands...
 
 [Options]
 	-p prefix
@@ -407,13 +407,13 @@ help()
 
 [Examples]
 	For everything which this tool can install
-	# $0 -p /toolchains -t armv7l-linux-gnueabihf -j 8 auto
+	# ${0} -p /toolchains -t armv7l-linux-gnueabihf -j 8 auto
 
 	For Raspberry pi2 cross compiler
-	# $0 -p /toolchains -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 linux_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 cross
+	# ${0} -p /toolchains -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 linux_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 cross
 
 	For microblaze cross compiler
-	# $0 -p /toolchains -t microblaze-linux-gnu -j 8 binutils_ver=2.25 linux_ver=4.3.3 glibc_ver=2.22 gcc_ver=5.3.0 cross
+	# ${0} -p /toolchains -t microblaze-linux-gnu -j 8 binutils_ver=2.25 linux_ver=4.3.3 glibc_ver=2.22 gcc_ver=5.3.0 cross
 
 EOF
 }
@@ -436,7 +436,7 @@ fetch()
 	case ${1} in
 	'')
 # TODO 直す。
-		for fetch_command in `grep -e '^fetch_.\+_source()$' $0 | sed -e 's/()$//'`; do
+		for fetch_command in `grep -e '^fetch_.\+_source()$' ${0} | sed -e 's/()$//'`; do
 			${fetch_command} || return 1
 		done;;
 	tar|gzip|wget|texinfo|coreutils|bison|m4|autoconf|automake|libtool|sed|gawk|\
@@ -637,6 +637,52 @@ fetch()
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.gz \
 				https://github.com/opencv/${_1}/archive/\${${_1}_ver}.tar.gz || return 1;;
+	pkg-config)
+		check_archive ${pkg_config_org_src_dir} ||
+			wget --no-check-certificate -O ${pkg_config_org_src_dir}.tar.gz \
+				https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return 1;;
+	xextproto|fixesproto|damageproto|presentproto|inputproto|kbproto|xproto|glproto|dri2proto|dri3proto)
+		eval check_archive \${${_1}_org_src_dir} ||
+			eval wget -O \${${_1}_org_src_dir}.tar.bz2 \
+				ftp://ftp.freedesktop.org/pub/individual/proto/\${${_1}_name}.tar.bz2 || return 1;;
+	libXext|libXfixes|libXdamage|xtrans|libX11|libxshmfence|libpciaccess|libXpm|libXt)
+		eval check_archive \${${_1}_org_src_dir} ||
+			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.bz2 \
+				https://www.x.org/releases/individual/lib/\${${_1}_name}.tar.bz2 || return 1;;
+	libdrm)
+		check_archive ${libdrm_org_src_dir} ||
+			wget --no-check-certificate -O ${libdrm_org_src_dir}.tar.bz2 \
+				https://dri.freedesktop.org/libdrm/${libdrm_name}.tar.bz2 || return 1;;
+	xcb-proto|libxcb)
+		eval check_archive \${${_1}_org_src_dir} ||
+			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.bz2 \
+				https://www.x.org/releases/individual/xcb/\${${_1}_name}.tar.bz2 || return 1;;
+	libepoxy)
+		check_archive ${libepoxy_org_src_dir} ||
+			wget --no-check-certificate -O ${libepoxy_org_src_dir}.tar.bz2 \
+				https://github.com/anholt/libepoxy/releases/download/v${libepoxy_ver}/${libepoxy_name}.tar.bz2 || return 1;;
+	mesa)
+		check_archive ${mesa_org_src_dir} ||
+			wget -O ${mesa_org_src_dir}.tar.xz \
+				ftp://ftp.freedesktop.org/pub/mesa/${mesa_ver}/${mesa_name}.tar.xz || return 1;;
+	cairo|pixman)
+		eval check_archive \${${_1}_org_src_dir} ||
+			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.gz \
+				https://www.cairographics.org/releases/\${${_1}_name}.tar.gz || return 1;;
+	glib|pango|gdk-pixbuf|atk|gobject-introspection)
+		eval check_archive \${${_1}_org_src_dir} ||
+			eval wget -O \${${_1}_org_src_dir}.tar.xz \
+				http://ftp.gnome.org/pub/gnome/sources/${1}/\`echo \${${_1}_ver} \| cut -f-2 -d.\`/\${${_1}_name}.tar.xz || return 1;;
+	gtk)
+		eval check_archive \${${_1}_org_src_dir} ||
+			eval wget -O \${${_1}_org_src_dir}.tar.xz \
+				http://ftp.gnome.org/pub/gnome/sources/gtk+/\`echo \${${_1}_ver} \| cut -f-2 -d.\`/\${${_1}_name}.tar.xz || return 1;;
+	webkitgtk)
+		check_archive ${webkitgtk_org_src_dir} ||
+			wget --no-check-certificate -O ${webkitgtk_org_src_dir}.tar.xz \
+				https://webkitgtk.org/releases/${webkitgtk_name}.tar.xz || return 1;;
+	*)
+		echo fetch: not match: ${1} >&2; return 1;;
 	esac
 }
 
@@ -707,7 +753,7 @@ strip()
 archive()
 # Archive related files.
 {
-	[ ${prefix}/src = `dirname $0` ] || cp -vf $0 ${prefix}/src || return 1
+	[ ${prefix}/src = `dirname ${0}` ] || cp -vf ${0} ${prefix}/src || return 1
 	convert_archives || return 1
 	tar cJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz \
 		-C `dirname ${prefix}` `basename ${prefix}` || return 1
@@ -741,7 +787,7 @@ debug()
 # Enter debug mode.
 {
 	prev_set=$-; set -e
-	while true; do read ${BASH:+-e} -p "$1> " cmd; eval ${cmd} || true; done
+	while true; do read ${BASH:+-e} -p "${1}> " cmd; eval ${cmd} || true; done
 	set +e; set -${prev_set}
 }
 
@@ -881,7 +927,7 @@ archive_sources()
 list_major_commands()
 {
 	echo '[Available commands]'
-	eval "`grep -A 1 -e '^[[:alnum:]]\+()$' $0 |
+	eval "`grep -A 1 -e '^[[:alnum:]]\+()$' ${0} |
 		sed -e '/^--$/d; /^{$/d; s/()$//; s/^# /\t/; s/^/\t/; 1s/^/echo "/; $s/$/"/'`"
 }
 
@@ -891,7 +937,7 @@ list_all_commands()
 [All commands]
 #: major commands, -: internal commands(for debugging use)
 EOF
-	commands=`grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' $0 | sed -e 's/^/- /;s/()$//;s/- \([[:alnum:]]\+\)$/# \1/'`
+	commands=`grep -e '^[_[:alnum:]]*[[:alnum:]]\+()$' ${0} | sed -e 's/^/- /;s/()$//;s/- \([[:alnum:]]\+\)$/# \1/'`
 
 	lines=`echo "${commands}" | wc -l`
 	n=3
@@ -918,7 +964,7 @@ list_repositories()
 	cat <<EOF
 [All repositories]
 EOF
-	eval echo `grep -e '^[[:space:]]\+\(https\?\|ftp\)://.\+/' $0 | sed -e 's/ || return 1$//;s/^[[:space:]]\+//'` | tr ' ' '\n'
+	eval echo `grep -e '^[[:space:]]\+\(https\?\|ftp\)://.\+/' ${0} | sed -e 's/ || return 1$//;s/^[[:space:]]\+//'` | tr ' ' '\n'
 }
 
 update_search_path()
@@ -944,7 +990,7 @@ search_library()
 {
 	for dir in ${prefix}/lib64 ${prefix}/lib `LANG=C ${CC:-gcc} -print-search-dirs |
 		sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs readlink -m`; do
-		[ -f ${dir}/$1 ] && echo ${dir}/$1 && return 0
+		[ -f ${dir}/${1} ] && echo ${dir}/${1} && return 0
 	done
 	return 1
 }
@@ -958,8 +1004,8 @@ search_library_dir()
 search_header()
 {
 	for dir in ${prefix}/include ${prefix}/lib/libffi-*/include /usr/local/include /opt/include /usr/include; do
-		[ -d ${dir}${2:+/$2} ] || continue
-		candidates=`find ${dir}${2:+/$2} -type f -name $1`
+		[ -d ${dir}${2:+/${2}} ] || continue
+		candidates=`find ${dir}${2:+/${2}} -type f -name ${1}`
 		[ -n "${candidates}" ] && echo "${candidates}" | head -n 1 && return 0
 	done
 	return 1
@@ -998,293 +1044,21 @@ install_prerequisites()
 
 check_archive()
 {
-	[ -f $1.tar.gz  -a -s $1.tar.gz  ] && return 0
-	[ -f $1.tar.bz2 -a -s $1.tar.bz2 ] && return 0
-	[ -f $1.tar.xz  -a -s $1.tar.xz  ] && return 0
-	[ -f $1.zip     -a -s $1.zip     ] && return 0
+	[ -f ${1}.tar.gz  -a -s ${1}.tar.gz  ] && return 0
+	[ -f ${1}.tar.bz2 -a -s ${1}.tar.bz2 ] && return 0
+	[ -f ${1}.tar.xz  -a -s ${1}.tar.xz  ] && return 0
+	[ -f ${1}.zip     -a -s ${1}.zip     ] && return 0
 	return 1
 }
 
 unpack_archive()
 {
-	[ -d $1 ] && return 0
-	[ -f $1.tar.gz  -a -s $1.tar.gz  ] && tar xzvf $1.tar.gz  --no-same-owner --no-same-permissions -C $2 && return 0
-	[ -f $1.tar.bz2 -a -s $1.tar.bz2 ] && tar xjvf $1.tar.bz2 --no-same-owner --no-same-permissions -C $2 && return 0
-	[ -f $1.tar.xz  -a -s $1.tar.xz  ] && tar xJvf $1.tar.xz  --no-same-owner --no-same-permissions -C $2 && return 0
-	[ -f $1.zip     -a -s $1.zip     ] && unzip -d $2 $1.zip && return 0
+	[ -d ${1} ] && return 0
+	[ -f ${1}.tar.gz  -a -s ${1}.tar.gz  ] && tar xzvf ${1}.tar.gz  --no-same-owner --no-same-permissions -C ${2} && return 0
+	[ -f ${1}.tar.bz2 -a -s ${1}.tar.bz2 ] && tar xjvf ${1}.tar.bz2 --no-same-owner --no-same-permissions -C ${2} && return 0
+	[ -f ${1}.tar.xz  -a -s ${1}.tar.xz  ] && tar xJvf ${1}.tar.xz  --no-same-owner --no-same-permissions -C ${2} && return 0
+	[ -f ${1}.zip     -a -s ${1}.zip     ] && unzip -d ${2} ${1}.zip && return 0
 	return 1
-}
-
-fetch_pkg_config_source()
-{
-	mkdir -p ${pkg_config_src_base}
-	check_archive ${pkg_config_org_src_dir} ||
-		wget --no-check-certificate -O ${pkg_config_org_src_dir}.tar.gz \
-			https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return 1
-}
-
-fetch_libXpm_source()
-{
-	mkdir -p ${libXpm_src_base}
-	check_archive ${libXpm_org_src_dir} ||
-		wget --no-check-certificate -O ${libXpm_org_src_dir}.tar.bz2 \
-			https://www.x.org/releases/individual/lib/${libXpm_name}.tar.bz2 || return 1
-}
-
-fetch_glib_source()
-{
-	mkdir -p ${glib_src_base}
-	check_archive ${glib_org_src_dir} ||
-		wget -O ${glib_org_src_dir}.tar.xz \
-			http://ftp.gnome.org/pub/gnome/sources/glib/`echo ${glib_ver} | cut -f-2 -d.`/${glib_name}.tar.xz || return 1
-}
-
-fetch_cairo_source()
-{
-	mkdir -p ${cairo_src_base}
-	check_archive ${cairo_org_src_dir} ||
-		wget --no-check-certificate -O ${cairo_org_src_dir}.tar.xz \
-			https://www.cairographics.org/releases/${cairo_name}.tar.xz || return 1
-}
-
-fetch_pixman_source()
-{
-	mkdir -p ${pixman_src_base}
-	check_archive ${pixman_org_src_dir} ||
-		wget --no-check-certificate -O ${pixman_org_src_dir}.tar.gz \
-			https://www.cairographics.org/releases/${pixman_name}.tar.gz || return 1
-}
-
-fetch_pango_source()
-{
-	mkdir -p ${pango_src_base}
-	check_archive ${pango_org_src_dir} ||
-		wget -O ${pango_org_src_dir}.tar.xz \
-			http://ftp.gnome.org/pub/gnome/sources/pango/`echo ${pango_ver} | cut -f-2 -d.`/${pango_name}.tar.xz || return 1
-}
-
-fetch_gdk_pixbuf_source()
-{
-	mkdir -p ${gdk_pixbuf_src_base}
-	check_archive ${gdk_pixbuf_org_src_dir} ||
-		wget -O ${gdk_pixbuf_org_src_dir}.tar.xz \
-			http://ftp.gnome.org/pub/gnome/sources/gdk-pixbuf/`echo ${gdk_pixbuf_ver} | cut -f-2 -d.`/${gdk_pixbuf_name}.tar.xz || return 1
-}
-
-fetch_atk_source()
-{
-	mkdir -p ${atk_src_base}
-	check_archive ${atk_org_src_dir} ||
-		wget -O ${atk_org_src_dir}.tar.xz \
-			http://ftp.gnome.org/pub/gnome/sources/atk/`echo ${atk_ver} | cut -f-2 -d.`/${atk_name}.tar.xz || return 1
-}
-
-fetch_gobject_introspection_source()
-{
-	mkdir -p ${gobject_introspection_src_base}
-	check_archive ${gobject_introspection_org_src_dir} ||
-		wget -O ${gobject_introspection_org_src_dir}.tar.xz \
-			http://ftp.gnome.org/pub/gnome/sources/gobject-introspection/`echo ${gobject_introspection_ver} | cut -f-2 -d.`/${gobject_introspection_name}.tar.xz || return 1
-}
-
-fetch_inputproto_source()
-{
-	mkdir -p ${inputproto_src_base}
-	check_archive ${inputproto_org_src_dir} ||
-		wget --no-check-certificate -O ${inputproto_org_src_dir}.tar.bz2 \
-			https://www.x.org/releases/individual/proto/${inputproto_name}.tar.bz2 || return 1
-}
-
-fetch_xtrans_source()
-{
-	mkdir -p ${xtrans_src_base}
-	check_archive ${xtrans_org_src_dir} ||
-		wget --no-check-certificate -O ${xtrans_org_src_dir}.tar.bz2 \
-			https://www.x.org/releases/individual/lib/${xtrans_name}.tar.bz2 || return 1
-}
-
-fetch_libX11_source()
-{
-	mkdir -p ${libX11_src_base}
-	check_archive ${libX11_org_src_dir} ||
-		wget --no-check-certificate -O ${libX11_org_src_dir}.tar.bz2 \
-			https://www.x.org/releases/individual/lib/${libX11_name}.tar.bz2 || return 1
-}
-
-fetch_libxcb_source()
-{
-	mkdir -p ${libxcb_src_base}
-	check_archive ${libxcb_org_src_dir} ||
-		wget --no-check-certificate -O ${libxcb_org_src_dir}.tar.bz2 \
-			https://www.x.org/releases/individual/xcb/${libxcb_name}.tar.bz2 || return 1
-}
-
-fetch_xcb_proto_source()
-{
-	mkdir -p ${xcb_proto_src_base}
-	check_archive ${xcb_proto_org_src_dir} ||
-		wget --no-check-certificate -O ${xcb_proto_org_src_dir}.tar.bz2 \
-			https://www.x.org/releases/individual/xcb/${xcb_proto_name}.tar.bz2 || return 1
-}
-
-fetch_xextproto_source()
-{
-	mkdir -p ${xextproto_src_base}
-	check_archive ${xextproto_org_src_dir} ||
-		wget --no-check-certificate -O ${xextproto_org_src_dir}.tar.bz2 \
-			https://www.x.org/releases/individual/proto/${xextproto_name}.tar.bz2 || return 1
-}
-
-fetch_libXext_source()
-{
-	mkdir -p ${libXext_src_base}
-	check_archive ${libXext_org_src_dir} ||
-		wget -O ${libXext_org_src_dir}.tar.bz2 \
-			ftp://ftp.freedesktop.org/pub/individual/lib/${libXext_name}.tar.bz2 || return 1
-}
-
-fetch_fixesproto_source()
-{
-	mkdir -p ${fixesproto_src_base}
-	check_archive ${fixesproto_org_src_dir} ||
-		wget --no-check-certificate -O ${fixesproto_org_src_dir}.tar.bz2 \
-			https://www.x.org/releases/individual/proto/${fixesproto_name}.tar.bz2 || return 1
-}
-
-fetch_libXfixes_source()
-{
-	mkdir -p ${libXfixes_src_base}
-	check_archive ${libXfixes_org_src_dir} ||
-		wget -O ${libXfixes_org_src_dir}.tar.bz2 \
-			ftp://ftp.freedesktop.org/pub/individual/lib/${libXfixes_name}.tar.bz2 || return 1
-}
-
-fetch_damageproto_source()
-{
-	mkdir -p ${damageproto_src_base}
-	check_archive ${damageproto_org_src_dir} ||
-		wget --no-check-certificate -O ${damageproto_org_src_dir}.tar.bz2 \
-			https://www.x.org/releases/individual/proto/${damageproto_name}.tar.bz2 || return 1
-}
-
-fetch_libXdamage_source()
-{
-	mkdir -p ${libXdamage_src_base}
-	check_archive ${libXdamage_org_src_dir} ||
-		wget -O ${libXdamage_org_src_dir}.tar.bz2 \
-			ftp://ftp.freedesktop.org/pub/individual/lib/${libXdamage_name}.tar.bz2 || return 1
-}
-
-fetch_libXt_source()
-{
-	mkdir -p ${libXt_src_base}
-	check_archive ${libXt_org_src_dir} ||
-		wget --no-check-certificate -O ${libXt_org_src_dir}.tar.bz2 \
-			https://www.x.org/releases/individual/lib/${libXt_name}.tar.bz2 || return 1
-}
-
-fetch_xproto_source()
-{
-	mkdir -p ${xproto_src_base}
-	check_archive ${xproto_org_src_dir} ||
-		wget -O ${xproto_org_src_dir}.tar.bz2 \
-			ftp://ftp.freedesktop.org/pub/individual/proto/${xproto_name}.tar.bz2 || return 1
-}
-
-fetch_kbproto_source()
-{
-	mkdir -p ${kbproto_src_base}
-	check_archive ${kbproto_org_src_dir} ||
-		wget -O ${kbproto_org_src_dir}.tar.bz2 \
-			ftp://ftp.freedesktop.org/pub/individual/proto/${kbproto_name}.tar.bz2 || return 1
-}
-
-fetch_glproto_source()
-{
-	mkdir -p ${glproto_src_base}
-	check_archive ${glproto_org_src_dir} ||
-		wget -O ${glproto_org_src_dir}.tar.bz2 \
-			ftp://ftp.freedesktop.org/pub/individual/proto/${glproto_name}.tar.bz2 || return 1
-}
-
-fetch_libpciaccess_source()
-{
-	mkdir -p ${libpciaccess_src_base}
-	check_archive ${libpciaccess_org_src_dir} ||
-		wget -O ${libpciaccess_org_src_dir}.tar.bz2 \
-			ftp://ftp.freedesktop.org/pub/individual/lib/${libpciaccess_name}.tar.bz2 || return 1
-}
-
-fetch_libdrm_source()
-{
-	mkdir -p ${libdrm_src_base}
-	check_archive ${libdrm_org_src_dir} ||
-		wget --no-check-certificate -O ${libdrm_org_src_dir}.tar.bz2 \
-			https://dri.freedesktop.org/libdrm/${libdrm_name}.tar.bz2 || return 1
-}
-
-fetch_dri2proto_source()
-{
-	mkdir -p ${dri2proto_src_base}
-	check_archive ${dri2proto_org_src_dir} ||
-		wget -O ${dri2proto_org_src_dir}.tar.bz2 \
-			ftp://ftp.freedesktop.org/pub/individual/proto/${dri2proto_name}.tar.bz2 || return 1
-}
-
-fetch_dri3proto_source()
-{
-	mkdir -p ${dri3proto_src_base}
-	check_archive ${dri3proto_org_src_dir} ||
-		wget -O ${dri3proto_org_src_dir}.tar.bz2 \
-			ftp://ftp.freedesktop.org/pub/individual/proto/${dri3proto_name}.tar.bz2 || return 1
-}
-
-fetch_presentproto_source()
-{
-	mkdir -p ${presentproto_src_base}
-	check_archive ${presentproto_org_src_dir} ||
-		wget -O ${presentproto_org_src_dir}.tar.bz2 \
-			ftp://ftp.freedesktop.org/pub/individual/proto/${presentproto_name}.tar.bz2 || return 1
-}
-
-fetch_libxshmfence_source()
-{
-	mkdir -p ${libxshmfence_src_base}
-	check_archive ${libxshmfence_org_src_dir} ||
-		wget -O ${libxshmfence_org_src_dir}.tar.bz2 \
-			ftp://ftp.freedesktop.org/pub/individual/lib/${libxshmfence_name}.tar.bz2 || return 1
-}
-
-fetch_mesa_source()
-{
-	mkdir -p ${mesa_src_base}
-	check_archive ${mesa_org_src_dir} ||
-		wget -O ${mesa_org_src_dir}.tar.xz \
-			ftp://ftp.freedesktop.org/pub/mesa/${mesa_ver}/${mesa_name}.tar.xz || return 1
-}
-
-fetch_libepoxy_source()
-{
-	mkdir -p ${libepoxy_src_base}
-	check_archive ${libepoxy_org_src_dir} ||
-		wget --no-check-certificate -O ${libepoxy_org_src_dir}.tar.bz2 \
-			https://github.com/anholt/libepoxy/releases/download/v${libepoxy_ver}/${libepoxy_name}.tar.bz2 || return 1
-}
-
-fetch_gtk_source()
-{
-	mkdir -p ${gtk_src_base}
-	check_archive ${gtk_org_src_dir} ||
-		wget -O ${gtk_org_src_dir}.tar.xz \
-			http://ftp.gnome.org/pub/gnome/sources/gtk+/`echo ${gtk_ver} | cut -f-2 -d.`/${gtk_name}.tar.xz || return 1
-}
-
-fetch_webkitgtk_source()
-{
-	mkdir -p ${webkitgtk_src_base}
-	check_archive ${webkitgtk_org_src_dir} ||
-		wget --no-check-certificate -O ${webkitgtk_org_src_dir}.tar.xz \
-			https://webkitgtk.org/releases/${webkitgtk_name}.tar.xz || return 1
 }
 
 install_native_tar()
@@ -1366,7 +1140,7 @@ install_native_pkg_config()
 {
 	[ -x ${prefix}/bin/pkg-config -a "${force_install}" != yes ] && return 0
 	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
-	fetch_pkg_config_source || return 1
+	fetch pkg-config || return 1
 	unpack_archive ${pkg_config_org_src_dir} ${pkg_config_src_base} || return 1
 	[ -f ${pkg_config_org_src_dir}/Makefile ] ||
 		(cd ${pkg_config_org_src_dir}
@@ -1808,7 +1582,7 @@ install_native_libXpm()
 	search_header Xproto.h X11 > /dev/null || install_native_xproto || return 1
 	search_header XKBproto.h X11 > /dev/null || install_native_kbproto || return 1
 	search_header Xlib.h X11 > /dev/null || install_native_libX11 || return 1
-	fetch_libXpm_source || return 1
+	fetch libXpm || return 1
 	unpack_archive ${libXpm_org_src_dir} ${libXpm_src_base} || return 1
 	[ -f ${libXpm_org_src_dir}/Makefile ] ||
 		(cd ${libXpm_org_src_dir}
@@ -1853,7 +1627,7 @@ install_native_glib()
 	[ -f ${prefix}/include/glib-2.0/glib.h -a "${force_install}" != yes ] && return 0
 	search_header ffi.h > /dev/null || install_native_libffi || return 1
 	search_header pcre2.h > /dev/null || install_native_pcre2 || return 1
-	fetch_glib_source || return 1
+	fetch glib || return 1
 	unpack_archive ${glib_org_src_dir} ${glib_src_base} || return 1
 	[ -f ${glib_org_src_dir}/Makefile ] ||
 		(cd ${glib_org_src_dir}
@@ -1868,7 +1642,7 @@ install_native_glib()
 install_native_cairo()
 {
 	[ -f ${prefix}/include/cairo/cairo.h -a "${force_install}" != yes ] && return 0
-	fetch_cairo_source || return 1
+	fetch cairo || return 1
 	unpack_archive ${cairo_org_src_dir} ${cairo_src_base} || return 1
 	[ -f ${cairo_org_src_dir}/Makefile ] ||
 		(cd ${cairo_org_src_dir}
@@ -1881,7 +1655,7 @@ install_native_cairo()
 install_native_pixman()
 {
 	[ -f ${prefix}/include/pixman-1.0/pixman.h -a "${force_install}" != yes ] && return 0
-	fetch_pixman_source || return 1
+	fetch pixman || return 1
 	unpack_archive ${pixman_org_src_dir} ${pixman_src_base} || return 1
 	[ -f ${pixman_org_src_dir}/Makefile ] ||
 		(cd ${pixman_org_src_dir}
@@ -1896,7 +1670,7 @@ install_native_pango()
 	[ -f ${prefix}/include/pango-1.0/pango/pango.h -a "${force_install}" != yes ] && return 0
 	search_header cairo.h cairo > /dev/null || install_native_cairo || return 1
 	search_header pixman.h pixman-1.0 > /dev/null || install_native_pixman || return 1
-	fetch_pango_source || return 1
+	fetch pango || return 1
 	unpack_archive ${pango_org_src_dir} ${pango_src_base} || return 1
 	[ -f ${pango_org_src_dir}/Makefile ] ||
 		(cd ${pango_org_src_dir}
@@ -1911,7 +1685,7 @@ install_native_gdk_pixbuf()
 {
 	[ -f ${prefix}/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h -a "${force_install}" != yes ] && return 0
 	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
-	fetch_gdk_pixbuf_source || return 1
+	fetch gdk-pixbuf || return 1
 	unpack_archive ${gdk_pixbuf_org_src_dir} ${gdk_pixbuf_src_base} || return 1
 	[ -f ${gdk_pixbuf_org_src_dir}/Makefile ] ||
 		(cd ${gdk_pixbuf_org_src_dir}
@@ -1927,7 +1701,7 @@ install_native_atk()
 {
 	[ -f ${prefix}/include/atk-1.0/atk/atk.h -a "${force_install}" != yes ] && return 0
 	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
-	fetch_atk_source || return 1
+	fetch atk || return 1
 	unpack_archive ${atk_org_src_dir} ${atk_src_base} || return 1
 	[ -f ${atk_org_src_dir}/Makefile ] ||
 		(cd ${atk_org_src_dir}
@@ -1943,7 +1717,7 @@ install_native_gobject_introspection()
 {
 	[ -d ${prefix}/include/gobject-introspection-1.0 -a "${force_install}" != yes ] && return 0
 	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
-	fetch_gobject_introspection_source || return 1
+	fetch gobject-introspection || return 1
 	unpack_archive ${gobject_introspection_org_src_dir} ${gobject_introspection_src_base} || return 1
 	[ -f ${gobject_introspection_org_src_dir}/Makefile ] ||
 		(cd ${gobject_introspection_org_src_dir}
@@ -1958,7 +1732,7 @@ install_native_gobject_introspection()
 install_native_inputproto()
 {
 	[ -d ${prefix}/include/X11/extensions/XI.h -a "${force_install}" != yes ] && return 0
-	fetch_inputproto_source || return 1
+	fetch inputproto || return 1
 	unpack_archive ${inputproto_org_src_dir} ${inputproto_src_base} || return 1
 	[ -f ${inputproto_org_src_dir}/Makefile ] ||
 		(cd ${inputproto_org_src_dir}
@@ -1971,7 +1745,7 @@ install_native_inputproto()
 install_native_xtrans()
 {
 	[ -f ${prefix}/include/X11/Xtrans/Xtrans.h -a "${force_install}" != yes ] && return 0
-	fetch_xtrans_source || return 1
+	fetch xtrans || return 1
 	unpack_archive ${xtrans_org_src_dir} ${xtrans_src_base} || return 1
 	[ -f ${xtrans_org_src_dir}/Makefile ] ||
 		(cd ${xtrans_org_src_dir}
@@ -1988,7 +1762,7 @@ install_native_libX11()
 	search_header Xtrans.h X11/Xtrans > /dev/null || install_native_xtrans || return 1
 	search_header lbx.h X11/extensions > /dev/null || install_native_xextproto || return 1
 	search_header xcb.h xcb > /dev/null || install_native_libxcb || return 1
-	fetch_libX11_source || return 1
+	fetch libX11 || return 1
 	unpack_archive ${libX11_org_src_dir} ${libX11_src_base} || return 1
 	[ -f ${libX11_org_src_dir}/Makefile ] ||
 		(cd ${libX11_org_src_dir}
@@ -2002,7 +1776,7 @@ install_native_libxcb()
 {
 	[ -f ${prefix}/include/xcb/xcb.h -a "${force_install}" != yes ] && return 0
 	[ -d ${prefix}/share/xcb ] || install_native_xcb_proto || return 1
-	fetch_libxcb_source || return 1
+	fetch libxcb || return 1
 	unpack_archive ${libxcb_org_src_dir} ${libxcb_src_base} || return 1
 	[ -f ${libxcb_org_src_dir}/Makefile ] ||
 		(cd ${libxcb_org_src_dir}
@@ -2015,7 +1789,7 @@ install_native_libxcb()
 install_native_xcb_proto()
 {
 	[ -d ${prefix}/share/xcb -a "${force_install}" != yes ] && return 0
-	fetch_xcb_proto_source || return 1
+	fetch xcb-proto || return 1
 	unpack_archive ${xcb_proto_org_src_dir} ${xcb_proto_src_base} || return 1
 	[ -f ${xcb_proto_org_src_dir}/Makefile ] ||
 		(cd ${xcb_proto_org_src_dir}
@@ -2028,7 +1802,7 @@ install_native_xcb_proto()
 install_native_xextproto()
 {
 	[ -f ${prefix}/include/X11/extensions/lbx.h -a "${force_install}" != yes ] && return 0
-	fetch_xextproto_source || return 1
+	fetch xextproto || return 1
 	unpack_archive ${xextproto_org_src_dir} ${xextproto_src_base} || return 1
 	[ -f ${xextproto_org_src_dir}/Makefile ] ||
 		(cd ${xextproto_org_src_dir}
@@ -2042,7 +1816,7 @@ install_native_libXext()
 {
 	[ -f ${prefix}/include/X11/extensions/Xext.h -a "${force_install}" != yes ] && return 0
 	search_header lbx.h X11/extensions > /dev/null || install_native_xextproto || return 1
-	fetch_libXext_source || return 1
+	fetch libXext || return 1
 	unpack_archive ${libXext_org_src_dir} ${libXext_src_base} || return 1
 	[ -f ${libXext_org_src_dir}/Makefile ] ||
 		(cd ${libXext_org_src_dir}
@@ -2055,7 +1829,7 @@ install_native_libXext()
 install_native_fixesproto()
 {
 	[ -f ${prefix}/include/X11/extensions/xfixesproto.h -a "${force_install}" != yes ] && return 0
-	fetch_fixesproto_source || return 1
+	fetch fixesproto || return 1
 	unpack_archive ${fixesproto_org_src_dir} ${fixesproto_src_base} || return 1
 	[ -f ${fixesproto_org_src_dir}/Makefile ] ||
 		(cd ${fixesproto_org_src_dir}
@@ -2069,7 +1843,7 @@ install_native_libXfixes()
 {
 	[ -f ${prefix}/include/X11/extensions/Xfixes.h -a "${force_install}" != yes ] && return 0
 	search_header xfixesproto.h X11/extensions > /dev/null || install_native_fixesproto || return 1
-	fetch_libXfixes_source || return 1
+	fetch libXfixes || return 1
 	unpack_archive ${libXfixes_org_src_dir} ${libXfixes_src_base} || return 1
 	[ -f ${libXfixes_org_src_dir}/Makefile ] ||
 		(cd ${libXfixes_org_src_dir}
@@ -2082,7 +1856,7 @@ install_native_libXfixes()
 install_native_damageproto()
 {
 	[ -f ${prefix}/include/X11/extensions/damageproto.h -a "${force_install}" != yes ] && return 0
-	fetch_damageproto_source || return 1
+	fetch damageproto || return 1
 	unpack_archive ${damageproto_org_src_dir} ${damageproto_src_base} || return 1
 	[ -f ${damageproto_org_src_dir}/Makefile ] ||
 		(cd ${damageproto_org_src_dir}
@@ -2097,7 +1871,7 @@ install_native_libXdamage()
 	[ -f ${prefix}/include/X11/extensions/Xdamage.h -a "${force_install}" != yes ] && return 0
 	search_header damageproto.h X11/extensions > /dev/null || install_native_damageproto || return 1
 	search_header Xfixes.h X11/extensions > /dev/null || install_native_libXfixes || return 1
-	fetch_libXdamage_source || return 1
+	fetch libXdamage || return 1
 	unpack_archive ${libXdamage_org_src_dir} ${libXdamage_src_base} || return 1
 	[ -f ${libXdamage_org_src_dir}/Makefile ] ||
 		(cd ${libXdamage_org_src_dir}
@@ -2110,7 +1884,7 @@ install_native_libXdamage()
 install_native_libXt()
 {
 	[ -f ${prefix}/include/X11/Core.h -a "${force_install}" != yes ] && return 0
-	fetch_libXt_source || return 1
+	fetch libXt || return 1
 	unpack_archive ${libXt_org_src_dir} ${libXt_src_base} || return 1
 	[ -f ${libXt_org_src_dir}/Makefile ] ||
 		(cd ${libXt_org_src_dir}
@@ -2123,7 +1897,7 @@ install_native_libXt()
 install_native_xproto()
 {
 	[ -f ${prefix}/include/X11/Xproto.h -a "${force_install}" != yes ] && return 0
-	fetch_xproto_source || return 1
+	fetch xproto || return 1
 	unpack_archive ${xproto_org_src_dir} ${xproto_src_base} || return 1
 	[ -f ${xproto_org_src_dir}/Makefile ] ||
 		(cd ${xproto_org_src_dir}
@@ -2135,7 +1909,7 @@ install_native_xproto()
 install_native_kbproto()
 {
 	[ -f ${prefix}/include/X11/XKBproto.h -a "${force_install}" != yes ] && return 0
-	fetch_kbproto_source || return 1
+	fetch kbproto || return 1
 	unpack_archive ${kbproto_org_src_dir} ${kbproto_src_base} || return 1
 	[ -f ${kbproto_org_src_dir}/Makefile ] ||
 		(cd ${kbproto_org_src_dir}
@@ -2147,7 +1921,7 @@ install_native_kbproto()
 install_native_glproto()
 {
 	[ -f ${prefix}/include/GL/glxproto.h -a "${force_install}" != yes ] && return 0
-	fetch_glproto_source || return 1
+	fetch glproto || return 1
 	unpack_archive ${glproto_org_src_dir} ${glproto_src_base} || return 1
 	[ -f ${glproto_org_src_dir}/Makefile ] ||
 		(cd ${glproto_org_src_dir}
@@ -2159,7 +1933,7 @@ install_native_glproto()
 install_native_libpciaccess()
 {
 	[ -f ${prefix}/include/pciaccess.h -a "${force_install}" != yes ] && return 0
-	fetch_libpciaccess_source || return 1
+	fetch libpciaccess || return 1
 	unpack_archive ${libpciaccess_org_src_dir} ${libpciaccess_src_base} || return 1
 	[ -f ${libpciaccess_org_src_dir}/Makefile ] ||
 		(cd ${libpciaccess_org_src_dir}
@@ -2173,7 +1947,7 @@ install_native_libdrm()
 {
 	[ -f ${prefix}/include/xf86drm.h -a "${force_install}" != yes ] && return 0
 	search_header pciaccess.h > /dev/null || install_native_libpciaccess || return 1
-	fetch_libdrm_source || return 1
+	fetch libdrm || return 1
 	unpack_archive ${libdrm_org_src_dir} ${libdrm_src_base} || return 1
 	[ -f ${libdrm_org_src_dir}/Makefile ] ||
 		(cd ${libdrm_org_src_dir}
@@ -2187,7 +1961,7 @@ install_native_libdrm()
 install_native_dri2proto()
 {
 	[ -f ${prefix}/include/X11/extensions/dri2proto.h -a "${force_install}" != yes ] && return 0
-	fetch_dri2proto_source || return 1
+	fetch dri2proto || return 1
 	unpack_archive ${dri2proto_org_src_dir} ${dri2proto_src_base} || return 1
 	[ -f ${dri2proto_org_src_dir}/Makefile ] ||
 		(cd ${dri2proto_org_src_dir}
@@ -2199,7 +1973,7 @@ install_native_dri2proto()
 install_native_dri3proto()
 {
 	[ -f ${prefix}/include/X11/extensions/dri3proto.h -a "${force_install}" != yes ] && return 0
-	fetch_dri3proto_source || return 1
+	fetch dri3proto || return 1
 	unpack_archive ${dri3proto_org_src_dir} ${dri3proto_src_base} || return 1
 	[ -f ${dri3proto_org_src_dir}/Makefile ] ||
 		(cd ${dri3proto_org_src_dir}
@@ -2211,7 +1985,7 @@ install_native_dri3proto()
 install_native_presentproto()
 {
 	[ -f ${prefix}/include/X11/extensions/presentproto.h -a "${force_install}" != yes ] && return 0
-	fetch_presentproto_source || return 1
+	fetch presentproto || return 1
 	unpack_archive ${presentproto_org_src_dir} ${presentproto_src_base} || return 1
 	[ -f ${presentproto_org_src_dir}/Makefile ] ||
 		(cd ${presentproto_org_src_dir}
@@ -2223,7 +1997,7 @@ install_native_presentproto()
 install_native_libxshmfence()
 {
 	[ -f ${prefix}/include/X11/xshmfence.h -a "${force_install}" != yes ] && return 0
-	fetch_libxshmfence_source || return 1
+	fetch libxshmfence || return 1
 	unpack_archive ${libxshmfence_org_src_dir} ${libxshmfence_src_base} || return 1
 	[ -f ${libxshmfence_org_src_dir}/Makefile ] ||
 		(cd ${libxshmfence_org_src_dir}
@@ -2247,7 +2021,7 @@ install_native_mesa()
 	search_header Xext.h X11/extensions > /dev/null || install_native_libXext || return 1
 	search_header Xdamage.h X11/extensions > /dev/null || install_native_libXdamage || return 1
 	search_header Xlib.h X11 > /dev/null || install_native_libX11 || return 1
-	fetch_mesa_source || return 1
+	fetch mesa || return 1
 	unpack_archive ${mesa_org_src_dir} ${mesa_src_base} || return 1
 	[ -f ${mesa_org_src_dir}/Makefile ] ||
 		(cd ${mesa_org_src_dir}
@@ -2261,7 +2035,7 @@ install_native_libepoxy()
 {
 	[ -f ${prefix}/include/epoxy/egl.h -a "${force_install}" != yes ] && return 0
 	search_header Core.h X11 > /dev/null || install_native_libXt || return 1
-	fetch_libepoxy_source || return 1
+	fetch libepoxy || return 1
 	unpack_archive ${libepoxy_org_src_dir} ${libepoxy_src_base} || return 1
 	[ -f ${libepoxy_org_src_dir}/Makefile ] ||
 		(cd ${libepoxy_org_src_dir}
@@ -2280,7 +2054,7 @@ install_native_gtk()
 	search_header atk.h atk-1.0/atk > /dev/null || install_native_atk || return 1
 	search_header giversionmacros.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return 1
 	search_header egl.h epoxy > /dev/null || install_native_libepoxy || return 1
-	fetch_gtk_source || return 1
+	fetch gtk || return 1
 	unpack_archive ${gtk_org_src_dir} ${gtk_src_base} || return 1
 	[ -f ${gtk_org_src_dir}/Makefile ] ||
 		(cd ${gtk_org_src_dir}
@@ -2302,7 +2076,7 @@ install_native_webkitgtk()
 	search_header jpeglib.h > /dev/null || install_native_libjpeg || return 1
 	search_header gif_lib.h > /dev/null || install_native_giflib || return 1
 	search_header decode.h webp > /dev/null || install_native_libwebp || return 1
-	fetch_webkitgtk_source || return 1
+	fetch webkitgtk || return 1
 	unpack_archive ${webkitgtk_org_src_dir} ${webkitgtk_src_base} || return 1
 	mkdir -p ${webkitgtk_bld_dir_ntv}
 	[ -f ${webkitgtk_bld_dir_ntv}/Makefile ] ||
@@ -3007,10 +2781,10 @@ full_native()
 		s/install_native_libepoxy//;
 		s/install_native_gtk//;
 		s/install_native_webkitgtk//;
-		p};d' $0`; do
+		p};d' ${0}`; do
 		$f \
-			&& echo \'$f\' succeeded. | logger -p user.notice -t `basename $0` \
-			|| echo \'$f\' failed.    | logger -p user.notice -t `basename $0`
+			&& echo \'$f\' succeeded. | logger -p user.notice -t `basename ${0}` \
+			|| echo \'$f\' failed.    | logger -p user.notice -t `basename ${0}`
 	done
 	return 0
 }
@@ -3200,8 +2974,8 @@ full_cross()
 {
 	for f in install_cross_binutils install_cross_gcc install_cross_gdb; do
 		$f \
-			&& echo \'$f\' succeeded. | logger -p user.notice -t `basename $0` \
-			|| echo \'$f\' failed.    | logger -p user.notice -t `basename $0`
+			&& echo \'$f\' succeeded. | logger -p user.notice -t `basename ${0}` \
+			|| echo \'$f\' failed.    | logger -p user.notice -t `basename ${0}`
 	done
 	return 0
 }
@@ -3290,8 +3064,8 @@ full_mingw_w64()
 {
 	for f in install_mingw_w64_binutils install_mingw_w64_gcc; do
 		$f \
-			&& echo \'$f\' succeeded. | logger -p user.notice -t `basename $0` \
-			|| echo \'$f\' failed.    | logger -p user.notice -t `basename $0`
+			&& echo \'$f\' succeeded. | logger -p user.notice -t `basename ${0}` \
+			|| echo \'$f\' failed.    | logger -p user.notice -t `basename ${0}`
 	done
 	return 0
 }
@@ -3609,10 +3383,10 @@ install_crossed_native_libtiff()
 
 full_crossed_native()
 {
-	for f in `sed -e '/^install_crossed_native_[_[:alnum:]]\+()$/{s/()$//;p};d' $0`; do
+	for f in `sed -e '/^install_crossed_native_[_[:alnum:]]\+()$/{s/()$//;p};d' ${0}`; do
 		$f \
-			&& echo \'$f\' succeeded.  | logger -p user.notice -t `basename $0` \
-			|| echo \'$f\' failed.     | logger -p user.notice -t `basename $0`
+			&& echo \'$f\' succeeded.  | logger -p user.notice -t `basename ${0}` \
+			|| echo \'$f\' failed.     | logger -p user.notice -t `basename ${0}`
 	done
 	return 0
 }
@@ -3632,14 +3406,14 @@ set_variables
 
 count=0
 while [ $# -gt 0 ]; do
-	case $1 in
-	debug) $1 `[ -n "${BASH}" ] && echo shell || echo $1`;;
+	case ${1} in
+	debug) ${1} `[ -n "${BASH}" ] && echo shell || echo ${1}`;;
 	shell) [ -n "${BASH}" ] \
 				&& set placeholder debug \
-				|| exec bash --noprofile --norc --posix -e $0 -p ${prefix} -t ${target} -j ${jobs} shell
+				|| exec bash --noprofile --norc --posix -e ${0} -p ${prefix} -t ${target} -j ${jobs} shell
 		   count=`expr ${count} + 1`;;
-	*=*)   eval export $1; set_variables;;
-	*)     eval $1 || exit 1; count=`expr ${count} + 1`;;
+	*=*)   eval export ${1}; set_variables;;
+	*)     eval ${1} || exit 1; count=`expr ${count} + 1`;;
 	esac
 	shift
 done
