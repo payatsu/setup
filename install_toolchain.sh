@@ -431,9 +431,213 @@ auto()
 fetch()
 # Fetch all source files.
 {
-	for fetch_command in `grep -e '^fetch_.\+_source()$' $0 | sed -e 's/()$//'`; do
-		${fetch_command} || return 1
-	done
+	_1=`echo ${1} | tr - _`
+	[ -z "${_1}" ] || eval mkdir -p \${${_1}_src_base} || return 1
+	case ${1} in
+	'')
+# TODO 直す。
+		for fetch_command in `grep -e '^fetch_.\+_source()$' $0 | sed -e 's/()$//'`; do
+			${fetch_command} || return 1
+		done;;
+	tar|gzip|wget|texinfo|coreutils|bison|m4|autoconf|automake|libtool|sed|gawk|\
+	make|binutils|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|grep|global|\
+	diffutils|patch|findutils|screen|bash|gettext)
+		eval check_archive \${${_1}_org_src_dir} ||
+			for compress_format in xz bz2 gz; do
+				eval wget -O \${${_1}_org_src_dir}.tar.${compress_format} \
+					http://ftp.gnu.org/gnu/${_1}/\${${_1}_name}.tar.${compress_format} \
+					&& break \
+					|| eval rm \${${_1}_org_src_dir}.tar.${compress_format}
+			done || return 1;;
+	xz)
+		check_archive ${xz_org_src_dir} ||
+			wget -O ${xz_org_src_dir}.tar.bz2 \
+				http://tukaani.org/xz/${xz_name}.tar.bz2 || return 1;;
+	bzip2)
+		check_archive ${bzip2_org_src_dir} ||
+			wget -O ${bzip2_org_src_dir}.tar.gz \
+				http://www.bzip.org/${bzip2_ver}/${bzip2_name}.tar.gz || return 1;;
+	flex)
+		check_archive ${flex_org_src_dir} ||
+			wget --trust-server-names --no-check-certificate -O ${flex_org_src_dir}.tar.xz \
+				https://sourceforge.net/projects/flex/files/${flex_name}.tar.xz/download || return 1;;
+	linux)
+		check_archive ${linux_org_src_dir} ||
+			wget --no-check-certificate -O ${linux_org_src_dir}.tar.xz \
+				https://www.kernel.org/pub/linux/kernel/${kernel_major_ver}/${linux_name}.tar.xz || return 1;;
+	gcc)
+		check_archive ${gcc_org_src_dir} ||
+			wget -O ${gcc_org_src_dir}.tar.bz2 \
+				http://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.bz2 || return 1;;
+	zlib)
+		check_archive ${zlib_org_src_dir} ||
+			wget -O ${zlib_org_src_dir}.tar.xz \
+				http://zlib.net/${zlib_name}.tar.xz || return 1;;
+	libpng)
+		check_archive ${libpng_org_src_dir} ||
+			wget --trust-server-names -O ${libpng_org_src_dir}.tar.xz \
+				http://download.sourceforge.net/libpng/${libpng_name}.tar.xz || return 1;;
+	tiff)
+		check_archive ${tiff_org_src_dir} ||
+			wget -O ${tiff_org_src_dir}.tar.gz \
+				http://download.osgeo.org/libtiff/${tiff_name}.tar.gz || return 1;;
+	jpeg)
+		check_archive ${jpeg_org_src_dir} ||
+			wget -O ${jpeg_org_src_dir}.tar.gz \
+				http://www.ijg.org/files/${jpeg_name}.tar.gz || return 1;;
+	giflib)
+		check_archive ${giflib_org_src_dir} ||
+			wget --trust-server-names --no-check-certificate -O ${giflib_org_src_dir}.tar.bz2 \
+				https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1;;
+	libwebp)
+		check_archive ${libwebp_org_src_dir} ||
+			wget --no-check-certificate -O ${libwebp_org_src_dir}.tar.gz \
+				https://storage.googleapis.com/downloads.webmproject.org/releases/webp/${libwebp_name}.tar.gz || return 1;;
+	libffi)
+		check_archive ${libffi_org_src_dir} ||
+			wget -O ${libffi_org_src_dir}.tar.gz \
+				ftp://sourceware.org/pub/libffi/${libffi_name}.tar.gz || return 1;;
+	vim)
+		check_archive ${vim_org_src_dir} ||
+			wget --no-check-certificate -O ${vim_org_src_dir}.tar.gz \
+				http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return 1;;
+	ctags)
+		check_archive ${ctags_org_src_dir} ||
+			wget --trust-server-names -O ${ctags_org_src_dir}.tar.gz \
+				http://prdownloads.sourceforge.net/ctags/${ctags_name}.tar.gz || return 1;;
+	pcre2)
+		check_archive ${pcre2_org_src_dir} ||
+			wget -O ${pcre2_org_src_dir}.tar.bz2 \
+				ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/${pcre2_name}.tar.bz2 || return 1;;
+	the_silver_searcher)
+		check_archive ${the_silver_searcher_org_src_dir} ||
+			wget -O ${the_silver_searcher_org_src_dir}.tar.gz \
+				http://geoff.greer.fm/ag/releases/${the_silver_searcher_name}.tar.gz || return 1;;
+	graphviz)
+		check_archive ${graphviz_org_src_dir} ||
+			wget -O ${graphviz_org_src_dir}.tar.gz \
+				http://www.graphviz.org/pub/graphviz/stable/SOURCES/${graphviz_name}.tar.gz || return 1;;
+	doxygen)
+		check_archive ${doxygen_org_src_dir} ||
+			wget -O ${doxygen_org_src_dir}.tar.gz \
+				http://ftp.stack.nl/pub/users/dimitri/${doxygen_name}.src.tar.gz || return 1;;
+	libevent)
+		check_archive ${libevent_org_src_dir}-stable ||
+			wget --no-check-certificate -O ${libevent_org_src_dir}-stable.tar.gz \
+				https://github.com/libevent/libevent/releases/download/release-${libevent_ver}-stable/${libevent_name}-stable.tar.gz || return 1;;
+	tmux)
+		check_archive ${tmux_org_src_dir} ||
+			wget --no-check-certificate -O ${tmux_org_src_dir}.tar.gz \
+				https://github.com/tmux/tmux/releases/download/${tmux_ver}/${tmux_name}.tar.gz || return 1;;
+	zsh)
+		check_archive ${zsh_org_src_dir} ||
+			wget --trust-server-names --no-check-certificate -O ${zsh_org_src_dir}.tar.xz \
+				https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return 1;;
+	openssl)
+		check_archive ${openssl_org_src_dir} ||
+			wget --no-check-certificate -O ${openssl_org_src_dir}.tar.gz \
+				http://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return 1;;
+	openssh)
+		check_archive ${openssh_org_src_dir} ||
+			wget -O ${openssh_org_src_dir}.tar.gz \
+				http://ftp.jaist.ac.jp/pub/OpenBSD/OpenSSH/portable/${openssh_name}.tar.gz || return 1;;
+	curl)
+		check_archive ${curl_org_src_dir} ||
+			wget --no-check-certificate -O ${curl_org_src_dir}.tar.bz2 \
+				https://curl.haxx.se/download/${curl_name}.tar.bz2 || return 1;;
+	asciidoc)
+		check_archive ${asciidoc_org_src_dir} ||
+			wget --no-check-certificate -O ${asciidoc_org_src_dir}.tar.gz \
+				https://sourceforge.net/projects/asciidoc/files/asciidoc/${asciidoc_ver}/${asciidoc_name}.tar.gz/download || return 1;;
+	libxml2|libxslt)
+		eval check_archive \${${_1}_org_src_dir} ||
+			eval wget -O \${${_1}_org_src_dir}.tar.gz \
+				ftp://xmlsoft.org/${_1}/\${${_1}_name}.tar.gz || return 1;;
+	xmlto)
+		check_archive ${xmlto_org_src_dir} ||
+			wget --no-check-certificate -O ${xmlto_org_src_dir}.tar.bz2 \
+				https://fedorahosted.org/releases/x/m/xmlto/${xmlto_name}.tar.bz2 || return 1;;
+	git)
+		check_archive ${git_org_src_dir} ||
+			wget --no-check-certificate -O ${git_org_src_dir}.tar.xz \
+				https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return 1;;
+	mercurial)
+		check_archive ${mercurial_org_src_dir} ||
+			wget --no-check-certificate -O ${mercurial_org_src_dir}.tar.gz \
+				https://www.mercurial-scm.org/release/${mercurial_name}.tar.gz || return 1;;
+	sqlite-autoconf)
+		check_archive ${sqlite_autoconf_org_src_dir} ||
+			wget --no-check-certificate -O ${sqlite_autoconf_org_src_dir}.tar.gz \
+				https://www.sqlite.org/2016/${sqlite_autoconf_name}.tar.gz || return 1;;
+	apr|apr-util)
+		eval check_archive \${${_1}_org_src_dir} ||
+			eval wget -O \${${_1}_org_src_dir}.tar.bz2 \
+				http://ftp.tsukuba.wide.ad.jp/software/apache/apr/\${${_1}_name}.tar.bz2 || return 1;;
+	subversion)
+		check_archive ${subversion_org_src_dir} ||
+			wget -O ${subversion_org_src_dir}.tar.bz2 \
+				http://ftp.tsukuba.wide.ad.jp/software/apache/subversion/${subversion_name}.tar.bz2 || return 1;;
+	cmake)
+		check_archive ${cmake_org_src_dir} ||
+			wget --no-check-certificate -O ${cmake_org_src_dir}.tar.gz \
+				https://cmake.org/files/v`echo ${cmake_ver} | cut -f1,2 -d.`/${cmake_name}.tar.gz || return 1;;
+	libedit)
+		check_archive ${libedit_org_src_dir} ||
+			wget -O ${libedit_org_src_dir}.tar.gz \
+				http://thrysoee.dk/editline/${libedit_name}.tar.gz || return 1;;
+	swig)
+		check_archive ${swig_org_src_dir} ||
+			wget --no-check-certificate --trust-server-names -O ${swig_org_src_dir}.tar.gz \
+				https://sourceforge.net/projects/swig/files/swig/${swig_name}/${swig_name}.tar.gz/download || return 1;;
+	llvm|libcxx|libcxxabi|compiler-rt|cfe|clang-tools-extra|lld|lldb)
+		eval check_archive \${${_1}_org_src_dir} ||
+			eval wget -O \${${_1}_org_src_dir}.tar.xz \
+				http://llvm.org/releases/${llvm_ver}/\${${_1}_name}.tar.xz || return 1;;
+	boost)
+		check_archive ${boost_org_src_dir} ||
+			wget --trust-server-names --no-check-certificate -O ${boost_org_src_dir}.tar.bz2 \
+				https://sourceforge.net/projects/boost/files/boost/`echo ${boost_ver} | tr _ .`/${boost_name}.tar.bz2/download || return 1;;
+	mingw-w64)
+		check_archive ${mingw_w64_org_src_dir} ||
+			wget --trust-server-names --no-check-certificate -O ${mingw_w64_org_src_dir}.tar.bz2 \
+				https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v${mingw_w64_ver}.tar.bz2/download || return 1;;
+	Python)
+		check_archive ${Python_org_src_dir} ||
+			wget --no-check-certificate -O ${Python_org_src_dir}.tar.xz \
+				https://www.python.org/ftp/python/${Python_ver}/${Python_name}.tar.xz || return 1;;
+	ruby)
+		check_archive ${ruby_org_src_dir} ||
+			wget -O ${ruby_org_src_dir}.tar.xz \
+				http://cache.ruby-lang.org/pub/ruby/${ruby_name}.tar.xz || return 1;;
+	go)
+		check_archive ${go_src_base}/go${go_ver}.src ||
+			wget --no-check-certificate -O ${go_src_base}/go${go_ver}.src.tar.gz \
+				https://storage.googleapis.com/golang/go${go_ver}.src.tar.gz || return 1;;
+	perl)
+		check_archive ${perl_org_src_dir} ||
+			wget -O ${perl_org_src_dir}.tar.gz \
+				http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return 1;;
+	yasm)
+		check_archive ${yasm_org_src_dir} ||
+			wget -O ${yasm_org_src_dir}.tar.gz \
+				http://www.tortall.net/projects/yasm/releases/${yasm_name}.tar.gz || return 1;;
+	x264)
+		check_archive ${x264_org_src_dir} ||
+			wget -O ${x264_org_src_dir}.tar.bz2 \
+				ftp://ftp.videolan.org/pub/x264/snapshots/`echo ${x264_ver} | tr - _`_x264.tar.bz2 || return 1;;
+	x265)
+		check_archive ${x265_org_src_dir} ||
+			wget -O ${x265_org_src_dir}.tar.gz \
+				http://ftp.videolan.org/pub/videolan/x265/x265_${x265_ver}.tar.gz || return 1;;
+	libav)
+		check_archive ${libav_org_src_dir} ||
+			wget --no-check-certificate -O ${libav_org_src_dir}.tar.xz \
+				https://libav.org/releases/${libav_name}.tar.xz || return 1;;
+	opencv|opencv_contrib)
+		eval check_archive \${${_1}_org_src_dir} ||
+			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.gz \
+				https://github.com/opencv/${_1}/archive/\${${_1}_ver}.tar.gz || return 1;;
+	esac
 }
 
 unpack()
@@ -811,46 +1015,6 @@ unpack_archive()
 	return 1
 }
 
-fetch_tar_source()
-{
-	mkdir -p ${tar_src_base}
-	check_archive ${tar_org_src_dir} ||
-		wget -O ${tar_org_src_dir}.tar.bz2 \
-			http://ftp.gnu.org/gnu/tar/${tar_name}.tar.bz2 || return 1
-}
-
-fetch_xz_source()
-{
-	mkdir -p ${xz_src_base}
-	check_archive ${xz_org_src_dir} ||
-		wget -O ${xz_org_src_dir}.tar.bz2 \
-			http://tukaani.org/xz/${xz_name}.tar.bz2 || return 1
-}
-
-fetch_bzip2_source()
-{
-	mkdir -p ${bzip2_src_base}
-	check_archive ${bzip2_org_src_dir} ||
-		wget -O ${bzip2_org_src_dir}.tar.gz \
-			http://www.bzip.org/${bzip2_ver}/${bzip2_name}.tar.gz || return 1
-}
-
-fetch_gzip_source()
-{
-	mkdir -p ${gzip_src_base}
-	check_archive ${gzip_org_src_dir} ||
-		wget -O ${gzip_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/gzip/${gzip_name}.tar.xz || return 1
-}
-
-fetch_wget_source()
-{
-	mkdir -p ${wget_src_base}
-	check_archive ${wget_org_src_dir} ||
-		wget -O ${wget_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/wget/${wget_name}.tar.xz || return 1
-}
-
 fetch_pkg_config_source()
 {
 	mkdir -p ${pkg_config_src_base}
@@ -859,251 +1023,12 @@ fetch_pkg_config_source()
 			https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return 1
 }
 
-fetch_texinfo_source()
-{
-	mkdir -p ${texinfo_src_base}
-	check_archive ${texinfo_org_src_dir} ||
-		wget -O ${texinfo_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/texinfo/${texinfo_name}.tar.xz || return 1
-}
-
-fetch_coreutils_source()
-{
-	mkdir -p ${coreutils_src_base}
-	check_archive ${coreutils_org_src_dir} ||
-		wget -O ${coreutils_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/coreutils/${coreutils_name}.tar.xz || return 1
-}
-
-fetch_bison_source()
-{
-	mkdir -p ${bison_src_base}
-	check_archive ${bison_org_src_dir} ||
-		wget -O ${bison_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/bison/${bison_name}.tar.xz || return 1
-}
-
-fetch_flex_source()
-{
-	mkdir -p ${flex_src_base}
-	check_archive ${flex_org_src_dir} ||
-		wget --trust-server-names --no-check-certificate -O ${flex_org_src_dir}.tar.xz \
-			https://sourceforge.net/projects/flex/files/${flex_name}.tar.xz/download || return 1
-}
-
-fetch_m4_source()
-{
-	mkdir -p ${m4_src_base}
-	check_archive ${m4_org_src_dir} ||
-		wget -O ${m4_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/m4/${m4_name}.tar.xz || return 1
-}
-
-fetch_autoconf_source()
-{
-	mkdir -p ${autoconf_src_base}
-	check_archive ${autoconf_org_src_dir} ||
-		wget -O ${autoconf_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/autoconf/${autoconf_name}.tar.xz || return 1
-}
-
-fetch_automake_source()
-{
-	mkdir -p ${automake_src_base}
-	check_archive ${automake_org_src_dir} ||
-		wget -O ${automake_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/automake/${automake_name}.tar.xz || return 1
-}
-
-fetch_libtool_source()
-{
-	mkdir -p ${libtool_src_base}
-	check_archive ${libtool_org_src_dir} ||
-		wget -O ${libtool_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/libtool/${libtool_name}.tar.xz || return 1
-}
-
-fetch_sed_source()
-{
-	mkdir -p ${sed_src_base}
-	check_archive ${sed_org_src_dir} ||
-		wget -O ${sed_org_src_dir}.tar.bz2 \
-			http://ftp.gnu.org/gnu/sed/${sed_name}.tar.bz2 || return 1
-}
-
-fetch_gawk_source()
-{
-	mkdir -p ${gawk_src_base}
-	check_archive ${gawk_org_src_dir} ||
-		wget -O ${gawk_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/gawk/${gawk_name}.tar.xz || return 1
-}
-
-fetch_make_source()
-{
-	mkdir -p ${make_src_base}
-	check_archive ${make_org_src_dir} ||
-		wget -O ${make_org_src_dir}.tar.bz2 \
-			http://ftp.gnu.org/gnu/make/${make_name}.tar.bz2 || return 1
-}
-
-fetch_binutils_source()
-{
-	mkdir -p ${binutils_src_base}
-	check_archive ${binutils_org_src_dir} ||
-		wget -O ${binutils_org_src_dir}.tar.bz2 \
-			http://ftp.gnu.org/gnu/binutils/${binutils_name}.tar.bz2 || return 1
-}
-
-fetch_kernel_source()
-{
-	mkdir -p ${linux_src_base}
-	check_archive ${linux_org_src_dir} ||
-		wget --no-check-certificate -O ${linux_org_src_dir}.tar.xz \
-			https://www.kernel.org/pub/linux/kernel/${kernel_major_ver}/${linux_name}.tar.xz || return 1
-}
-
-fetch_gperf_source()
-{
-	mkdir -p ${gperf_src_base}
-	check_archive ${gperf_org_src_dir} ||
-		wget -O ${gperf_org_src_dir}.tar.gz \
-			http://ftp.gnu.org/gnu/gperf/${gperf_name}.tar.gz || return 1
-}
-
-fetch_glibc_source()
-{
-	mkdir -p ${glibc_src_base}
-	check_archive ${glibc_org_src_dir} ||
-		wget -O ${glibc_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/glibc/${glibc_name}.tar.xz || return 1
-}
-
-fetch_gmp_source()
-{
-	mkdir -p ${gmp_src_base}
-	check_archive ${gmp_org_src_dir} ||
-		wget -O ${gmp_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/gmp/${gmp_name}.tar.xz || return 1
-}
-
-fetch_mpfr_source()
-{
-	mkdir -p ${mpfr_src_base}
-	check_archive ${mpfr_org_src_dir} ||
-		wget -O ${mpfr_org_src_dir}.tar.xz \
-			http://www.mpfr.org/${mpfr_name}/${mpfr_name}.tar.xz || return 1
-}
-
-fetch_mpc_source()
-{
-	mkdir -p ${mpc_src_base}
-	check_archive ${mpc_org_src_dir} ||
-		wget -O ${mpc_org_src_dir}.tar.gz \
-			http://ftp.gnu.org/gnu/mpc/${mpc_name}.tar.gz || return 1
-}
-
-fetch_gmp_mpfr_mpc_source()
-{
-	fetch_gmp_source || return 1
-	fetch_mpfr_source || return 1
-	fetch_mpc_source || return 1
-}
-
-fetch_gcc_source()
-{
-	mkdir -p ${gcc_src_base}
-	check_archive ${gcc_org_src_dir} ||
-		wget -O ${gcc_org_src_dir}.tar.bz2 \
-			http://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.bz2 || return 1
-}
-
-fetch_readline_source()
-{
-	mkdir -p ${readline_src_base}
-	check_archive ${readline_org_src_dir} ||
-		wget -O ${readline_org_src_dir}.tar.gz \
-			http://ftp.gnu.org/gnu/readline/${readline_name}.tar.gz || return 1
-}
-
-fetch_ncurses_source()
-{
-	mkdir -p ${ncurses_src_base}
-	check_archive ${ncurses_org_src_dir} ||
-		wget -O ${ncurses_org_src_dir}.tar.gz \
-			http://ftp.gnu.org/gnu/ncurses/${ncurses_name}.tar.gz || return 1
-}
-
-fetch_gdb_source()
-{
-	mkdir -p ${gdb_src_base}
-	check_archive ${gdb_org_src_dir} ||
-		wget -O ${gdb_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/gdb/${gdb_name}.tar.xz || return 1
-}
-
-fetch_zlib_source()
-{
-	mkdir -p ${zlib_src_base}
-	check_archive ${zlib_org_src_dir} ||
-		wget -O ${zlib_org_src_dir}.tar.xz \
-			http://zlib.net/${zlib_name}.tar.xz || return 1
-}
-
-fetch_libpng_source()
-{
-	mkdir -p ${libpng_src_base}
-	check_archive ${libpng_org_src_dir} ||
-		wget --trust-server-names -O ${libpng_org_src_dir}.tar.xz \
-			http://download.sourceforge.net/libpng/${libpng_name}.tar.xz || return 1
-}
-
-fetch_libtiff_source()
-{
-	mkdir -p ${tiff_src_base}
-	check_archive ${tiff_org_src_dir} ||
-		wget -O ${tiff_org_src_dir}.tar.gz \
-			http://download.osgeo.org/libtiff/${tiff_name}.tar.gz || return 1
-}
-
-fetch_libjpeg_source()
-{
-	mkdir -p ${jpeg_src_base}
-	check_archive ${jpeg_org_src_dir} ||
-		wget -O ${jpeg_org_src_dir}.tar.gz \
-			http://www.ijg.org/files/${jpeg_name}.tar.gz || return 1
-}
-
-fetch_giflib_source()
-{
-	mkdir -p ${giflib_src_base}
-	check_archive ${giflib_org_src_dir} ||
-		wget --trust-server-names --no-check-certificate -O ${giflib_org_src_dir}.tar.bz2 \
-			https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return 1
-}
-
 fetch_libXpm_source()
 {
 	mkdir -p ${libXpm_src_base}
 	check_archive ${libXpm_org_src_dir} ||
 		wget --no-check-certificate -O ${libXpm_org_src_dir}.tar.bz2 \
 			https://www.x.org/releases/individual/lib/${libXpm_name}.tar.bz2 || return 1
-}
-
-fetch_libwebp_source()
-{
-	mkdir -p ${libwebp_src_base}
-	check_archive ${libwebp_org_src_dir} ||
-		wget --no-check-certificate -O ${libwebp_org_src_dir}.tar.gz \
-			https://storage.googleapis.com/downloads.webmproject.org/releases/webp/${libwebp_name}.tar.gz || return 1
-}
-
-fetch_libffi_source()
-{
-	mkdir -p ${libffi_src_base}
-	check_archive ${libffi_org_src_dir} ||
-		wget -O ${libffi_org_src_dir}.tar.gz \
-			ftp://sourceware.org/pub/libffi/${libffi_name}.tar.gz || return 1
 }
 
 fetch_glib_source()
@@ -1362,443 +1287,11 @@ fetch_webkitgtk_source()
 			https://webkitgtk.org/releases/${webkitgtk_name}.tar.xz || return 1
 }
 
-fetch_emacs_source()
-{
-	mkdir -p ${emacs_src_base}
-	check_archive ${emacs_org_src_dir} ||
-		wget -O ${emacs_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/emacs/${emacs_name}.tar.xz || return 1
-}
-
-fetch_vim_source()
-{
-	mkdir -p ${vim_src_base}
-	check_archive ${vim_org_src_dir} ||
-		wget --no-check-certificate -O ${vim_org_src_dir}.tar.gz \
-			http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return 1
-}
-
-fetch_ctags_source()
-{
-	mkdir -p ${ctags_src_base}
-	check_archive ${ctags_org_src_dir} ||
-		wget --trust-server-names -O ${ctags_org_src_dir}.tar.gz \
-			http://prdownloads.sourceforge.net/ctags/${ctags_name}.tar.gz || return 1
-}
-
-fetch_grep_source()
-{
-	mkdir -p ${grep_src_base}
-	check_archive ${grep_org_src_dir} ||
-		wget -O ${grep_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/grep/${grep_name}.tar.xz || return 1
-}
-
-fetch_global_source()
-{
-	mkdir -p ${global_src_base}
-	check_archive ${global_org_src_dir} ||
-		wget -O ${global_org_src_dir}.tar.gz \
-			http://ftp.gnu.org/gnu/global/${global_name}.tar.gz || return 1
-}
-
-fetch_pcre2_source()
-{
-	mkdir -p ${pcre2_src_base}
-	check_archive ${pcre2_org_src_dir} ||
-		wget -O ${pcre2_org_src_dir}.tar.bz2 \
-			ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/${pcre2_name}.tar.bz2 || return 1
-}
-
-fetch_the_silver_searcher_source()
-{
-	mkdir -p ${the_silver_searcher_src_base}
-	check_archive ${the_silver_searcher_org_src_dir} ||
-		wget -O ${the_silver_searcher_org_src_dir}.tar.gz \
-			http://geoff.greer.fm/ag/releases/${the_silver_searcher_name}.tar.gz || return 1
-}
-
-fetch_graphviz_source()
-{
-	mkdir -p ${graphviz_src_base}
-	check_archive ${graphviz_org_src_dir} ||
-		wget -O ${graphviz_org_src_dir}.tar.gz \
-			http://www.graphviz.org/pub/graphviz/stable/SOURCES/${graphviz_name}.tar.gz || return 1
-}
-
-fetch_doxygen_source()
-{
-	mkdir -p ${doxygen_src_base}
-	check_archive ${doxygen_org_src_dir} ||
-		wget -O ${doxygen_org_src_dir}.tar.gz \
-			http://ftp.stack.nl/pub/users/dimitri/${doxygen_name}.src.tar.gz || return 1
-}
-
-fetch_diffutils_source()
-{
-	mkdir -p ${diffutils_src_base}
-	check_archive ${diffutils_org_src_dir} ||
-		wget -O ${diffutils_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/diffutils/${diffutils_name}.tar.xz || return 1
-}
-
-fetch_patch_source()
-{
-	mkdir -p ${patch_src_base}
-	check_archive ${patch_org_src_dir} ||
-		wget -O ${patch_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/gnu/patch/${patch_name}.tar.xz || return 1
-}
-
-fetch_findutils_source()
-{
-	mkdir -p ${findutils_src_base}
-	check_archive ${findutils_org_src_dir} ||
-		wget -O ${findutils_org_src_dir}.tar.gz \
-			http://ftp.gnu.org/gnu/findutils/${findutils_name}.tar.gz || return 1
-}
-
-fetch_screen_source()
-{
-	mkdir -p ${screen_src_base}
-	check_archive ${screen_org_src_dir} ||
-		wget -O ${screen_org_src_dir}.tar.gz \
-			http://ftp.gnu.org/gnu/screen/${screen_name}.tar.gz || return 1
-}
-
-fetch_libevent_source()
-{
-	mkdir -p ${libevent_src_base}
-	check_archive ${libevent_org_src_dir}-stable ||
-		wget --no-check-certificate -O ${libevent_org_src_dir}-stable.tar.gz \
-			https://github.com/libevent/libevent/releases/download/release-${libevent_ver}-stable/${libevent_name}-stable.tar.gz || return 1
-}
-
-fetch_tmux_source()
-{
-	mkdir -p ${tmux_src_base}
-	check_archive ${tmux_org_src_dir} ||
-		wget --no-check-certificate -O ${tmux_org_src_dir}.tar.gz \
-			https://github.com/tmux/tmux/releases/download/${tmux_ver}/${tmux_name}.tar.gz || return 1
-}
-
-fetch_zsh_source()
-{
-	mkdir -p ${zsh_src_base}
-	check_archive ${zsh_org_src_dir} ||
-		wget --trust-server-names --no-check-certificate -O ${zsh_org_src_dir}.tar.xz \
-			https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return 1
-}
-
-fetch_bash_source()
-{
-	mkdir -p ${bash_src_base}
-	check_archive ${bash_org_src_dir} ||
-		wget -O ${bash_org_src_dir}.tar.gz \
-			http://ftp.gnu.org/gnu/bash/${bash_name}.tar.gz || return 1
-}
-
-fetch_openssl_source()
-{
-	mkdir -p ${openssl_src_base}
-	check_archive ${openssl_org_src_dir} ||
-		wget --no-check-certificate -O ${openssl_org_src_dir}.tar.gz \
-			http://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return 1
-}
-
-fetch_openssh_source()
-{
-	mkdir -p ${openssh_src_base}
-	check_archive ${openssh_org_src_dir} ||
-		wget -O ${openssh_org_src_dir}.tar.gz \
-			http://ftp.jaist.ac.jp/pub/OpenBSD/OpenSSH/portable/${openssh_name}.tar.gz || return 1
-}
-
-fetch_curl_source()
-{
-	mkdir -p ${curl_src_base}
-	check_archive ${curl_org_src_dir} ||
-		wget --no-check-certificate -O ${curl_org_src_dir}.tar.bz2 \
-			https://curl.haxx.se/download/${curl_name}.tar.bz2 || return 1
-}
-
-fetch_asciidoc_source()
-{
-	mkdir -p ${asciidoc_src_base}
-	check_archive ${asciidoc_org_src_dir} ||
-		wget --no-check-certificate -O ${asciidoc_org_src_dir}.tar.gz \
-			https://sourceforge.net/projects/asciidoc/files/asciidoc/${asciidoc_ver}/${asciidoc_name}.tar.gz/download || return 1
-}
-
-fetch_libxml2_source()
-{
-	mkdir -p ${libxml2_src_base}
-	check_archive ${libxml2_org_src_dir} ||
-		wget -O ${libxml2_org_src_dir}.tar.gz \
-			ftp://xmlsoft.org/libxml2/${libxml2_name}.tar.gz || return 1
-}
-
-fetch_libxslt_source()
-{
-	mkdir -p ${libxslt_src_base}
-	check_archive ${libxslt_org_src_dir} ||
-		wget -O ${libxslt_org_src_dir}.tar.gz \
-			ftp://xmlsoft.org/libxml2/${libxslt_name}.tar.gz || return 1
-}
-
-fetch_xmlto_source()
-{
-	mkdir -p ${xmlto_src_base}
-	check_archive ${xmlto_org_src_dir} ||
-		wget --no-check-certificate -O ${xmlto_org_src_dir}.tar.bz2 \
-			https://fedorahosted.org/releases/x/m/xmlto/${xmlto_name}.tar.bz2 || return 1
-}
-
-fetch_gettext_source()
-{
-	mkdir -p ${gettext_src_base}
-	check_archive ${gettext_org_src_dir} ||
-		wget -O ${gettext_org_src_dir}.tar.xz \
-			http://ftp.gnu.org/pub/gnu/gettext/${gettext_name}.tar.xz || return 1
-}
-
-fetch_git_source()
-{
-	mkdir -p ${git_src_base}
-	check_archive ${git_org_src_dir} ||
-		wget --no-check-certificate -O ${git_org_src_dir}.tar.xz \
-			https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return 1
-}
-
-fetch_mercurial_source()
-{
-	mkdir -p ${mercurial_src_base}
-	check_archive ${mercurial_org_src_dir} ||
-		wget --no-check-certificate -O ${mercurial_org_src_dir}.tar.gz \
-			https://www.mercurial-scm.org/release/${mercurial_name}.tar.gz || return 1
-}
-
-fetch_sqlite_source()
-{
-	mkdir -p ${sqlite_autoconf_src_base}
-	check_archive ${sqlite_autoconf_org_src_dir} ||
-		wget --no-check-certificate -O ${sqlite_autoconf_org_src_dir}.tar.gz \
-			https://www.sqlite.org/2016/${sqlite_autoconf_name}.tar.gz || return 1
-}
-
-fetch_apr_source()
-{
-	mkdir -p ${apr_src_base}
-	check_archive ${apr_org_src_dir} ||
-		wget -O ${apr_org_src_dir}.tar.bz2 \
-			http://ftp.tsukuba.wide.ad.jp/software/apache/apr/${apr_name}.tar.bz2 || return 1
-}
-
-fetch_apr_util_source()
-{
-	mkdir -p ${apr_util_src_base}
-	check_archive ${apr_util_org_src_dir} ||
-		wget -O ${apr_util_org_src_dir}.tar.bz2 \
-			http://ftp.tsukuba.wide.ad.jp/software/apache/apr/${apr_util_name}.tar.bz2 || return 1
-}
-
-fetch_subversion_source()
-{
-	mkdir -p ${subversion_src_base}
-	check_archive ${subversion_org_src_dir} ||
-		wget -O ${subversion_org_src_dir}.tar.bz2 \
-			http://ftp.tsukuba.wide.ad.jp/software/apache/subversion/${subversion_name}.tar.bz2 || return 1
-}
-
-fetch_cmake_source()
-{
-	mkdir -p ${cmake_src_base}
-	check_archive ${cmake_org_src_dir} ||
-		wget --no-check-certificate -O ${cmake_org_src_dir}.tar.gz \
-			https://cmake.org/files/v`echo ${cmake_ver} | cut -f1,2 -d.`/${cmake_name}.tar.gz || return 1
-}
-
-fetch_libedit_source()
-{
-	mkdir -p ${libedit_src_base}
-	check_archive ${libedit_org_src_dir} ||
-		wget -O ${libedit_org_src_dir}.tar.gz \
-			http://thrysoee.dk/editline/${libedit_name}.tar.gz || return 1
-}
-
-fetch_swig_source()
-{
-	mkdir -p ${swig_src_base}
-	check_archive ${swig_org_src_dir} ||
-		wget --no-check-certificate --trust-server-names -O ${swig_org_src_dir}.tar.gz \
-			https://sourceforge.net/projects/swig/files/swig/${swig_name}/${swig_name}.tar.gz/download || return 1
-}
-
-fetch_llvm_source()
-{
-	mkdir -p ${llvm_src_base}
-	check_archive ${llvm_org_src_dir} ||
-		wget -O ${llvm_org_src_dir}.tar.xz \
-			http://llvm.org/releases/${llvm_ver}/${llvm_name}.tar.xz || return 1
-}
-
-fetch_libcxx_source()
-{
-	mkdir -p ${libcxx_src_base}
-	check_archive ${libcxx_org_src_dir} ||
-		wget -O ${libcxx_org_src_dir}.tar.xz \
-			http://llvm.org/releases/${llvm_ver}/${libcxx_name}.tar.xz || return 1
-}
-
-fetch_libcxxabi_source()
-{
-	mkdir -p ${libcxxabi_src_base}
-	check_archive ${libcxxabi_org_src_dir} ||
-		wget -O ${libcxxabi_org_src_dir}.tar.xz \
-			http://llvm.org/releases/${llvm_ver}/${libcxxabi_name}.tar.xz || return 1
-}
-
-fetch_compiler_rt_source()
-{
-	mkdir -p ${compiler_rt_src_base}
-	check_archive ${compiler_rt_org_src_dir} ||
-		wget -O ${compiler_rt_org_src_dir}.tar.xz \
-			http://llvm.org/releases/${llvm_ver}/${compiler_rt_name}.tar.xz || return 1
-}
-
-fetch_cfe_source()
-{
-	mkdir -p ${cfe_src_base}
-	check_archive ${cfe_org_src_dir} ||
-		wget -O ${cfe_org_src_dir}.tar.xz \
-			http://llvm.org/releases/${llvm_ver}/${cfe_name}.tar.xz || return 1
-}
-
-fetch_clang_tools_extra_source()
-{
-	mkdir -p ${clang_tools_extra_src_base}
-	check_archive ${clang_tools_extra_org_src_dir} ||
-		wget -O ${clang_tools_extra_org_src_dir}.tar.xz \
-			http://llvm.org/releases/${llvm_ver}/${clang_tools_extra_name}.tar.xz || return 1
-}
-
-fetch_lld_source()
-{
-	mkdir -p ${lld_src_base}
-	check_archive ${lld_org_src_dir} ||
-		wget -O ${lld_org_src_dir}.tar.xz \
-			http://llvm.org/releases/${llvm_ver}/${lld_name}.tar.xz || return 1
-}
-
-fetch_lldb_source()
-{
-	mkdir -p ${lldb_src_base}
-	check_archive ${lldb_org_src_dir} ||
-		wget -O ${lldb_org_src_dir}.tar.xz \
-			http://llvm.org/releases/${llvm_ver}/${lldb_name}.tar.xz || return 1
-}
-
-fetch_boost_source()
-{
-	mkdir -p ${boost_src_base}
-	check_archive ${boost_org_src_dir} ||
-		wget --trust-server-names --no-check-certificate -O ${boost_org_src_dir}.tar.bz2 \
-			https://sourceforge.net/projects/boost/files/boost/`echo ${boost_ver} | tr _ .`/${boost_name}.tar.bz2/download || return 1
-}
-
-fetch_mingw_w64_source()
-{
-	mkdir -p ${mingw_w64_src_base}
-	check_archive ${mingw_w64_org_src_dir} ||
-		wget --trust-server-names --no-check-certificate -O ${mingw_w64_org_src_dir}.tar.bz2 \
-			https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v${mingw_w64_ver}.tar.bz2/download || return 1
-}
-
-fetch_python_source()
-{
-	mkdir -p ${Python_src_base}
-	check_archive ${Python_org_src_dir} ||
-		wget --no-check-certificate -O ${Python_org_src_dir}.tar.xz \
-			https://www.python.org/ftp/python/${Python_ver}/${Python_name}.tar.xz || return 1
-}
-
-fetch_ruby_source()
-{
-	mkdir -p ${ruby_src_base}
-	check_archive ${ruby_org_src_dir} ||
-		wget -O ${ruby_org_src_dir}.tar.xz \
-			http://cache.ruby-lang.org/pub/ruby/${ruby_name}.tar.xz || return 1
-}
-
-fetch_go_source()
-{
-	mkdir -p ${go_src_base}
-	check_archive ${go_src_base}/go${go_ver}.src ||
-		wget --no-check-certificate -O ${go_src_base}/go${go_ver}.src.tar.gz \
-			https://storage.googleapis.com/golang/go${go_ver}.src.tar.gz || return 1
-}
-
-fetch_perl_source()
-{
-	mkdir -p ${perl_src_base}
-	check_archive ${perl_org_src_dir} ||
-		wget -O ${perl_org_src_dir}.tar.gz \
-			http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return 1
-}
-
-fetch_yasm_source()
-{
-	mkdir -p ${yasm_src_base}
-	check_archive ${yasm_org_src_dir} ||
-		wget -O ${yasm_org_src_dir}.tar.gz \
-			http://www.tortall.net/projects/yasm/releases/${yasm_name}.tar.gz || return 1
-}
-
-fetch_x264_source()
-{
-	mkdir -p ${x264_src_base}
-	check_archive ${x264_org_src_dir} ||
-		wget -O ${x264_org_src_dir}.tar.bz2 \
-			ftp://ftp.videolan.org/pub/x264/snapshots/`echo ${x264_ver} | tr - _`_x264.tar.bz2 || return 1
-}
-
-fetch_x265_source()
-{
-	mkdir -p ${x265_src_base}
-	check_archive ${x265_org_src_dir} ||
-		wget -O ${x265_org_src_dir}.tar.gz \
-			http://ftp.videolan.org/pub/videolan/x265/x265_${x265_ver}.tar.gz || return 1
-}
-
-fetch_libav_source()
-{
-	mkdir -p ${libav_src_base}
-	check_archive ${libav_org_src_dir} ||
-		wget --no-check-certificate -O ${libav_org_src_dir}.tar.xz \
-			https://libav.org/releases/${libav_name}.tar.xz || return 1
-}
-
-fetch_opencv_source()
-{
-	mkdir -p ${opencv_src_base}
-	check_archive ${opencv_org_src_dir} ||
-		wget --no-check-certificate -O ${opencv_org_src_dir}.tar.gz \
-			https://github.com/opencv/opencv/archive/${opencv_ver}.tar.gz || return 1
-}
-
-fetch_opencv_contrib_source()
-{
-	mkdir -p ${opencv_contrib_src_base}
-	check_archive ${opencv_contrib_org_src_dir} ||
-		wget --no-check-certificate -O ${opencv_contrib_org_src_dir}.tar.gz \
-			https://github.com/opencv/opencv_contrib/archive/${opencv_ver}.tar.gz || return 1
-}
-
 install_native_tar()
 {
 	[ -x ${prefix}/bin/tar -a "${force_install}" != yes ] && return 0
 	which xz > /dev/null || install_native_xz || return 1
-	fetch_tar_source || return 1
+	fetch tar || return 1
 	unpack_archive ${tar_org_src_dir} ${tar_src_base} || return 1
 	[ -f ${tar_org_src_dir}/Makefile ] ||
 		(cd ${tar_org_src_dir}
@@ -1811,7 +1304,7 @@ install_native_tar()
 install_native_xz()
 {
 	[ -x ${prefix}/bin/xz -a "${force_install}" != yes ] && return 0
-	fetch_xz_source || return 1
+	fetch xz || return 1
 	unpack_archive ${xz_org_src_dir} ${xz_src_base} || return 1
 	[ -f ${xz_org_src_dir}/Makefile ] ||
 		(cd ${xz_org_src_dir}
@@ -1823,7 +1316,7 @@ install_native_xz()
 install_native_bzip2()
 {
 	[ -x ${prefix}/bin/bzip2 -a "${force_install}" != yes ] && return 0
-	fetch_bzip2_source || return 1
+	fetch bzip2 || return 1
 	unpack_archive ${bzip2_org_src_dir} ${bzip2_src_base} || return 1
 	sed -i -e \
 			'/^CFLAGS=/{
@@ -1846,7 +1339,7 @@ install_native_bzip2()
 install_native_gzip()
 {
 	[ -x ${prefix}/bin/gzip -a "${force_install}" != yes ] && return 0
-	fetch_gzip_source || return 1
+	fetch gzip || return 1
 	unpack_archive ${gzip_org_src_dir} ${gzip_src_base} || return 1
 	[ -f ${gzip_org_src_dir}/Makefile ] ||
 		(cd ${gzip_org_src_dir}
@@ -1859,12 +1352,12 @@ install_native_wget()
 {
 	[ -x ${prefix}/bin/wget -a "${force_install}" != yes ] && return 0
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return 1
-	fetch_wget_source || return 1
+	fetch wget || return 1
 	unpack_archive ${wget_org_src_dir} ${wget_src_base} || return 1
 	[ -f ${wget_org_src_dir}/Makefile ] ||
 		(cd ${wget_org_src_dir}
 		OPENSSL_CFLAGS="-I${prefix}/include -L${prefix}/lib" OPENSSL_LIBS='-lssl -lcrypto' \
-			./configure --prefix=${prefix} --build=${build} --with-ssl=openssl) || return 1
+			./configure --prefix=${prefix} --build=${build} --disable-silent-rules --with-ssl=openssl) || return 1
 	make -C ${wget_org_src_dir} -j ${jobs} || return 1
 	make -C ${wget_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1885,7 +1378,7 @@ install_native_pkg_config()
 install_native_texinfo()
 {
 	[ -x ${prefix}/bin/makeinfo -a "${force_install}" != yes ] && return 0
-	fetch_texinfo_source || return 1
+	fetch texinfo || return 1
 	unpack_archive ${texinfo_org_src_dir} ${texinfo_src_base} || return 1
 	[ -f ${texinfo_org_src_dir}/Makefile ] ||
 		(cd ${texinfo_org_src_dir}
@@ -1897,7 +1390,7 @@ install_native_texinfo()
 install_native_coreutils()
 {
 	[ -x ${prefix}/bin/cat -a "${force_install}" != yes ] && return 0
-	fetch_coreutils_source || return 1
+	fetch coreutils || return 1
 	unpack_archive ${coreutils_org_src_dir} ${coreutils_src_base} || return 1
 	[ -f ${coreutils_org_src_dir}/Makefile ] ||
 		(cd ${coreutils_org_src_dir}
@@ -1910,7 +1403,7 @@ install_native_coreutils()
 install_native_bison()
 {
 	[ -x ${prefix}/bin/bison -a "${force_install}" != yes ] && return 0
-	fetch_bison_source || return 1
+	fetch bison || return 1
 	unpack_archive ${bison_org_src_dir} ${bison_src_base} || return 1
 	[ -f ${bison_org_src_dir}/Makefile ] ||
 		(cd ${bison_org_src_dir}
@@ -1923,7 +1416,7 @@ install_native_flex()
 {
 	[ -x ${prefix}/bin/flex -a "${force_install}" != yes ] && return 0
 	which yacc > /dev/null || install_native_bison || return 1
-	fetch_flex_source || return 1
+	fetch flex || return 1
 	unpack_archive ${flex_org_src_dir} ${flex_src_base} || return 1
 	[ -f ${flex_org_src_dir}/Makefile ] ||
 		(cd ${flex_org_src_dir}
@@ -1936,7 +1429,7 @@ install_native_flex()
 install_native_m4()
 {
 	[ -x ${prefix}/bin/m4 -a "${force_install}" != yes ] && return 0
-	fetch_m4_source || return 1
+	fetch m4 || return 1
 	unpack_archive ${m4_org_src_dir} ${m4_src_base} || return 1
 	[ -f ${m4_org_src_dir}/Makefile ] ||
 		(cd ${m4_org_src_dir}
@@ -1948,7 +1441,7 @@ install_native_m4()
 install_native_autoconf()
 {
 	[ -x ${prefix}/bin/autoconf -a "${force_install}" != yes ] && return 0
-	fetch_autoconf_source || return 1
+	fetch autoconf || return 1
 	unpack_archive ${autoconf_org_src_dir} ${autoconf_src_base} || return 1
 	[ -f ${autoconf_org_src_dir}/Makefile ] ||
 		(cd ${autoconf_org_src_dir}
@@ -1961,7 +1454,7 @@ install_native_automake()
 {
 	[ -x ${prefix}/bin/automake -a "${force_install}" != yes ] && return 0
 	which autoconf > /dev/null || install_native_autoconf || return 1
-	fetch_automake_source || return 1
+	fetch automake || return 1
 	unpack_archive ${automake_org_src_dir} ${automake_src_base} || return 1
 	[ -f ${automake_org_src_dir}/Makefile ] ||
 		(cd ${automake_org_src_dir}
@@ -1974,7 +1467,7 @@ install_native_libtool()
 {
 	[ -x ${prefix}/bin/libtool -a "${force_install}" != yes ] && return 0
 	which flex > /dev/null || install_native_flex || return 1
-	fetch_libtool_source || return 1
+	fetch libtool || return 1
 	unpack_archive ${libtool_org_src_dir} ${libtool_src_base} || return 1
 	[ -f ${libtool_org_src_dir}/Makefile ] ||
 		(cd ${libtool_org_src_dir}
@@ -1986,7 +1479,7 @@ install_native_libtool()
 install_native_sed()
 {
 	[ -x ${prefix}/bin/sed -a "${force_install}" != yes ] && return 0
-	fetch_sed_source || return 1
+	fetch sed || return 1
 	unpack_archive ${sed_org_src_dir} ${sed_src_base} || return 1
 	[ -f ${sed_org_src_dir}/Makefile ] ||
 		(cd ${sed_org_src_dir}
@@ -1998,7 +1491,7 @@ install_native_sed()
 install_native_gawk()
 {
 	[ -x ${prefix}/bin/gawk -a "${force_install}" != yes ] && return 0
-	fetch_gawk_source || return 1
+	fetch gawk || return 1
 	unpack_archive ${gawk_org_src_dir} ${gawk_src_base} || return 1
 	[ -f ${gawk_org_src_dir}/Makefile ] ||
 		(cd ${gawk_org_src_dir}
@@ -2010,7 +1503,7 @@ install_native_gawk()
 install_native_make()
 {
 	[ -x ${prefix}/bin/make -a "${force_install}" != yes ] && return 0
-	fetch_make_source || return 1
+	fetch make || return 1
 	unpack_archive ${make_org_src_dir} ${make_src_base} || return 1
 	[ -f ${make_org_src_dir}/Makefile ] ||
 		(cd ${make_org_src_dir}
@@ -2024,7 +1517,7 @@ install_native_binutils()
 	[ -x ${prefix}/bin/as -a "${force_install}" != yes ] && return 0
 	search_header zlib.h > /dev/null || install_native_zlib || return 1
 	which yacc > /dev/null || install_native_bison || return 1
-	fetch_binutils_source || return 1
+	fetch binutils || return 1
 	[ -d ${binutils_src_dir_ntv} ] ||
 		(unpack_archive ${binutils_org_src_dir} ${binutils_src_base} &&
 			mv ${binutils_org_src_dir} ${binutils_src_dir_ntv}) || return 1
@@ -2041,7 +1534,7 @@ install_native_binutils()
 
 install_native_kernel_header()
 {
-	fetch_kernel_source || return 1
+	fetch linux || return 1
 	[ -d ${linux_src_dir_ntv} ] ||
 		(unpack_archive ${linux_org_src_dir} ${linux_src_base} &&
 			mv ${linux_org_src_dir} ${linux_src_dir_ntv}) || return 1
@@ -2053,7 +1546,7 @@ install_native_kernel_header()
 install_native_gperf()
 {
 	[ -x ${prefix}/bin/gperf -a "${force_install}" != yes ] && return 0
-	fetch_gperf_source || return 1
+	fetch gperf || return 1
 	unpack_archive ${gperf_org_src_dir} ${gperf_src_base} || return 1
 	[ -f ${gperf_org_src_dir}/Makefile ] ||
 		(cd ${gperf_org_src_dir}
@@ -2068,7 +1561,7 @@ install_native_glibc()
 	install_native_kernel_header || return 1
 	which awk > /dev/null || install_native_gawk || return 1
 	which gperf > /dev/null || install_native_gperf || return 1
-	fetch_glibc_source || return 1
+	fetch glibc || return 1
 	[ -d ${glibc_src_dir_ntv} ] ||
 		(unpack_archive ${glibc_org_src_dir} ${glibc_src_base} &&
 			mv ${glibc_org_src_dir} ${glibc_src_dir_ntv}) || return 1
@@ -2089,7 +1582,7 @@ install_native_glibc()
 install_native_gmp()
 {
 	[ -f ${prefix}/include/gmp.h -a "${force_install}" != yes ] && return 0
-	fetch_gmp_source || return 1
+	fetch gmp || return 1
 	[ -d ${gmp_src_dir_ntv} ] ||
 		(unpack_archive ${gmp_org_src_dir} ${gmp_src_base} &&
 			mv ${gmp_org_src_dir} ${gmp_src_dir_ntv}) || return 1
@@ -2105,7 +1598,7 @@ install_native_mpfr()
 {
 	[ -f ${prefix}/include/mpfr.h -a "${force_install}" != yes ] && return 0
 	search_header gmp.h > /dev/null || install_native_gmp || return 1
-	fetch_mpfr_source || return 1
+	fetch mpfr || return 1
 	[ -d ${mpfr_src_dir_ntv} ] ||
 		(unpack_archive ${mpfr_org_src_dir} ${mpfr_src_base} &&
 			mv ${mpfr_org_src_dir} ${mpfr_src_dir_ntv}) || return 1
@@ -2121,7 +1614,7 @@ install_native_mpc()
 {
 	[ -f ${prefix}/include/mpc.h -a "${force_install}" != yes ] && return 0
 	search_header mpfr.h > /dev/null || install_native_mpfr || return 1
-	fetch_mpc_source || return 1
+	fetch mpc || return 1
 	[ -d ${mpc_src_dir_ntv} ] ||
 		(unpack_archive ${mpc_org_src_dir} ${mpc_src_base} &&
 			mv ${mpc_org_src_dir} ${mpc_src_dir_ntv}) || return 1
@@ -2142,7 +1635,7 @@ install_native_gcc()
 	search_header mpfr.h > /dev/null || install_native_mpfr || return 1
 	search_header mpc.h > /dev/null || install_native_mpc || return 1
 	which perl > /dev/null || install_native_perl || return 1
-	fetch_gcc_source || return 1
+	fetch gcc || return 1
 	unpack_archive ${gcc_org_src_dir} ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_ntv}
 	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
@@ -2160,7 +1653,7 @@ install_native_gcc()
 install_native_readline()
 {
 	[ -f ${prefix}/include/readline/readline.h -a "${force_install}" != yes ] && return 0
-	fetch_readline_source || return 1
+	fetch readline || return 1
 	unpack_archive ${readline_org_src_dir} ${readline_src_base} || return 1
 	[ -f ${readline_org_src_dir}/Makefile ] ||
 		(cd ${readline_org_src_dir}
@@ -2173,7 +1666,7 @@ install_native_readline()
 install_native_ncurses()
 {
 	[ -f ${prefix}/include/ncurses/curses.h -a "${force_install}" != yes ] && return 0
-	fetch_ncurses_source || return 1
+	fetch ncurses || return 1
 	unpack_archive ${ncurses_org_src_dir} ${ncurses_src_base} || return 1
 
 	# [XXX] workaround for GCC 5.x
@@ -2220,7 +1713,7 @@ install_native_gdb()
 	search_header readline.h readline > /dev/null || install_native_readline || return 1
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return 1
 	search_header Python.h > /dev/null || install_native_python || return 1
-	fetch_gdb_source || return 1
+	fetch gdb || return 1
 	unpack_archive ${gdb_org_src_dir} ${gdb_src_base} || return 1
 	mkdir -p ${gdb_bld_dir_ntv}
 	[ -f ${gdb_bld_dir_ntv}/Makefile ] ||
@@ -2236,7 +1729,7 @@ install_native_gdb()
 install_native_zlib()
 {
 	[ -f ${prefix}/include/zlib.h -a "${force_install}" != yes ] && return 0
-	fetch_zlib_source || return 1
+	fetch zlib || return 1
 	[ -d ${zlib_src_dir_ntv} ] ||
 		(unpack_archive ${zlib_org_src_dir} ${zlib_src_base} &&
 			mv ${zlib_org_src_dir} ${zlib_src_dir_ntv}) || return 1
@@ -2251,7 +1744,7 @@ install_native_libpng()
 {
 	[ -f ${prefix}/include/png.h -a "${force_install}" != yes ] && return 0
 	search_header zlib.h > /dev/null || install_native_zlib || return 1
-	fetch_libpng_source || return 1
+	fetch libpng || return 1
 	[ -d ${libpng_src_dir_ntv} ] ||
 		(unpack_archive ${libpng_org_src_dir} ${libpng_src_base} &&
 			mv ${libpng_org_src_dir} ${libpng_src_dir_ntv}) || return 1
@@ -2266,7 +1759,7 @@ install_native_libpng()
 install_native_libtiff()
 {
 	[ -f ${prefix}/include/tiffio.h -a "${force_install}" != yes ] && return 0
-	fetch_libtiff_source || return 1
+	fetch tiff || return 1
 	[ -d ${tiff_src_dir_ntv} ] ||
 		(unpack_archive ${tiff_org_src_dir} ${tiff_src_base} &&
 			mv ${tiff_org_src_dir} ${tiff_src_dir_ntv}) || return 1
@@ -2281,7 +1774,7 @@ install_native_libtiff()
 install_native_libjpeg()
 {
 	[ -f ${prefix}/include/jpeglib.h -a "${force_install}" != yes ] && return 0
-	fetch_libjpeg_source || return 1
+	fetch jpeg || return 1
 	[ -d ${jpeg_src_dir_ntv} ] ||
 		(unpack_archive ${jpeg_org_src_dir} ${jpeg_src_base} &&
 			mv ${jpeg_org_src_dir} ${jpeg_src_dir_ntv}) || return 1
@@ -2297,7 +1790,7 @@ install_native_giflib()
 {
 	[ -f ${prefix}/include/gif_lib.h -a "${force_install}" != yes ] && return 0
 	which xmlto > /dev/null || install_native_xmlto || return 1
-	fetch_giflib_source || return 1
+	fetch giflib || return 1
 	[ -d ${giflib_src_dir_ntv} ] ||
 		(unpack_archive ${giflib_org_src_dir} ${giflib_src_base} &&
 			mv ${giflib_org_src_dir} ${giflib_src_dir_ntv}) || return 1
@@ -2332,7 +1825,7 @@ install_native_libwebp()
 	search_header tiff.h > /dev/null || install_native_libtiff || return 1
 	search_header jpeglib.h > /dev/null || install_native_libjpeg || return 1
 	search_header gif_lib.h > /dev/null || install_native_giflib || return 1
-	fetch_libwebp_source || return 1
+	fetch libwebp || return 1
 	unpack_archive ${libwebp_org_src_dir} ${libwebp_src_base} || return 1
 	[ -f ${libwebp_org_src_dir}/Makefile ] ||
 		(cd ${libwebp_org_src_dir}
@@ -2345,7 +1838,7 @@ install_native_libwebp()
 install_native_libffi()
 {
 	[ -f ${prefix}/lib/libffi-*/include/ffi.h -a "${force_install}" != yes ] && return 0
-	fetch_libffi_source || return 1
+	fetch libffi || return 1
 	unpack_archive ${libffi_org_src_dir} ${libffi_src_base} || return 1
 	[ -f ${libffi_org_src_dir}/Makefile ] ||
 		(cd ${libffi_org_src_dir}
@@ -2836,7 +2329,7 @@ install_native_emacs()
 	search_header jpeglib.h > /dev/null || install_native_libjpeg || return 1
 	search_header gif_lib.h > /dev/null || install_native_giflib || return 1
 	search_header xpm.h X11 > /dev/null || install_native_libXpm || return 1
-	fetch_emacs_source || return 1
+	fetch emacs || return 1
 	unpack_archive ${emacs_org_src_dir} ${emacs_src_base} || return 1
 	[ -f ${emacs_org_src_dir}/Makefile ] ||
 		(cd ${emacs_org_src_dir}
@@ -2855,7 +2348,7 @@ install_native_vim()
 	which perl > /dev/null || install_native_perl || return 1
 	search_header Python.h > /dev/null || install_native_python || return 1
 	search_header ruby.h > /dev/null || install_native_ruby || return 1
-	fetch_vim_source || return 1
+	fetch vim || return 1
 	unpack_archive ${vim_org_src_dir} ${vim_src_base} || return 1
 	(cd ${vim_org_src_dir}
 	./configure --prefix=${prefix} --build=${build} \
@@ -2878,7 +2371,7 @@ install_native_vim()
 install_native_ctags()
 {
 	[ -x ${prefix}/bin/ctags -a "${force_install}" != yes ] && return 0
-	fetch_ctags_source || return 1
+	fetch ctags || return 1
 	unpack_archive ${ctags_org_src_dir} ${ctags_src_base} || return 1
 	[ -f ${ctags_org_src_dir}/Makefile ] ||
 		(cd ${ctags_org_src_dir}
@@ -2890,7 +2383,7 @@ install_native_ctags()
 install_native_grep()
 {
 	[ -x ${prefix}/bin/grep -a "${force_install}" != yes ] && return 0
-	fetch_grep_source || return 1
+	fetch grep || return 1
 	unpack_archive ${grep_org_src_dir} ${grep_src_base} || return 1
 	[ -f ${grep_org_src_dir}/Makefile ] ||
 		(cd ${grep_org_src_dir}
@@ -2903,7 +2396,7 @@ install_native_global()
 {
 	[ -x ${prefix}/bin/global -a "${force_install}" != yes ] && return 0
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return 1
-	fetch_global_source || return 1
+	fetch global || return 1
 	unpack_archive ${global_org_src_dir} ${global_src_base} || return 1
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
@@ -2916,7 +2409,7 @@ install_native_global()
 install_native_pcre2()
 {
 	[ -f ${prefix}/include/pcre2.h -a "${force_install}" != yes ] && return 0
-	fetch_pcre2_source || return 1
+	fetch pcre2 || return 1
 	unpack_archive ${pcre2_org_src_dir} ${pcre2_src_base} || return 1
 	[ -f ${pcre2_org_src_dir}/Makefile ] ||
 		(cd ${pcre2_org_src_dir}
@@ -2931,7 +2424,7 @@ install_native_the_silver_searcher()
 	search_header pcre2.h > /dev/null || install_native_pcre2 || return 1
 	search_header zlib.h > /dev/null || install_native_zlib || return 1
 	search_header lzma.h > /dev/null || install_native_xz || return 1
-	fetch_the_silver_searcher_source || return 1
+	fetch the_silver_searcher || return 1
 	unpack_archive ${the_silver_searcher_org_src_dir} ${the_silver_searcher_src_base} || return 1
 	[ -f ${the_silver_searcher_org_src_dir}/Makefile ] ||
 		(cd ${the_silver_searcher_org_src_dir}
@@ -2946,7 +2439,7 @@ install_native_graphviz()
 {
 	[ -x ${prefix}/bin/dot -a "${force_install}" != yes ] && return 0
 	which swig > /dev/null || install_native_swig || return 1
-	fetch_graphviz_source || return 1
+	fetch graphviz || return 1
 	unpack_archive ${graphviz_org_src_dir} ${graphviz_src_base} || return 1
 	[ -f ${graphviz_org_src_dir}/Makefile ] ||
 		(cd ${graphviz_org_src_dir}
@@ -2962,7 +2455,7 @@ install_native_doxygen()
 	[ -x ${prefix}/bin/doxygen -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
 	which clang > /dev/null || install_native_cfe || return 1
-	fetch_doxygen_source || return 1
+	fetch doxygen || return 1
 	unpack_archive ${doxygen_org_src_dir} ${doxygen_src_base} || return 1
 	mkdir -p ${doxygen_bld_dir_ntv}
 	(cd ${doxygen_bld_dir_ntv}
@@ -2977,7 +2470,7 @@ install_native_doxygen()
 install_native_diffutils()
 {
 	[ -x ${prefix}/bin/diff -a "${force_install}" != yes ] && return 0
-	fetch_diffutils_source || return 1
+	fetch diffutils || return 1
 	unpack_archive ${diffutils_org_src_dir} ${diffutils_src_base} || return 1
 	[ -f ${diffutils_org_src_dir}/Makefile ] ||
 		(cd ${diffutils_org_src_dir}
@@ -2989,7 +2482,7 @@ install_native_diffutils()
 install_native_patch()
 {
 	[ -x ${prefix}/bin/patch -a "${force_install}" != yes ] && return 0
-	fetch_patch_source || return 1
+	fetch patch || return 1
 	unpack_archive ${patch_org_src_dir} ${patch_src_base} || return 1
 	[ -f ${patch_org_src_dir}/Makefile ] ||
 		(cd ${patch_org_src_dir}
@@ -3001,7 +2494,7 @@ install_native_patch()
 install_native_findutils()
 {
 	[ -x ${prefix}/bin/find -a "${force_install}" != yes ] && return 0
-	fetch_findutils_source || return 1
+	fetch findutils || return 1
 	unpack_archive ${findutils_org_src_dir} ${findutils_src_base} || return 1
 	[ -f ${findutils_org_src_dir}/Makefile ] ||
 		(cd ${findutils_org_src_dir}
@@ -3014,7 +2507,7 @@ install_native_screen()
 {
 	[ -x ${prefix}/bin/screen -a "${force_install}" != yes ] && return 0
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return 1
-	fetch_screen_source || return 1
+	fetch screen || return 1
 	unpack_archive ${screen_org_src_dir} ${screen_src_base} || return 1
 	[ -f ${screen_org_src_dir}/Makefile ] ||
 		(cd ${screen_org_src_dir}
@@ -3028,7 +2521,7 @@ install_native_screen()
 install_native_libevent()
 {
 	[ -f ${prefix}/include/event2/event.h -a "${force_install}" != yes ] && return 0
-	fetch_libevent_source || return 1
+	fetch libevent || return 1
 	unpack_archive ${libevent_org_src_dir}-stable ${libevent_src_base} || return 1
 	[ -f ${libevent_org_src_dir}-stable/Makefile ] ||
 		(cd ${libevent_org_src_dir}-stable
@@ -3043,7 +2536,7 @@ install_native_tmux()
 	[ -x ${prefix}/bin/tmux -a "${force_install}" != yes ] && return 0
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return 1
 	search_header event.h event2 > /dev/null || install_native_libevent || return 1
-	fetch_tmux_source || return 1
+	fetch tmux || return 1
 	unpack_archive ${tmux_org_src_dir} ${tmux_src_base} || return 1
 	[ -f ${tmux_org_src_dir}/Makefile ] ||
 		(cd ${tmux_org_src_dir}
@@ -3057,7 +2550,7 @@ install_native_zsh()
 {
 	[ -x ${prefix}/bin/zsh -a "${force_install}" != yes ] && return 0
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return 1
-	fetch_zsh_source || return 1
+	fetch zsh || return 1
 	unpack_archive ${zsh_org_src_dir} ${zsh_src_base} || return 1
 	[ -f ${zsh_org_src_dir}/Makefile ] ||
 		(cd ${zsh_org_src_dir}
@@ -3069,7 +2562,7 @@ install_native_zsh()
 install_native_bash()
 {
 	[ -x ${prefix}/bin/bash -a "${force_install}" != yes ] && return 0
-	fetch_bash_source || return 1
+	fetch bash || return 1
 	unpack_archive ${bash_org_src_dir} ${bash_src_base} || return 1
 	[ -f ${bash_org_src_dir}/Makefile ] ||
 		(cd ${bash_org_src_dir}
@@ -3081,7 +2574,7 @@ install_native_bash()
 install_native_openssl()
 {
 	[ -d ${prefix}/include/openssl -a "${force_install}" != yes ] && return 0
-	fetch_openssl_source || return 1
+	fetch openssl || return 1
 	unpack_archive ${openssl_org_src_dir} ${openssl_src_base} || return 1
 	(cd ${openssl_org_src_dir}
 	./config --prefix=${prefix} shared) || return 1
@@ -3095,7 +2588,7 @@ install_native_openssh()
 	[ -x ${prefix}/bin/ssh -a "${force_install}" != yes ] && return 0
 	search_header zlib.h > /dev/null || install_native_zlib || return 1
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return 1
-	fetch_openssh_source || return 1
+	fetch openssh || return 1
 	unpack_archive ${openssh_org_src_dir} ${openssh_src_base} || return 1
 	[ -f ${openssh_org_src_dir}/Makefile ] ||
 		(cd ${openssh_org_src_dir}
@@ -3108,7 +2601,7 @@ install_native_curl()
 {
 	[ -x ${prefix}/bin/curl -a "${force_install}" != yes ] && return 0
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return 1
-	fetch_curl_source || return 1
+	fetch curl || return 1
 	unpack_archive ${curl_org_src_dir} ${curl_src_base} || return 1
 	(cd ${curl_org_src_dir}
 	./configure --prefix=${prefix} --build=${build} \
@@ -3126,7 +2619,7 @@ install_native_curl()
 install_native_asciidoc()
 {
 	[ -x ${prefix}/bin/asciidoc -a "${force_install}" != yes ] && return 0
-	fetch_asciidoc_source || return 1
+	fetch asciidoc || return 1
 	unpack_archive ${asciidoc_org_src_dir} ${asciidoc_src_base} || return 1
 	[ -f ${asciidoc_org_src_dir}/Makefile ] ||
 		(cd ${asciidoc_org_src_dir}
@@ -3139,7 +2632,7 @@ install_native_libxml2()
 {
 	[ -d ${prefix}/include/libxml2 -a "${force_install}" != yes ] && return 0
 	search_header Python.h > /dev/null || install_native_python || return 1
-	fetch_libxml2_source || return 1
+	fetch libxml2 || return 1
 	unpack_archive ${libxml2_org_src_dir} ${libxml2_src_base} || return 1
 	[ -f ${libxml2_org_src_dir}/Makefile ] ||
 		(cd ${libxml2_org_src_dir}
@@ -3154,7 +2647,7 @@ install_native_libxslt()
 {
 	[ -d ${prefix}/include/libxslt -a "${force_install}" != yes ] && return 0
 	search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return 1
-	fetch_libxslt_source || return 1
+	fetch libxslt || return 1
 	unpack_archive ${libxslt_org_src_dir} ${libxslt_src_base} || return 1
 	[ -f ${libxslt_org_src_dir}/Makefile ] ||
 		(cd ${libxslt_org_src_dir}
@@ -3167,7 +2660,7 @@ install_native_xmlto()
 {
 	[ -x ${prefix}/bin/xmlto -a "${force_install}" != yes ] && return 0
 	search_header xslt.h libxslt > /dev/null || install_native_libxslt || return 1
-	fetch_xmlto_source || return 1
+	fetch xmlto || return 1
 	unpack_archive ${xmlto_org_src_dir} ${xmlto_src_base} || return 1
 	[ -f ${xmlto_org_src_dir}/Makefile ] ||
 		(cd ${xmlto_org_src_dir}
@@ -3179,7 +2672,7 @@ install_native_xmlto()
 install_native_gettext()
 {
 	[ -x ${prefix}/bin/gettext -a "${force_install}" != yes ] && return 0
-	fetch_gettext_source || return 1
+	fetch gettext || return 1
 	unpack_archive ${gettext_org_src_dir} ${gettext_src_base} || return 1
 	[ -f ${gettext_org_src_dir}/Makefile ] ||
 		(cd ${gettext_org_src_dir}
@@ -3202,7 +2695,7 @@ install_native_git()
 	search_header xslt.h libxslt > /dev/null || install_native_libxslt || return 1
 	which msgfmt > /dev/null || install_native_gettext || return 1
 	which perl > /dev/null || install_native_perl || return 1
-	fetch_git_source || return 1
+	fetch git || return 1
 	unpack_archive ${git_org_src_dir} ${git_src_base} || return 1
 	make -C ${git_org_src_dir} -j ${jobs} V=1 configure || return 1
 	(cd ${git_org_src_dir}
@@ -3218,7 +2711,7 @@ install_native_mercurial()
 {
 	[ -x ${prefix}/bin/hg -a "${force_install}" != yes ] && return 0
 	which python > /dev/null || install_native_python || return 1
-	fetch_mercurial_source || return 1
+	fetch mercurial || return 1
 	unpack_archive ${mercurial_org_src_dir} ${mercurial_src_base} || return 1
 	pip install docutils || return 1
 	make -C ${mercurial_org_src_dir} -j ${jobs} PYTHON=python all || return 1
@@ -3228,7 +2721,7 @@ install_native_mercurial()
 install_native_sqlite()
 {
 	[ -f ${prefix}/include/sqlite3.h -a "${force_install}" != yes ] && return 0
-	fetch_sqlite_source || return 1
+	fetch sqlite-autoconf || return 1
 	unpack_archive ${sqlite_autoconf_org_src_dir} ${sqlite_autoconf_src_base} || return 1
 	[ -f ${sqlite_autoconf_org_src_dir}/Makefile ] ||
 		(cd ${sqlite_autoconf_org_src_dir}
@@ -3240,7 +2733,7 @@ install_native_sqlite()
 install_native_apr()
 {
 	[ -d ${prefix}/include/apr-1 -a "${force_install}" != yes ] && return 0
-	fetch_apr_source || return 1
+	fetch apr || return 1
 	unpack_archive ${apr_org_src_dir} ${apr_src_base} || return 1
 	[ -f ${apr_org_src_dir}/Makefile ] ||
 		(cd ${apr_org_src_dir}
@@ -3255,7 +2748,7 @@ install_native_apr_util()
 	[ -f ${prefix}/include/apr-1/apu.h -a "${force_install}" != yes ] && return 0
 	search_header apr.h apr-1 > /dev/null || install_native_apr || return 1
 	search_header sqlite3.h > /dev/null || install_native_sqlite || return 1
-	fetch_apr_util_source || return 1
+	fetch apr-util || return 1
 	unpack_archive ${apr_util_org_src_dir} ${apr_util_src_base} || return 1
 	[ -f ${apr_util_org_src_dir}/Makefile ] ||
 		(cd ${apr_util_org_src_dir}
@@ -3275,7 +2768,7 @@ install_native_subversion()
 	which python3 > /dev/null || install_native_python || return 1
 	which perl > /dev/null || install_native_perl || return 1
 	which ruby > /dev/null || install_native_ruby || return 1
-	fetch_subversion_source || return 1
+	fetch subversion || return 1
 	unpack_archive ${subversion_org_src_dir} ${subversion_src_base} || return 1
 	[ -f ${subversion_org_src_dir}/Makefile ] ||
 		(cd ${subversion_org_src_dir}
@@ -3293,7 +2786,7 @@ install_native_cmake()
 	search_header zlib.h > /dev/null || install_native_zlib || return 1
 	search_header bzlib.h > /dev/null || install_native_bzip2 || return 1
 	search_header lzma.h > /dev/null || install_native_xz || return 1
-	fetch_cmake_source || return 1
+	fetch cmake || return 1
 	unpack_archive ${cmake_org_src_dir} ${cmake_src_base} || return 1
 	[ -f ${cmake_org_src_dir}/Makefile ] ||
 		(cd ${cmake_org_src_dir}
@@ -3307,7 +2800,7 @@ install_native_libedit()
 {
 	[ -f ${prefix}/include/histedit.h -a "${force_install}" != yes ] && return 0
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return 1
-	fetch_libedit_source || return 1
+	fetch libedit || return 1
 	unpack_archive ${libedit_org_src_dir} ${libedit_src_base} || return 1
 	[ -f ${libedit_org_src_dir}/Makefile ] ||
 		(cd ${libedit_org_src_dir}
@@ -3320,7 +2813,7 @@ install_native_libedit()
 install_native_swig()
 {
 	[ -x ${prefix}/bin/swig -a "${force_install}" != yes ] && return 0
-	fetch_swig_source || return 1
+	fetch swig || return 1
 	unpack_archive ${swig_org_src_dir} ${swig_src_base} || return 1
 	[ -f ${swig_org_src_dir}/Makefile ] ||
 		(cd ${swig_org_src_dir}
@@ -3333,7 +2826,7 @@ install_native_llvm()
 {
 	[ -d ${prefix}/include/llvm -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
-	fetch_llvm_source || return 1
+	fetch llvm || return 1
 	unpack_archive ${llvm_org_src_dir} ${llvm_src_base} || return 1
 	mkdir -p ${llvm_bld_dir}
 	(cd ${llvm_bld_dir}
@@ -3348,7 +2841,7 @@ install_native_libcxx()
 {
 	[ -e ${prefix}/lib/libc++.so -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
-	fetch_libcxx_source || return 1
+	fetch libcxx || return 1
 	unpack_archive ${libcxx_org_src_dir} ${libcxx_src_base} || return 1
 	mkdir -p ${libcxx_bld_dir}
 	(cd ${libcxx_bld_dir}
@@ -3365,7 +2858,7 @@ install_native_libcxxabi()
 	which cmake > /dev/null || install_native_cmake || return 1
 	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return 1
 	search_header iostream c++/v1 > /dev/null || install_native_libcxx || return 1
-	fetch_libcxxabi_source || return 1
+	fetch libcxxabi || return 1
 	unpack_archive ${libcxxabi_org_src_dir} ${libcxxabi_src_base} || return 1
 	sed -ie '/set(LLVM_CMAKE_PATH /s%share/llvm/cmake%lib/cmake/llvm%' ${libcxxabi_org_src_dir}/CMakeLists.txt || return 1 # [XXX] workaround for LLVM 3.9.0
 	mkdir -p ${libcxxabi_bld_dir}
@@ -3381,7 +2874,7 @@ install_native_compiler_rt()
 	[ -d ${prefix}/include/sanitizer -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
 	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return 1
-	fetch_compiler_rt_source || return 1
+	fetch compiler-rt || return 1
 	unpack_archive ${compiler_rt_org_src_dir} ${compiler_rt_src_base} || return 1
 	mkdir -p ${compiler_rt_bld_dir}
 	(cd ${compiler_rt_bld_dir}
@@ -3399,7 +2892,7 @@ install_native_cfe()
 	search_header iostream c++/v1 > /dev/null || install_native_libcxx || return 1
 	search_header ABI.h clang/Basic > /dev/null || install_native_libcxxabi || return 1
 	search_header allocator_interface.h sanitizer > /dev/null || install_native_compiler_rt || return 1
-	fetch_cfe_source || return 1
+	fetch cfe || return 1
 	unpack_archive ${cfe_org_src_dir} ${cfe_src_base} || return 1
 	mkdir -p ${cfe_bld_dir}
 	(cd ${cfe_bld_dir}
@@ -3412,7 +2905,7 @@ install_native_cfe()
 install_native_clang_tools_extra()
 {
 	which cmake > /dev/null || install_native_cmake || return 1
-	fetch_clang_tools_extra_source || return 1
+	fetch clang-tools-extra || return 1
 	unpack_archive ${clang_tools_extra_org_src_dir} ${clang_tools_extra_src_base} || return 1
 	mkdir -p ${clang_tools_extra_bld_dir}
 	(cd ${clang_tools_extra_bld_dir}
@@ -3426,9 +2919,9 @@ install_native_lld()
 {
 	[ -x ${prefix}/bin/lld -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
-	fetch_llvm_source || return 1
+	fetch llvm || return 1
 	unpack_archive ${llvm_org_src_dir} ${llvm_src_base} || return 1
-	fetch_lld_source || return 1
+	fetch lld || return 1
 	[ -d ${llvm_org_src_dir}/tools/lld ] ||
 		(unpack_archive ${lld_org_src_dir} ${lld_src_base} &&
 		mv ${lld_org_src_dir} ${llvm_org_src_dir}/tools/lld) || return 1
@@ -3447,9 +2940,9 @@ install_native_lldb()
 	which cmake > /dev/null || install_native_cmake || return 1
 	search_header histedit.h > /dev/null || install_native_libedit || return 1
 	which swig > /dev/null || install_native_swig || return 1
-	fetch_llvm_source || return 1
+	fetch llvm || return 1
 	unpack_archive ${llvm_org_src_dir} ${llvm_src_base} || return 1
-	fetch_lldb_source || return 1
+	fetch lldb || return 1
 	[ -d ${llvm_org_src_dir}/tools/lldb ] ||
 		(unpack_archive ${lldb_org_src_dir} ${lldb_src_base} &&
 		mv ${lldb_org_src_dir} ${llvm_org_src_dir}/tools/lldb) || return 1
@@ -3466,7 +2959,7 @@ install_native_boost()
 {
 	[ -d ${prefix}/include/boost -a "${force_install}" != yes ] && return 0
 	search_header bzlib.h > /dev/null || install_native_bzip2 || return 1
-	fetch_boost_source || return 1
+	fetch boost || return 1
 	unpack_archive ${boost_org_src_dir} ${boost_src_base} || return 1
 	(cd ${boost_org_src_dir}
 	./bootstrap.sh --prefix=${prefix} --with-toolset=gcc &&
@@ -3527,7 +3020,7 @@ install_cross_binutils()
 	[ -x ${prefix}/bin/${target}-as -a "${force_install}" != yes ] && return 0
 	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	search_header zlib.h > /dev/null || install_native_zlib || return 1
-	fetch_binutils_source || return 1
+	fetch binutils || return 1
 	[ -d ${binutils_src_dir_crs} ] ||
 		(unpack_archive ${binutils_org_src_dir} ${binutils_src_base} &&
 			mv ${binutils_org_src_dir} ${binutils_src_dir_crs}) || return 1
@@ -3560,7 +3053,7 @@ install_cross_gcc_without_headers()
 
 install_cross_kernel_header()
 {
-	fetch_kernel_source || return 1
+	fetch linux || return 1
 	[ -d ${linux_src_dir_crs} ] ||
 		(unpack_archive ${linux_org_src_dir} ${linux_src_base} &&
 			mv ${linux_org_src_dir} ${linux_src_dir_crs}) || return 1
@@ -3573,7 +3066,7 @@ install_cross_glibc_headers()
 {
 	which awk > /dev/null || install_native_gawk || return 1
 	which gperf > /dev/null || install_native_gperf || return 1
-	fetch_glibc_source || return 1
+	fetch glibc || return 1
 	[ -d ${glibc_src_dir_crs_hdr} ] ||
 		(unpack_archive ${glibc_org_src_dir} ${glibc_src_base} &&
 			mv ${glibc_org_src_dir} ${glibc_src_dir_crs_hdr}) || return 1
@@ -3674,7 +3167,7 @@ install_cross_gcc()
 	search_header mpfr.h > /dev/null || install_native_mpfr || return 1
 	search_header mpc.h > /dev/null || install_native_mpc || return 1
 	which perl > /dev/null || install_native_perl || return 1
-	fetch_gcc_source || return 1
+	fetch gcc || return 1
 	install_cross_gcc_without_headers || return 1
 	install_cross_kernel_header || return 1
 	install_cross_glibc_headers || return 1
@@ -3689,7 +3182,7 @@ install_cross_gdb()
 	search_header readline.h readline > /dev/null || install_native_readline || return 1
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return 1
 	search_header Python.h > /dev/null || install_native_python || return 1
-	fetch_gdb_source || return 1
+	fetch gdb || return 1
 	unpack_archive ${gdb_org_src_dir} ${gdb_src_base} || return 1
 	mkdir -p ${gdb_bld_dir_crs}
 	[ -f ${gdb_bld_dir_crs}/Makefile ] ||
@@ -3725,7 +3218,7 @@ install_mingw_w64_binutils()
 
 install_mingw_w64_header()
 {
-	fetch_mingw_w64_source || return 1
+	fetch mingw-w64 || return 1
 	[ -d ${mingw_w64_src_dir_crs_hdr} ] ||
 		(unpack_archive ${mingw_w64_org_src_dir} ${mingw_w64_src_base} &&
 			mv ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_crs_hdr}) || return 1
@@ -3782,7 +3275,7 @@ install_mingw_w64_gcc()
 	search_header mpfr.h > /dev/null || install_native_mpfr || return 1
 	search_header mpc.h > /dev/null || install_native_mpc || return 1
 	which perl > /dev/null || install_native_perl || return 1
-	fetch_gcc_source || return 1
+	fetch gcc || return 1
 	install_cross_gcc_without_headers || return 1
 	install_mingw_w64_header || return 1
 	install_mingw_w64_gcc_with_mingw_w64_header || return 1
@@ -3806,7 +3299,7 @@ full_mingw_w64()
 install_native_python()
 {
 	[ -x ${prefix}/bin/python3 -a "${force_install}" != yes ] && return 0
-	fetch_python_source || return 1
+	fetch Python || return 1
 	unpack_archive ${Python_org_src_dir} ${Python_src_base} || return 1
 	[ -f ${Python_org_src_dir}/Makefile ] ||
 		(cd ${Python_org_src_dir}
@@ -3821,7 +3314,7 @@ install_native_python()
 install_native_ruby()
 {
 	[ -x ${prefix}/bin/ruby -a "${force_install}" != yes ] && return 0
-	fetch_ruby_source || return 1
+	fetch ruby || return 1
 	unpack_archive ${ruby_org_src_dir} ${ruby_src_base} || return 1
 	[ -f ${ruby_org_src_dir}/Makefile ] ||
 		(cd ${ruby_org_src_dir}
@@ -3836,7 +3329,7 @@ install_native_go()
 	[ -x ${prefix}/go/bin/go -a "${force_install}" != yes ] && return 0
 	[ -z "${GOPATH}" ] && echo Error. GOPATH not set. >&2 && return 1
 	which git > /dev/null || install_native_git || return 1
-	fetch_go_source || return 1
+	fetch go || return 1
 	[ -d ${go_org_src_dir} ] || unpack_archive ${go_src_base}/go${go_ver}.src ${go_src_base} || return 1
 	[ -d ${go_src_base}/go ] && mv ${go_src_base}/go ${go_org_src_dir}
 	(cd ${go_org_src_dir}/src
@@ -3850,7 +3343,7 @@ install_native_go()
 install_native_perl()
 {
 	[ -x ${prefix}/bin/perl -a "${force_install}" != yes ] && return 0
-	fetch_perl_source || return 1
+	fetch perl || return 1
 	unpack_archive ${perl_org_src_dir} ${perl_src_base} || return 1
 	(cd ${perl_org_src_dir}
 	./Configure -de -Dprefix=${prefix} -Dcc=${CC:-gcc} \
@@ -3864,7 +3357,7 @@ install_native_perl()
 install_native_yasm()
 {
 	[ -x ${prefix}/bin/yasm -a "${force_install}" != yes ] && return 0
-	fetch_yasm_source || return 1
+	fetch yasm || return 1
 	unpack_archive ${yasm_org_src_dir} ${yasm_src_base} || return 1
 	[ -f ${yasm_org_src_dir}/Makefile ] ||
 		(cd ${yasm_org_src_dir}
@@ -3877,7 +3370,7 @@ install_native_x264()
 {
 	[ -x ${prefix}/bin/x264 -a "${force_install}" != yes ] && return 0
 	which yasm > /dev/null || install_native_yasm || return 1
-	fetch_x264_source || return 1
+	fetch x264 || return 1
 	[ -d ${x264_org_src_dir} ] ||
 		(unpack_archive ${x264_org_src_dir} ${x264_src_base} &&
 		mv ${x264_src_base}/x264-snapshot-* ${x264_org_src_dir}) || return 1
@@ -3894,7 +3387,7 @@ install_native_x265()
 	[ -x ${prefix}/bin/x265 -a "${force_install}" != yes ] && return 0
 	which cmake > /dev/null || install_native_cmake || return 1
 	which yasm > /dev/null || install_native_yasm || return 1
-	fetch_x265_source || return 1
+	fetch x265 || return 1
 	[ -d ${x265_org_src_dir} ] ||
 		(unpack_archive ${x265_org_src_dir} ${x265_src_base} &&
 		mv ${x265_src_base}/x265_${x265_ver} ${x265_org_src_dir}) || return 1
@@ -3913,7 +3406,7 @@ install_native_libav()
 	which yasm > /dev/null || install_native_yasm || return 1
 	search_header x264.h > /dev/null || install_native_x264 || return 1
 	search_header x265.h > /dev/null || install_native_x265 || return 1
-	fetch_libav_source || return 1
+	fetch libav || return 1
 	[ -d ${libav_org_src_dir} ] ||
 		unpack_archive ${libav_org_src_dir} ${libav_src_base} || return 1
 	(cd ${libav_org_src_dir}
@@ -3965,9 +3458,9 @@ install_native_opencv()
 	search_header png.h > /dev/null || install_native_libpng || return 1 # systemのlibpngだと古くて新規インストール必須かも。
 	search_header tiff.h > /dev/null || install_native_libtiff || return 1
 	search_header jpeglib.h > /dev/null || install_native_libjpeg || return 1 # systemのlibjpegだと古くて新規インストール必須かも。
-	fetch_opencv_source || return 1
+	fetch opencv || return 1
 	unpack_archive ${opencv_org_src_dir} ${opencv_src_base} || return 1
-	fetch_opencv_contrib_source || return 1
+	fetch opencv_contrib || return 1
 	unpack_archive ${opencv_contrib_org_src_dir} ${opencv_contrib_src_base} || return 1
 	mkdir -p ${opencv_bld_dir_ntv}
 	(cd ${opencv_bld_dir_ntv}
@@ -3989,7 +3482,7 @@ install_crossed_native_binutils()
 	[ -x ${sysroot}/usr/bin/as -a "${force_install}" != yes ] && return 0
 	search_header zlib.h > /dev/null || install_native_zlib || return 1
 	which yacc > /dev/null || install_native_bison || return 1
-	fetch_binutils_source || return 1
+	fetch binutils || return 1
 	[ -d ${binutils_src_dir_crs_ntv} ] ||
 		(unpack_archive ${binutils_org_src_dir} ${binutils_src_base} &&
 			mv ${binutils_org_src_dir} ${binutils_src_dir_crs_ntv}) || return 1
@@ -4006,7 +3499,7 @@ install_crossed_native_binutils()
 install_crossed_native_gmp()
 {
 	[ -f ${sysroot}/usr/include/gmp.h -a "${force_install}" != yes ] && return 0
-	fetch_gmp_source || return 1
+	fetch gmp || return 1
 	[ -d ${gmp_src_dir_crs_ntv} ] ||
 		(unpack_archive ${gmp_org_src_dir} ${gmp_src_base} &&
 			mv ${gmp_org_src_dir} ${gmp_src_dir_crs_ntv}) || return 1
@@ -4020,7 +3513,7 @@ install_crossed_native_gmp()
 install_crossed_native_mpfr()
 {
 	[ -f ${sysroot}/usr/include/mpfr.h -a "${force_install}" != yes ] && return 0
-	fetch_mpfr_source || return 1
+	fetch mpfr || return 1
 	[ -d ${mpfr_src_dir_crs_ntv} ] ||
 		(unpack_archive ${mpfr_org_src_dir} ${mpfr_src_base} &&
 			mv ${mpfr_org_src_dir} ${mpfr_src_dir_crs_ntv}) || return 1
@@ -4037,7 +3530,7 @@ install_crossed_native_mpfr()
 install_crossed_native_mpc()
 {
 	[ -f ${sysroot}/usr/include/mpc.h -a "${force_install}" != yes ] && return 0
-	fetch_mpc_source || return 1
+	fetch mpc || return 1
 	[ -d ${mpc_src_dir_crs_ntv} ] ||
 		(unpack_archive ${mpc_org_src_dir} ${mpc_src_base} &&
 			mv ${mpc_org_src_dir} ${mpc_src_dir_crs_ntv}) || return 1
@@ -4056,7 +3549,7 @@ install_crossed_native_gcc()
 	[ -f ${sysroot}/usr/include/mpfr.h ] || install_crossed_native_mpfr || return 1
 	[ -f ${sysroot}/usr/include/mpc.h ] || install_crossed_native_mpc || return 1
 	which perl > /dev/null || install_native_perl || return 1
-	fetch_gcc_source || return 1
+	fetch gcc || return 1
 	unpack_archive ${gcc_org_src_dir} ${gcc_src_base} || return 1
 	mkdir -p ${gcc_bld_dir_crs_ntv}
 	[ -f ${gcc_bld_dir_crs_ntv}/Makefile ] ||
@@ -4073,7 +3566,7 @@ install_crossed_native_gcc()
 install_crossed_native_zlib()
 {
 	[ -f ${sysroot}/usr/include/zlib.h -a "${force_install}" != yes ] && return 0
-	fetch_zlib_source || return 1
+	fetch zlib || return 1
 	[ -d ${zlib_src_dir_crs_ntv} ] ||
 		(unpack_archive ${zlib_org_src_dir} ${zlib_src_base} &&
 			mv ${zlib_org_src_dir} ${zlib_src_dir_crs_ntv}) || return 1
@@ -4087,7 +3580,7 @@ install_crossed_native_libpng()
 {
 	[ -f ${sysroot}/usr/include/png.h -a "${force_install}" != yes ] && return 0
 	install_crossed_native_zlib || return 1
-	fetch_libpng_source || return 1
+	fetch libpng || return 1
 	[ -d ${libpng_src_dir_crs_ntv} ] ||
 		(unpack_archive ${libpng_org_src_dir} ${libpng_src_base} &&
 			mv ${libpng_org_src_dir} ${libpng_src_dir_crs_ntv}) || return 1
@@ -4102,7 +3595,7 @@ install_crossed_native_libpng()
 install_crossed_native_libtiff()
 {
 	[ -f ${sysroot}/usr/include/tiffio.h -a "${force_install}" != yes ] && return 0
-	fetch_libtiff_source || return 1
+	fetch tiff || return 1
 	[ -d ${tiff_src_dir_crs_ntv} ] ||
 		(unpack_archive ${tiff_org_src_dir} ${tiff_src_base} &&
 			mv ${tiff_org_src_dir} ${tiff_src_dir_crs_ntv}) || return 1
