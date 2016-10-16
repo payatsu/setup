@@ -779,7 +779,7 @@ full()
 			s/install_native_libpciaccess//
 			s/install_native_libdrm//
 			s/install_native_dri2proto//
-			s/install_native_dri3proto/;
+			s/install_native_dri3proto//
 			s/install_native_presentproto//
 			s/install_native_libxshmfence//
 			s/install_native_mesa//
