@@ -689,9 +689,9 @@ fetch()
 unpack()
 # Unpack source files.
 {
-	clean
 	case ${1} in
 	'')
+		clean
 		for f in `find ${prefix}/src -name '*.tar.gz' -o -name '*.tar.bz2' -o -name '*.tar.xz' -o -name '*.zip'`; do
 			unpack `echo $f | sed -e 's/\.tar\.gz$//;s/\.tar\.bz2$//;s/\.tar\.xz$//;s/\.zip$//'` `dirname $f`
 		done;;
