@@ -88,6 +88,8 @@
 : ${global_ver:=6.5.5}
 : ${pcre2_ver:=10.22}
 : ${the_silver_searcher_ver:=0.33.0}
+: ${the_platinum_searcher_ver:=2.1.4}
+: ${highway_ver:=1.1.0}
 : ${graphviz_ver:=2.38.0}
 : ${doxygen_ver:=1.8.12}
 : ${diffutils_ver:=3.5}
@@ -324,6 +326,10 @@ help()
 		Specify the version of PCRE2 you want, currently '${pcre2_ver}'.
 	the_silver_searcher_ver
 		Specify the version of the silver searcher you want, currently '${the_silver_searcher_ver}'.
+	the_platinum_searcher_ver
+		Specify the version of the platinum searcher you want, currently '${the_platinum_searcher_ver}'.
+	highway_ver
+		Specify the version of highway you want, currently '${highway_ver}'.
 	graphviz_ver
 		Specify the version of Graphviz you want, currently '${graphviz_ver}'.
 	doxygen_ver
@@ -513,6 +519,14 @@ fetch()
 		check_archive ${the_silver_searcher_org_src_dir} ||
 			wget -O ${the_silver_searcher_org_src_dir}.tar.gz \
 				http://geoff.greer.fm/ag/releases/${the_silver_searcher_name}.tar.gz || return 1;;
+	the_platinum_searcher)
+		check_archive ${the_platinum_searcher_org_src_dir} ||
+			wget --no-check-certificate -O ${the_platinum_searcher_org_src_dir}.tar.gz \
+				https://github.com/monochromegane/the_platinum_searcher/archive/v${the_platinum_searcher_ver}.tar.gz || return 1;;
+	highway)
+		check_archive ${highway_org_src_dir} ||
+			wget --no-check-certificate -O ${highway_org_src_dir}.tar.gz \
+				https://github.com/tkengo/highway/archive/v${highway_ver}.tar.gz || return 1;;
 	graphviz)
 		check_archive ${graphviz_org_src_dir} ||
 			wget -O ${graphviz_org_src_dir}.tar.gz \
@@ -972,6 +986,7 @@ set_variables()
 		xextproto fixesproto libXfixes libXext damageproto libXdamage libXt \
 		xproto kbproto glproto libpciaccess libdrm dri2proto dri3proto presentproto libxshmfence mesa \
 		libepoxy gtk webkitgtk emacs vim ctags grep global pcre2 the_silver_searcher \
+		the_platinum_searcher highway \
 		graphviz doxygen diffutils patch findutils screen libevent tmux zsh bash \
 		openssl openssh curl asciidoc libxml2 libxslt xmlto gettext \
 		git mercurial sqlite-autoconf apr apr-util subversion cmake libedit \
@@ -987,6 +1002,7 @@ set_variables()
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -q -e ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64:${LD_LIBRARY_PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -q -e ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib:${LD_LIBRARY_PATH}
 	export LD_LIBRARY_PATH
+	export GOPATH=${HOME}/go
 	update_pkg_config_path
 }
 
@@ -2278,6 +2294,31 @@ install_native_the_silver_searcher()
 			--disable-silent-rules) || return 1
 	make -C ${the_silver_searcher_org_src_dir} -j ${jobs} || return 1
 	make -C ${the_silver_searcher_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+}
+
+install_native_the_platinum_searcher()
+{
+	[ -x ${prefix}/bin/pt -a "${force_install}" != yes ] && return 0
+	which go > /dev/null || install_native_go || return 1
+	fetch the_platinum_searcher || return 1
+	unpack ${the_platinum_searcher_org_src_dir} ${the_platinum_searcher_src_base} || return 1
+	(cd ${the_platinum_searcher_org_src_dir}
+	go get ./...) || return 1
+}
+
+install_native_highway()
+{
+	[ -x ${prefix}/bin/hw -a "${force_install}" != yes ] && return 0
+	which gperf > /dev/null || install_native_gperf || return 1
+	which autoconf > /dev/null || install_native_autoconf || return 1
+	which automake > /dev/null || install_native_automake || return 1
+	fetch highway || return 1
+	unpack ${highway_org_src_dir} ${highway_src_base} || return 1
+	sed -ie "s%^\./configure %&--prefix=${prefix}%;
+				s/^make\$/& -j ${jobs} \&\& make -j ${jobs} install${strip:+-${strip}}/" \
+				${highway_org_src_dir}/tools/build.sh || return 1
+	(cd ${highway_org_src_dir}
+	./tools/build.sh) || return 1
 }
 
 install_native_graphviz()
