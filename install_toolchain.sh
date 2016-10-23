@@ -507,6 +507,10 @@ fetch()
 		check_archive ${vim_org_src_dir} ||
 			wget --no-check-certificate -O ${vim_org_src_dir}.tar.gz \
 				http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return 1;;
+	vimdoc-ja)
+		check_archive ${vimdoc_ja_org_src_dir} ||
+			wget --no-check-certificate -O ${vimdoc_ja_org_src_dir}.tar.gz \
+				https://github.com/vim-jp/vimdoc-ja/archive/master.tar.gz || return 1;;
 	ctags)
 		check_archive ${ctags_org_src_dir} ||
 			wget --trust-server-names -O ${ctags_org_src_dir}.tar.gz \
@@ -903,6 +907,8 @@ set_src_directory()
 	case ${1} in
 	jpeg)
 		eval ${_1}_name=${1}src.\${${_1}_ver};;
+	vimdoc-ja)
+		eval ${_1}_name=${1};;
 	gtk)
 		eval ${_1}_name=${1}+-\${${_1}_ver};;
 	boost)
@@ -985,7 +991,7 @@ set_variables()
 		glib cairo pixman pango gdk-pixbuf atk gobject-introspection inputproto xtrans libX11 libxcb xcb-proto \
 		xextproto fixesproto libXfixes libXext damageproto libXdamage libXt \
 		xproto kbproto glproto libpciaccess libdrm dri2proto dri3proto presentproto libxshmfence mesa \
-		libepoxy gtk webkitgtk emacs vim ctags grep global pcre2 the_silver_searcher \
+		libepoxy gtk webkitgtk emacs vim vimdoc-ja ctags grep global pcre2 the_silver_searcher \
 		the_platinum_searcher highway \
 		graphviz doxygen diffutils patch findutils screen libevent tmux zsh bash \
 		openssl openssh curl asciidoc libxml2 libxslt xmlto gettext \
@@ -2227,6 +2233,11 @@ install_native_vim()
 	) || return 1
 	make -C ${vim_org_src_dir} -j ${jobs} || return 1
 	make -C ${vim_org_src_dir} -j ${jobs} install || return 1
+	fetch vimdoc-ja || return 1
+	unpack ${vimdoc_ja_org_src_dir} ${vimdoc_ja_src_base} || return 1
+	mv -f ${vimdoc_ja_src_base}/vimdoc-ja-master ${vimdoc_ja_org_src_dir} || return 1
+	mkdir -p ${prefix}/share/vim/vimfiles || return 1
+	cp -rvt ${prefix}/share/vim/vimfiles ${vimdoc_ja_org_src_dir} || return 1
 }
 
 install_native_ctags()
