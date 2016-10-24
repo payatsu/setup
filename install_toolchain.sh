@@ -2234,10 +2234,12 @@ install_native_vim()
 	make -C ${vim_org_src_dir} -j ${jobs} || return 1
 	make -C ${vim_org_src_dir} -j ${jobs} install || return 1
 	fetch vimdoc-ja || return 1
-	unpack ${vimdoc_ja_org_src_dir} ${vimdoc_ja_src_base} || return 1
-	mv -f ${vimdoc_ja_src_base}/vimdoc-ja-master ${vimdoc_ja_org_src_dir} || return 1
+	[ -d ${vimdoc_ja_org_src_dir} ] ||
+		(unpack ${vimdoc_ja_org_src_dir} ${vimdoc_ja_src_base}
+		mv -f ${vimdoc_ja_src_base}/vimdoc-ja-master ${vimdoc_ja_org_src_dir}) || return 1
 	mkdir -p ${prefix}/share/vim/vimfiles || return 1
-	cp -rvt ${prefix}/share/vim/vimfiles ${vimdoc_ja_org_src_dir} || return 1
+	cp -rvt ${prefix}/share/vim/vimfiles ${vimdoc_ja_org_src_dir}/* || return 1
+	vim -i NONE -u NONE -N -c "helptags ${prefix}/share/vim/vimfiles/doc" -c qall || return 1
 }
 
 install_native_ctags()
