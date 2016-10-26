@@ -1132,6 +1132,7 @@ install_prerequisites()
 		apt-get install -y libwebkitgtk-3.0-dev python-dev # libicu-dev # for emacs(xwidgets)
 		apt-get install -y lua5.2 liblua5.2-dev || return 1 # for vim
 		apt-get install -y luajit libluajit-5.1 || return 1 # for vim
+		apt-get install -y libgnomeui-dev libxt-dev || return 1 # for vim
 		;;
 	Red|CentOS|\\S)
 		yum install -y make gcc gcc-c++ || return 1
@@ -2225,11 +2226,11 @@ install_native_vim()
 		--enable-rubyinterp=dynamic \
 		--enable-luainterp=dynamic --with-luajit \
 		--enable-cscope --enable-multibyte \
-		--enable-gui=yes --enable-xim --enable-fontset \
-#		--enable-dnd --enable-footer \
-#		--enable-mouse_gpm --enable-mouse_jsbterm \
-#		--enable-mouse_sysmouse \
-#		--enable-xterm_save \
+		--enable-gui=gnome2 --enable-xim --enable-fontset \
+#		+footer \
+#		+mouse_jsbterm \
+#		+mouse_gpm \
+# 		+xterm_save \
 	) || return 1
 	make -C ${vim_org_src_dir} -j ${jobs} || return 1
 	make -C ${vim_org_src_dir} -j ${jobs} install || return 1
