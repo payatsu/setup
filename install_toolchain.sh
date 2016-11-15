@@ -1,5 +1,7 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
+# [TODO] valgrind
+# [TODO] perf
 # [TODO] X window system関係のライブラリ何かを入れると、OS起動時GUIが立ち上がらなくなる。
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] X11, gtk周りのインストールが未完成＆不安定
