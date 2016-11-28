@@ -123,7 +123,7 @@
 : ${boost_ver:=1_62_0}
 : ${mingw_w64_ver:=4.0.6}
 : ${Python_ver:=3.5.2}
-: ${ruby_ver:=2.3.1}
+: ${ruby_ver:=2.3.3}
 : ${go_ver:=1.7.1}
 : ${perl_ver:=5.24.0}
 : ${yasm_ver:=1.3.0}
