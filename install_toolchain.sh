@@ -1583,6 +1583,7 @@ install_native_gdb()
 	search_header readline.h readline > /dev/null || install_native_readline || return 1
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return 1
 	search_header Python.h > /dev/null || install_native_python || return 1
+	which makeinfo > /dev/null || install_native_texinfo || return 1
 	fetch gdb || return 1
 	unpack ${gdb_org_src_dir} ${gdb_src_base} || return 1
 	mkdir -p ${gdb_bld_dir_ntv}
