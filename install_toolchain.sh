@@ -110,7 +110,7 @@
 : ${libxslt_ver:=1.1.29}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
-: ${git_ver:=2.10.1}
+: ${git_ver:=2.11.0}
 : ${mercurial_ver:=3.9.2}
 : ${sqlite_autoconf_ver:=3140200}
 : ${apr_ver:=1.5.2}
