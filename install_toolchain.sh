@@ -39,7 +39,7 @@
 : ${gmp_ver:=6.1.1}
 : ${mpfr_ver:=3.1.5}
 : ${mpc_ver:=1.0.3}
-: ${gcc_ver:=6.2.0}
+: ${gcc_ver:=6.3.0}
 : ${readline_ver:=7.0}
 : ${ncurses_ver:=6.0}
 : ${gdb_ver:=7.12}
@@ -122,7 +122,7 @@
 : ${llvm_ver:=3.9.0}
 : ${boost_ver:=1_62_0}
 : ${mingw_w64_ver:=4.0.6}
-: ${Python_ver:=3.5.2}
+: ${Python_ver:=3.6.0}
 : ${ruby_ver:=2.3.3}
 : ${go_ver:=1.7.4}
 : ${perl_ver:=5.24.0}
