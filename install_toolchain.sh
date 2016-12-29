@@ -120,7 +120,7 @@
 : ${libedit_ver:=20160903-3.1}
 : ${swig_ver:=3.0.10}
 : ${llvm_ver:=3.9.0}
-: ${boost_ver:=1_62_0}
+: ${boost_ver:=1_63_0}
 : ${mingw_w64_ver:=4.0.6}
 : ${Python_ver:=3.6.0}
 : ${ruby_ver:=2.4.0}
