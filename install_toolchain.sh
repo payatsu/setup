@@ -36,7 +36,7 @@
 : ${linux_ver:=3.18.13}
 : ${gperf_ver:=3.0.4}
 : ${glibc_ver:=2.24}
-: ${gmp_ver:=6.1.1}
+: ${gmp_ver:=6.1.2}
 : ${mpfr_ver:=3.1.5}
 : ${mpc_ver:=1.0.3}
 : ${gcc_ver:=6.3.0}
@@ -87,7 +87,7 @@
 : ${vim_ver:=8.0.0027}
 : ${ctags_ver:=5.8}
 : ${grep_ver:=2.27}
-: ${global_ver:=6.5.5}
+: ${global_ver:=6.5.6}
 : ${pcre2_ver:=10.22}
 : ${the_silver_searcher_ver:=1.0.2}
 : ${the_platinum_searcher_ver:=2.1.4}
