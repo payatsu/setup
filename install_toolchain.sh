@@ -52,38 +52,6 @@
 : ${libXpm_ver:=3.5.11}
 : ${libwebp_ver:=0.5.1}
 : ${libffi_ver:=3.2.1}
-: ${glib_ver:=2.50.0}
-: ${cairo_ver:=1.14.6}
-: ${pixman_ver:=0.34.0}
-: ${pango_ver:=1.40.3}
-: ${gdk_pixbuf_ver:=2.36.0}
-: ${atk_ver:=2.22.0}
-: ${gobject_introspection_ver:=1.50.0}
-: ${inputproto_ver:=2.3}
-: ${xtrans_ver:=1.3.5}
-: ${libX11_ver:=1.6.3}
-: ${libxcb_ver:=1.12}
-: ${xcb_proto_ver:=1.12}
-: ${xextproto_ver:=7.3.0}
-: ${libXext_ver:=1.3.3}
-: ${fixesproto_ver:=5.0}
-: ${libXfixes_ver:=5.0.2}
-: ${damageproto_ver:=1.2.1}
-: ${libXdamage_ver:=1.1.4}
-: ${libXt_ver:=1.1.5}
-: ${xproto_ver:=7.0.31}
-: ${kbproto_ver:=1.0.7}
-: ${glproto_ver:=1.4.17}
-: ${libpciaccess_ver:=0.13.4}
-: ${libdrm_ver:=2.4.70}
-: ${dri2proto_ver:=2.8}
-: ${dri3proto_ver:=1.0}
-: ${presentproto_ver:=1.0}
-: ${libxshmfence_ver:=1.2}
-: ${mesa_ver:=12.0.3}
-: ${libepoxy_ver:=1.3.1}
-: ${gtk_ver:=3.22.0}
-: ${webkitgtk_ver:=2.14.0}
 : ${emacs_ver:=25.1}
 : ${vim_ver:=8.0.0027}
 : ${ctags_ver:=5.8}
@@ -120,7 +88,7 @@
 : ${cmake_ver:=3.7.1}
 : ${libedit_ver:=20160903-3.1}
 : ${swig_ver:=3.0.10}
-: ${llvm_ver:=3.9.0}
+: ${llvm_ver:=3.9.1}
 : ${boost_ver:=1_63_0}
 : ${mingw_w64_ver:=4.0.6}
 : ${Python_ver:=3.6.0}
@@ -133,6 +101,43 @@
 : ${libav_ver:=11.7}
 : ${opencv_ver:=3.1.0}
 : ${opencv_contrib_ver:=3.1.0}
+
+#: ${xtrans_ver:=1.3.5}
+#: ${libX11_ver:=1.6.3}
+#: ${libxcb_ver:=1.12}
+#: ${libXext_ver:=1.3.3}
+#: ${libXfixes_ver:=5.0.2}
+#: ${libXdamage_ver:=1.1.4}
+#: ${libXt_ver:=1.1.5}
+
+#: ${inputproto_ver:=2.3}
+#: ${xcb_proto_ver:=1.12}
+#: ${xextproto_ver:=7.3.0}
+#: ${fixesproto_ver:=5.0}
+#: ${damageproto_ver:=1.2.1}
+#: ${xproto_ver:=7.0.31}
+#: ${kbproto_ver:=1.0.7}
+#: ${glproto_ver:=1.4.17}
+#: ${dri2proto_ver:=2.8}
+#: ${dri3proto_ver:=1.0}
+#: ${presentproto_ver:=1.0}
+
+#: ${libpciaccess_ver:=0.13.4}
+#: ${libdrm_ver:=2.4.70}
+#: ${libxshmfence_ver:=1.2}
+
+#: ${mesa_ver:=12.0.3}
+#: ${libepoxy_ver:=1.3.1}
+
+#: ${glib_ver:=2.50.0}
+#: ${cairo_ver:=1.14.6}
+#: ${pixman_ver:=0.34.0}
+#: ${pango_ver:=1.40.3}
+#: ${gdk_pixbuf_ver:=2.36.0}
+#: ${atk_ver:=2.22.0}
+#: ${gobject_introspection_ver:=1.50.0}
+#: ${gtk_ver:=3.22.0}
+#: ${webkitgtk_ver:=2.14.0}
 
 : ${prefix:=/toolchains}
 : ${jobs:=`grep -e processor /proc/cpuinfo | wc -l`}
@@ -251,70 +256,6 @@ help()
 		Specify the version of libwebp you want, currently '${libwebp_ver}'.
 	libffi_ver
 		Specify the version of libffi you want, currently '${libffi_ver}'.
-	glib_ver
-		Specify the version of GLib you want, currently '${glib_ver}'.
-	cairo_ver
-		Specify the version of cairo you want, currently '${cair_ver}'.
-	pixman_ver
-		Specify the version of pixman you want, currently '${pixman_ver}'.
-	pango_ver
-		Specify the version of Pango you want, currently '${pango_ver}'.
-	gdk_pixbuf_ver
-		Specify the version of Gdk-Pixbuf you want, currently '${gdk_pixbuf_ver}'.
-	atk_ver
-		Specify the version of ATK you want, currently '${atk_ver}'.
-	gobject_introspection_ver
-		Specify the version of GObject-Introspection you want, currently '${gobject_introspection_ver}'.
-	inputproto_ver
-		Specify the version of inputproto you want, currently '${inputproto_ver}'.
-	xtrans_ver
-		Specify the version of xtrans you want, currently '${xtrans_ver}'
-	libX11_ver
-		Specify the version of libX11 you want, currently '${libX11_ver}'
-	libxcb_ver
-		Specify the version of libxcb you want, currently '${libxcb_ver}'.
-	xcb_proto_ver
-		Specify the version of xcb-proto you want, currently '${xcb_proto_ver}'.
-	xextproto_ver
-		Specify the version of xextproto you want, currenetly '${xextproto_ver}'.
-	libXext_ver
-		Specify the version of libXext you want, currently '${libXext_ver}'.
-	fixesproto_ver
-		Specify the version of fixesproto you want, currently '${fixesproto_ver}'.
-	libXfixes_ver
-		Specify the version of libXfixes you want, currently '${libXfixes_ver}'.
-	damageproto_ver
-		Specify the version of damageproto you want, currently '${damageproto_ver}'.
-	libXdamage_ver
-		Specify the version of libXdamage you want, currently '${libXdamage_ver}'.
-	libXt_ver
-		Specify the version of X11 Toolkit you want, currently '${libXt_ver}'.
-	xproto_ver
-		Specify the version of xproto you want, currently '${xproto_ver}'.
-	kbproto_ver
-		Specify the version of kbproto you want, currently '${kbproto_ver}'.
-	glproto_ver
-		Specify the version of glproto you want, currently '${glproto_ver}'.
-	libpciaccess_ver
-		Specify the verrsion of libpciaccess you want, currently '${libpciaccess_ver}'.
-	libdrm_ver
-		Specify the version of libdrm you want, currently '${libdrm_ver}'.
-	dri2proto_ver
-		Specify the version of dri2proto you want, currently '${dri2proto_ver}'.
-	dri3proto_ver
-		Specify the version of dri3proto you want, currently '${dri3proto_ver}'.
-	presentproto_ver
-		Specify the version of presentproto you want, currently '${presentproto_ver}'.
-	libxshmfence_ver
-		Specify the version of libxshmfence you want, currently '${libxshmfence_ver}'.
-	mesa_ver
-		Specify the version of mesa you want, currently '${mesa_ver}'.
-	libepoxy_ver
-		Specify the version of libepoxy you want, currently '${libepoxy_ver}'.
-	gtk_ver
-		Specify the version of GTK+ you want, currently '${gtk_ver}'.
-	webkitgtk_ver
-		Specify the version of WebKitGTK+ you want, currenty '${webkitgtk_ver}'.
 	emacs_ver
 		Specify the version of GNU Emacs you want, currently '${emacs_ver}'.
 	vim_ver
@@ -419,10 +360,10 @@ help()
 	# ${0} -p /toolchains -t armv7l-linux-gnueabihf -j 8 auto
 
 	For Raspberry pi2 cross compiler
-	# ${0} -p /toolchains -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 linux_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 cross
+	# ${0} -p /toolchains -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 linux_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 'install cross'
 
 	For microblaze cross compiler
-	# ${0} -p /toolchains -t microblaze-linux-gnu -j 8 binutils_ver=2.25 linux_ver=4.3.3 glibc_ver=2.22 gcc_ver=5.3.0 cross
+	# ${0} -p /toolchains -t microblaze-linux-gnu -j 8 binutils_ver=2.25 linux_ver=4.3.3 glibc_ver=2.22 gcc_ver=5.3.0 'install cross'
 
 EOF
 }
@@ -433,7 +374,6 @@ auto()
 	fetch || return 1
 	full || return 1
 	clean || return 1
-#	strip || return 1 # [TODO] crtbegin.oをstripすると、gccでコンパイルしたバイナリがsegfaultするようになる。
 	archive || return 1
 }
 
@@ -732,37 +672,19 @@ install()
 	_1=`echo ${1} | tr - _`
 	case ${1} in
 	native)
-		;;
+		install_native_binutils || return 1
+		install_native_gcc || return 1
+		install_native_gdb || return 1;;
 	cross)
-		;;
+		install_cross_binutils || return 1
+		install_cross_gcc || return 1
+		install_cross_gdb || return 1;;
 	crossed)
-		;;
+		install_crossed_native_binutils || return 1
+		install_crossed_native_gcc || return 1;;
 	*)
 		echo install: no match: ${1} >&2; return 1;;
 	esac
-}
-
-native()
-# Install native GNU Toolchain, such as GNU binutils, GNU C/C++/Go compiler, GDB(running on and compiles for '${build}').
-{
-	install_native_binutils || return 1
-	install_native_gcc || return 1
-	install_native_gdb || return 1
-}
-
-cross()
-# Install cross GNU Toolchain, such as GNU binutils, GNU C/C++/Go compiler, GDB(running on '${build}', compiles for '${target}').
-{
-	install_cross_binutils || return 1
-	install_cross_gcc || return 1
-	install_cross_gdb || return 1
-}
-
-crossed()
-# Install crossed native apps.
-{
-	install_crossed_native_binutils || return 1
-	install_crossed_native_gcc || return 1
 }
 
 full()
@@ -1236,7 +1158,7 @@ install_native_wget()
 install_native_pkg_config()
 {
 	[ -x ${prefix}/bin/pkg-config -a "${force_install}" != yes ] && return 0
-	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
+#	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
 	fetch pkg-config || return 1
 	unpack ${pkg_config_org_src_dir} ${pkg_config_src_base} || return 1
 	[ -f ${pkg_config_org_src_dir}/Makefile ] ||
@@ -1720,476 +1642,476 @@ install_native_libffi()
 	update_search_path || return 1
 }
 
-install_native_glib()
-{
-	[ -f ${prefix}/include/glib-2.0/glib.h -a "${force_install}" != yes ] && return 0
-	search_header ffi.h > /dev/null || install_native_libffi || return 1
-	search_header pcre2.h > /dev/null || install_native_pcre2 || return 1
-	fetch glib || return 1
-	unpack ${glib_org_src_dir} ${glib_src_base} || return 1
-	[ -f ${glib_org_src_dir}/Makefile ] ||
-		(cd ${glib_org_src_dir}
-		update_pkg_config_path
-		./configure --prefix=${prefix} --build=${build} --enable-static \
-			--disable-silent-rules --disable-libmount --disable-dtrace --enable-systemtap) || return 1
-	make -C ${glib_org_src_dir} -j ${jobs} || return 1
-	make -C ${glib_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_cairo()
-{
-	[ -f ${prefix}/include/cairo/cairo.h -a "${force_install}" != yes ] && return 0
-	fetch cairo || return 1
-	unpack ${cairo_org_src_dir} ${cairo_src_base} || return 1
-	[ -f ${cairo_org_src_dir}/Makefile ] ||
-		(cd ${cairo_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${cairo_org_src_dir} -j ${jobs} || return 1
-	make -C ${cairo_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_pixman()
-{
-	[ -f ${prefix}/include/pixman-1.0/pixman.h -a "${force_install}" != yes ] && return 0
-	fetch pixman || return 1
-	unpack ${pixman_org_src_dir} ${pixman_src_base} || return 1
-	[ -f ${pixman_org_src_dir}/Makefile ] ||
-		(cd ${pixman_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${pixman_org_src_dir} -j ${jobs} || return 1
-	make -C ${pixman_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_pango()
-{
-	[ -f ${prefix}/include/pango-1.0/pango/pango.h -a "${force_install}" != yes ] && return 0
-	search_header cairo.h cairo > /dev/null || install_native_cairo || return 1
-	search_header pixman.h pixman-1.0 > /dev/null || install_native_pixman || return 1
-	fetch pango || return 1
-	unpack ${pango_org_src_dir} ${pango_src_base} || return 1
-	[ -f ${pango_org_src_dir}/Makefile ] ||
-		(cd ${pango_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --enable-static \
-			--disable-silent-rules) || return 1
-	make -C ${pango_org_src_dir} -j ${jobs} || return 1
-	make -C ${pango_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_gdk_pixbuf()
-{
-	[ -f ${prefix}/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h -a "${force_install}" != yes ] && return 0
-	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
-	fetch gdk-pixbuf || return 1
-	unpack ${gdk_pixbuf_org_src_dir} ${gdk_pixbuf_src_base} || return 1
-	[ -f ${gdk_pixbuf_org_src_dir}/Makefile ] ||
-		(cd ${gdk_pixbuf_org_src_dir}
-		update_pkg_config_path
-		./configure --prefix=${prefix} --build=${build} --enable-static \
-			--disable-silent-rules) || return 1
-	make -C ${gdk_pixbuf_org_src_dir} -j ${jobs} || return 1
-	make -C ${gdk_pixbuf_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_atk()
-{
-	[ -f ${prefix}/include/atk-1.0/atk/atk.h -a "${force_install}" != yes ] && return 0
-	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
-	fetch atk || return 1
-	unpack ${atk_org_src_dir} ${atk_src_base} || return 1
-	[ -f ${atk_org_src_dir}/Makefile ] ||
-		(cd ${atk_org_src_dir}
-		update_pkg_config_path
-		./configure --prefix=${prefix} --build=${build} --enable-static \
-			--disable-silent-rules) || return 1
-	make -C ${atk_org_src_dir} -j ${jobs} || return 1
-	make -C ${atk_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_gobject_introspection()
-{
-	[ -d ${prefix}/include/gobject-introspection-1.0 -a "${force_install}" != yes ] && return 0
-	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
-	fetch gobject-introspection || return 1
-	unpack ${gobject_introspection_org_src_dir} ${gobject_introspection_src_base} || return 1
-	[ -f ${gobject_introspection_org_src_dir}/Makefile ] ||
-		(cd ${gobject_introspection_org_src_dir}
-		update_pkg_config_path
-		./configure --prefix=${prefix} --build=${build} \
-			--disable-silent-rules) || return 1
-	make -C ${gobject_introspection_org_src_dir} -j ${jobs} || return 1
-	make -C ${gobject_introspection_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_inputproto()
-{
-	[ -d ${prefix}/include/X11/extensions/XI.h -a "${force_install}" != yes ] && return 0
-	fetch inputproto || return 1
-	unpack ${inputproto_org_src_dir} ${inputproto_src_base} || return 1
-	[ -f ${inputproto_org_src_dir}/Makefile ] ||
-		(cd ${inputproto_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${inputproto_org_src_dir} -j ${jobs} || return 1
-	make -C ${inputproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_xtrans()
-{
-	[ -f ${prefix}/include/X11/Xtrans/Xtrans.h -a "${force_install}" != yes ] && return 0
-	fetch xtrans || return 1
-	unpack ${xtrans_org_src_dir} ${xtrans_src_base} || return 1
-	[ -f ${xtrans_org_src_dir}/Makefile ] ||
-		(cd ${xtrans_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${xtrans_org_src_dir} -j ${jobs} || return 1
-	make -C ${xtrans_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_libX11()
-{
-	[ -f ${prefix}/include/X11/Xlib.h -a "${force_install}" != yes ] && return 0
-	search_header XI.h X11/extensions > /dev/null || install_native_inputproto || return 1
-	search_header Xtrans.h X11/Xtrans > /dev/null || install_native_xtrans || return 1
-	search_header lbx.h X11/extensions > /dev/null || install_native_xextproto || return 1
-	search_header xcb.h xcb > /dev/null || install_native_libxcb || return 1
-	fetch libX11 || return 1
-	unpack ${libX11_org_src_dir} ${libX11_src_base} || return 1
-	[ -f ${libX11_org_src_dir}/Makefile ] ||
-		(cd ${libX11_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${libX11_org_src_dir} -j ${jobs} || return 1
-	make -C ${libX11_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_libxcb()
-{
-	[ -f ${prefix}/include/xcb/xcb.h -a "${force_install}" != yes ] && return 0
-	[ -d ${prefix}/share/xcb ] || install_native_xcb_proto || return 1
-	fetch libxcb || return 1
-	unpack ${libxcb_org_src_dir} ${libxcb_src_base} || return 1
-	[ -f ${libxcb_org_src_dir}/Makefile ] ||
-		(cd ${libxcb_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${libxcb_org_src_dir} -j ${jobs} || return 1
-	make -C ${libxcb_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_xcb_proto()
-{
-	[ -d ${prefix}/share/xcb -a "${force_install}" != yes ] && return 0
-	fetch xcb-proto || return 1
-	unpack ${xcb_proto_org_src_dir} ${xcb_proto_src_base} || return 1
-	[ -f ${xcb_proto_org_src_dir}/Makefile ] ||
-		(cd ${xcb_proto_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${xcb_proto_org_src_dir} -j ${jobs} || return 1
-	make -C ${xcb_proto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_xextproto()
-{
-	[ -f ${prefix}/include/X11/extensions/lbx.h -a "${force_install}" != yes ] && return 0
-	fetch xextproto || return 1
-	unpack ${xextproto_org_src_dir} ${xextproto_src_base} || return 1
-	[ -f ${xextproto_org_src_dir}/Makefile ] ||
-		(cd ${xextproto_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${xextproto_org_src_dir} -j ${jobs} || return 1
-	make -C ${xextproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_libXext()
-{
-	[ -f ${prefix}/include/X11/extensions/Xext.h -a "${force_install}" != yes ] && return 0
-	search_header lbx.h X11/extensions > /dev/null || install_native_xextproto || return 1
-	fetch libXext || return 1
-	unpack ${libXext_org_src_dir} ${libXext_src_base} || return 1
-	[ -f ${libXext_org_src_dir}/Makefile ] ||
-		(cd ${libXext_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${libXext_org_src_dir} -j ${jobs} || return 1
-	make -C ${libXext_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_fixesproto()
-{
-	[ -f ${prefix}/include/X11/extensions/xfixesproto.h -a "${force_install}" != yes ] && return 0
-	fetch fixesproto || return 1
-	unpack ${fixesproto_org_src_dir} ${fixesproto_src_base} || return 1
-	[ -f ${fixesproto_org_src_dir}/Makefile ] ||
-		(cd ${fixesproto_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${fixesproto_org_src_dir} -j ${jobs} || return 1
-	make -C ${fixesproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_libXfixes()
-{
-	[ -f ${prefix}/include/X11/extensions/Xfixes.h -a "${force_install}" != yes ] && return 0
-	search_header xfixesproto.h X11/extensions > /dev/null || install_native_fixesproto || return 1
-	fetch libXfixes || return 1
-	unpack ${libXfixes_org_src_dir} ${libXfixes_src_base} || return 1
-	[ -f ${libXfixes_org_src_dir}/Makefile ] ||
-		(cd ${libXfixes_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${libXfixes_org_src_dir} -j ${jobs} || return 1
-	make -C ${libXfixes_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_damageproto()
-{
-	[ -f ${prefix}/include/X11/extensions/damageproto.h -a "${force_install}" != yes ] && return 0
-	fetch damageproto || return 1
-	unpack ${damageproto_org_src_dir} ${damageproto_src_base} || return 1
-	[ -f ${damageproto_org_src_dir}/Makefile ] ||
-		(cd ${damageproto_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${damageproto_org_src_dir} -j ${jobs} || return 1
-	make -C ${damageproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_libXdamage()
-{
-	[ -f ${prefix}/include/X11/extensions/Xdamage.h -a "${force_install}" != yes ] && return 0
-	search_header damageproto.h X11/extensions > /dev/null || install_native_damageproto || return 1
-	search_header Xfixes.h X11/extensions > /dev/null || install_native_libXfixes || return 1
-	fetch libXdamage || return 1
-	unpack ${libXdamage_org_src_dir} ${libXdamage_src_base} || return 1
-	[ -f ${libXdamage_org_src_dir}/Makefile ] ||
-		(cd ${libXdamage_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${libXdamage_org_src_dir} -j ${jobs} || return 1
-	make -C ${libXdamage_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_libXt()
-{
-	[ -f ${prefix}/include/X11/Core.h -a "${force_install}" != yes ] && return 0
-	fetch libXt || return 1
-	unpack ${libXt_org_src_dir} ${libXt_src_base} || return 1
-	[ -f ${libXt_org_src_dir}/Makefile ] ||
-		(cd ${libXt_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${libXt_org_src_dir} -j ${jobs} || return 1
-	make -C ${libXt_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_xproto()
-{
-	[ -f ${prefix}/include/X11/Xproto.h -a "${force_install}" != yes ] && return 0
-	fetch xproto || return 1
-	unpack ${xproto_org_src_dir} ${xproto_src_base} || return 1
-	[ -f ${xproto_org_src_dir}/Makefile ] ||
-		(cd ${xproto_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${xproto_org_src_dir} -j ${jobs} || return 1
-	make -C ${xproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-}
-
-install_native_kbproto()
-{
-	[ -f ${prefix}/include/X11/XKBproto.h -a "${force_install}" != yes ] && return 0
-	fetch kbproto || return 1
-	unpack ${kbproto_org_src_dir} ${kbproto_src_base} || return 1
-	[ -f ${kbproto_org_src_dir}/Makefile ] ||
-		(cd ${kbproto_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${kbproto_org_src_dir} -j ${jobs} || return 1
-	make -C ${kbproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-}
-
-install_native_glproto()
-{
-	[ -f ${prefix}/include/GL/glxproto.h -a "${force_install}" != yes ] && return 0
-	fetch glproto || return 1
-	unpack ${glproto_org_src_dir} ${glproto_src_base} || return 1
-	[ -f ${glproto_org_src_dir}/Makefile ] ||
-		(cd ${glproto_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${glproto_org_src_dir} -j ${jobs} || return 1
-	make -C ${glproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-}
-
-install_native_libpciaccess()
-{
-	[ -f ${prefix}/include/pciaccess.h -a "${force_install}" != yes ] && return 0
-	fetch libpciaccess || return 1
-	unpack ${libpciaccess_org_src_dir} ${libpciaccess_src_base} || return 1
-	[ -f ${libpciaccess_org_src_dir}/Makefile ] ||
-		(cd ${libpciaccess_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${libpciaccess_org_src_dir} -j ${jobs} || return 1
-	make -C ${libpciaccess_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_libdrm()
-{
-	[ -f ${prefix}/include/xf86drm.h -a "${force_install}" != yes ] && return 0
-	search_header pciaccess.h > /dev/null || install_native_libpciaccess || return 1
-	fetch libdrm || return 1
-	unpack ${libdrm_org_src_dir} ${libdrm_src_base} || return 1
-	[ -f ${libdrm_org_src_dir}/Makefile ] ||
-		(cd ${libdrm_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
-			--enable-static) || return 1
-	make -C ${libdrm_org_src_dir} -j ${jobs} || return 1
-	make -C ${libdrm_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_dri2proto()
-{
-	[ -f ${prefix}/include/X11/extensions/dri2proto.h -a "${force_install}" != yes ] && return 0
-	fetch dri2proto || return 1
-	unpack ${dri2proto_org_src_dir} ${dri2proto_src_base} || return 1
-	[ -f ${dri2proto_org_src_dir}/Makefile ] ||
-		(cd ${dri2proto_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${dri2proto_org_src_dir} -j ${jobs} || return 1
-	make -C ${dri2proto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-}
-
-install_native_dri3proto()
-{
-	[ -f ${prefix}/include/X11/extensions/dri3proto.h -a "${force_install}" != yes ] && return 0
-	fetch dri3proto || return 1
-	unpack ${dri3proto_org_src_dir} ${dri3proto_src_base} || return 1
-	[ -f ${dri3proto_org_src_dir}/Makefile ] ||
-		(cd ${dri3proto_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${dri3proto_org_src_dir} -j ${jobs} || return 1
-	make -C ${dri3proto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-}
-
-install_native_presentproto()
-{
-	[ -f ${prefix}/include/X11/extensions/presentproto.h -a "${force_install}" != yes ] && return 0
-	fetch presentproto || return 1
-	unpack ${presentproto_org_src_dir} ${presentproto_src_base} || return 1
-	[ -f ${presentproto_org_src_dir}/Makefile ] ||
-		(cd ${presentproto_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${presentproto_org_src_dir} -j ${jobs} || return 1
-	make -C ${presentproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-}
-
-install_native_libxshmfence()
-{
-	[ -f ${prefix}/include/X11/xshmfence.h -a "${force_install}" != yes ] && return 0
-	fetch libxshmfence || return 1
-	unpack ${libxshmfence_org_src_dir} ${libxshmfence_src_base} || return 1
-	[ -f ${libxshmfence_org_src_dir}/Makefile ] ||
-		(cd ${libxshmfence_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${libxshmfence_org_src_dir} -j ${jobs} || return 1
-	make -C ${libxshmfence_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_mesa()
-{
-	[ -f ${prefix}/include/GL/gl.h -a "${force_install}" != yes ] && return 0
-	search_header glxproto.h GL > /dev/null || install_native_glproto || return 1
-	search_header xf86drm.h > /dev/null || install_native_libdrm || return 1
-	search_header dri2proto.h X11/extensions > /dev/null || install_native_dri2proto || return 1
-	search_header dri3proto.h X11/extensions > /dev/null || install_native_dri3proto || return 1
-	search_header presentproto.h X11/extensions > /dev/null || install_native_presentproto || return 1
-	[ -d ${prefix}/share/xcb ] || install_native_xcb_proto || return 1
-	search_header xcb.h xcb > /dev/null || install_native_libxcb || return 1
-	search_header xshmfence.h X11 > /dev/null || install_native_libxshmfence || return 1
-	search_header Xext.h X11/extensions > /dev/null || install_native_libXext || return 1
-	search_header Xdamage.h X11/extensions > /dev/null || install_native_libXdamage || return 1
-	search_header Xlib.h X11 > /dev/null || install_native_libX11 || return 1
-	fetch mesa || return 1
-	unpack ${mesa_org_src_dir} ${mesa_src_base} || return 1
-	[ -f ${mesa_org_src_dir}/Makefile ] ||
-		(cd ${mesa_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${mesa_org_src_dir} -j ${jobs} || return 1
-	make -C ${mesa_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_libepoxy()
-{
-	[ -f ${prefix}/include/epoxy/egl.h -a "${force_install}" != yes ] && return 0
-	search_header Core.h X11 > /dev/null || install_native_libXt || return 1
-	fetch libepoxy || return 1
-	unpack ${libepoxy_org_src_dir} ${libepoxy_src_base} || return 1
-	[ -f ${libepoxy_org_src_dir}/Makefile ] ||
-		(cd ${libepoxy_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
-	make -C ${libepoxy_org_src_dir} -j ${jobs} || return 1
-	make -C ${libepoxy_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_gtk()
-{
-	[ -f ${prefix}/include/gtk-3.0/gtk/gtk.h -a "${force_install}" != yes ] && return 0
-	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
-	search_header pango.h pango-1.0/pango > /dev/null || install_native_pango || return 1
-	search_header gdk-pixbuf.h gdk-pixbuf-2.0/gdk-pixbuf > /dev/null || install_native_gdk_pixbuf || return 1
-	search_header atk.h atk-1.0/atk > /dev/null || install_native_atk || return 1
-	search_header giversionmacros.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return 1
-	search_header egl.h epoxy > /dev/null || install_native_libepoxy || return 1
-	fetch gtk || return 1
-	unpack ${gtk_org_src_dir} ${gtk_src_base} || return 1
-	[ -f ${gtk_org_src_dir}/Makefile ] ||
-		(cd ${gtk_org_src_dir}
-		update_pkg_config_path
-		./configure --prefix=${prefix} --build=${build} --enable-static \
-			--disable-silent-rules) || return 1
-	make -C ${gtk_org_src_dir} -j ${jobs} || return 1
-	make -C ${gtk_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
-	update_search_path || return 1
-}
-
-install_native_webkitgtk()
-{
-#	[ -x ${prefix}/bin/gawk -a "${force_install}" != yes ] && return 0
-	search_header gtk.h gtk-3.0/gtk > /dev/null || install_native_gtk || return 1
-	search_header sqlite3.h > /dev/null || install_native_sqlite || return 1
-	search_header png.h > /dev/null || install_native_libpng || return 1
-	search_header tiff.h > /dev/null || install_native_libtiff || return 1
-	search_header jpeglib.h > /dev/null || install_native_libjpeg || return 1
-	search_header gif_lib.h > /dev/null || install_native_giflib || return 1
-	search_header decode.h webp > /dev/null || install_native_libwebp || return 1
-	fetch webkitgtk || return 1
-	unpack ${webkitgtk_org_src_dir} ${webkitgtk_src_base} || return 1
-	mkdir -p ${webkitgtk_bld_dir_ntv}
-	[ -f ${webkitgtk_bld_dir_ntv}/Makefile ] ||
-		(cd ${webkitgtk_bld_dir_ntv}
-		update_pkg_config_path
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} -L${prefix}/lib" \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-			-DPORT=GTK -DENABLE_CREDENTIAL_STORAGE=OFF \
-			-DENABLE_SPELLCHECK=OFF -DENABLE_WEB_AUDIO=OFF -DENABLE_VIDEO=OFF \
-			-DUSE_LIBNOTIFY=OFF -DUSE_LIBHYPHEN=OFF \
-			${webkitgtk_org_src_dir}) || return 1
-	make -C ${webkitgtk_bld_dir_ntv} -j ${jobs} || return 1
-	make -C ${webkitgtk_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return 1
-}
+#install_native_glib()
+#{
+#	[ -f ${prefix}/include/glib-2.0/glib.h -a "${force_install}" != yes ] && return 0
+#	search_header ffi.h > /dev/null || install_native_libffi || return 1
+#	search_header pcre2.h > /dev/null || install_native_pcre2 || return 1
+#	fetch glib || return 1
+#	unpack ${glib_org_src_dir} ${glib_src_base} || return 1
+#	[ -f ${glib_org_src_dir}/Makefile ] ||
+#		(cd ${glib_org_src_dir}
+#		update_pkg_config_path
+#		./configure --prefix=${prefix} --build=${build} --enable-static \
+#			--disable-silent-rules --disable-libmount --disable-dtrace --enable-systemtap) || return 1
+#	make -C ${glib_org_src_dir} -j ${jobs} || return 1
+#	make -C ${glib_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_cairo()
+#{
+#	[ -f ${prefix}/include/cairo/cairo.h -a "${force_install}" != yes ] && return 0
+#	fetch cairo || return 1
+#	unpack ${cairo_org_src_dir} ${cairo_src_base} || return 1
+#	[ -f ${cairo_org_src_dir}/Makefile ] ||
+#		(cd ${cairo_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${cairo_org_src_dir} -j ${jobs} || return 1
+#	make -C ${cairo_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_pixman()
+#{
+#	[ -f ${prefix}/include/pixman-1.0/pixman.h -a "${force_install}" != yes ] && return 0
+#	fetch pixman || return 1
+#	unpack ${pixman_org_src_dir} ${pixman_src_base} || return 1
+#	[ -f ${pixman_org_src_dir}/Makefile ] ||
+#		(cd ${pixman_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${pixman_org_src_dir} -j ${jobs} || return 1
+#	make -C ${pixman_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_pango()
+#{
+#	[ -f ${prefix}/include/pango-1.0/pango/pango.h -a "${force_install}" != yes ] && return 0
+#	search_header cairo.h cairo > /dev/null || install_native_cairo || return 1
+#	search_header pixman.h pixman-1.0 > /dev/null || install_native_pixman || return 1
+#	fetch pango || return 1
+#	unpack ${pango_org_src_dir} ${pango_src_base} || return 1
+#	[ -f ${pango_org_src_dir}/Makefile ] ||
+#		(cd ${pango_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --enable-static \
+#			--disable-silent-rules) || return 1
+#	make -C ${pango_org_src_dir} -j ${jobs} || return 1
+#	make -C ${pango_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_gdk_pixbuf()
+#{
+#	[ -f ${prefix}/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h -a "${force_install}" != yes ] && return 0
+#	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
+#	fetch gdk-pixbuf || return 1
+#	unpack ${gdk_pixbuf_org_src_dir} ${gdk_pixbuf_src_base} || return 1
+#	[ -f ${gdk_pixbuf_org_src_dir}/Makefile ] ||
+#		(cd ${gdk_pixbuf_org_src_dir}
+#		update_pkg_config_path
+#		./configure --prefix=${prefix} --build=${build} --enable-static \
+#			--disable-silent-rules) || return 1
+#	make -C ${gdk_pixbuf_org_src_dir} -j ${jobs} || return 1
+#	make -C ${gdk_pixbuf_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_atk()
+#{
+#	[ -f ${prefix}/include/atk-1.0/atk/atk.h -a "${force_install}" != yes ] && return 0
+#	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
+#	fetch atk || return 1
+#	unpack ${atk_org_src_dir} ${atk_src_base} || return 1
+#	[ -f ${atk_org_src_dir}/Makefile ] ||
+#		(cd ${atk_org_src_dir}
+#		update_pkg_config_path
+#		./configure --prefix=${prefix} --build=${build} --enable-static \
+#			--disable-silent-rules) || return 1
+#	make -C ${atk_org_src_dir} -j ${jobs} || return 1
+#	make -C ${atk_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_gobject_introspection()
+#{
+#	[ -d ${prefix}/include/gobject-introspection-1.0 -a "${force_install}" != yes ] && return 0
+#	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
+#	fetch gobject-introspection || return 1
+#	unpack ${gobject_introspection_org_src_dir} ${gobject_introspection_src_base} || return 1
+#	[ -f ${gobject_introspection_org_src_dir}/Makefile ] ||
+#		(cd ${gobject_introspection_org_src_dir}
+#		update_pkg_config_path
+#		./configure --prefix=${prefix} --build=${build} \
+#			--disable-silent-rules) || return 1
+#	make -C ${gobject_introspection_org_src_dir} -j ${jobs} || return 1
+#	make -C ${gobject_introspection_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_inputproto()
+#{
+#	[ -d ${prefix}/include/X11/extensions/XI.h -a "${force_install}" != yes ] && return 0
+#	fetch inputproto || return 1
+#	unpack ${inputproto_org_src_dir} ${inputproto_src_base} || return 1
+#	[ -f ${inputproto_org_src_dir}/Makefile ] ||
+#		(cd ${inputproto_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${inputproto_org_src_dir} -j ${jobs} || return 1
+#	make -C ${inputproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_xtrans()
+#{
+#	[ -f ${prefix}/include/X11/Xtrans/Xtrans.h -a "${force_install}" != yes ] && return 0
+#	fetch xtrans || return 1
+#	unpack ${xtrans_org_src_dir} ${xtrans_src_base} || return 1
+#	[ -f ${xtrans_org_src_dir}/Makefile ] ||
+#		(cd ${xtrans_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${xtrans_org_src_dir} -j ${jobs} || return 1
+#	make -C ${xtrans_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_libX11()
+#{
+#	[ -f ${prefix}/include/X11/Xlib.h -a "${force_install}" != yes ] && return 0
+#	search_header XI.h X11/extensions > /dev/null || install_native_inputproto || return 1
+#	search_header Xtrans.h X11/Xtrans > /dev/null || install_native_xtrans || return 1
+#	search_header lbx.h X11/extensions > /dev/null || install_native_xextproto || return 1
+#	search_header xcb.h xcb > /dev/null || install_native_libxcb || return 1
+#	fetch libX11 || return 1
+#	unpack ${libX11_org_src_dir} ${libX11_src_base} || return 1
+#	[ -f ${libX11_org_src_dir}/Makefile ] ||
+#		(cd ${libX11_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${libX11_org_src_dir} -j ${jobs} || return 1
+#	make -C ${libX11_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_libxcb()
+#{
+#	[ -f ${prefix}/include/xcb/xcb.h -a "${force_install}" != yes ] && return 0
+#	[ -d ${prefix}/share/xcb ] || install_native_xcb_proto || return 1
+#	fetch libxcb || return 1
+#	unpack ${libxcb_org_src_dir} ${libxcb_src_base} || return 1
+#	[ -f ${libxcb_org_src_dir}/Makefile ] ||
+#		(cd ${libxcb_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${libxcb_org_src_dir} -j ${jobs} || return 1
+#	make -C ${libxcb_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_xcb_proto()
+#{
+#	[ -d ${prefix}/share/xcb -a "${force_install}" != yes ] && return 0
+#	fetch xcb-proto || return 1
+#	unpack ${xcb_proto_org_src_dir} ${xcb_proto_src_base} || return 1
+#	[ -f ${xcb_proto_org_src_dir}/Makefile ] ||
+#		(cd ${xcb_proto_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${xcb_proto_org_src_dir} -j ${jobs} || return 1
+#	make -C ${xcb_proto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_xextproto()
+#{
+#	[ -f ${prefix}/include/X11/extensions/lbx.h -a "${force_install}" != yes ] && return 0
+#	fetch xextproto || return 1
+#	unpack ${xextproto_org_src_dir} ${xextproto_src_base} || return 1
+#	[ -f ${xextproto_org_src_dir}/Makefile ] ||
+#		(cd ${xextproto_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${xextproto_org_src_dir} -j ${jobs} || return 1
+#	make -C ${xextproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_libXext()
+#{
+#	[ -f ${prefix}/include/X11/extensions/Xext.h -a "${force_install}" != yes ] && return 0
+#	search_header lbx.h X11/extensions > /dev/null || install_native_xextproto || return 1
+#	fetch libXext || return 1
+#	unpack ${libXext_org_src_dir} ${libXext_src_base} || return 1
+#	[ -f ${libXext_org_src_dir}/Makefile ] ||
+#		(cd ${libXext_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${libXext_org_src_dir} -j ${jobs} || return 1
+#	make -C ${libXext_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_fixesproto()
+#{
+#	[ -f ${prefix}/include/X11/extensions/xfixesproto.h -a "${force_install}" != yes ] && return 0
+#	fetch fixesproto || return 1
+#	unpack ${fixesproto_org_src_dir} ${fixesproto_src_base} || return 1
+#	[ -f ${fixesproto_org_src_dir}/Makefile ] ||
+#		(cd ${fixesproto_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${fixesproto_org_src_dir} -j ${jobs} || return 1
+#	make -C ${fixesproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_libXfixes()
+#{
+#	[ -f ${prefix}/include/X11/extensions/Xfixes.h -a "${force_install}" != yes ] && return 0
+#	search_header xfixesproto.h X11/extensions > /dev/null || install_native_fixesproto || return 1
+#	fetch libXfixes || return 1
+#	unpack ${libXfixes_org_src_dir} ${libXfixes_src_base} || return 1
+#	[ -f ${libXfixes_org_src_dir}/Makefile ] ||
+#		(cd ${libXfixes_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${libXfixes_org_src_dir} -j ${jobs} || return 1
+#	make -C ${libXfixes_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_damageproto()
+#{
+#	[ -f ${prefix}/include/X11/extensions/damageproto.h -a "${force_install}" != yes ] && return 0
+#	fetch damageproto || return 1
+#	unpack ${damageproto_org_src_dir} ${damageproto_src_base} || return 1
+#	[ -f ${damageproto_org_src_dir}/Makefile ] ||
+#		(cd ${damageproto_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${damageproto_org_src_dir} -j ${jobs} || return 1
+#	make -C ${damageproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_libXdamage()
+#{
+#	[ -f ${prefix}/include/X11/extensions/Xdamage.h -a "${force_install}" != yes ] && return 0
+#	search_header damageproto.h X11/extensions > /dev/null || install_native_damageproto || return 1
+#	search_header Xfixes.h X11/extensions > /dev/null || install_native_libXfixes || return 1
+#	fetch libXdamage || return 1
+#	unpack ${libXdamage_org_src_dir} ${libXdamage_src_base} || return 1
+#	[ -f ${libXdamage_org_src_dir}/Makefile ] ||
+#		(cd ${libXdamage_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${libXdamage_org_src_dir} -j ${jobs} || return 1
+#	make -C ${libXdamage_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_libXt()
+#{
+#	[ -f ${prefix}/include/X11/Core.h -a "${force_install}" != yes ] && return 0
+#	fetch libXt || return 1
+#	unpack ${libXt_org_src_dir} ${libXt_src_base} || return 1
+#	[ -f ${libXt_org_src_dir}/Makefile ] ||
+#		(cd ${libXt_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${libXt_org_src_dir} -j ${jobs} || return 1
+#	make -C ${libXt_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_xproto()
+#{
+#	[ -f ${prefix}/include/X11/Xproto.h -a "${force_install}" != yes ] && return 0
+#	fetch xproto || return 1
+#	unpack ${xproto_org_src_dir} ${xproto_src_base} || return 1
+#	[ -f ${xproto_org_src_dir}/Makefile ] ||
+#		(cd ${xproto_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${xproto_org_src_dir} -j ${jobs} || return 1
+#	make -C ${xproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#}
+#
+#install_native_kbproto()
+#{
+#	[ -f ${prefix}/include/X11/XKBproto.h -a "${force_install}" != yes ] && return 0
+#	fetch kbproto || return 1
+#	unpack ${kbproto_org_src_dir} ${kbproto_src_base} || return 1
+#	[ -f ${kbproto_org_src_dir}/Makefile ] ||
+#		(cd ${kbproto_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${kbproto_org_src_dir} -j ${jobs} || return 1
+#	make -C ${kbproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#}
+#
+#install_native_glproto()
+#{
+#	[ -f ${prefix}/include/GL/glxproto.h -a "${force_install}" != yes ] && return 0
+#	fetch glproto || return 1
+#	unpack ${glproto_org_src_dir} ${glproto_src_base} || return 1
+#	[ -f ${glproto_org_src_dir}/Makefile ] ||
+#		(cd ${glproto_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${glproto_org_src_dir} -j ${jobs} || return 1
+#	make -C ${glproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#}
+#
+#install_native_libpciaccess()
+#{
+#	[ -f ${prefix}/include/pciaccess.h -a "${force_install}" != yes ] && return 0
+#	fetch libpciaccess || return 1
+#	unpack ${libpciaccess_org_src_dir} ${libpciaccess_src_base} || return 1
+#	[ -f ${libpciaccess_org_src_dir}/Makefile ] ||
+#		(cd ${libpciaccess_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${libpciaccess_org_src_dir} -j ${jobs} || return 1
+#	make -C ${libpciaccess_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_libdrm()
+#{
+#	[ -f ${prefix}/include/xf86drm.h -a "${force_install}" != yes ] && return 0
+#	search_header pciaccess.h > /dev/null || install_native_libpciaccess || return 1
+#	fetch libdrm || return 1
+#	unpack ${libdrm_org_src_dir} ${libdrm_src_base} || return 1
+#	[ -f ${libdrm_org_src_dir}/Makefile ] ||
+#		(cd ${libdrm_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+#			--enable-static) || return 1
+#	make -C ${libdrm_org_src_dir} -j ${jobs} || return 1
+#	make -C ${libdrm_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_dri2proto()
+#{
+#	[ -f ${prefix}/include/X11/extensions/dri2proto.h -a "${force_install}" != yes ] && return 0
+#	fetch dri2proto || return 1
+#	unpack ${dri2proto_org_src_dir} ${dri2proto_src_base} || return 1
+#	[ -f ${dri2proto_org_src_dir}/Makefile ] ||
+#		(cd ${dri2proto_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${dri2proto_org_src_dir} -j ${jobs} || return 1
+#	make -C ${dri2proto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#}
+#
+#install_native_dri3proto()
+#{
+#	[ -f ${prefix}/include/X11/extensions/dri3proto.h -a "${force_install}" != yes ] && return 0
+#	fetch dri3proto || return 1
+#	unpack ${dri3proto_org_src_dir} ${dri3proto_src_base} || return 1
+#	[ -f ${dri3proto_org_src_dir}/Makefile ] ||
+#		(cd ${dri3proto_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${dri3proto_org_src_dir} -j ${jobs} || return 1
+#	make -C ${dri3proto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#}
+#
+#install_native_presentproto()
+#{
+#	[ -f ${prefix}/include/X11/extensions/presentproto.h -a "${force_install}" != yes ] && return 0
+#	fetch presentproto || return 1
+#	unpack ${presentproto_org_src_dir} ${presentproto_src_base} || return 1
+#	[ -f ${presentproto_org_src_dir}/Makefile ] ||
+#		(cd ${presentproto_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${presentproto_org_src_dir} -j ${jobs} || return 1
+#	make -C ${presentproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#}
+#
+#install_native_libxshmfence()
+#{
+#	[ -f ${prefix}/include/X11/xshmfence.h -a "${force_install}" != yes ] && return 0
+#	fetch libxshmfence || return 1
+#	unpack ${libxshmfence_org_src_dir} ${libxshmfence_src_base} || return 1
+#	[ -f ${libxshmfence_org_src_dir}/Makefile ] ||
+#		(cd ${libxshmfence_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${libxshmfence_org_src_dir} -j ${jobs} || return 1
+#	make -C ${libxshmfence_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_mesa()
+#{
+#	[ -f ${prefix}/include/GL/gl.h -a "${force_install}" != yes ] && return 0
+#	search_header glxproto.h GL > /dev/null || install_native_glproto || return 1
+#	search_header xf86drm.h > /dev/null || install_native_libdrm || return 1
+#	search_header dri2proto.h X11/extensions > /dev/null || install_native_dri2proto || return 1
+#	search_header dri3proto.h X11/extensions > /dev/null || install_native_dri3proto || return 1
+#	search_header presentproto.h X11/extensions > /dev/null || install_native_presentproto || return 1
+#	[ -d ${prefix}/share/xcb ] || install_native_xcb_proto || return 1
+#	search_header xcb.h xcb > /dev/null || install_native_libxcb || return 1
+#	search_header xshmfence.h X11 > /dev/null || install_native_libxshmfence || return 1
+#	search_header Xext.h X11/extensions > /dev/null || install_native_libXext || return 1
+#	search_header Xdamage.h X11/extensions > /dev/null || install_native_libXdamage || return 1
+#	search_header Xlib.h X11 > /dev/null || install_native_libX11 || return 1
+#	fetch mesa || return 1
+#	unpack ${mesa_org_src_dir} ${mesa_src_base} || return 1
+#	[ -f ${mesa_org_src_dir}/Makefile ] ||
+#		(cd ${mesa_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${mesa_org_src_dir} -j ${jobs} || return 1
+#	make -C ${mesa_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_libepoxy()
+#{
+#	[ -f ${prefix}/include/epoxy/egl.h -a "${force_install}" != yes ] && return 0
+#	search_header Core.h X11 > /dev/null || install_native_libXt || return 1
+#	fetch libepoxy || return 1
+#	unpack ${libepoxy_org_src_dir} ${libepoxy_src_base} || return 1
+#	[ -f ${libepoxy_org_src_dir}/Makefile ] ||
+#		(cd ${libepoxy_org_src_dir}
+#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+#	make -C ${libepoxy_org_src_dir} -j ${jobs} || return 1
+#	make -C ${libepoxy_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_gtk()
+#{
+#	[ -f ${prefix}/include/gtk-3.0/gtk/gtk.h -a "${force_install}" != yes ] && return 0
+#	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return 1
+#	search_header pango.h pango-1.0/pango > /dev/null || install_native_pango || return 1
+#	search_header gdk-pixbuf.h gdk-pixbuf-2.0/gdk-pixbuf > /dev/null || install_native_gdk_pixbuf || return 1
+#	search_header atk.h atk-1.0/atk > /dev/null || install_native_atk || return 1
+#	search_header giversionmacros.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return 1
+#	search_header egl.h epoxy > /dev/null || install_native_libepoxy || return 1
+#	fetch gtk || return 1
+#	unpack ${gtk_org_src_dir} ${gtk_src_base} || return 1
+#	[ -f ${gtk_org_src_dir}/Makefile ] ||
+#		(cd ${gtk_org_src_dir}
+#		update_pkg_config_path
+#		./configure --prefix=${prefix} --build=${build} --enable-static \
+#			--disable-silent-rules) || return 1
+#	make -C ${gtk_org_src_dir} -j ${jobs} || return 1
+#	make -C ${gtk_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+#	update_search_path || return 1
+#}
+#
+#install_native_webkitgtk()
+#{
+##	[ -x ${prefix}/bin/gawk -a "${force_install}" != yes ] && return 0
+#	search_header gtk.h gtk-3.0/gtk > /dev/null || install_native_gtk || return 1
+#	search_header sqlite3.h > /dev/null || install_native_sqlite || return 1
+#	search_header png.h > /dev/null || install_native_libpng || return 1
+#	search_header tiff.h > /dev/null || install_native_libtiff || return 1
+#	search_header jpeglib.h > /dev/null || install_native_libjpeg || return 1
+#	search_header gif_lib.h > /dev/null || install_native_giflib || return 1
+#	search_header decode.h webp > /dev/null || install_native_libwebp || return 1
+#	fetch webkitgtk || return 1
+#	unpack ${webkitgtk_org_src_dir} ${webkitgtk_src_base} || return 1
+#	mkdir -p ${webkitgtk_bld_dir_ntv}
+#	[ -f ${webkitgtk_bld_dir_ntv}/Makefile ] ||
+#		(cd ${webkitgtk_bld_dir_ntv}
+#		update_pkg_config_path
+#		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+#			-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} -L${prefix}/lib" \
+#			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+#			-DPORT=GTK -DENABLE_CREDENTIAL_STORAGE=OFF \
+#			-DENABLE_SPELLCHECK=OFF -DENABLE_WEB_AUDIO=OFF -DENABLE_VIDEO=OFF \
+#			-DUSE_LIBNOTIFY=OFF -DUSE_LIBHYPHEN=OFF \
+#			${webkitgtk_org_src_dir}) || return 1
+#	make -C ${webkitgtk_bld_dir_ntv} -j ${jobs} || return 1
+#	make -C ${webkitgtk_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return 1
+#}
 
 install_native_emacs()
 {
@@ -2234,7 +2156,7 @@ install_native_vim()
 #		+footer \
 #		+mouse_jsbterm \
 #		+mouse_gpm \
-# 		+xterm_save \
+#		+xterm_save \
 	) || return 1
 	make -C ${vim_org_src_dir} -j ${jobs} || return 1
 	make -C ${vim_org_src_dir} -j ${jobs} install || return 1
