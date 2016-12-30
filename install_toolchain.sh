@@ -1,7 +1,6 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] valgrind
-# [TODO] cpio
 # [TODO] perf
 # [TODO] X window system関係のライブラリ何かを入れると、OS起動時GUIが立ち上がらなくなる。
 # [TODO] haskell(stack<-(ghc, cabal))
@@ -17,6 +16,7 @@
 # [TODO] install_native_clang_tools_extra()のテスト実行が未完了。
 
 : ${tar_ver:=1.29}
+: ${cpio_ver:=2.12}
 : ${xz_ver:=5.2.2}
 : ${bzip2_ver:=1.0.6}
 : ${gzip_ver:=1.8}
@@ -186,6 +186,8 @@ help()
 [Environmental variables]
 	tar_ver
 		Specify the version of GNU tar you want, currently '${tar_ver}'.
+	cpio_ver
+		Specify the version of GNU cpio you want, currently '${cpio_ver}'.
 	xz_ver
 		Specify the version of xz utils, currently '${xz_ver}'.
 	bzip2_ver
@@ -388,7 +390,7 @@ fetch()
 		for fetch_command in `grep -e '^fetch_.\+_source()$' ${0} | sed -e 's/()$//'`; do
 			${fetch_command} || return 1
 		done;;
-	tar|gzip|wget|texinfo|coreutils|bison|m4|autoconf|automake|libtool|sed|gawk|\
+	tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|automake|libtool|sed|gawk|\
 	make|binutils|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|grep|global|\
 	diffutils|patch|findutils|screen|bash|gettext)
 		eval check_archive \${${_1}_org_src_dir} ||
@@ -910,7 +912,7 @@ set_variables()
 	*)   echo unsupported kernel version >&2; return 1;;
 	esac
 
-	for pkg in tar xz bzip2 gzip wget pkg-config texinfo coreutils bison flex \
+	for pkg in tar cpio xz bzip2 gzip wget pkg-config texinfo coreutils bison flex \
 		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
 		gmp mpfr mpc gcc readline ncurses gdb zlib libpng tiff jpeg giflib libXpm libwebp libffi \
 		glib cairo pixman pango gdk-pixbuf atk gobject-introspection inputproto xtrans libX11 libxcb xcb-proto \
@@ -1092,6 +1094,18 @@ install_native_tar()
 			--build=${build} --disable-silent-rules) || return 1
 	make -C ${tar_org_src_dir} -j ${jobs} || return 1
 	make -C ${tar_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+}
+
+install_native_cpio()
+{
+	[ -x ${prefix}/bin/cpio -a "${force_install}" != yes ] && return 0
+	fetch cpio || return 1
+	unpack ${cpio_org_src_dir} ${cpio_src_base} || return 1
+	[ -f ${cpio_org_src_dir}/Makefile ] ||
+		(cd ${cpio_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+	make -C ${cpio_org_src_dir} -j ${jobs} || return 1
+	make -C ${cpio_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
 
 install_native_xz()
