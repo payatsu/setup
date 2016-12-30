@@ -54,6 +54,7 @@
 : ${libffi_ver:=3.2.1}
 : ${emacs_ver:=25.1}
 : ${vim_ver:=8.0.0027}
+: ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=5.8}
 : ${grep_ver:=2.27}
 : ${global_ver:=6.5.6}
@@ -69,6 +70,7 @@
 : ${screen_ver:=4.4.0}
 : ${libevent_ver:=2.0.22}
 : ${tmux_ver:=2.3}
+: ${expect_ver:=5.45}
 : ${zsh_ver:=5.3}
 : ${bash_ver:=4.4}
 : ${openssl_ver:=1.1.0b}
@@ -89,6 +91,13 @@
 : ${libedit_ver:=20160903-3.1}
 : ${swig_ver:=3.0.10}
 : ${llvm_ver:=3.9.1}
+: ${libcxx_ver:=${llvm_ver}}
+: ${libcxxabi_ver:=${llvm_ver}}
+: ${compiler_rt_ver:=${llvm_ver}}
+: ${cfe_ver:=${llvm_ver}}
+: ${clang_tools_extra_ver:=${llvm_ver}}
+: ${lld_ver:=${llvm_ver}}
+: ${lldb_ver:=${llvm_ver}}
 : ${boost_ver:=1_63_0}
 : ${mingw_w64_ver:=4.0.6}
 : ${Python_ver:=3.6.0}
@@ -294,6 +303,8 @@ help()
 		Specify the version of libevent you want, currently '${libevent_ver}'.
 	tmux_ver
 		Specify the version of tmux you want, currently '${tmux_ver}'.
+	expect_ver
+		Specify the version of expect you want, currently '${expect_ver}'.
 	zsh_ver
 		Specify the version of Zsh you want, currently '${zsh_ver}'.
 	bash_ver
@@ -498,6 +509,10 @@ fetch()
 		check_archive ${tmux_org_src_dir} ||
 			wget --no-check-certificate -O ${tmux_org_src_dir}.tar.gz \
 				https://github.com/tmux/tmux/releases/download/${tmux_ver}/${tmux_name}.tar.gz || return 1;;
+	expect)
+		check_archive ${expect_org_src_dir} ||
+			wget --trust-server-names --no-check-certificate -O ${expect_org_src_dir}.tar.gz \
+				https://sourceforge.net/projects/expect/files/Expect/${expect_ver}/${expect_name}.tar.gz/download || return 1;;
 	zsh)
 		check_archive ${zsh_org_src_dir} ||
 			wget --trust-server-names --no-check-certificate -O ${zsh_org_src_dir}.tar.xz \
@@ -833,7 +848,7 @@ set_src_directory()
 
 	case ${1} in
 	llvm|libcxx|libcxxabi|compiler-rt|cfe|clang-tools-extra|lld|lldb)
-		eval ${_1}_name=${1}-${llvm_ver}.src
+		eval ${_1}_name=${1}-\${${_1}_ver}.src
 		eval ${_1}_src_base=${prefix}/src/${1}
 		eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
 		eval ${_1}_bld_dir=\${${_1}_src_base}/\${${_1}_name}-bld
@@ -852,7 +867,7 @@ set_src_directory()
 		eval ${_1}_name=${1}_\${${_1}_ver};;
 	mingw-w64)
 		eval ${_1}_name=${1}-v\${${_1}_ver};;
-	tcl|tk)
+	expect|tcl|tk)
 		eval ${_1}_name=${1}\${${_1}_ver};;
 	*)
 		eval ${_1}_name=${1}-\${${_1}_ver};;
@@ -932,7 +947,7 @@ set_variables()
 		xproto kbproto glproto libpciaccess libdrm dri2proto dri3proto presentproto libxshmfence mesa \
 		libepoxy gtk webkitgtk emacs vim vimdoc-ja ctags grep global pcre2 the_silver_searcher \
 		the_platinum_searcher highway \
-		graphviz doxygen diffutils patch findutils screen libevent tmux zsh bash \
+		graphviz doxygen diffutils patch findutils screen libevent tmux expect zsh bash \
 		openssl openssh curl asciidoc libxml2 libxslt xmlto gettext \
 		git mercurial sqlite-autoconf apr apr-util subversion cmake libedit \
 		swig llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb boost mingw-w64 \
@@ -2407,6 +2422,21 @@ install_native_tmux()
 	make -C ${tmux_org_src_dir} -j ${jobs} install || return 1
 }
 
+install_native_expect()
+{
+	[ -x ${prefix}/bin/expect -a "${force_install}" != yes ] && return 0
+#	search_header curses.h ncurses > /dev/null || install_native_ncurses || return 1
+	search_library tclConfig.sh > /dev/null || install_native_tcl || return 1
+	fetch expect || return 1
+	unpack ${expect_org_src_dir} ${expect_src_base} || return 1
+	[ -f ${expect_org_src_dir}/Makefile ] ||
+		(cd ${expect_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --enable-threads \
+			--enable-64bit) || return 1
+	make -C ${expect_org_src_dir} -j ${jobs} || return 1
+	make -C ${expect_org_src_dir} -j ${jobs} install || return 1
+}
+
 install_native_zsh()
 {
 	[ -x ${prefix}/bin/zsh -a "${force_install}" != yes ] && return 0
@@ -3166,7 +3196,7 @@ install_native_tcl()
 install_native_tk()
 {
 	[ -x ${prefix}/bin/wish -a "${force_install}" != yes ] && return 0
-	search_header tcl.h > /dev/null || install_native_tcl || return 1
+	search_library tclConfig.sh > /dev/null || install_native_tcl || return 1
 	fetch tk || return 1
 	unpack ${tk_org_src_dir} ${tk_src_base} || return 1
 	[ -f ${tk_org_src_dir}/unix/Makefile ] ||
