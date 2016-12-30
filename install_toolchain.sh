@@ -71,7 +71,7 @@
 : ${tmux_ver:=2.3}
 : ${zsh_ver:=5.3}
 : ${bash_ver:=4.4}
-: ${openssl_ver:=1.1.0c}
+: ${openssl_ver:=1.1.0b}
 : ${openssh_ver:=7.3p1}
 : ${curl_ver:=7.51.0}
 : ${asciidoc_ver:=8.6.9}
@@ -95,6 +95,8 @@
 : ${ruby_ver:=2.4.0}
 : ${go_ver:=1.7.4}
 : ${perl_ver:=5.24.0}
+: ${tcl_ver:=8.6.6}
+: ${tk_ver:=8.6.6}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
 : ${x265_ver:=2.0}
@@ -344,6 +346,10 @@ help()
 		Specify the version of go you want, currently '${go_ver}'.
 	perl_ver
 		Specify the version of perl you want, currently '${perl_ver}'.
+	tcl_ver
+		Specify the version of tcl you want, currently '${tcl_ver}'.
+	tk_ver
+		Specify the version of tk you want, currently '${tk_ver}'.
 	yasm_ver
 		Specify the version of YASM you want, currently '${yasm_ver}'.
 	x264_ver
@@ -580,6 +586,10 @@ fetch()
 		check_archive ${perl_org_src_dir} ||
 			wget -O ${perl_org_src_dir}.tar.gz \
 				http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return 1;;
+	tcl|tk)
+		eval check_archive \${${_1}_org_src_dir} ||
+			eval wget -O \${${_1}_org_src_dir}.tar.gz \
+				http://prdownloads.sourceforge.net/tcl/\${${_1}_name}-src.tar.gz || return 1;;
 	yasm)
 		check_archive ${yasm_org_src_dir} ||
 			wget -O ${yasm_org_src_dir}.tar.gz \
@@ -842,6 +852,8 @@ set_src_directory()
 		eval ${_1}_name=${1}_\${${_1}_ver};;
 	mingw-w64)
 		eval ${_1}_name=${1}-v\${${_1}_ver};;
+	tcl|tk)
+		eval ${_1}_name=${1}\${${_1}_ver};;
 	*)
 		eval ${_1}_name=${1}-\${${_1}_ver};;
 	esac
@@ -924,7 +936,7 @@ set_variables()
 		openssl openssh curl asciidoc libxml2 libxslt xmlto gettext \
 		git mercurial sqlite-autoconf apr apr-util subversion cmake libedit \
 		swig llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb boost mingw-w64 \
-		Python ruby go perl yasm x264 x265 libav opencv opencv_contrib; do
+		Python ruby go perl tcl tk yasm x264 x265 libav opencv opencv_contrib; do
 		set_src_directory ${pkg}
 	done
 
@@ -2544,11 +2556,12 @@ install_native_git()
 	search_header xslt.h libxslt > /dev/null || install_native_libxslt || return 1
 	which msgfmt > /dev/null || install_native_gettext || return 1
 	which perl > /dev/null || install_native_perl || return 1
+	which wish > /dev/null || install_native_tk || return 1
 	fetch git || return 1
 	unpack ${git_org_src_dir} ${git_src_base} || return 1
 	make -C ${git_org_src_dir} -j ${jobs} V=1 configure || return 1
 	(cd ${git_org_src_dir}
-	./configure --prefix=${prefix} --build=${build} --without-tcltk) || return 1
+	./configure --prefix=${prefix} --build=${build}) || return 1
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return 1
 	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS="${LDFLAGS} -ldl" all || return 1
 	make -C ${git_org_src_dir} -j ${jobs} V=1 doc || return 1
@@ -3134,6 +3147,35 @@ install_native_perl()
 	make -C ${perl_org_src_dir} -j ${jobs} || return 1
 	make -C ${perl_org_src_dir} -j ${jobs} test || return 1
 	make -C ${perl_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+}
+
+install_native_tcl()
+{
+	[ -x ${prefix}/bin/tclsh -a "${force_install}" != yes ] && return 0
+	fetch tcl || return 1
+	unpack ${tcl_org_src_dir} ${tcl_src_base} || return 1
+	[ -f ${tcl_org_src_dir}/unix/Makefile ] ||
+		(cd ${tcl_org_src_dir}/unix
+		./configure --prefix=${prefix} -build=${build} \
+			--disable-silent-rules --enable-64bit --enable-man-symlinks) || return 1
+	make -C ${tcl_org_src_dir}/unix -j ${jobs} || return 1
+	make -C ${tcl_org_src_dir}/unix -j ${jobs} install || return 1
+	ln -sf ./tclsh`echo ${tcl_ver} | cut -f -2 -d .` ${prefix}/bin/tclsh || return 1
+}
+
+install_native_tk()
+{
+	[ -x ${prefix}/bin/wish -a "${force_install}" != yes ] && return 0
+	search_header tcl.h > /dev/null || install_native_tcl || return 1
+	fetch tk || return 1
+	unpack ${tk_org_src_dir} ${tk_src_base} || return 1
+	[ -f ${tk_org_src_dir}/unix/Makefile ] ||
+		(cd ${tk_org_src_dir}/unix
+		./configure --prefix=${prefix} -build=${build} \
+			--disable-silent-rules --enable-64bit --enable-man-symlinks) || return 1
+	make -C ${tk_org_src_dir}/unix -j ${jobs} || return 1
+	make -C ${tk_org_src_dir}/unix -j ${jobs} install${strip:+-${strip}} || return 1
+	ln -sf ./wish`echo ${tk_ver} | cut -f -2 -d .` ${prefix}/bin/wish || return 1
 }
 
 install_native_yasm()
