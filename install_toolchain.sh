@@ -9,7 +9,7 @@
 # [TODO] webkitgtk<-libsoup
 # [TODO] libmount, dtrace (GLib)
 # [TODO] rsvg, imagemagick
-# [TODO] LLDB, Polly, MySQL, expat, Guile, dejaGnu, grub, inetutils
+# [TODO] LLDB, Polly, MySQL, expat, Guile, dejaGnu, grub
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_clang_tools_extra()のテスト実行が未完了。
@@ -72,6 +72,7 @@
 : ${expect_ver:=5.45}
 : ${zsh_ver:=5.3}
 : ${bash_ver:=4.4}
+: ${inetutils_ver:=1.9.4}
 : ${openssl_ver:=1.1.0b}
 : ${openssh_ver:=7.3p1}
 : ${curl_ver:=7.51.0}
@@ -305,6 +306,8 @@ help()
 		Specify the version of Zsh you want, currently '${zsh_ver}'.
 	bash_ver
 		Specify the version of Bash you want, currently '${bash_ver}'.
+	inetutils
+		Specify the version of inetutils you want, currently '${inetutils_ver}'.
 	openssl_ver
 		Specify the version of openssl you want, currently '${openssl_ver}'.
 	openssh_ver
@@ -404,7 +407,7 @@ fetch()
 		done;;
 	tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|automake|libtool|sed|gawk|\
 	make|binutils|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|grep|global|\
-	diffutils|patch|findutils|screen|bash|gettext)
+	diffutils|patch|findutils|screen|bash|inetutils|gettext)
 		eval check_archive \${${_1}_org_src_dir} ||
 			for compress_format in xz bz2 gz; do
 				eval wget -O \${${_1}_org_src_dir}.tar.${compress_format} \
@@ -2458,6 +2461,18 @@ install_native_bash()
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${bash_org_src_dir} -j ${jobs} || return 1
 	make -C ${bash_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+}
+
+install_native_inetutils()
+{
+	[ -x ${prefix}/bin/telnet -a "${force_install}" != yes ] && return 0
+	fetch inetutils || return 1
+	unpack ${inetutils_org_src_dir} ${inetutils_src_base} || return 1
+	[ -f ${inetutils_org_src_dir}/Makefile ] ||
+		(cd ${inetutils_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
+	make -C ${inetutils_org_src_dir} -j ${jobs} || return 1
+	make -C ${inetutils_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
 
 install_native_openssl()
