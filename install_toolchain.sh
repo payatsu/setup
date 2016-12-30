@@ -8,9 +8,8 @@
 # [TODO] libav<-
 # [TODO] webkitgtk<-libsoup
 # [TODO] libmount, dtrace (GLib)
-# [TODO] tcl/tk
 # [TODO] rsvg, imagemagick
-# [TODO] LLDB, Polly, MySQL, expat, Guile, dejaGnu, Expect, grub, inetutils
+# [TODO] LLDB, Polly, MySQL, expat, Guile, dejaGnu, grub, inetutils
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_clang_tools_extra()のテスト実行が未完了。
@@ -113,42 +112,39 @@
 : ${opencv_ver:=3.1.0}
 : ${opencv_contrib_ver:=3.1.0}
 
-#: ${xtrans_ver:=1.3.5}
-#: ${libX11_ver:=1.6.3}
-#: ${libxcb_ver:=1.12}
-#: ${libXext_ver:=1.3.3}
-#: ${libXfixes_ver:=5.0.2}
-#: ${libXdamage_ver:=1.1.4}
-#: ${libXt_ver:=1.1.5}
-
-#: ${inputproto_ver:=2.3}
-#: ${xcb_proto_ver:=1.12}
-#: ${xextproto_ver:=7.3.0}
-#: ${fixesproto_ver:=5.0}
-#: ${damageproto_ver:=1.2.1}
-#: ${xproto_ver:=7.0.31}
-#: ${kbproto_ver:=1.0.7}
-#: ${glproto_ver:=1.4.17}
-#: ${dri2proto_ver:=2.8}
-#: ${dri3proto_ver:=1.0}
-#: ${presentproto_ver:=1.0}
-
-#: ${libpciaccess_ver:=0.13.4}
-#: ${libdrm_ver:=2.4.70}
-#: ${libxshmfence_ver:=1.2}
-
-#: ${mesa_ver:=12.0.3}
-#: ${libepoxy_ver:=1.3.1}
-
-#: ${glib_ver:=2.50.0}
-#: ${cairo_ver:=1.14.6}
-#: ${pixman_ver:=0.34.0}
-#: ${pango_ver:=1.40.3}
-#: ${gdk_pixbuf_ver:=2.36.0}
-#: ${atk_ver:=2.22.0}
-#: ${gobject_introspection_ver:=1.50.0}
-#: ${gtk_ver:=3.22.0}
-#: ${webkitgtk_ver:=2.14.0}
+# TODO X11周りのインストールは未着手。
+: ${xtrans_ver:=1.3.5}
+: ${libX11_ver:=1.6.3}
+: ${libxcb_ver:=1.12}
+: ${libXext_ver:=1.3.3}
+: ${libXfixes_ver:=5.0.2}
+: ${libXdamage_ver:=1.1.4}
+: ${libXt_ver:=1.1.5}
+: ${inputproto_ver:=2.3}
+: ${xcb_proto_ver:=1.12}
+: ${xextproto_ver:=7.3.0}
+: ${fixesproto_ver:=5.0}
+: ${damageproto_ver:=1.2.1}
+: ${xproto_ver:=7.0.31}
+: ${kbproto_ver:=1.0.7}
+: ${glproto_ver:=1.4.17}
+: ${dri2proto_ver:=2.8}
+: ${dri3proto_ver:=1.0}
+: ${presentproto_ver:=1.0}
+: ${libpciaccess_ver:=0.13.4}
+: ${libdrm_ver:=2.4.70}
+: ${libxshmfence_ver:=1.2}
+: ${mesa_ver:=12.0.3}
+: ${libepoxy_ver:=1.3.1}
+: ${glib_ver:=2.50.0}
+: ${cairo_ver:=1.14.6}
+: ${pixman_ver:=0.34.0}
+: ${pango_ver:=1.40.3}
+: ${gdk_pixbuf_ver:=2.36.0}
+: ${atk_ver:=2.22.0}
+: ${gobject_introspection_ver:=1.50.0}
+: ${gtk_ver:=3.22.0}
+: ${webkitgtk_ver:=2.14.0}
 
 : ${prefix:=/toolchains}
 : ${jobs:=`grep -e processor /proc/cpuinfo | wc -l`}
@@ -397,15 +393,14 @@ auto()
 }
 
 fetch()
-# Fetch all source files.
+# Fetch source files.
 {
 	_1=`echo ${1} | tr - _`
 	[ -z "${_1}" ] || eval mkdir -p \${${_1}_src_base} || return 1
 	case ${1} in
 	'')
-# TODO 直す。
-		for fetch_command in `grep -e '^fetch_.\+_source()$' ${0} | sed -e 's/()$//'`; do
-			${fetch_command} || return 1
+		for pkg in `sed -e '/^fetch()$/,/^}$/p;d' ${0} | sed -e '/\([-_[:alnum:]]\+|\?\)\+\(\\\\\|)\)$/{y/|)\\\/   /;p};d'`; do
+			fetch ${pkg} || return 1
 		done;;
 	tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|automake|libtool|sed|gawk|\
 	make|binutils|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|grep|global|\
@@ -419,7 +414,7 @@ fetch()
 			done || return 1;;
 	xz)
 		check_archive ${xz_org_src_dir} ||
-			wget -O ${xz_org_src_dir}.tar.bz2 \
+			wget --no-check-certificate -O ${xz_org_src_dir}.tar.bz2 \
 				http://tukaani.org/xz/${xz_name}.tar.bz2 || return 1;;
 	bzip2)
 		check_archive ${bzip2_org_src_dir} ||
@@ -464,7 +459,7 @@ fetch()
 	libffi)
 		check_archive ${libffi_org_src_dir} ||
 			wget -O ${libffi_org_src_dir}.tar.gz \
-				ftp://sourceware.org/pub/libffi/${libffi_name}.tar.gz || return 1;;
+				http://mirrors.kernel.org/sourceware/libffi/${libffi_name}.tar.gz || return 1;;
 	vim)
 		check_archive ${vim_org_src_dir} ||
 			wget --no-check-certificate -O ${vim_org_src_dir}.tar.gz \
@@ -479,8 +474,8 @@ fetch()
 				http://prdownloads.sourceforge.net/ctags/${ctags_name}.tar.gz || return 1;;
 	pcre2)
 		check_archive ${pcre2_org_src_dir} ||
-			wget -O ${pcre2_org_src_dir}.tar.bz2 \
-				ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/${pcre2_name}.tar.bz2 || return 1;;
+			wget --trust-server-names --no-check-certificate -O ${pcre2_org_src_dir}.tar.bz2 \
+				https://sourceforge.net/projects/pcre/files/pcre2/${pcre2_ver}/${pcre2_name}.tar.bz2/download || return 1;;
 	the_silver_searcher)
 		check_archive ${the_silver_searcher_org_src_dir} ||
 			wget -O ${the_silver_searcher_org_src_dir}.tar.gz \
@@ -612,7 +607,7 @@ fetch()
 	x264)
 		check_archive ${x264_org_src_dir} ||
 			wget -O ${x264_org_src_dir}.tar.bz2 \
-				ftp://ftp.videolan.org/pub/x264/snapshots/`echo ${x264_ver} | tr - _`_x264.tar.bz2 || return 1;;
+				http://ftp.videolan.org/pub/x264/snapshots/`echo ${x264_ver} | tr - _`_x264.tar.bz2 || return 1;;
 	x265)
 		check_archive ${x265_org_src_dir} ||
 			wget -O ${x265_org_src_dir}.tar.gz \
@@ -653,7 +648,11 @@ fetch()
 		check_archive ${mesa_org_src_dir} ||
 			wget -O ${mesa_org_src_dir}.tar.xz \
 				ftp://ftp.freedesktop.org/pub/mesa/${mesa_ver}/${mesa_name}.tar.xz || return 1;;
-	cairo|pixman)
+	cairo)
+		eval check_archive \${${_1}_org_src_dir} ||
+			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.xz \
+				https://www.cairographics.org/releases/\${${_1}_name}.tar.xz || return 1;;
+	pixman)
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.gz \
 				https://www.cairographics.org/releases/\${${_1}_name}.tar.gz || return 1;;
@@ -694,7 +693,7 @@ unpack()
 }
 
 install()
-# Build and Install built files.
+# Build source files, then install built files.
 {
 	_1=`echo ${1} | tr - _`
 	case ${1} in
@@ -793,7 +792,7 @@ clean()
 }
 
 strip()
-# Strip all binary files.
+# Strip binary files.
 {
 	for strip_command in strip ${target}-strip x86_64-w64-mingw32-strip; do
 		find ${prefix} -type f \( -perm /111 -o -name '*.o' -o -name '*.a' -o -name '*.so' -o -name '*.gox' \) \
@@ -939,19 +938,18 @@ set_variables()
 	*)   echo unsupported kernel version >&2; return 1;;
 	esac
 
-	for pkg in tar cpio xz bzip2 gzip wget pkg-config texinfo coreutils bison flex \
-		m4 autoconf automake libtool sed gawk make binutils linux gperf glibc \
-		gmp mpfr mpc gcc readline ncurses gdb zlib libpng tiff jpeg giflib libXpm libwebp libffi \
-		glib cairo pixman pango gdk-pixbuf atk gobject-introspection inputproto xtrans libX11 libxcb xcb-proto \
-		xextproto fixesproto libXfixes libXext damageproto libXdamage libXt \
-		xproto kbproto glproto libpciaccess libdrm dri2proto dri3proto presentproto libxshmfence mesa \
-		libepoxy gtk webkitgtk emacs vim vimdoc-ja ctags grep global pcre2 the_silver_searcher \
-		the_platinum_searcher highway \
-		graphviz doxygen diffutils patch findutils screen libevent tmux expect zsh bash \
-		openssl openssh curl asciidoc libxml2 libxslt xmlto gettext \
-		git mercurial sqlite-autoconf apr apr-util subversion cmake libedit \
-		swig llvm libcxx libcxxabi compiler-rt cfe clang-tools-extra lld lldb boost mingw-w64 \
-		Python ruby go perl tcl tk yasm x264 x265 libav opencv opencv_contrib; do
+	for pkg in `sed -e '/^: \${\(.\+\)_ver:=.\+}$/{s//\1/
+		s/pkg_config/pkg-config/
+		s/vimdoc_ja/vimdoc-ja/
+		s/sqlite_autoconf/sqlite-autoconf/
+		s/apr_util/apr-util/
+		s/compiler_rt/compiler-rt/
+		s/clang_tools_extra/clang-tools-extra/
+		s/mingw_w64/mingw-w64/
+		s/xcb_proto/xcb-proto/
+		s/gdk_pixbuf/gdk-pixbuf/
+		s/gobject_introspection/gobject-introspection/
+		p};d' ${0}`; do
 		set_src_directory ${pkg}
 	done
 
