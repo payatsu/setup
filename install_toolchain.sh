@@ -1,6 +1,7 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] valgrind
+# [TODO] newlib
 # [TODO] perf
 # [TODO] X window system関係のライブラリ何かを入れると、OS起動時GUIが立ち上がらなくなる。
 # [TODO] haskell(stack<-(ghc, cabal))
@@ -9,7 +10,7 @@
 # [TODO] webkitgtk<-libsoup
 # [TODO] libmount, dtrace (GLib)
 # [TODO] rsvg, imagemagick
-# [TODO] LLDB, Polly, MySQL, expat, Guile, dejaGnu, grub
+# [TODO] LLDB, Polly, MySQL, expat, grub, util-linux
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_clang_tools_extra()のテスト実行が未完了。
@@ -74,7 +75,7 @@
 : ${zsh_ver:=5.3}
 : ${bash_ver:=4.4}
 : ${inetutils_ver:=1.9.4}
-: ${openssl_ver:=1.1.0b}
+: ${openssl_ver:=1.0.2i}
 : ${openssh_ver:=7.3p1}
 : ${curl_ver:=7.51.0}
 : ${asciidoc_ver:=8.6.9}
@@ -107,6 +108,10 @@
 : ${perl_ver:=5.24.0}
 : ${tcl_ver:=8.6.6}
 : ${tk_ver:=8.6.6}
+: ${libunistring_ver:=0.9.7}
+: ${libatomic_ops_ver:=7.4.4}
+: ${gc_ver:=7.6.0}
+: ${guile_ver:=2.0.13}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
 : ${x265_ver:=2.0}
@@ -154,6 +159,7 @@
 : ${target:=`uname -m`-linux-gnu}
 : ${languages:=c,c++,go}
 
+: ${enable_check=no}
 : ${strip=strip}
 : ${cmake_build_type:=Release}
 
@@ -363,6 +369,14 @@ help()
 		Specify the version of tcl you want, currently '${tcl_ver}'.
 	tk_ver
 		Specify the version of tk you want, currently '${tk_ver}'.
+	libunistring_ver
+		Specify the version of libunistring you want, currently '${libunistring_ver}'.
+	libatomic_ops_ver
+		Specify the version of libatomic_ops you want, currently '${libatomic_ops_ver}'.
+	gc_ver
+		Specify the version of boehm GC you want, currently '${gc_ver}'.
+	guile_ver
+		Specify the version of GNU Guile you want, currently '${guile_ver}'.
 	yasm_ver
 		Specify the version of YASM you want, currently '${yasm_ver}'.
 	x264_ver
@@ -410,7 +424,7 @@ fetch()
 		done;;
 	tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|automake|libtool|sed|gawk|\
 	make|binutils|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|grep|global|\
-	diffutils|patch|findutils|screen|dejagnu|bash|inetutils|gettext)
+	diffutils|patch|findutils|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
 		eval check_archive \${${_1}_org_src_dir} ||
 			for compress_format in xz bz2 gz; do
 				eval wget -O \${${_1}_org_src_dir}.tar.${compress_format} \
@@ -606,6 +620,10 @@ fetch()
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget -O \${${_1}_org_src_dir}.tar.gz \
 				http://prdownloads.sourceforge.net/tcl/\${${_1}_name}-src.tar.gz || return 1;;
+	libatomic_ops|gc)
+		eval check_archive \${${_1}_org_src_dir} ||
+			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.gz \
+				https://www.hboehm.info/gc/gc_source/\${${_1}_name}.tar.gz || return 1;;
 	yasm)
 		check_archive ${yasm_org_src_dir} ||
 			wget -O ${yasm_org_src_dir}.tar.gz \
@@ -690,10 +708,10 @@ unpack()
 		done;;
 	*)
 		[ -d ${1} ] && return 0
-		[ -f ${1}.tar.gz  -a -s ${1}.tar.gz  ] && tar xzvf ${1}.tar.gz  --no-same-owner --no-same-permissions -C ${2} && return 0
-		[ -f ${1}.tar.bz2 -a -s ${1}.tar.bz2 ] && tar xjvf ${1}.tar.bz2 --no-same-owner --no-same-permissions -C ${2} && return 0
-		[ -f ${1}.tar.xz  -a -s ${1}.tar.xz  ] && tar xJvf ${1}.tar.xz  --no-same-owner --no-same-permissions -C ${2} && return 0
-		[ -f ${1}.zip     -a -s ${1}.zip     ] && unzip -d ${2} ${1}.zip && return 0
+		[ -f ${1}.tar.gz  -a -s ${1}.tar.gz  ] && tar xzvf ${1}.tar.gz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${1}`} && return 0
+		[ -f ${1}.tar.bz2 -a -s ${1}.tar.bz2 ] && tar xjvf ${1}.tar.bz2 --no-same-owner --no-same-permissions -C ${2:-`dirname ${1}`} && return 0
+		[ -f ${1}.tar.xz  -a -s ${1}.tar.xz  ] && tar xJvf ${1}.tar.xz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${1}`} && return 0
+		[ -f ${1}.zip     -a -s ${1}.zip     ] && unzip -d ${2:-`dirname ${1}`} ${1}.zip && return 0
 		return 1;;
 	esac
 }
@@ -1043,7 +1061,9 @@ update_pkg_config_path()
 {
 	PKG_CONFIG_PATH=`([ -d ${prefix}/lib ] && find ${prefix}/lib -type d -name pkgconfig
 						[ -d ${prefix}/share ] && find ${prefix}/share -type d -name pkgconfig
-						find /usr/lib -type d -name pkgconfig) | tr '\n' : | sed -e 's/:$//'`
+						LANG=C ${CC:-gcc} -print-search-dirs | sed -e '/^libraries: =/{s/^libraries: =//;p};d' |
+							tr : '\n' | while read dir; do [ -d ${dir} ] && echo ${dir}; done | xargs readlink -m |
+							xargs -I dir find dir -maxdepth 1 -type d -name pkgconfig) | tr '\n' : | sed -e 's/:$//'`
 	export PKG_CONFIG_PATH
 }
 
@@ -1064,7 +1084,9 @@ search_library_dir()
 
 search_header()
 {
-	for dir in ${prefix}/include ${prefix}/lib/libffi-*/include /usr/local/include /opt/include /usr/include; do
+	for dir in ${prefix}/include ${prefix}/lib/libffi-*/include \
+		`LANG=C ${CC:-gcc} -print-search-dirs | sed -e '/^libraries: =/{s/^libraries: =//;p};d' |
+			tr : '\n' | xargs readlink -m` /usr/local/include /opt/include /usr/include; do
 		[ -d ${dir}${2:+/${2}} ] || continue
 		candidates=`find ${dir}${2:+/${2}} -type f -name ${1}`
 		[ -n "${candidates}" ] && echo "${candidates}" | head -n 1 && return 0
@@ -1341,11 +1363,13 @@ install_native_gawk()
 install_native_make()
 {
 	[ -x ${prefix}/bin/make -a "${force_install}" != yes ] && return 0
+	search_header libguile.h > /dev/null || install_native_guile || return 1
 	fetch make || return 1
 	unpack ${make_org_src_dir} ${make_src_base} || return 1
 	[ -f ${make_org_src_dir}/Makefile ] ||
 		(cd ${make_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${build}) || return 1
+		./configure --prefix=${prefix} --build=${build} --host=${build} \
+			--with-guile) || return 1
 	make -C ${make_org_src_dir} -j ${jobs} || return 1
 	make -C ${make_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
@@ -1473,6 +1497,7 @@ install_native_gcc()
 	search_header mpfr.h > /dev/null || install_native_mpfr || return 1
 	search_header mpc.h > /dev/null || install_native_mpc || return 1
 	which perl > /dev/null || install_native_perl || return 1
+	which runtest > /dev/null || install_native_dejagnu || return 1
 	fetch gcc || return 1
 	unpack ${gcc_org_src_dir} ${gcc_src_base} || return 1
 	mkdir -pv ${gcc_bld_dir_ntv}
@@ -1484,8 +1509,11 @@ install_native_gcc()
 			--enable-libstdcxx-debug \
 		) || return 1
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return 1
+	[ "${enable_check}" != yes ] ||
+		make -C ${gcc_bld_dir_ntv} -j ${jobs} -k check || return 1
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
+	ln -fs ./gcc ${prefix}/bin/cc || return 1
 }
 
 install_native_readline()
@@ -1577,6 +1605,7 @@ install_native_zlib()
 	make -C ${zlib_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${zlib_src_dir_ntv} -j ${jobs} install || return 1
 	update_search_path || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_libpng()
@@ -1593,6 +1622,7 @@ install_native_libpng()
 	make -C ${libpng_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${libpng_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_libtiff()
@@ -1608,6 +1638,7 @@ install_native_libtiff()
 	make -C ${tiff_src_dir_ntv} -j ${jobs} || return 1
 	make -C ${tiff_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_libjpeg()
@@ -1655,6 +1686,7 @@ install_native_libXpm()
 	make -C ${libXpm_org_src_dir} -j ${jobs} || return 1
 	make -C ${libXpm_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_libwebp()
@@ -1672,6 +1704,7 @@ install_native_libwebp()
 	make -C ${libwebp_org_src_dir} -j ${jobs} || return 1
 	make -C ${libwebp_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_libffi()
@@ -1685,6 +1718,7 @@ install_native_libffi()
 	make -C ${libffi_org_src_dir} -j ${jobs} || return 1
 	make -C ${libffi_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
+	update_pkg_config_path || return 1
 }
 
 #install_native_glib()
@@ -2271,6 +2305,7 @@ install_native_pcre2()
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${pcre2_org_src_dir} -j ${jobs} || return 1
 	make -C ${pcre2_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_the_silver_searcher()
@@ -2288,6 +2323,7 @@ install_native_the_silver_searcher()
 			--disable-silent-rules) || return 1
 	make -C ${the_silver_searcher_org_src_dir} -j ${jobs} || return 1
 	make -C ${the_silver_searcher_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_the_platinum_searcher()
@@ -2328,6 +2364,7 @@ install_native_graphviz()
 			--enable-ruby ) || return 1
 	make -C ${graphviz_org_src_dir} -j ${jobs} || return 1
 	make -C ${graphviz_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_doxygen()
@@ -2409,6 +2446,7 @@ install_native_libevent()
 	make -C ${libevent_org_src_dir}-stable -j ${jobs} || return 1
 	make -C ${libevent_org_src_dir}-stable -j ${jobs} install || return 1
 	update_search_path || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_tmux()
@@ -2477,6 +2515,8 @@ install_native_bash()
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${bash_org_src_dir} -j ${jobs} || return 1
 	make -C ${bash_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_pkg_config_path || return 1
+	ln -fs ./bash ${prefix}/bin/sh || return 1
 }
 
 install_native_inetutils()
@@ -2501,6 +2541,7 @@ install_native_openssl()
 	make -C ${openssl_org_src_dir} -j ${jobs} || return 1
 	make -C ${openssl_org_src_dir} -j ${jobs} install || return 1
 	update_search_path || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_openssh()
@@ -2534,6 +2575,7 @@ install_native_curl()
 	make -C ${curl_org_src_dir} -j ${jobs} || return 1
 	make -C ${curl_org_src_dir} -j ${jobs} install || return 1
 	update_search_path || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_asciidoc()
@@ -2561,6 +2603,7 @@ install_native_libxml2()
 	make -C ${libxml2_org_src_dir} -j ${jobs} || return 1
 	make -C ${libxml2_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 	update_search_path || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_libxslt()
@@ -2574,6 +2617,7 @@ install_native_libxslt()
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return 1
 	make -C ${libxslt_org_src_dir} -j ${jobs} || return 1
 	make -C ${libxslt_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_xmlto()
@@ -2649,6 +2693,7 @@ install_native_sqlite()
 		./configure --prefix=${prefix} --build=${build}) || return 1
 	make -C ${sqlite_autoconf_org_src_dir} -j ${jobs} || return 1
 	make -C ${sqlite_autoconf_org_src_dir} -j ${jobs} install || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_apr()
@@ -2662,6 +2707,7 @@ install_native_apr()
 			--enable-threads --enable-posix-shm --enable-other-child) || return 1
 	make -C ${apr_org_src_dir} -j ${jobs} || return 1
 	make -C ${apr_org_src_dir} -j ${jobs} install || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_apr_util()
@@ -2677,6 +2723,7 @@ install_native_apr_util()
 			--with-crypto --with-openssl --with-sqlite3=`get_prefix sqlite3.h`) || return 1
 	make -C ${apr_util_org_src_dir} -j ${jobs} || return 1
 	make -C ${apr_util_org_src_dir} -j ${jobs} install || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_subversion()
@@ -2695,9 +2742,10 @@ install_native_subversion()
 		(cd ${subversion_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --with-zlib=`get_prefix zlib.h` \
 			--with-sqlite=`get_prefix sqlite3.h` \
-			${strip:+--enable-optimize}) || return 1 # [TODO] stripしないときは、--enable-debugつけてみたい。
+			${strip:+--enable-optimize} ${strip:---enable-debug}) || return 1
 	make -C ${subversion_org_src_dir} -j ${jobs} || return 1
 	make -C ${subversion_org_src_dir} -j ${jobs} install || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_cmake()
@@ -2729,6 +2777,7 @@ install_native_libedit()
 			--disable-silent-rules CFLAGS="${CFLAGS} -I${prefix}/include/ncurses") || return 1
 	make -C ${libedit_org_src_dir} -j ${jobs} || return 1
 	make -C ${libedit_org_src_dir} -j ${jobs} install || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_swig()
@@ -3053,6 +3102,7 @@ install_cross_gcc()
 install_cross_gdb()
 {
 	[ -x ${prefix}/bin/${target}-gdb -a "${force_install}" != yes ] && return 0
+	[ ${build} = ${target} ] && echo "target(${target}) must be different from build(${build})" && return 1
 	search_header readline.h readline > /dev/null || install_native_readline || return 1
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return 1
 	search_header Python.h > /dev/null || install_native_python || return 1
@@ -3163,6 +3213,7 @@ install_native_python()
 			--with-tsc --with-pymalloc --with-ensurepip) || return 1 # --enable-ipv6 --with-address-sanitizer --with-system-expat --with-system-ffi
 	make -C ${Python_org_src_dir} -j ${jobs} || return 1
 	make -C ${Python_org_src_dir} -j ${jobs} install || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_ruby()
@@ -3176,6 +3227,7 @@ install_native_ruby()
 			--enable-multiarch --enable-shared --disable-silent-rules) || return 1
 	make -C ${ruby_org_src_dir} -j ${jobs} || return 1
 	make -C ${ruby_org_src_dir} -j ${jobs} install || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_go()
@@ -3220,6 +3272,7 @@ install_native_tcl()
 	make -C ${tcl_org_src_dir}/unix -j ${jobs} || return 1
 	make -C ${tcl_org_src_dir}/unix -j ${jobs} install || return 1
 	make -C ${tcl_org_src_dir}/unix -j ${jobs} install-private-headers || return 1
+	update_pkg_config_path || return 1
 	ln -fsv ./tclsh`echo ${tcl_ver} | cut -f -2 -d .` ${prefix}/bin/tclsh || return 1
 }
 
@@ -3236,6 +3289,64 @@ install_native_tk()
 	make -C ${tk_org_src_dir}/unix -j ${jobs} || return 1
 	make -C ${tk_org_src_dir}/unix -j ${jobs} install${strip:+-${strip}} || return 1
 	ln -fsv ./wish`echo ${tk_ver} | cut -f -2 -d .` ${prefix}/bin/wish || return 1
+}
+
+install_native_libunistring()
+{
+	[ -r ${prefix}/include/unistr.h -a "${force_install}" != yes ] && return 0
+	fetch libunistring || return 1
+	unpack ${libunistring_org_src_dir} ${libunistring_src_base} || return 1
+	[ -f ${libunistring_org_src_dir}/Makefile ] ||
+		(cd ${libunistring_org_src_dir}
+		./configure --prefix=${prefix} -build=${build} --disable-silent-rules) || return 1
+	make -C ${libunistring_org_src_dir} -j ${jobs} || return 1
+	make -C ${libunistring_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+}
+
+install_native_libatomic_ops()
+{
+	[ -r ${prefix}/include/atomic_ops.h -a "${force_install}" != yes ] && return 0
+	fetch libatomic_ops || return 1
+	unpack ${libatomic_ops_org_src_dir} ${libatomic_ops_src_base} || return 1
+	[ -f ${libatomic_ops_org_src_dir}/Makefile ] ||
+		(cd ${libatomic_ops_org_src_dir}
+		./configure --prefix=${prefix} -build=${build} --disable-silent-rules \
+			--enable-shared) || return 1
+	make -C ${libatomic_ops_org_src_dir} -j ${jobs} || return 1
+	make -C ${libatomic_ops_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_pkg_config_path || return 1
+}
+
+install_native_gc()
+{
+	[ -r ${prefix}/include/gc.h -a "${force_install}" != yes ] && return 0
+	search_header atomic_ops.h > /dev/null || install_native_libatomic_ops || return 1
+	fetch gc || return 1
+	unpack ${gc_org_src_dir} ${gc_src_base} || return 1
+	[ -f ${gc_org_src_dir}/Makefile ] ||
+		(cd ${gc_org_src_dir}
+		./configure --prefix=${prefix} -build=${build} --disable-silent-rules) || return 1
+	make -C ${gc_org_src_dir} -j ${jobs} || return 1
+	make -C ${gc_org_src_dir} -j ${jobs} check || return 1
+	make -C ${gc_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
+	update_pkg_config_path || return 1
+}
+
+install_native_guile()
+{
+	[ -x ${prefix}/bin/guile -a "${force_install}" != yes ] && return 0
+	search_header gmp.h > /dev/null || install_native_gmp || return 1
+	search_header unistr.h > /dev/null || install_native_libunistring || return 1
+	search_header ffi.h > /dev/null || install_native_libffi || return 1
+	search_header gc.h > /dev/null || install_native_gc || return 1
+	fetch guile || return 1
+	unpack ${guile_org_src_dir} ${guile_src_base} || return 1
+	[ -f ${guile_org_src_dir}/Makefile ] ||
+		(cd ${guile_org_src_dir}
+		./configure --prefix=${prefix} -build=${build} \
+			--disable-silent-rules --with-libunistring-prefix=`get_prefix unistr.h`) || return 1
+	make -C ${guile_org_src_dir} -j ${jobs} || return 1
+	make -C ${guile_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return 1
 }
 
 install_native_yasm()
@@ -3264,6 +3375,7 @@ install_native_x264()
 		${strip:+--enable-strip}) || return 1
 	make -C ${x264_org_src_dir} -j ${jobs} || return 1
 	make -C ${x264_org_src_dir} -j ${jobs} install || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_x265()
@@ -3282,6 +3394,7 @@ install_native_x265()
 		-DNATIVE_BUILD=ON) || return 1
 	make -C ${x265_org_src_dir}/source -j ${jobs} || return 1
 	make -C ${x265_org_src_dir}/source -j ${jobs} install || return 1
+	update_pkg_config_path || return 1
 }
 
 install_native_libav()
@@ -3359,11 +3472,13 @@ install_native_opencv()
 	make -C ${opencv_bld_dir_ntv} -j ${jobs} -k || return 1 # make 一発じゃだめっぽいので2回。
 	make -C ${opencv_bld_dir_ntv} -j ${jobs} || return 1
 	make -C ${opencv_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return 1
+	update_pkg_config_path || return 1
 }
 
 install_crossed_native_binutils()
 {
 	[ -x ${sysroot}/usr/bin/as -a "${force_install}" != yes ] && return 0
+	[ ${build} = ${target} ] && echo "host(${target}) must be different from build(${build})" && return 1
 	search_header zlib.h > /dev/null || install_native_zlib || return 1
 	which yacc > /dev/null || install_native_bison || return 1
 	fetch binutils || return 1
@@ -3383,6 +3498,7 @@ install_crossed_native_binutils()
 install_crossed_native_gmp()
 {
 	[ -f ${sysroot}/usr/include/gmp.h -a "${force_install}" != yes ] && return 0
+	[ ${build} = ${target} ] && echo "host(${target}) must be different from build(${build})" && return 1
 	fetch gmp || return 1
 	[ -d ${gmp_src_dir_crs_ntv} ] ||
 		(unpack ${gmp_org_src_dir} ${gmp_src_base} &&
@@ -3397,6 +3513,7 @@ install_crossed_native_gmp()
 install_crossed_native_mpfr()
 {
 	[ -f ${sysroot}/usr/include/mpfr.h -a "${force_install}" != yes ] && return 0
+	[ ${build} = ${target} ] && echo "host(${target}) must be different from build(${build})" && return 1
 	fetch mpfr || return 1
 	[ -d ${mpfr_src_dir_crs_ntv} ] ||
 		(unpack ${mpfr_org_src_dir} ${mpfr_src_base} &&
@@ -3414,6 +3531,7 @@ install_crossed_native_mpfr()
 install_crossed_native_mpc()
 {
 	[ -f ${sysroot}/usr/include/mpc.h -a "${force_install}" != yes ] && return 0
+	[ ${build} = ${target} ] && echo "host(${target}) must be different from build(${build})" && return 1
 	fetch mpc || return 1
 	[ -d ${mpc_src_dir_crs_ntv} ] ||
 		(unpack ${mpc_org_src_dir} ${mpc_src_base} &&
@@ -3428,6 +3546,7 @@ install_crossed_native_mpc()
 install_crossed_native_gcc()
 {
 	[ -x ${sysroot}/usr/bin/gcc -a "${force_install}" != yes ] && return 0
+	[ ${build} = ${target} ] && echo "host(${target}) must be different from build(${build})" && return 1
 	install_crossed_native_zlib || return 1
 	[ -f ${sysroot}/usr/include/gmp.h ] || install_crossed_native_gmp || return 1
 	[ -f ${sysroot}/usr/include/mpfr.h ] || install_crossed_native_mpfr || return 1
@@ -3450,6 +3569,7 @@ install_crossed_native_gcc()
 install_crossed_native_zlib()
 {
 	[ -f ${sysroot}/usr/include/zlib.h -a "${force_install}" != yes ] && return 0
+	[ ${build} = ${target} ] && echo "host(${target}) must be different from build(${build})" && return 1
 	fetch zlib || return 1
 	[ -d ${zlib_src_dir_crs_ntv} ] ||
 		(unpack ${zlib_org_src_dir} ${zlib_src_base} &&
@@ -3463,6 +3583,7 @@ install_crossed_native_zlib()
 install_crossed_native_libpng()
 {
 	[ -f ${sysroot}/usr/include/png.h -a "${force_install}" != yes ] && return 0
+	[ ${build} = ${target} ] && echo "host(${target}) must be different from build(${build})" && return 1
 	install_crossed_native_zlib || return 1
 	fetch libpng || return 1
 	[ -d ${libpng_src_dir_crs_ntv} ] ||
@@ -3479,6 +3600,7 @@ install_crossed_native_libpng()
 install_crossed_native_libtiff()
 {
 	[ -f ${sysroot}/usr/include/tiffio.h -a "${force_install}" != yes ] && return 0
+	[ ${build} = ${target} ] && echo "host(${target}) must be different from build(${build})" && return 1
 	fetch tiff || return 1
 	[ -d ${tiff_src_dir_crs_ntv} ] ||
 		(unpack ${tiff_org_src_dir} ${tiff_src_base} &&
