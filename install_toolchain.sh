@@ -2354,8 +2354,9 @@ install_native_ctags()
 install_native_dein()
 {
 	[ -f ${prefix}/src/vim/installer.sh ] ||
+		(mkdir -pv ${prefix}/src/vim
 		wget --no-check-certificate -O ${prefix}/src/vim/installer.sh \
-			https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh || return 1
+			https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh) || return 1
 	[ `whoami` = root ] && echo Error. run as root is not recommended. >&2 && return 1
 	sh ${prefix}/src/vim/installer.sh ${HOME}/.vim || return 1
 }
