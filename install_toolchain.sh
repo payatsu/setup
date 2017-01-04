@@ -1,5 +1,6 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
+# [TODO] opensslのインストールが一発で完了しない（libcrypto,libsslどちらか片方になる）
 # [TODO] valgrind
 # [TODO] newlib
 # [TODO] perf
@@ -586,7 +587,7 @@ fetch()
 	cmake)
 		check_archive ${cmake_org_src_dir} ||
 			wget --no-check-certificate -O ${cmake_org_src_dir}.tar.gz \
-				https://cmake.org/files/v`echo ${cmake_ver} | cut -f1,2 -d.`/${cmake_name}.tar.gz || return;;
+				https://cmake.org/files/v`echo ${cmake_ver} | cut -d. -f1,2`/${cmake_name}.tar.gz || return;;
 	libedit)
 		check_archive ${libedit_org_src_dir} ||
 			wget -O ${libedit_org_src_dir}.tar.gz \
@@ -690,11 +691,11 @@ fetch()
 	glib|pango|gdk-pixbuf|atk|gobject-introspection)
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget -O \${${_1}_org_src_dir}.tar.xz \
-				http://ftp.gnome.org/pub/gnome/sources/${1}/\`echo \${${_1}_ver} \| cut -f-2 -d.\`/\${${_1}_name}.tar.xz || return;;
+				http://ftp.gnome.org/pub/gnome/sources/${1}/\`echo \${${_1}_ver} \| cut -d. -f-2\`/\${${_1}_name}.tar.xz || return;;
 	gtk)
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget -O \${${_1}_org_src_dir}.tar.xz \
-				http://ftp.gnome.org/pub/gnome/sources/gtk+/\`echo \${${_1}_ver} \| cut -f-2 -d.\`/\${${_1}_name}.tar.xz || return;;
+				http://ftp.gnome.org/pub/gnome/sources/gtk+/\`echo \${${_1}_ver} \| cut -d. -f-2\`/\${${_1}_name}.tar.xz || return;;
 	webkitgtk)
 		check_archive ${webkitgtk_org_src_dir} ||
 			wget --no-check-certificate -O ${webkitgtk_org_src_dir}.tar.xz \
@@ -827,7 +828,7 @@ strip()
 {
 	for strip_command in strip ${target}-strip x86_64-w64-mingw32-strip; do
 		find ${prefix} -type f \( -perm /111 -o -name '*.o' -o -name '*.a' -o -name '*.so' -o -name '*.gox' \) \
-			| xargs file | grep 'not stripped' | cut -f1 -d: | xargs -I "{}" sh -c "chmod u+w {}; ${strip_command} {}" || true
+			| xargs file | grep -e 'not stripped' | cut -d: -f1 | xargs -I "{}" sh -c "chmod u+w {}; ${strip_command} {}" || true
 	done
 }
 
@@ -943,7 +944,7 @@ set_variables()
 {
 	prefix=`readlink -m ${prefix}`
 	sysroot=${prefix}/${target}/sysroot
-	os=`head -1 /etc/issue | cut -d ' ' -f 1`
+	os=`head -1 /etc/issue | cut -d' ' -f1`
 	[ "${strip}" = strip ] || cmake_build_type=Debug
 
 	case ${build} in
@@ -962,7 +963,7 @@ set_variables()
 	*) echo Unknown target architecture: ${target} >&2; return 1;;
 	esac
 
-	case `echo ${linux_ver} | cut -f 1,2 -d .` in
+	case `echo ${linux_ver} | cut -d. -f1,2` in
 	2.6) kernel_major_ver=v2.6;;
 	3.*) kernel_major_ver=v3.x;;
 	4.*) kernel_major_ver=v4.x;;
@@ -984,14 +985,15 @@ set_variables()
 		set_src_directory ${pkg}
 	done
 
-	echo ${PATH} | tr : '\n' | grep -q -e ^${prefix}/bin\$ \
+	echo ${PATH} | tr : '\n' | grep -qe ^${prefix}/bin\$ \
 		&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s+\(^\|:\)${prefix}/bin\(\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\$//"` \
 		|| PATH=${prefix}/bin:${PATH}
-	echo ${PATH} | tr : '\n' | grep -q -e ^/sbin\$ || PATH=/sbin:${PATH}
-	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -q -e ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64:${LD_LIBRARY_PATH}
-	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -q -e ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib:${LD_LIBRARY_PATH}
+	echo ${PATH} | tr : '\n' | grep -qe ^/sbin\$ || PATH=/sbin:${PATH}
+	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64:${LD_LIBRARY_PATH}
+	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib:${LD_LIBRARY_PATH}
 	export LD_LIBRARY_PATH
-	export GOPATH=${HOME}/go
+	: ${GOPATH:=${HOME}/.go}
+	export GOPATH
 	update_pkg_config_path
 }
 
@@ -1207,7 +1209,7 @@ install_native_bzip2()
 		make -C ${bzip2_org_src_dir} -j ${jobs} -k check || return
 	cp -fv ${bzip2_org_src_dir}/libbz2.so.${bzip2_ver} ${prefix}/lib || return
 	chmod a+r ${prefix}/lib/libbz2.so.${bzip2_ver} || return
-	ln -fsv ./libbz2.so.${bzip2_ver} ${prefix}/lib/libbz2.so.`echo ${bzip2_ver} | cut -d . -f -2` || return
+	ln -fsv ./libbz2.so.${bzip2_ver} ${prefix}/lib/libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` || return
 	cp -fv ${bzip2_org_src_dir}/bzlib.h ${prefix}/include || return
 	cp -fv ${bzip2_org_src_dir}/bzlib_private.h ${prefix}/include || return
 	update_search_path || return
@@ -3461,7 +3463,7 @@ install_native_tcl()
 	make -C ${tcl_org_src_dir}/unix -j ${jobs} install || return
 	make -C ${tcl_org_src_dir}/unix -j ${jobs} install-private-headers || return
 	update_pkg_config_path || return
-	ln -fsv ./tclsh`echo ${tcl_ver} | cut -f -2 -d .` ${prefix}/bin/tclsh || return
+	ln -fsv ./tclsh`echo ${tcl_ver} | cut -d. -f-2` ${prefix}/bin/tclsh || return
 }
 
 install_native_tk()
@@ -3478,7 +3480,7 @@ install_native_tk()
 	[ "${enable_check}" != yes ] ||
 		make -C ${tk_org_src_dir}/unix -j ${jobs} -k test || return
 	make -C ${tk_org_src_dir}/unix -j ${jobs} install${strip:+-${strip}} || return
-	ln -fsv ./wish`echo ${tk_ver} | cut -f -2 -d .` ${prefix}/bin/wish || return
+	ln -fsv ./wish`echo ${tk_ver} | cut -d. -f-2` ${prefix}/bin/wish || return
 }
 
 install_native_libunistring()
