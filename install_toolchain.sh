@@ -1,10 +1,8 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
-# [TODO] opensslのインストールが一発で完了しない（libcrypto,libsslどちらか片方になる）
 # [TODO] valgrind
 # [TODO] newlib
 # [TODO] perf
-# [TODO] X window system関係のライブラリ何かを入れると、OS起動時GUIが立ち上がらなくなる。
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] X11, gtk周りのインストールが未完成＆不安定
 # [TODO] libav<-
