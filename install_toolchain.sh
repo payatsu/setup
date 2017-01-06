@@ -30,7 +30,7 @@
 : ${automake_ver:=1.15}
 : ${autogen_ver:=5.18.12}
 : ${libtool_ver:=2.4.6}
-: ${sed_ver:=4.2.2}
+: ${sed_ver:=4.3}
 : ${gawk_ver:=4.1.4}
 : ${make_ver:=4.2}
 : ${binutils_ver:=2.27}
@@ -1395,7 +1395,7 @@ install_native_sed()
 	unpack ${sed_org_src_dir} ${sed_src_base} || return
 	[ -f ${sed_org_src_dir}/Makefile ] ||
 		(cd ${sed_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 	make -C ${sed_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${sed_org_src_dir} -j ${jobs} -k check || return
@@ -2597,7 +2597,7 @@ install_native_expect()
 
 install_native_dejagnu()
 {
-#	[ -x ${prefix}/bin/dejagnu -a "${force_install}" != yes ] && return
+	[ -x ${prefix}/bin/runtest -a "${force_install}" != yes ] && return
 	which expect > /dev/null || install_native_expect || return
 	fetch dejagnu || return
 	unpack ${dejagnu_org_src_dir} ${dejagnu_src_base} || return
@@ -3409,10 +3409,10 @@ install_native_ruby()
 		(cd ${ruby_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
 			--enable-multiarch --enable-shared --disable-silent-rules) || return
-	make -C ${ruby_org_src_dir} -j ${jobs} || return
+	make -C ${ruby_org_src_dir} -j ${jobs} V=1 || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${ruby_org_src_dir} -j ${jobs} -k check || return
-	make -C ${ruby_org_src_dir} -j ${jobs} install || return
+		make -C ${ruby_org_src_dir} -j ${jobs} -k V=1 check || return
+	make -C ${ruby_org_src_dir} -j ${jobs} V=1 install || return
 	update_pkg_config_path || return
 }
 
