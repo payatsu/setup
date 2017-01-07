@@ -1,5 +1,6 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
+# [TODO] ccache
 # [TODO] valgrind
 # [TODO] newlib
 # [TODO] perf
@@ -159,8 +160,9 @@
 : ${target:=`uname -m`-linux-gnu}
 : ${languages:=c,c++,go}
 
-: ${enable_check=no}
-: ${strip=strip}
+: ${enable_check:=no}
+which ccache > /dev/null 2>&1 && enable_ccache=yes || enable_ccache=no
+: ${strip:=strip}
 : ${cmake_build_type:=Release}
 
 usage()
@@ -708,7 +710,7 @@ unpack()
 {
 	case ${1} in
 	'')
-		clean
+		clean || return
 		for f in `find ${prefix}/src -name '*.tar.gz' -o -name '*.tar.bz2' -o -name '*.tar.xz' -o -name '*.zip'`; do
 			unpack `echo $f | sed -e 's/\.tar\.gz$//;s/\.tar\.bz2$//;s/\.tar\.xz$//;s/\.zip$//'` `dirname $f`
 		done;;
@@ -817,6 +819,7 @@ full()
 clean()
 # Delete no longer required source trees.
 {
+	[ "${enable_ccache}" != yes ] || ccache -C > /dev/null || return
 	find ${prefix}/src -mindepth 2 -maxdepth 2 \
 		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' -exec rm -fr {} +
 }
@@ -857,7 +860,7 @@ list()
 reset()
 # Reset '${prefix}' except '${prefix}/src/'.
 {
-	clean
+	clean || return
 	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src ! -name .git -exec rm -fr '{}' +
 	[ `whoami` = root ] && rm -fv /etc/ld.so.conf.d/`basename ${prefix}`.conf
 	[ `whoami` = root ] && ldconfig || true
@@ -990,9 +993,11 @@ set_variables()
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64:${LD_LIBRARY_PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib:${LD_LIBRARY_PATH}
 	export LD_LIBRARY_PATH
-	: ${GOPATH:=${HOME}/.go}
-	export GOPATH
-	update_pkg_config_path
+	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${prefix}/src/.ccache CCACHE_BASEDIR=${prefix}/src && mkdir -p ${prefix}/src
+	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-gcc}" CXX="ccache ${CXX:-g++}"
+	[ "${enable_ccache}" = yes ] || ! echo ${CC} | grep -qe ccache || export CC=`echo ${CC} | sed -e 's/ccache //'` CXX=`echo ${CXX} | sed -e 's/ccache //'`
+	export GOPATH=${GOPATH:-${HOME}/.go}
+	update_pkg_config_path || return
 }
 
 convert_archives()
@@ -1005,7 +1010,7 @@ convert_archives()
 archive_sources()
 {
 	fetch || return
-	clean
+	clean || return
 	convert_archives || return
 	tar cJvf ${prefix}/src.tar.xz -C ${prefix} src
 }
@@ -1069,15 +1074,15 @@ update_pkg_config_path()
 	PKG_CONFIG_PATH=`([ -d ${prefix}/lib ] && find ${prefix}/lib -type d -name pkgconfig
 						[ -d ${prefix}/share ] && find ${prefix}/share -type d -name pkgconfig
 						LANG=C ${CC:-gcc} -print-search-dirs | sed -e '/^libraries: =/{s/^libraries: =//;p};d' |
-							tr : '\n' | while read dir; do [ -d ${dir} ] && echo ${dir}; done | xargs readlink -m |
-							xargs -I dir find dir -maxdepth 1 -type d -name pkgconfig) | tr '\n' : | sed -e 's/:$//'`
+							tr : '\n' | xargs readlink -e | xargs -I dir find dir -maxdepth 1 -type d -name pkgconfig) |
+							tr '\n' : | sed -e 's/:$//'`
 	export PKG_CONFIG_PATH
 }
 
 search_library()
 {
 	for dir in ${prefix}/lib64 ${prefix}/lib `LANG=C ${CC:-gcc} -print-search-dirs |
-		sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs readlink -m`; do
+		sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs readlink -e`; do
 		[ -f ${dir}/${1} ] && echo ${dir}/${1} && return
 	done
 	return 1
@@ -1092,8 +1097,8 @@ search_library_dir()
 search_header()
 {
 	for dir in ${prefix}/include ${prefix}/lib/libffi-*/include \
-		`LANG=C ${CC:-gcc} -print-search-dirs | sed -e '/^libraries: =/{s/^libraries: =//;p};d' |
-			tr : '\n' | xargs readlink -m` /usr/local/include /opt/include /usr/include; do
+		`LANG=C ${CC:-gcc} -x c -E -v /dev/null -o /dev/null 2>&1 |
+			sed -e '/^#include /,/^End of search list.$/p;d' | xargs readlink -e`; do
 		[ -d ${dir}${2:+/${2}} ] || continue
 		candidates=`find ${dir}${2:+/${2}} -type f -name ${1}`
 		[ -n "${candidates}" ] && echo "${candidates}" | head -n 1 && return
