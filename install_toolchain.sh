@@ -156,12 +156,12 @@
 
 : ${prefix:=/toolchains}
 : ${jobs:=`grep -e processor /proc/cpuinfo | wc -l`}
-: ${build:=`uname -m`-linux-gnu}
-: ${target:=`uname -m`-linux-gnu}
-: ${languages:=c,c++,go}
-
 : ${enable_check:=no}
-which ccache > /dev/null 2>&1 && enable_ccache=yes || enable_ccache=no
+: ${target:=`uname -m`-linux-gnu}
+
+: ${enable_ccache:=no}
+: ${build:=`uname -m`-linux-gnu}
+: ${languages:=c,c++,go}
 : ${strip:=strip}
 : ${cmake_build_type:=Release}
 
@@ -170,12 +170,19 @@ usage()
 {
 	cat <<EOF
 [Usage]
-	${0} [-p prefix] [-t target] [-j jobs] [-h] [variable=value]... commands...
+	${0} [-p prefix] [-j jobs] [-c yes|no] [-t target] [-h] [variable=value]... commands...
 
 [Options]
 	-p prefix
 		Installation directory, currently '${prefix}'.
 		'/usr/local' is NOT strongly recommended.
+	-j jobs
+		The number of processes invoked simultaneously by 'make', currently '${jobs}'.
+		Recommended not to be more than the number of CPU cores.
+	-c yes|no
+		Enable 'make check' before 'make install', currently '${enable_check}'.
+	-l languages
+		Enable languages in GCC build configulation, currently '${languages}'.
 	-t target
 		Target-triplet of new cross toolchain, currently '${target}'.
 		ex.
@@ -184,9 +191,6 @@ usage()
 			i686-unknown-linux
 			microblaze-none-linux
 			nios2-none-linux (linux_ver=4.8.1)
-	-j jobs
-		The number of processes invoked simultaneously by 'make', currently '${jobs}'.
-		Recommended not to be more than the number of CPU cores.
 	-h
 		Show detailed help.
 
@@ -3818,11 +3822,13 @@ install_crossed_native_libtiff()
 	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
 
-while getopts p:t:j:h arg; do
+while getopts p:j:c:l:t:h arg; do
 	case ${arg} in
 	p)  prefix=${OPTARG};;
-	t)  target=${OPTARG};;
 	j)  jobs=${OPTARG};;
+	c)  enable_check=${OPTARG};;
+	l)  languages=${OPTARG};;
+	t)  target=${OPTARG};;
 	h)  set_variables || true; help; exit 0;;
 	\?) set_variables || true; usage >&2; exit 1;;
 	esac
