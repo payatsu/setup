@@ -3138,7 +3138,8 @@ install_cross_gcc_without_headers()
 		(cd ${gcc_bld_dir_crs_1st}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
-			--enable-languages=c --disable-multilib --without-isl --with-system-zlib --without-headers \
+			--enable-languages=c --disable-multilib --without-isl --with-system-zlib \
+			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` --without-headers \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
 			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
@@ -3186,7 +3187,7 @@ install_cross_gcc_with_glibc_headers()
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
 			--enable-languages=c --disable-multilib --without-isl --with-system-zlib \
-			--with-sysroot=${sysroot} --with-newlib \
+			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` --with-sysroot=${sysroot} --with-newlib \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
 			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
@@ -3239,10 +3240,9 @@ EOF
 	[ -f ${glibc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${glibc_bld_dir_crs_1st}
 		LD_LIBRARY_PATH='' ${glibc_src_dir_crs_1st}/configure --prefix=/usr --build=${build} --host=${target} \
-			--with-headers=${sysroot}/usr/include \
-			CFLAGS="${CFLAGS} -Wno-error=parentheses -O2" \
+			--with-headers=${sysroot}/usr/include CFLAGS="${CFLAGS} -Wno-error=parentheses -O2" \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return
-	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} || return
+	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} AR=${target}-ar || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} -k check || return
 	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} install || return
@@ -3257,6 +3257,7 @@ install_cross_functional_gcc()
 		LIBS=-lgcc_s ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
 			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
+			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` \
 			--enable-libstdcxx-debug --with-sysroot=${sysroot}) || return
 	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
