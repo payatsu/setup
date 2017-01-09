@@ -170,7 +170,7 @@ usage()
 {
 	cat <<EOF
 [Usage]
-	${0} [-p prefix] [-j jobs] [-c yes|no] [-t target] [-h] [variable=value]... commands...
+	${0} [-p prefix] [-j jobs] [-f yes|no] [-c yes|no] [-t target] [-h] [variable=value]... commands...
 
 [Options]
 	-p prefix
@@ -179,6 +179,8 @@ usage()
 	-j jobs
 		The number of processes invoked simultaneously by 'make', currently '${jobs}'.
 		Recommended not to be more than the number of CPU cores.
+	-f yes|no
+		Enable ccache, currently '${enable_ccache}'.
 	-c yes|no
 		Enable 'make check' before 'make install', currently '${enable_check}'.
 	-l languages
@@ -3824,10 +3826,11 @@ install_crossed_native_libtiff()
 	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
 
-while getopts p:j:c:l:t:h arg; do
+while getopts p:j:f:c:l:t:h arg; do
 	case ${arg} in
 	p)  prefix=${OPTARG};;
 	j)  jobs=${OPTARG};;
+	f)  enable_ccache=${OPTARG};;
 	c)  enable_check=${OPTARG};;
 	l)  languages=${OPTARG};;
 	t)  target=${OPTARG};;
