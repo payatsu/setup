@@ -3114,6 +3114,7 @@ install_cross_binutils()
 	[ -x ${prefix}/bin/${target}-as -a "${force_install}" != yes ] && return
 	[ ${build} != ${target} ] || ! echo "target(${target}) must be different from build(${build})" >&2 || return
 	search_header zlib.h > /dev/null || install_native_zlib || return
+	which yacc > /dev/null || install_native_bison || return
 	fetch binutils || return
 	[ -d ${binutils_src_dir_crs} ] ||
 		(unpack ${binutils_org_src_dir} ${binutils_src_base} &&
@@ -3254,15 +3255,15 @@ install_cross_functional_gcc()
 	mkdir -pv ${gcc_bld_dir_crs_3rd}
 	[ -f ${gcc_bld_dir_crs_3rd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_3rd}
-		LIBS=-lgcc_s ${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
+		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
 			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
 			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` \
-			--enable-libstdcxx-debug --with-sysroot=${sysroot}) || return
+			--enable-libstdcxx-debug --with-sysroot=${sysroot} ${strip:+STRIP=${target}-strip}) || return
 	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k check || return
-	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k install${strip:+-${strip}} || true # [XXX] install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
+	make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k install${strip:+-${strip}} || true # [XXX] install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
 }
 
 install_cross_gcc()
