@@ -2,6 +2,7 @@
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] ccache
 # [TODO] valgrind
+# [TODO] util-linux
 # [TODO] newlib
 # [TODO] perf
 # [TODO] haskell(stack<-(ghc, cabal))
@@ -461,7 +462,7 @@ fetch()
 	linux)
 		check_archive ${linux_org_src_dir} ||
 			wget --no-check-certificate -O ${linux_org_src_dir}.tar.xz \
-				https://www.kernel.org/pub/linux/kernel/${kernel_major_ver}/${linux_name}.tar.xz || return;;
+				https://www.kernel.org/pub/linux/kernel/${linux_major_ver}/${linux_name}.tar.xz || return;;
 	gcc)
 		check_archive ${gcc_org_src_dir} ||
 			wget -O ${gcc_org_src_dir}.tar.bz2 \
@@ -758,7 +759,7 @@ full()
 		'/^install_native_[_[:alnum:]]\+()$/{
 			s/()$//
 			s/install_native_pkg_config//
-			s/install_native_kernel_header//
+			s/install_native_linux_header//
 			s/install_native_glibc//
 			s/install_native_libXpm//
 			s/install_native_glib//
@@ -971,10 +972,10 @@ set_variables()
 	esac
 
 	case `echo ${linux_ver} | cut -d. -f1,2` in
-	2.6) kernel_major_ver=v2.6;;
-	3.*) kernel_major_ver=v3.x;;
-	4.*) kernel_major_ver=v4.x;;
-	*)   echo unsupported kernel version >&2; return 1;;
+	2.6) linux_major_ver=v2.6;;
+	3.*) linux_major_ver=v3.x;;
+	4.*) linux_major_ver=v4.x;;
+	*)   echo unsupported linux version >&2; return 1;;
 	esac
 
 	for pkg in `sed -e '/^: \${\(.\+\)_ver:=.\+}$/{s//\1/
@@ -1465,7 +1466,7 @@ install_native_binutils()
 	make -C ${binutils_src_dir_ntv} -j 1 install${strip:+-${strip}} || return
 }
 
-install_native_kernel_header()
+install_native_linux_header()
 {
 	fetch linux || return
 	[ -d ${linux_src_dir_ntv} ] ||
@@ -1493,7 +1494,7 @@ install_native_gperf()
 install_native_glibc()
 {
 	[ -e ${prefix}/lib/libc.so -a "${force_install}" != yes ] && return
-	install_native_kernel_header || return
+	install_native_linux_header || return
 	which awk > /dev/null || install_native_gawk || return
 	which gperf > /dev/null || install_native_gperf || return
 	fetch glibc || return
@@ -2966,10 +2967,11 @@ install_native_llvm()
 	fetch llvm || return
 	unpack ${llvm_org_src_dir} ${llvm_src_base} || return
 	mkdir -pv ${llvm_bld_dir}
-	(cd ${llvm_bld_dir}
-	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DLLVM_LINK_LLVM_DYLIB=ON ${llvm_org_src_dir}) || return
+	[ -f ${llvm_bld_dir}/Makefile ] ||
+		(cd ${llvm_bld_dir}
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+			-DLLVM_LINK_LLVM_DYLIB=ON ${llvm_org_src_dir}) || return
 	make -C ${llvm_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${llvm_bld_dir} -j ${jobs} -k check || return
@@ -2983,10 +2985,11 @@ install_native_libcxx()
 	fetch libcxx || return
 	unpack ${libcxx_org_src_dir} ${libcxx_src_base} || return
 	mkdir -pv ${libcxx_bld_dir}
-	(cd ${libcxx_bld_dir}
-	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DLLVM_LINK_LLVM_DYLIB=ON ${libcxx_org_src_dir}) || return
+	[ -f ${libcxx_bld_dir}/Makefile ] ||
+		(cd ${libcxx_bld_dir}
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+			-DLLVM_LINK_LLVM_DYLIB=ON ${libcxx_org_src_dir}) || return
 	make -C ${libcxx_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libcxx_bld_dir} -j ${jobs} -k check-libcxx || return
@@ -3003,9 +3006,10 @@ install_native_libcxxabi()
 	unpack ${libcxxabi_org_src_dir} ${libcxxabi_src_base} || return
 	sed -ie '/set(LLVM_CMAKE_PATH /s%share/llvm/cmake%lib/cmake/llvm%' ${libcxxabi_org_src_dir}/CMakeLists.txt || return # [XXX] workaround for LLVM 3.9.0
 	mkdir -pv ${libcxxabi_bld_dir}
-	(cd ${libcxxabi_bld_dir}
-	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxxabi_org_src_dir}) || return
+	[ -f ${libcxxabi_bld_dir}/Makefile ] ||
+		(cd ${libcxxabi_bld_dir}
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxxabi_org_src_dir}) || return
 	make -C ${libcxxabi_bld_dir} -j ${jobs} || return
 	make -C ${libcxxabi_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 }
@@ -3018,9 +3022,10 @@ install_native_compiler_rt()
 	fetch compiler-rt || return
 	unpack ${compiler_rt_org_src_dir} ${compiler_rt_src_base} || return
 	mkdir -pv ${compiler_rt_bld_dir}
-	(cd ${compiler_rt_bld_dir}
-	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${compiler_rt_org_src_dir}) || return
+	[ -f ${compiler_rt_bld_dir}/Makefile ] ||
+		(cd ${compiler_rt_bld_dir}
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${compiler_rt_org_src_dir}) || return
 	make -C ${compiler_rt_bld_dir} -j ${jobs} || return
 	make -C ${compiler_rt_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 }
@@ -3036,9 +3041,10 @@ install_native_cfe()
 	fetch cfe || return
 	unpack ${cfe_org_src_dir} ${cfe_src_base} || return
 	mkdir -pv ${cfe_bld_dir}
-	(cd ${cfe_bld_dir}
-	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${cfe_org_src_dir}) || return
+	[ -f ${cfe_bld_dir}/Makefile ] ||
+		(cd ${cfe_bld_dir}
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${cfe_org_src_dir}) || return
 	make -C ${cfe_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${cfe_bld_dir} -j ${jobs} -k check-all || return
@@ -3051,9 +3057,10 @@ install_native_clang_tools_extra()
 	fetch clang-tools-extra || return
 	unpack ${clang_tools_extra_org_src_dir} ${clang_tools_extra_src_base} || return
 	mkdir -pv ${clang_tools_extra_bld_dir}
-	(cd ${clang_tools_extra_bld_dir}
-	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_tools_extra_org_src_dir}) || return
+	[ -f ${clang_tools_extra_bld_dir}/Makefile ] ||
+		(cd ${clang_tools_extra_bld_dir}
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_tools_extra_org_src_dir}) || return
 	make -C ${clang_tools_extra_bld_dir} -j ${jobs} || return
 	make -C ${clang_tools_extra_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 }
@@ -3069,9 +3076,10 @@ install_native_lld()
 		(unpack ${lld_org_src_dir} ${lld_src_base} &&
 		mv -v ${lld_org_src_dir} ${llvm_org_src_dir}/tools/lld) || return
 	mkdir -pv ${lld_bld_dir}
-	(cd ${lld_bld_dir}
-	cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
-		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return
+	[ -f ${lld_bld_dir}/Makefile ] ||
+		(cd ${lld_bld_dir}
+		cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return
 	make -C ${lld_bld_dir} -j ${jobs} || return
 	make -C ${lld_bld_dir} -j ${jobs} check-lld || return
 	make -C ${lld_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
@@ -3090,9 +3098,10 @@ install_native_lldb()
 		(unpack ${lldb_org_src_dir} ${lldb_src_base} &&
 		mv -v ${lldb_org_src_dir} ${llvm_org_src_dir}/tools/lldb) || return
 	mkdir -pv ${lldb_bld_dir}
-	(cd ${lldb_bld_dir}
-	cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
-		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREIFX=${prefix} ${llvm_org_src_dir}) || return
+	[ -f ${lldb_bld_dir}/Makefile ] ||
+		(cd ${lldb_bld_dir}
+		cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREIFX=${prefix} ${llvm_org_src_dir}) || return
 	make -C ${lldb_bld_dir} -j ${jobs} || return
 	make -C ${lldb_bld_dir} -j ${jobs} check-lldb || return
 	make -C ${lldb_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
@@ -3153,7 +3162,7 @@ install_cross_gcc_without_headers()
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-gcc || return
 }
 
-install_cross_kernel_header()
+install_cross_linux_header()
 {
 	fetch linux || return
 	[ -d ${linux_src_dir_crs} ] ||
@@ -3279,7 +3288,7 @@ install_cross_gcc()
 	which perl > /dev/null || install_native_perl || return
 	fetch gcc || return
 	install_cross_gcc_without_headers || return
-	install_cross_kernel_header || return
+	install_cross_linux_header || return
 	install_cross_glibc_headers || return
 	install_cross_gcc_with_glibc_headers || return
 	install_cross_1st_glibc || return
