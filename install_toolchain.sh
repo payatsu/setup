@@ -1,5 +1,6 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
+# [TODO] --enable-linker-build-id
 # [TODO] ccache
 # [TODO] valgrind
 # [TODO] util-linux
@@ -633,7 +634,7 @@ fetch()
 				http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return;;
 	tcl|tk)
 		eval check_archive \${${_1}_org_src_dir} ||
-			eval wget -O \${${_1}_org_src_dir}.tar.gz \
+			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.gz \
 				http://prdownloads.sourceforge.net/tcl/\${${_1}_name}-src.tar.gz || return;;
 	libatomic_ops|gc)
 		eval check_archive \${${_1}_org_src_dir} ||
@@ -3101,7 +3102,7 @@ install_native_lldb()
 	[ -f ${lldb_bld_dir}/Makefile ] ||
 		(cd ${lldb_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREIFX=${prefix} ${llvm_org_src_dir}) || return
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return
 	make -C ${lldb_bld_dir} -j ${jobs} || return
 	make -C ${lldb_bld_dir} -j ${jobs} check-lldb || return
 	make -C ${lldb_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
