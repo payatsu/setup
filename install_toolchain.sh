@@ -1001,7 +1001,7 @@ set_variables()
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64:${LD_LIBRARY_PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib:${LD_LIBRARY_PATH}
 	export LD_LIBRARY_PATH
-	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${prefix}/src/.ccache CCACHE_BASEDIR=${prefix}/src && mkdir -p ${prefix}/src
+	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${prefix}/src/.ccache CCACHE_BASEDIR=${prefix}/src && ! mkdir -p ${prefix}/src && return 1
 	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-gcc}" CXX="ccache ${CXX:-g++}"
 	[ "${enable_ccache}" = yes ] || ! echo ${CC} | grep -qe ccache || export CC=`echo ${CC} | sed -e 's/ccache //'` CXX=`echo ${CXX} | sed -e 's/ccache //'`
 	export GOPATH=${GOPATH:-${HOME}/.go}
@@ -1502,7 +1502,7 @@ install_native_glibc()
 	[ -d ${glibc_src_dir_ntv} ] ||
 		(unpack ${glibc_org_src_dir} ${glibc_src_base} &&
 			mv -v ${glibc_org_src_dir} ${glibc_src_dir_ntv}) || return
-	mkdir -pv ${glibc_bld_dir_ntv}
+	mkdir -pv ${glibc_bld_dir_ntv} || return
 	[ -f ${glibc_bld_dir_ntv}/Makefile ] ||
 		(cd ${glibc_bld_dir_ntv}
 		LD_LIBRARY_PATH='' ${glibc_src_dir_ntv}/configure \
@@ -1582,13 +1582,13 @@ install_native_gcc()
 	which perl > /dev/null || install_native_perl || return
 	fetch gcc || return
 	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
-	mkdir -pv ${gcc_bld_dir_ntv}
+	mkdir -pv ${gcc_bld_dir_ntv} || return
 	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_ntv}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
 			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
-			--enable-libstdcxx-debug \
+			--enable-libstdcxx-debug --enable-linker-build-id \
 		) || return
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -1666,7 +1666,7 @@ install_native_gdb()
 	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gdb || return
 	unpack ${gdb_org_src_dir} ${gdb_src_base} || return
-	mkdir -pv ${gdb_bld_dir_ntv}
+	mkdir -pv ${gdb_bld_dir_ntv} || return
 	[ -f ${gdb_bld_dir_ntv}/Makefile ] ||
 		(cd ${gdb_bld_dir_ntv}
 		${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} \
@@ -2279,7 +2279,7 @@ install_native_libffi()
 #	search_header decode.h webp > /dev/null || install_native_libwebp || return
 #	fetch webkitgtk || return
 #	unpack ${webkitgtk_org_src_dir} ${webkitgtk_src_base} || return
-#	mkdir -pv ${webkitgtk_bld_dir_ntv}
+#	mkdir -pv ${webkitgtk_bld_dir_ntv} || return
 #	[ -f ${webkitgtk_bld_dir_ntv}/Makefile ] ||
 #		(cd ${webkitgtk_bld_dir_ntv}
 #		update_pkg_config_path
@@ -2345,7 +2345,7 @@ install_native_vim()
 	make -C ${vim_org_src_dir} -j ${jobs} install || return
 	fetch vimdoc-ja || return
 	[ -d ${vimdoc_ja_org_src_dir} ] ||
-		(unpack ${vimdoc_ja_org_src_dir} ${vimdoc_ja_src_base}
+		(unpack ${vimdoc_ja_org_src_dir} ${vimdoc_ja_src_base} &&
 		mv -fv ${vimdoc_ja_src_base}/vimdoc-ja-master ${vimdoc_ja_org_src_dir}) || return
 	mkdir -pv ${prefix}/share/vim/vimfiles || return
 	cp -rvt ${prefix}/share/vim/vimfiles ${vimdoc_ja_org_src_dir}/* || return
@@ -2367,7 +2367,7 @@ install_native_ctags()
 install_native_dein()
 {
 	[ -f ${prefix}/src/vim/installer.sh ] ||
-		(mkdir -pv ${prefix}/src/vim
+		(mkdir -pv ${prefix}/src/vim || return
 		wget --no-check-certificate -O ${prefix}/src/vim/installer.sh \
 			https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh) || return
 	[ `whoami` != root ] || ! echo Error. run as root is not recommended. >&2 || return
@@ -2489,7 +2489,7 @@ install_native_doxygen()
 	which clang > /dev/null || install_native_cfe || return
 	fetch doxygen || return
 	unpack ${doxygen_org_src_dir} ${doxygen_src_base} || return
-	mkdir -pv ${doxygen_bld_dir_ntv}
+	mkdir -pv ${doxygen_bld_dir_ntv} || return
 	(cd ${doxygen_bld_dir_ntv}
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -2967,7 +2967,7 @@ install_native_llvm()
 	which cmake > /dev/null || install_native_cmake || return
 	fetch llvm || return
 	unpack ${llvm_org_src_dir} ${llvm_src_base} || return
-	mkdir -pv ${llvm_bld_dir}
+	mkdir -pv ${llvm_bld_dir} || return
 	[ -f ${llvm_bld_dir}/Makefile ] ||
 		(cd ${llvm_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
@@ -2985,7 +2985,7 @@ install_native_libcxx()
 	which cmake > /dev/null || install_native_cmake || return
 	fetch libcxx || return
 	unpack ${libcxx_org_src_dir} ${libcxx_src_base} || return
-	mkdir -pv ${libcxx_bld_dir}
+	mkdir -pv ${libcxx_bld_dir} || return
 	[ -f ${libcxx_bld_dir}/Makefile ] ||
 		(cd ${libcxx_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
@@ -3006,7 +3006,7 @@ install_native_libcxxabi()
 	fetch libcxxabi || return
 	unpack ${libcxxabi_org_src_dir} ${libcxxabi_src_base} || return
 	sed -ie '/set(LLVM_CMAKE_PATH /s%share/llvm/cmake%lib/cmake/llvm%' ${libcxxabi_org_src_dir}/CMakeLists.txt || return # [XXX] workaround for LLVM 3.9.0
-	mkdir -pv ${libcxxabi_bld_dir}
+	mkdir -pv ${libcxxabi_bld_dir} || return
 	[ -f ${libcxxabi_bld_dir}/Makefile ] ||
 		(cd ${libcxxabi_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
@@ -3022,7 +3022,7 @@ install_native_compiler_rt()
 	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	fetch compiler-rt || return
 	unpack ${compiler_rt_org_src_dir} ${compiler_rt_src_base} || return
-	mkdir -pv ${compiler_rt_bld_dir}
+	mkdir -pv ${compiler_rt_bld_dir} || return
 	[ -f ${compiler_rt_bld_dir}/Makefile ] ||
 		(cd ${compiler_rt_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
@@ -3041,11 +3041,12 @@ install_native_cfe()
 	search_header allocator_interface.h sanitizer > /dev/null || install_native_compiler_rt || return
 	fetch cfe || return
 	unpack ${cfe_org_src_dir} ${cfe_src_base} || return
-	mkdir -pv ${cfe_bld_dir}
+	mkdir -pv ${cfe_bld_dir} || return
 	[ -f ${cfe_bld_dir}/Makefile ] ||
 		(cd ${cfe_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${cfe_org_src_dir}) || return
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+			-DENABLE_LINKER_BUILD_ID=ON ${cfe_org_src_dir}) || return
 	make -C ${cfe_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${cfe_bld_dir} -j ${jobs} -k check-all || return
@@ -3057,7 +3058,7 @@ install_native_clang_tools_extra()
 	which cmake > /dev/null || install_native_cmake || return
 	fetch clang-tools-extra || return
 	unpack ${clang_tools_extra_org_src_dir} ${clang_tools_extra_src_base} || return
-	mkdir -pv ${clang_tools_extra_bld_dir}
+	mkdir -pv ${clang_tools_extra_bld_dir} || return
 	[ -f ${clang_tools_extra_bld_dir}/Makefile ] ||
 		(cd ${clang_tools_extra_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
@@ -3076,7 +3077,7 @@ install_native_lld()
 	[ -d ${llvm_org_src_dir}/tools/lld ] ||
 		(unpack ${lld_org_src_dir} ${lld_src_base} &&
 		mv -v ${lld_org_src_dir} ${llvm_org_src_dir}/tools/lld) || return
-	mkdir -pv ${lld_bld_dir}
+	mkdir -pv ${lld_bld_dir} || return
 	[ -f ${lld_bld_dir}/Makefile ] ||
 		(cd ${lld_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
@@ -3098,7 +3099,7 @@ install_native_lldb()
 	[ -d ${llvm_org_src_dir}/tools/lldb ] ||
 		(unpack ${lldb_org_src_dir} ${lldb_src_base} &&
 		mv -v ${lldb_org_src_dir} ${llvm_org_src_dir}/tools/lldb) || return
-	mkdir -pv ${lldb_bld_dir}
+	mkdir -pv ${lldb_bld_dir} || return
 	[ -f ${lldb_bld_dir}/Makefile ] ||
 		(cd ${lldb_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
@@ -3146,7 +3147,7 @@ install_cross_binutils()
 install_cross_gcc_without_headers()
 {
 	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
-	mkdir -pv ${gcc_bld_dir_crs_1st}
+	mkdir -pv ${gcc_bld_dir_crs_1st} || return
 	[ -f ${gcc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_1st}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
@@ -3182,7 +3183,7 @@ install_cross_glibc_headers()
 	[ -d ${glibc_src_dir_crs_hdr} ] ||
 		(unpack ${glibc_org_src_dir} ${glibc_src_base} &&
 			mv -v ${glibc_org_src_dir} ${glibc_src_dir_crs_hdr}) || return
-	mkdir -pv ${glibc_bld_dir_crs_hdr}
+	mkdir -pv ${glibc_bld_dir_crs_hdr} || return
 	[ -f ${glibc_bld_dir_crs_hdr}/Makefile ] ||
 		(cd ${glibc_bld_dir_crs_hdr}
 		LD_LIBRARY_PATH='' ${glibc_src_dir_crs_hdr}/configure --prefix=/usr --build=${build} --host=${target} \
@@ -3194,7 +3195,7 @@ install_cross_glibc_headers()
 install_cross_gcc_with_glibc_headers()
 {
 	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
-	mkdir -pv ${gcc_bld_dir_crs_2nd}
+	mkdir -pv ${gcc_bld_dir_crs_2nd} || return
 	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_2nd}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
@@ -3249,7 +3250,7 @@ install_cross_1st_glibc()
 EOF
 )
 
-	mkdir -pv ${glibc_bld_dir_crs_1st}
+	mkdir -pv ${glibc_bld_dir_crs_1st} || return
 	[ -f ${glibc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${glibc_bld_dir_crs_1st}
 		LD_LIBRARY_PATH='' ${glibc_src_dir_crs_1st}/configure --prefix=/usr --build=${build} --host=${target} \
@@ -3264,7 +3265,7 @@ EOF
 install_cross_functional_gcc()
 {
 	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
-	mkdir -pv ${gcc_bld_dir_crs_3rd}
+	mkdir -pv ${gcc_bld_dir_crs_3rd} || return
 	[ -f ${gcc_bld_dir_crs_3rd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_3rd}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
@@ -3305,7 +3306,7 @@ install_cross_gdb()
 	search_header Python.h > /dev/null || install_native_python || return
 	fetch gdb || return
 	unpack ${gdb_org_src_dir} ${gdb_src_base} || return
-	mkdir -pv ${gdb_bld_dir_crs}
+	mkdir -pv ${gdb_bld_dir_crs} || return
 	[ -f ${gdb_bld_dir_crs}/Makefile ] ||
 		(cd ${gdb_bld_dir_crs}
 		${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
@@ -3335,7 +3336,7 @@ install_mingw_w64_header()
 	[ -d ${mingw_w64_src_dir_crs_hdr} ] ||
 		(unpack ${mingw_w64_org_src_dir} ${mingw_w64_src_base} &&
 			mv -v ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_crs_hdr}) || return
-	mkdir -pv ${mingw_w64_bld_dir_crs_hdr}
+	mkdir -pv ${mingw_w64_bld_dir_crs_hdr} || return
 	[ -f ${mingw_w64_bld_dir_crs_hdr}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_crs_hdr}
 		${mingw_w64_src_dir_crs_hdr}/configure --prefix=/mingw --build=${build} --host=${target} \
@@ -3349,7 +3350,7 @@ install_mingw_w64_header()
 install_mingw_w64_gcc_with_mingw_w64_header()
 {
 	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
-	mkdir -pv ${gcc_bld_dir_crs_2nd}
+	mkdir -pv ${gcc_bld_dir_crs_2nd} || return
 	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_2nd}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
@@ -3370,7 +3371,7 @@ install_mingw_w64_crt()
 	[ -d ${mingw_w64_src_dir_crs_1st} ] ||
 		(unpack ${mingw_w64_org_src_dir} ${mingw_w64_src_base} &&
 			mv -v ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_crs_1st}) || return
-	mkdir -pv ${mingw_w64_bld_dir_crs_1st}
+	mkdir -pv ${mingw_w64_bld_dir_crs_1st} || return
 	[ -f ${mingw_w64_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_crs_1st}
 		${mingw_w64_src_dir_crs_1st}/configure --prefix=/mingw --build=${build} --host=${target} \
@@ -3680,7 +3681,7 @@ install_native_opencv()
 	unpack ${opencv_org_src_dir} ${opencv_src_base} || return
 	fetch opencv_contrib || return
 	unpack ${opencv_contrib_org_src_dir} ${opencv_contrib_src_base} || return
-	mkdir -pv ${opencv_bld_dir_ntv}
+	mkdir -pv ${opencv_bld_dir_ntv} || return
 	(cd ${opencv_bld_dir_ntv}
 	libdirs="-L`search_library_dir libpng.so` -L`search_library_dir libtiff.so` -L`search_library_dir libjpeg.so` -L${prefix}/lib"
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
@@ -3777,7 +3778,7 @@ install_crossed_native_gcc()
 	which perl > /dev/null || install_native_perl || return
 	fetch gcc || return
 	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
-	mkdir -pv ${gcc_bld_dir_crs_ntv}
+	mkdir -pv ${gcc_bld_dir_crs_ntv} || return
 	[ -f ${gcc_bld_dir_crs_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_ntv}
 		${gcc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${target} \
