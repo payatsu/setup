@@ -47,8 +47,8 @@
 : ${readline_ver:=7.0}
 : ${ncurses_ver:=6.0}
 : ${gdb_ver:=7.12}
-: ${zlib_ver:=1.2.8}
-: ${libpng_ver:=1.6.25}
+: ${zlib_ver:=1.2.10}
+: ${libpng_ver:=1.6.28}
 : ${tiff_ver:=4.0.6}
 : ${jpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
@@ -451,7 +451,7 @@ fetch()
 	xz)
 		check_archive ${xz_org_src_dir} ||
 			wget --no-check-certificate -O ${xz_org_src_dir}.tar.bz2 \
-				http://tukaani.org/xz/${xz_name}.tar.bz2 || return;;
+				https://tukaani.org/xz/${xz_name}.tar.bz2 || return;;
 	bzip2)
 		check_archive ${bzip2_org_src_dir} ||
 			wget -O ${bzip2_org_src_dir}.tar.gz \
@@ -474,8 +474,8 @@ fetch()
 				http://zlib.net/${zlib_name}.tar.xz || return;;
 	libpng)
 		check_archive ${libpng_org_src_dir} ||
-			wget --trust-server-names -O ${libpng_org_src_dir}.tar.xz \
-				http://download.sourceforge.net/libpng/${libpng_name}.tar.xz || return;;
+			wget --no-check-certificate --trust-server-names -O ${libpng_org_src_dir}.tar.xz \
+				https://download.sourceforge.net/libpng/${libpng_name}.tar.xz || return;;
 	tiff)
 		check_archive ${tiff_org_src_dir} ||
 			wget -O ${tiff_org_src_dir}.tar.gz \
@@ -506,8 +506,8 @@ fetch()
 				https://github.com/vim-jp/vimdoc-ja/archive/master.tar.gz || return;;
 	ctags)
 		check_archive ${ctags_org_src_dir} ||
-			wget --trust-server-names -O ${ctags_org_src_dir}.tar.gz \
-				http://prdownloads.sourceforge.net/ctags/${ctags_name}.tar.gz || return;;
+			wget --no-check-certificate --trust-server-names -O ${ctags_org_src_dir}.tar.gz \
+				https://prdownloads.sourceforge.net/ctags/${ctags_name}.tar.gz || return;;
 	pcre2)
 		check_archive ${pcre2_org_src_dir} ||
 			wget --trust-server-names --no-check-certificate -O ${pcre2_org_src_dir}.tar.bz2 \
@@ -1662,7 +1662,7 @@ install_native_gdb()
 	[ -x ${prefix}/bin/gdb -a "${force_install}" != yes ] && return
 	search_header readline.h readline > /dev/null || install_native_readline || return
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
-	search_header Python.h > /dev/null || install_native_python || return
+	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m.so > /dev/null || install_native_python || return
 	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gdb || return
 	unpack ${gdb_org_src_dir} ${gdb_src_base} || return
@@ -1706,7 +1706,7 @@ install_native_libpng()
 			mv -v ${libpng_org_src_dir} ${libpng_src_dir_ntv}) || return
 	[ -f ${libpng_src_dir_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} LDFLAGS="${LDFLAGS} -L`search_library_dir libz.so`") || return
 	make -C ${libpng_src_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libpng_src_dir_ntv} -j ${jobs} -k check || return
@@ -2490,10 +2490,11 @@ install_native_doxygen()
 	fetch doxygen || return
 	unpack ${doxygen_org_src_dir} ${doxygen_src_base} || return
 	mkdir -pv ${doxygen_bld_dir_ntv} || return
-	(cd ${doxygen_bld_dir_ntv}
-	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-Dbuild_doc=ON -Duse_libclang=ON ${doxygen_org_src_dir}) || return # [TODO] Xapian入れられたら、build_search=ONにする・・・かも。
+	[ -f ${doxygen_bld_dir_ntv}/Makefile ] ||
+		(cd ${doxygen_bld_dir_ntv}
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+			-Dbuild_doc=ON -Duse_libclang=ON ${doxygen_org_src_dir}) || return # [TODO] Xapian入れられたら、build_search=ONにする・・・かも。
 	make -C ${doxygen_bld_dir_ntv} -j ${jobs} || return
 #	make -C ${doxygen_bld_dir_ntv} -j ${jobs} docs || return
 	[ "${enable_check}" != yes ] ||
@@ -3303,7 +3304,7 @@ install_cross_gdb()
 	[ ${build} != ${target} ] || ! echo "target(${target}) must be different from build(${build})" >&2 || return
 	search_header readline.h readline > /dev/null || install_native_readline || return
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
-	search_header Python.h > /dev/null || install_native_python || return
+	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m.so > /dev/null || install_native_python || return
 	fetch gdb || return
 	unpack ${gdb_org_src_dir} ${gdb_src_base} || return
 	mkdir -pv ${gdb_bld_dir_crs} || return
@@ -3461,10 +3462,10 @@ install_native_perl()
 	[ -x ${prefix}/bin/perl -a "${force_install}" != yes ] && return
 	fetch perl || return
 	unpack ${perl_org_src_dir} ${perl_src_base} || return
-	(cd ${perl_org_src_dir}
-	./Configure -de -Dprefix=${prefix} -Dcc=${CC:-gcc} \
-		-Dusethreads -Duse64bitint -Duse64bitall -Dusemorebits \
-		-Duseshrplib) || return
+	[ -f ${perl_org_src_dir}/Makefile ] ||
+		(cd ${perl_org_src_dir}
+		./Configure -de -Dprefix=${prefix} -Dcc=${CC:-gcc} \
+			-Dusethreads -Duse64bitint -Duse64bitall -Dusemorebits -Duseshrplib) || return
 	make -C ${perl_org_src_dir} -j ${jobs} || return
 	make -C ${perl_org_src_dir} -j ${jobs} test || return
 	make -C ${perl_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
