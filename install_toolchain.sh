@@ -3225,7 +3225,7 @@ install_cross_1st_glibc()
 		(unpack ${glibc_org_src_dir} ${glibc_src_base} &&
 			mv -v ${glibc_org_src_dir} ${glibc_src_dir_crs_1st}) || return
 
-	[ ${cross_linux_arch} = microblaze ] &&
+	[ ${cross_linux_arch} != microblaze ] ||
 		(cd ${glibc_src_dir_crs_1st}; patch -N -p0 -d ${glibc_src_dir_crs_1st} <<EOF || [ $? = 1 ] || return
 --- sysdeps/unix/sysv/linux/microblaze/sysdep.h
 +++ sysdeps/unix/sysv/linux/microblaze/sysdep.h
@@ -3249,7 +3249,7 @@ install_cross_1st_glibc()
 +
 +#endif /* _LINUX_MICROBLAZE_SYSDEP_H */
 EOF
-)
+) || return
 
 	mkdir -pv ${glibc_bld_dir_crs_1st} || return
 	[ -f ${glibc_bld_dir_crs_1st}/Makefile ] ||
