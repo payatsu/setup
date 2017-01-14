@@ -1,8 +1,8 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
-# [TODO] --enable-linker-build-id
-# [TODO] ccache
+# [TODO] ccache, distcc
 # [TODO] valgrind
+# [TODO] cling
 # [TODO] util-linux
 # [TODO] newlib
 # [TODO] perf
