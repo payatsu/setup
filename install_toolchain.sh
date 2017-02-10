@@ -47,7 +47,7 @@
 : ${readline_ver:=7.0}
 : ${ncurses_ver:=6.0}
 : ${gdb_ver:=7.12.1}
-: ${zlib_ver:=1.2.10}
+: ${zlib_ver:=1.2.11}
 : ${libpng_ver:=1.6.28}
 : ${tiff_ver:=4.0.6}
 : ${jpeg_ver:=v9b}
@@ -56,7 +56,7 @@
 : ${libwebp_ver:=0.5.1}
 : ${libffi_ver:=3.2.1}
 : ${emacs_ver:=25.1}
-: ${vim_ver:=8.0.0027}
+: ${vim_ver:=8.0.0324}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=5.8}
 : ${grep_ver:=2.28}
@@ -78,7 +78,7 @@
 : ${zsh_ver:=5.3}
 : ${bash_ver:=4.4}
 : ${inetutils_ver:=1.9.4}
-: ${openssl_ver:=1.0.2i}
+: ${openssl_ver:=1.0.2j}
 : ${openssh_ver:=7.3p1}
 : ${curl_ver:=7.51.0}
 : ${asciidoc_ver:=8.6.9}
@@ -86,7 +86,7 @@
 : ${libxslt_ver:=1.1.29}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
-: ${git_ver:=2.11.0}
+: ${git_ver:=2.11.1}
 : ${mercurial_ver:=4.0.1}
 : ${sqlite_autoconf_ver:=3150200}
 : ${apr_ver:=1.5.2}
@@ -119,7 +119,7 @@
 : ${x264_ver:=last-stable}
 : ${x265_ver:=2.0}
 : ${libav_ver:=11.7}
-: ${opencv_ver:=3.1.0}
+: ${opencv_ver:=3.2.0}
 : ${opencv_contrib_ver:=3.1.0}
 
 # TODO X11周りのインストールは未着手。
@@ -514,8 +514,8 @@ fetch()
 				https://sourceforge.net/projects/pcre/files/pcre2/${pcre2_ver}/${pcre2_name}.tar.bz2/download || return;;
 	the_silver_searcher)
 		check_archive ${the_silver_searcher_org_src_dir} ||
-			wget -O ${the_silver_searcher_org_src_dir}.tar.gz \
-				http://geoff.greer.fm/ag/releases/${the_silver_searcher_name}.tar.gz || return;;
+			wget --no-check-certificate -O ${the_silver_searcher_org_src_dir}.tar.gz \
+				https://geoff.greer.fm/ag/releases/${the_silver_searcher_name}.tar.gz || return;;
 	the_platinum_searcher)
 		check_archive ${the_platinum_searcher_org_src_dir} ||
 			wget --no-check-certificate -O ${the_platinum_searcher_org_src_dir}.tar.gz \
