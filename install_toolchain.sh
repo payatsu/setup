@@ -19,7 +19,7 @@
 
 : ${tar_ver:=1.29}
 : ${cpio_ver:=2.12}
-: ${xz_ver:=5.2.2}
+: ${xz_ver:=5.2.3}
 : ${bzip2_ver:=1.0.6}
 : ${gzip_ver:=1.8}
 : ${wget_ver:=1.18}
@@ -451,7 +451,7 @@ fetch()
 	xz)
 		check_archive ${xz_org_src_dir} ||
 			wget --no-check-certificate -O ${xz_org_src_dir}.tar.bz2 \
-				https://tukaani.org/xz/${xz_name}.tar.bz2 || return;;
+				http://tukaani.org/xz/${xz_name}.tar.bz2 || return;;
 	bzip2)
 		check_archive ${bzip2_org_src_dir} ||
 			wget -O ${bzip2_org_src_dir}.tar.gz \
