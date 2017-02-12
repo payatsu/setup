@@ -3756,7 +3756,7 @@ install_crossed_native_mpfr()
 install_crossed_native_mpc()
 {
 	[ -f ${sysroot}/usr/include/mpc.h -a "${force_install}" != yes ] && return
-	[ ${build} = ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
+	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
 	fetch mpc || return
 	[ -d ${mpc_src_dir_crs_ntv} ] ||
 		(unpack ${mpc_org_src_dir} ${mpc_src_base} &&
