@@ -107,7 +107,7 @@
 : ${mingw_w64_ver:=4.0.6}
 : ${Python_ver:=3.6.0}
 : ${ruby_ver:=2.4.0}
-: ${go_ver:=1.7.4}
+: ${go_ver:=1.8}
 : ${perl_ver:=5.24.0}
 : ${tcl_ver:=8.6.6}
 : ${tk_ver:=8.6.6}
@@ -3450,7 +3450,7 @@ install_native_go()
 	[ -d ${go_org_src_dir} ] || unpack ${go_src_base}/go${go_ver}.src ${go_src_base} || return
 	[ -d ${go_src_base}/go ] && mv -v ${go_src_base}/go ${go_org_src_dir}
 	(cd ${go_org_src_dir}/src
-	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=${prefix} \
+	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=`which go | sed -e 's/\/bin\/go//'` \
 		GOROOT=${go_org_src_dir} GOROOT_FINAL=${prefix}/go ${go_org_src_dir}/src/make.bash) || return
 	[ ! -d ${prefix}/go ] || rm -fr ${prefix}/go || return
 	mv -v ${go_org_src_dir} ${prefix}/go || return
