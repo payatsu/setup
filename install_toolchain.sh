@@ -12,7 +12,7 @@
 # [TODO] webkitgtk<-libsoup
 # [TODO] libmount, dtrace (GLib)
 # [TODO] rsvg, imagemagick
-# [TODO] LLDB, Polly, MySQL, expat, grub, util-linux
+# [TODO] Polly, MySQL, expat, grub, util-linux
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 # [TODO] install_native_clang_tools_extra()のテスト実行が未完了。
@@ -855,7 +855,7 @@ deploy()
 {
 	tar xJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz \
 		--no-same-owner --no-same-permissions -C `dirname ${prefix}` || return
-	update_search_path || return
+	update_library_search_path || return
 	echo Please add ${prefix}/bin to PATH
 }
 
@@ -1066,7 +1066,7 @@ EOF
 	eval echo `grep -e '^[[:space:]]\+\(https\?\|ftp\)://.\+/' ${0} | sed -e 's/ || return$//;s/^[[:space:]]\+//'` | tr ' ' '\n'
 }
 
-update_search_path()
+update_library_search_path()
 {
 	[ `whoami` != root ] && return
 	[ -f /etc/ld.so.conf.d/`basename ${prefix}`.conf ] ||
@@ -1096,7 +1096,7 @@ search_library()
 	return 1
 }
 
-search_library_dir()
+get_library_path()
 {
 	path=`search_library $@`
 	[ $? = 0 ] && dirname ${path} || return
@@ -1112,6 +1112,12 @@ search_header()
 		[ -n "${candidates}" ] && echo "${candidates}" | head -n 1 && return
 	done
 	return 1
+}
+
+get_include_path()
+{
+	path=`search_header $@`
+	[ $? = 0 ] && echo ${path} | sed -e 's/\(include\)\/.\+/\1/' || return
 }
 
 get_prefix()
@@ -1223,7 +1229,7 @@ install_native_bzip2()
 	ln -fsv ./libbz2.so.${bzip2_ver} ${prefix}/lib/libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` || return
 	cp -fv ${bzip2_org_src_dir}/bzlib.h ${prefix}/include || return
 	cp -fv ${bzip2_org_src_dir}/bzlib_private.h ${prefix}/include || return
-	update_search_path || return
+	update_library_search_path || return
 }
 
 install_native_gzip()
@@ -1325,7 +1331,7 @@ install_native_flex()
 	[ "${enable_check}" != yes ] ||
 		make -C ${flex_org_src_dir} -j ${jobs} -k check || return
 	make -C ${flex_org_src_dir} -j ${jobs} install${strip:+-${strip}} install-man || return
-	update_search_path || return
+	update_library_search_path || return
 }
 
 install_native_m4()
@@ -1515,7 +1521,7 @@ install_native_glibc()
 		make -C ${glibc_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${glibc_bld_dir_ntv} -j ${jobs} install || return
 	make -C ${glibc_bld_dir_ntv} -j ${jobs} localedata/install-locales || return
-	update_search_path || return
+	update_library_search_path || return
 }
 
 install_native_gmp()
@@ -1532,7 +1538,7 @@ install_native_gmp()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gmp_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${gmp_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	update_search_path || return
+	update_library_search_path || return
 }
 
 install_native_mpfr()
@@ -1550,7 +1556,7 @@ install_native_mpfr()
 	[ "${enable_check}" != yes ] ||
 		make -C ${mpfr_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${mpfr_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	update_search_path || return
+	update_library_search_path || return
 }
 
 install_native_mpc()
@@ -1569,7 +1575,7 @@ install_native_mpc()
 	[ "${enable_check}" != yes ] ||
 		make -C ${mpc_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${mpc_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	update_search_path || return
+	update_library_search_path || return
 }
 
 install_native_gcc()
@@ -1594,8 +1600,8 @@ install_native_gcc()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	update_search_path || return
-	ln -fs ./gcc ${prefix}/bin/cc || return
+	update_library_search_path || return
+	ln -fs gcc ${prefix}/bin/cc || return
 }
 
 install_native_readline()
@@ -1610,7 +1616,7 @@ install_native_readline()
 	[ "${enable_check}" != yes ] ||
 		make -C ${readline_org_src_dir} -j ${jobs} -k check || return
 	make -C ${readline_org_src_dir} -j ${jobs} install || return
-	update_search_path || return
+	update_library_search_path || return
 }
 
 install_native_ncurses()
@@ -1654,7 +1660,7 @@ EOF
 			--with-libtool --with-shared --with-cxx-shared) || return
 	make -C ${ncurses_org_src_dir} -j ${jobs} || return
 	make -C ${ncurses_org_src_dir} -j ${jobs} install || return
-	update_search_path || return
+	update_library_search_path || return
 }
 
 install_native_gdb()
@@ -1692,7 +1698,7 @@ install_native_zlib()
 	[ "${enable_check}" != yes ] ||
 		make -C ${zlib_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${zlib_src_dir_ntv} -j ${jobs} install || return
-	update_search_path || return
+	update_library_search_path || return
 	update_pkg_config_path || return
 }
 
@@ -1706,12 +1712,12 @@ install_native_libpng()
 			mv -v ${libpng_org_src_dir} ${libpng_src_dir_ntv}) || return
 	[ -f ${libpng_src_dir_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} LDFLAGS="${LDFLAGS} -L`search_library_dir libz.so`") || return
+		./configure --prefix=${prefix} --build=${build} LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
 	make -C ${libpng_src_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libpng_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${libpng_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	update_search_path || return
+	update_library_search_path || return
 	update_pkg_config_path || return
 }
 
@@ -1729,7 +1735,7 @@ install_native_libtiff()
 	[ "${enable_check}" != yes ] ||
 		make -C ${tiff_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${tiff_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	update_search_path || return
+	update_library_search_path || return
 	update_pkg_config_path || return
 }
 
@@ -1747,7 +1753,7 @@ install_native_libjpeg()
 	[ "${enable_check}" != yes ] ||
 		make -C ${jpeg_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${jpeg_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	update_search_path || return
+	update_library_search_path || return
 }
 
 install_native_giflib()
@@ -1765,7 +1771,7 @@ install_native_giflib()
 	[ "${enable_check}" != yes ] ||
 		make -C ${giflib_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${giflib_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	update_search_path || return
+	update_library_search_path || return
 }
 
 install_native_libXpm()
@@ -1783,7 +1789,7 @@ install_native_libXpm()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libXpm_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libXpm_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_search_path || return
+	update_library_search_path || return
 	update_pkg_config_path || return
 }
 
@@ -1803,7 +1809,7 @@ install_native_libwebp()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libwebp_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libwebp_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_search_path || return
+	update_library_search_path || return
 	update_pkg_config_path || return
 }
 
@@ -1819,7 +1825,7 @@ install_native_libffi()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libffi_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libffi_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_search_path || return
+	update_library_search_path || return
 	update_pkg_config_path || return
 }
 
@@ -1837,7 +1843,7 @@ install_native_libffi()
 #			--disable-silent-rules --disable-libmount --disable-dtrace --enable-systemtap) || return
 #	make -C ${glib_org_src_dir} -j ${jobs} || return
 #	make -C ${glib_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_cairo()
@@ -1850,7 +1856,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${cairo_org_src_dir} -j ${jobs} || return
 #	make -C ${cairo_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_pixman()
@@ -1863,7 +1869,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${pixman_org_src_dir} -j ${jobs} || return
 #	make -C ${pixman_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_pango()
@@ -1879,7 +1885,7 @@ install_native_libffi()
 #			--disable-silent-rules) || return
 #	make -C ${pango_org_src_dir} -j ${jobs} || return
 #	make -C ${pango_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_gdk_pixbuf()
@@ -1895,7 +1901,7 @@ install_native_libffi()
 #			--disable-silent-rules) || return
 #	make -C ${gdk_pixbuf_org_src_dir} -j ${jobs} || return
 #	make -C ${gdk_pixbuf_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_atk()
@@ -1911,7 +1917,7 @@ install_native_libffi()
 #			--disable-silent-rules) || return
 #	make -C ${atk_org_src_dir} -j ${jobs} || return
 #	make -C ${atk_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_gobject_introspection()
@@ -1927,7 +1933,7 @@ install_native_libffi()
 #			--disable-silent-rules) || return
 #	make -C ${gobject_introspection_org_src_dir} -j ${jobs} || return
 #	make -C ${gobject_introspection_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_inputproto()
@@ -1940,7 +1946,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${inputproto_org_src_dir} -j ${jobs} || return
 #	make -C ${inputproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_xtrans()
@@ -1953,7 +1959,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${xtrans_org_src_dir} -j ${jobs} || return
 #	make -C ${xtrans_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_libX11()
@@ -1970,7 +1976,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libX11_org_src_dir} -j ${jobs} || return
 #	make -C ${libX11_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_libxcb()
@@ -1984,7 +1990,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libxcb_org_src_dir} -j ${jobs} || return
 #	make -C ${libxcb_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_xcb_proto()
@@ -1997,7 +2003,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${xcb_proto_org_src_dir} -j ${jobs} || return
 #	make -C ${xcb_proto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_xextproto()
@@ -2010,7 +2016,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${xextproto_org_src_dir} -j ${jobs} || return
 #	make -C ${xextproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_libXext()
@@ -2024,7 +2030,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libXext_org_src_dir} -j ${jobs} || return
 #	make -C ${libXext_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_fixesproto()
@@ -2037,7 +2043,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${fixesproto_org_src_dir} -j ${jobs} || return
 #	make -C ${fixesproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_libXfixes()
@@ -2051,7 +2057,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libXfixes_org_src_dir} -j ${jobs} || return
 #	make -C ${libXfixes_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_damageproto()
@@ -2064,7 +2070,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${damageproto_org_src_dir} -j ${jobs} || return
 #	make -C ${damageproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_libXdamage()
@@ -2079,7 +2085,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libXdamage_org_src_dir} -j ${jobs} || return
 #	make -C ${libXdamage_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_libXt()
@@ -2092,7 +2098,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libXt_org_src_dir} -j ${jobs} || return
 #	make -C ${libXt_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_xproto()
@@ -2141,7 +2147,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libpciaccess_org_src_dir} -j ${jobs} || return
 #	make -C ${libpciaccess_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_libdrm()
@@ -2156,7 +2162,7 @@ install_native_libffi()
 #			--enable-static) || return
 #	make -C ${libdrm_org_src_dir} -j ${jobs} || return
 #	make -C ${libdrm_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_dri2proto()
@@ -2205,7 +2211,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libxshmfence_org_src_dir} -j ${jobs} || return
 #	make -C ${libxshmfence_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_mesa()
@@ -2229,7 +2235,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${mesa_org_src_dir} -j ${jobs} || return
 #	make -C ${mesa_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_libepoxy()
@@ -2243,7 +2249,7 @@ install_native_libffi()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libepoxy_org_src_dir} -j ${jobs} || return
 #	make -C ${libepoxy_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_gtk()
@@ -2264,7 +2270,7 @@ install_native_libffi()
 #			--disable-silent-rules) || return
 #	make -C ${gtk_org_src_dir} -j ${jobs} || return
 #	make -C ${gtk_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_search_path || return
+#	update_library_search_path || return
 #}
 #
 #install_native_webkitgtk()
@@ -2571,7 +2577,7 @@ install_native_libevent()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libevent_org_src_dir}-stable -j ${jobs} -k check || return
 	make -C ${libevent_org_src_dir}-stable -j ${jobs} install || return
-	update_search_path || return
+	update_library_search_path || return
 	update_pkg_config_path || return
 }
 
@@ -2601,7 +2607,7 @@ install_native_expect()
 	[ -f ${expect_org_src_dir}/Makefile ] ||
 		(cd ${expect_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --enable-threads \
-			--enable-64bit --with-tcl=`search_library_dir tclConfig.sh`) || return
+			--enable-64bit --with-tcl=`get_library_path tclConfig.sh`) || return
 	make -C ${expect_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${expect_org_src_dir} -j ${jobs} -k check || return
@@ -2652,7 +2658,7 @@ install_native_bash()
 		make -C ${bash_org_src_dir} -j ${jobs} -k check || return
 	make -C ${bash_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_pkg_config_path || return
-	ln -fs ./bash ${prefix}/bin/sh || return
+	ln -fs bash ${prefix}/bin/sh || return
 }
 
 install_native_inetutils()
@@ -2680,7 +2686,7 @@ install_native_openssl()
 	[ "${enable_check}" != yes ] ||
 		make -C ${openssl_org_src_dir} -j ${jobs} -k test || return
 	make -C ${openssl_org_src_dir} -j ${jobs} install || return
-	update_search_path || return
+	update_library_search_path || return
 	update_pkg_config_path || return
 }
 
@@ -2716,7 +2722,7 @@ install_native_curl()
 		--enable-manual --enable-ipv6 --with-ssl) || return
 	make -C ${curl_org_src_dir} -j ${jobs} || return
 	make -C ${curl_org_src_dir} -j ${jobs} install || return
-	update_search_path || return
+	update_library_search_path || return
 	update_pkg_config_path || return
 }
 
@@ -2748,7 +2754,7 @@ install_native_libxml2()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libxml2_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libxml2_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_search_path || return
+	update_library_search_path || return
 	update_pkg_config_path || return
 }
 
@@ -2795,7 +2801,7 @@ install_native_gettext()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gettext_org_src_dir} -j ${jobs} -k check || return
 	make -C ${gettext_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_search_path || return
+	update_library_search_path || return
 }
 
 install_native_git()
@@ -3104,7 +3110,10 @@ install_native_lldb()
 	[ -f ${lldb_bld_dir}/Makefile ] ||
 		(cd ${lldb_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+			-DCMAKE_C_FLAGS="${CFLAGS} -I`get_include_path Version.h clang/Basic`" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`get_include_path histedit.h`" \
+			-DCURSES_INCLUDE_PATH=`dirname \`search_header curses.h\`` ${llvm_org_src_dir}) || return
 	make -C ${lldb_bld_dir} -j ${jobs} || return
 	make -C ${lldb_bld_dir} -j ${jobs} check-lldb || return
 	make -C ${lldb_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
@@ -3486,7 +3495,7 @@ install_native_tcl()
 	make -C ${tcl_org_src_dir}/unix -j ${jobs} install || return
 	make -C ${tcl_org_src_dir}/unix -j ${jobs} install-private-headers || return
 	update_pkg_config_path || return
-	ln -fsv ./tclsh`echo ${tcl_ver} | cut -d. -f-2` ${prefix}/bin/tclsh || return
+	ln -fsv tclsh`echo ${tcl_ver} | cut -d. -f-2` ${prefix}/bin/tclsh || return
 }
 
 install_native_tk()
@@ -3503,7 +3512,7 @@ install_native_tk()
 	[ "${enable_check}" != yes ] ||
 		make -C ${tk_org_src_dir}/unix -j ${jobs} -k test || return
 	make -C ${tk_org_src_dir}/unix -j ${jobs} install${strip:+-${strip}} || return
-	ln -fsv ./wish`echo ${tk_ver} | cut -d. -f-2` ${prefix}/bin/wish || return
+	ln -fsv wish`echo ${tk_ver} | cut -d. -f-2` ${prefix}/bin/wish || return
 }
 
 install_native_libunistring()
@@ -3684,7 +3693,7 @@ install_native_opencv()
 	unpack ${opencv_contrib_org_src_dir} ${opencv_contrib_src_base} || return
 	mkdir -pv ${opencv_bld_dir_ntv} || return
 	(cd ${opencv_bld_dir_ntv}
-	libdirs="-L`search_library_dir libpng.so` -L`search_library_dir libtiff.so` -L`search_library_dir libjpeg.so` -L${prefix}/lib"
+	libdirs="-L`get_library_path libpng.so` -L`get_library_path libtiff.so` -L`get_library_path libjpeg.so` -L${prefix}/lib"
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
 		-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
