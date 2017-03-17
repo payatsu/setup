@@ -22,10 +22,10 @@
 : ${xz_ver:=5.2.3}
 : ${bzip2_ver:=1.0.6}
 : ${gzip_ver:=1.8}
-: ${wget_ver:=1.18}
+: ${wget_ver:=1.19}
 : ${pkg_config_ver:=0.29.1}
 : ${texinfo_ver:=6.3}
-: ${coreutils_ver:=8.26}
+: ${coreutils_ver:=8.27}
 : ${bison_ver:=3.0.4}
 : ${flex_ver:=2.6.0}
 : ${m4_ver:=1.4.17}
@@ -36,7 +36,7 @@
 : ${sed_ver:=4.4}
 : ${gawk_ver:=4.1.4}
 : ${make_ver:=4.2}
-: ${binutils_ver:=2.27}
+: ${binutils_ver:=2.28}
 : ${linux_ver:=3.18.13}
 : ${gperf_ver:=3.1}
 : ${glibc_ver:=2.25}
@@ -53,49 +53,49 @@
 : ${jpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
 : ${libXpm_ver:=3.5.11}
-: ${libwebp_ver:=0.5.1}
+: ${libwebp_ver:=0.6.0}
 : ${libffi_ver:=3.2.1}
 : ${emacs_ver:=25.1}
-: ${vim_ver:=8.0.0324}
+: ${vim_ver:=8.0.0465}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=5.8}
-: ${grep_ver:=2.28}
+: ${grep_ver:=3.0}
 : ${global_ver:=6.5.6}
 : ${pcre2_ver:=10.22}
 : ${the_silver_searcher_ver:=1.0.2}
-: ${the_platinum_searcher_ver:=2.1.4}
+: ${the_platinum_searcher_ver:=2.1.5}
 : ${highway_ver:=1.1.0}
 : ${graphviz_ver:=2.38.0}
 : ${doxygen_ver:=1.8.12}
 : ${diffutils_ver:=3.5}
 : ${patch_ver:=2.7.5}
 : ${findutils_ver:=4.6.0}
-: ${screen_ver:=4.5.0}
-: ${libevent_ver:=2.0.22}
+: ${screen_ver:=4.5.1}
+: ${libevent_ver:=2.1.8}
 : ${tmux_ver:=2.3}
 : ${expect_ver:=5.45}
 : ${dejagnu_ver:=1.6}
-: ${zsh_ver:=5.3}
+: ${zsh_ver:=5.3.1}
 : ${bash_ver:=4.4}
 : ${inetutils_ver:=1.9.4}
 : ${openssl_ver:=1.0.2j}
 : ${openssh_ver:=7.3p1}
-: ${curl_ver:=7.51.0}
+: ${curl_ver:=7.53.1}
 : ${asciidoc_ver:=8.6.9}
 : ${libxml2_ver:=2.9.4}
 : ${libxslt_ver:=1.1.29}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
-: ${git_ver:=2.11.1}
-: ${mercurial_ver:=4.0.1}
-: ${sqlite_autoconf_ver:=3150200}
+: ${git_ver:=2.12.0}
+: ${mercurial_ver:=4.1.1}
+: ${sqlite_autoconf_ver:=3170000}
 : ${apr_ver:=1.5.2}
 : ${apr_util_ver:=1.5.4}
 : ${subversion_ver:=1.9.5}
-: ${cmake_ver:=3.7.1}
+: ${cmake_ver:=3.7.2}
 : ${libedit_ver:=20160903-3.1}
 : ${swig_ver:=3.0.10}
-: ${llvm_ver:=3.9.1}
+: ${llvm_ver:=4.0.0}
 : ${libcxx_ver:=${llvm_ver}}
 : ${libcxxabi_ver:=${llvm_ver}}
 : ${compiler_rt_ver:=${llvm_ver}}
@@ -104,7 +104,7 @@
 : ${lld_ver:=${llvm_ver}}
 : ${lldb_ver:=${llvm_ver}}
 : ${boost_ver:=1_63_0}
-: ${mingw_w64_ver:=4.0.6}
+: ${mingw_w64_ver:=5.0.1}
 : ${Python_ver:=3.6.0}
 : ${ruby_ver:=2.4.0}
 : ${go_ver:=1.8}
@@ -114,13 +114,13 @@
 : ${libunistring_ver:=0.9.7}
 : ${libatomic_ops_ver:=7.4.4}
 : ${gc_ver:=7.6.0}
-: ${guile_ver:=2.0.13}
+: ${guile_ver:=2.2.0}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
 : ${x265_ver:=2.0}
 : ${libav_ver:=11.7}
 : ${opencv_ver:=3.2.0}
-: ${opencv_contrib_ver:=3.1.0}
+: ${opencv_contrib_ver:=3.2.0}
 
 # TODO X11周りのインストールは未着手。
 : ${xtrans_ver:=1.3.5}
@@ -583,7 +583,7 @@ fetch()
 	sqlite-autoconf)
 		check_archive ${sqlite_autoconf_org_src_dir} ||
 			wget --no-check-certificate -O ${sqlite_autoconf_org_src_dir}.tar.gz \
-				https://www.sqlite.org/2016/${sqlite_autoconf_name}.tar.gz || return;;
+				https://www.sqlite.org/2017/${sqlite_autoconf_name}.tar.gz || return;;
 	apr|apr-util)
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget -O \${${_1}_org_src_dir}.tar.bz2 \
