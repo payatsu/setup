@@ -2,7 +2,6 @@
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] ccache, distcc
 # [TODO] valgrind
-# [TODO] cling
 # [TODO] util-linux
 # [TODO] newlib
 # [TODO] perf
@@ -103,6 +102,7 @@
 : ${clang_tools_extra_ver:=${llvm_ver}}
 : ${lld_ver:=${llvm_ver}}
 : ${lldb_ver:=${llvm_ver}}
+: ${cling_ver:=git}
 : ${boost_ver:=1_63_0}
 : ${mingw_w64_ver:=5.0.1}
 : ${Python_ver:=3.6.0}
@@ -608,6 +608,11 @@ fetch()
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget -O \${${_1}_org_src_dir}.tar.xz \
 				http://llvm.org/releases/${llvm_ver}/\${${_1}_name}.tar.xz || return;;
+	cling)
+		[ -d ${cling_org_src_dir} ] ||
+			(git clone --depth 1 http://root.cern.ch/git/llvm.git ${cling_org_src_dir} -b cling-patches || return
+			git clone --depth 1 http://root.cern.ch/git/clang.git ${cling_org_src_dir}/tools/clang -b cling-patches || return
+			git clone --depth 1 http://root.cern.ch/git/cling.git ${cling_org_src_dir}/tools/cling) || return;;
 	boost)
 		check_archive ${boost_org_src_dir} ||
 			wget --trust-server-names --no-check-certificate -O ${boost_org_src_dir}.tar.bz2 \
@@ -3117,6 +3122,24 @@ install_native_lldb()
 	make -C ${lldb_bld_dir} -j ${jobs} || return
 	make -C ${lldb_bld_dir} -j ${jobs} check-lldb || return
 	make -C ${lldb_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+}
+
+install_native_cling()
+{
+	[ -x ${prefix}/bin/cling -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
+	fetch cling || return
+	mkdir -pv ${cling_bld_dir_ntv} || return
+	[ -f ${cling_bld_dir_ntv}/Makefile ] ||
+		(cd ${cling_bld_dir_ntv}
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix}/cling \
+			-DENABLE_LINKER_BUILD_ID=ON ${cling_org_src_dir}) || return
+	make -C ${cling_bld_dir_ntv} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${cling_bld_dir_ntv} -j ${jobs} -k check || return
+	make -C ${cling_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
 }
 
 install_native_boost()
