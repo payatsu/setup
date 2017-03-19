@@ -2,6 +2,7 @@
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] ccache, distcc
 # [TODO] valgrind
+# [TODO] elfutils, insight
 # [TODO] util-linux
 # [TODO] newlib
 # [TODO] perf
@@ -39,6 +40,7 @@
 : ${linux_ver:=3.18.13}
 : ${gperf_ver:=3.1}
 : ${glibc_ver:=2.25}
+: ${newlib_ver:=2.5.0}
 : ${gmp_ver:=6.1.2}
 : ${mpfr_ver:=3.1.5}
 : ${mpc_ver:=1.0.3}
@@ -255,6 +257,8 @@ help()
 		Specify the version of gperf you want, currently '${gperf_ver}'.
 	glibc_ver
 		Specify the version of GNU C Library you want, currently '${glibc_ver}'.
+	newlib_ver
+		Specify the version of Newlib C Library you want, currently '${newlib_ver}'.
 	gmp_ver
 		Specify the version of GNU MP Bignum Library you want, currently '${gmp_ver}'.
 	mpfr_ver
@@ -464,6 +468,10 @@ fetch()
 		check_archive ${linux_org_src_dir} ||
 			wget --no-check-certificate -O ${linux_org_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/kernel/${linux_major_ver}/${linux_name}.tar.xz || return;;
+	newlib)
+		check_archive ${newlib_org_src_dir} ||
+			wget -O ${newlib_org_src_dir}.tar.gz \
+				ftp://sourceware.org/pub/newlib/${newlib_name}.tar.gz || return;;
 	gcc)
 		check_archive ${gcc_org_src_dir} ||
 			wget -O ${gcc_org_src_dir}.tar.bz2 \
@@ -610,8 +618,8 @@ fetch()
 				http://llvm.org/releases/${llvm_ver}/\${${_1}_name}.tar.xz || return;;
 	cling)
 		[ -d ${cling_org_src_dir} ] ||
-			(git clone --depth 1 http://root.cern.ch/git/llvm.git ${cling_org_src_dir} -b cling-patches || return
-			git clone --depth 1 http://root.cern.ch/git/clang.git ${cling_org_src_dir}/tools/clang -b cling-patches || return
+			(git clone --depth 1 http://root.cern.ch/git/llvm.git ${cling_org_src_dir} -b cling-patches &&
+			git clone --depth 1 http://root.cern.ch/git/clang.git ${cling_org_src_dir}/tools/clang -b cling-patches &&
 			git clone --depth 1 http://root.cern.ch/git/cling.git ${cling_org_src_dir}/tools/cling) || return;;
 	boost)
 		check_archive ${boost_org_src_dir} ||
@@ -922,7 +930,7 @@ set_src_directory()
 	eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
 
 	case ${1} in
-	glibc|mingw-w64)
+	glibc|newlib|mingw-w64)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-src
 		eval ${_1}_bld_dir_crs_hdr=\${${_1}_src_base}/${target}-\${${_1}_name}-bld-hdr
@@ -3179,6 +3187,7 @@ install_cross_binutils()
 
 install_cross_gcc_without_headers()
 {
+	fetch gcc || return
 	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
 	mkdir -pv ${gcc_bld_dir_crs_1st} || return
 	[ -f ${gcc_bld_dir_crs_1st}/Makefile ] ||
@@ -3227,6 +3236,7 @@ install_cross_glibc_headers()
 
 install_cross_gcc_with_glibc_headers()
 {
+	fetch gcc || return
 	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
 	mkdir -pv ${gcc_bld_dir_crs_2nd} || return
 	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
@@ -3253,6 +3263,7 @@ install_cross_gcc_with_glibc_headers()
 
 install_cross_1st_glibc()
 {
+	fetch glibc || return
 	[ -d ${glibc_src_dir_crs_1st} ] ||
 		(unpack ${glibc_org_src_dir} ${glibc_src_base} &&
 			mv -v ${glibc_org_src_dir} ${glibc_src_dir_crs_1st}) || return
@@ -3297,6 +3308,7 @@ EOF
 
 install_cross_functional_gcc()
 {
+	fetch gcc || return
 	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
 	mkdir -pv ${gcc_bld_dir_crs_3rd} || return
 	[ -f ${gcc_bld_dir_crs_3rd}/Makefile ] ||
