@@ -942,7 +942,6 @@ set_src_directory()
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_bld_dir_crs_1st=\${${_1}_src_base}/${target}-\${${_1}_name}-1st
 		eval ${_1}_bld_dir_crs_2nd=\${${_1}_src_base}/${target}-\${${_1}_name}-2nd
-		eval ${_1}_bld_dir_crs_3rd=\${${_1}_src_base}/${target}-\${${_1}_name}-3rd
 		eval ${_1}_bld_dir_crs_ntv=\${${_1}_src_base}/${target}-\${${_1}_name}-crs-ntv
 		;;
 	gdb)
@@ -3204,6 +3203,11 @@ install_cross_gcc_without_headers()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_1st} -j ${jobs} -k check-gcc || return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-gcc || return
+	[ ${target} = x86_64-w64-mingw32 ] && return
+	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} all-target-libgcc || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${gcc_bld_dir_crs_1st} -j ${jobs} -k check-target-libgcc || return
+	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-target-libgcc || return
 }
 
 install_cross_linux_header()
@@ -3217,7 +3221,7 @@ install_cross_linux_header()
 		ARCH=${cross_linux_arch} INSTALL_HDR_PATH=${sysroot}/usr headers_install || return
 }
 
-install_cross_glibc_headers()
+install_cross_glibc_header()
 {
 	which awk > /dev/null || install_native_gawk || return
 	which gperf > /dev/null || install_native_gperf || return
@@ -3234,34 +3238,7 @@ install_cross_glibc_headers()
 	make -C ${glibc_bld_dir_crs_hdr} -j ${jobs} DESTDIR=${sysroot} install-headers || return
 }
 
-install_cross_gcc_with_glibc_headers()
-{
-	fetch gcc || return
-	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
-	mkdir -pv ${gcc_bld_dir_crs_2nd} || return
-	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
-		(cd ${gcc_bld_dir_crs_2nd}
-		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
-			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
-			--enable-languages=c --disable-multilib --without-isl --with-system-zlib \
-			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` --with-sysroot=${sysroot} --with-newlib \
-			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
-			--disable-libmudflap --disable-libquadmath --disable-libatomic \
-			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
-		) || return
-	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} all-gcc || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k check-gcc || return
-	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} install-gcc || return
-	touch ${sysroot}/usr/include/gnu/stubs.h
-	touch ${sysroot}/usr/include/gnu/stubs-soft.h
-	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} all-target-libgcc || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k check-target-libgcc || return
-	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} install-target-libgcc || return
-}
-
-install_cross_1st_glibc()
+install_cross_glibc_body()
 {
 	fetch glibc || return
 	[ -d ${glibc_src_dir_crs_1st} ] ||
@@ -3306,22 +3283,36 @@ EOF
 	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} install || return
 }
 
+install_cross_newlib()
+{
+	fetch newlib || return
+	[ -d ${newlib_src_dir_crs_hdr} ] ||
+		(unpack ${newlib_org_src_dir} ${newlib_src_base} &&
+			mv -v ${newlib_org_src_dir} ${newlib_src_dir_crs_hdr}) || return
+	mkdir -pv ${newlib_bld_dir_crs_hdr} || return
+	[ -f ${newlib_bld_dir_crs_hdr}/Makefile ] ||
+		(cd ${newlib_bld_dir_crs_hdr}
+		${newlib_src_dir_crs_hdr}/configure --prefix=/usr --build=${build} --host=${target}) || return
+	make -C ${newlib_bld_dir_crs_hdr} -j ${jobs} || return
+	make -C ${newlib_bld_dir_crs_hdr} -j ${jobs} DESTDIR=${sysroot} install || return
+}
+
 install_cross_functional_gcc()
 {
 	fetch gcc || return
 	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
-	mkdir -pv ${gcc_bld_dir_crs_3rd} || return
-	[ -f ${gcc_bld_dir_crs_3rd}/Makefile ] ||
-		(cd ${gcc_bld_dir_crs_3rd}
+	mkdir -pv ${gcc_bld_dir_crs_2nd} || return
+	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
+		(cd ${gcc_bld_dir_crs_2nd}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
 			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
 			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` \
-			--enable-libstdcxx-debug --with-sysroot=${sysroot} ${strip:+STRIP=${target}-strip}) || return
-	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} || return
+			--enable-libstdcxx-debug --with-sysroot=${sysroot}) || return
+	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k check || return
-	make -C ${gcc_bld_dir_crs_3rd} -j ${jobs} -k install${strip:+-${strip}} || true # [XXX] install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
+		LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k check || return
+	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k install${strip:+-${strip}} ${strip:+STRIP=${target}-strip} || true # [XXX] install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
 }
 
 install_cross_gcc()
@@ -3333,12 +3324,10 @@ install_cross_gcc()
 	search_header mpfr.h > /dev/null || install_native_mpfr || return
 	search_header mpc.h > /dev/null || install_native_mpc || return
 	which perl > /dev/null || install_native_perl || return
-	fetch gcc || return
 	install_cross_gcc_without_headers || return
 	install_cross_linux_header || return
-	install_cross_glibc_headers || return
-	install_cross_gcc_with_glibc_headers || return
-	install_cross_1st_glibc || return
+	install_cross_glibc_header || return
+	install_cross_glibc_body || return
 	install_cross_functional_gcc || return
 }
 
@@ -3392,36 +3381,17 @@ install_mingw_w64_header()
 	make -C ${mingw_w64_bld_dir_crs_hdr} -j ${jobs} DESTDIR=${sysroot} install || return
 }
 
-install_mingw_w64_gcc_with_mingw_w64_header()
-{
-	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
-	mkdir -pv ${gcc_bld_dir_crs_2nd} || return
-	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
-		(cd ${gcc_bld_dir_crs_2nd}
-		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
-			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
-			--enable-languages=c --disable-multilib --without-isl --with-system-zlib --with-sysroot=${sysroot} \
-			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
-			--disable-libmudflap --disable-libquadmath --disable-libatomic \
-			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
-		) || return
-	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} all-gcc || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k check-gcc || return
-	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} install-gcc || return
-}
-
 install_mingw_w64_crt()
 {
+	fetch mingw-w64 || return
 	[ -d ${mingw_w64_src_dir_crs_1st} ] ||
 		(unpack ${mingw_w64_org_src_dir} ${mingw_w64_src_base} &&
 			mv -v ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_crs_1st}) || return
 	mkdir -pv ${mingw_w64_bld_dir_crs_1st} || return
 	[ -f ${mingw_w64_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_crs_1st}
-		${mingw_w64_src_dir_crs_1st}/configure --prefix=/mingw --build=${build} --host=${target} \
-			--disable-multilib --without-header --with-sysroot=${sysroot} \
-		) || return
+		CFLAGS="${CFLAGS} -I${sysroot}/mingw/include" ${mingw_w64_src_dir_crs_1st}/configure --prefix=/mingw --build=${build} --host=${target} \
+			--disable-multilib --without-headers --with-sysroot=${sysroot}) || return
 	make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} -k check || return
@@ -3434,16 +3404,14 @@ install_mingw_w64_gcc()
 	prev_target=${target}; target=x86_64-w64-mingw32
 	prev_languages=${languages}; languages=c,c++
 	set_variables || return
-	install_cross_binutils || return
+	which ${target}-as > /dev/null || install_cross_binutils || return
 	[ ${build} != ${target} ] || ! echo "target(${target}) must be different from build(${build})" >&2 || return
 	search_header gmp.h > /dev/null || install_native_gmp || return
 	search_header mpfr.h > /dev/null || install_native_mpfr || return
 	search_header mpc.h > /dev/null || install_native_mpc || return
 	which perl > /dev/null || install_native_perl || return
-	fetch gcc || return
 	install_cross_gcc_without_headers || return
 	install_mingw_w64_header || return
-	install_mingw_w64_gcc_with_mingw_w64_header || return
 	install_mingw_w64_crt || return
 	install_cross_functional_gcc || return
 	target=${prev_target}
