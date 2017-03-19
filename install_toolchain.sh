@@ -3216,30 +3216,15 @@ install_cross_linux_header()
 	[ -d ${linux_src_dir_crs} ] ||
 		(unpack ${linux_org_src_dir} ${linux_src_base} &&
 			mv -v ${linux_org_src_dir} ${linux_src_dir_crs}) || return
-	make -C ${linux_src_dir_crs} -j ${jobs} mrproper || return
-	make -C ${linux_src_dir_crs} -j ${jobs} \
+	make -C ${linux_src_dir_crs} -j ${jobs} V=1 mrproper || return
+	make -C ${linux_src_dir_crs} -j ${jobs} V=1 \
 		ARCH=${cross_linux_arch} INSTALL_HDR_PATH=${sysroot}/usr headers_install || return
 }
 
-install_cross_glibc_header()
+install_cross_glibc()
 {
 	which awk > /dev/null || install_native_gawk || return
 	which gperf > /dev/null || install_native_gperf || return
-	fetch glibc || return
-	[ -d ${glibc_src_dir_crs_hdr} ] ||
-		(unpack ${glibc_org_src_dir} ${glibc_src_base} &&
-			mv -v ${glibc_org_src_dir} ${glibc_src_dir_crs_hdr}) || return
-	mkdir -pv ${glibc_bld_dir_crs_hdr} || return
-	[ -f ${glibc_bld_dir_crs_hdr}/Makefile ] ||
-		(cd ${glibc_bld_dir_crs_hdr}
-		LD_LIBRARY_PATH='' ${glibc_src_dir_crs_hdr}/configure --prefix=/usr --build=${build} --host=${target} \
-			--with-headers=${sysroot}/usr/include \
-			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return
-	make -C ${glibc_bld_dir_crs_hdr} -j ${jobs} DESTDIR=${sysroot} install-headers || return
-}
-
-install_cross_glibc_body()
-{
 	fetch glibc || return
 	[ -d ${glibc_src_dir_crs_1st} ] ||
 		(unpack ${glibc_org_src_dir} ${glibc_src_base} &&
@@ -3277,9 +3262,10 @@ EOF
 		LD_LIBRARY_PATH='' ${glibc_src_dir_crs_1st}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-headers=${sysroot}/usr/include CFLAGS="${CFLAGS} -Wno-error=parentheses -O2" \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return
-	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} AR=${target}-ar || return
+	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} install-headers || return
+	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} AR=${target}-ar || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} -k check || return
+		make -C ${glibc_bld_dir_crs_1st} -j ${jobs} -k check || return
 	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} install || return
 }
 
@@ -3309,9 +3295,9 @@ install_cross_functional_gcc()
 			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
 			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` \
 			--enable-libstdcxx-debug --with-sysroot=${sysroot}) || return
-	LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} || return
+	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} LIBS=-lgcc_s || return
 	[ "${enable_check}" != yes ] ||
-		LIBS=-lgcc_s make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k check || return
+		make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k install${strip:+-${strip}} ${strip:+STRIP=${target}-strip} || true # [XXX] install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
 }
 
@@ -3326,8 +3312,7 @@ install_cross_gcc()
 	which perl > /dev/null || install_native_perl || return
 	install_cross_gcc_without_headers || return
 	install_cross_linux_header || return
-	install_cross_glibc_header || return
-	install_cross_glibc_body || return
+	install_cross_glibc || return
 	install_cross_functional_gcc || return
 }
 
