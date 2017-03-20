@@ -3835,7 +3835,7 @@ install_crossed_native_libtiff()
 	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
 
-readlink -e ${0} | grep -qe ^/tmp/ || { tmpdir=`mktemp -dp /tmp` && trap 'rm -vr ${tmpdir}' EXIT HUP INT QUIT TERM && cp -v ${0} ${tmpdir} && ${tmpdir}/`basename ${0}` "$@"; exit;}
+readlink -e ${0} | grep -qe ^/tmp/ || { tmpdir=`mktemp -dp /tmp` && trap 'rm -fvr ${tmpdir}' EXIT HUP INT QUIT TERM && cp -v ${0} ${tmpdir} && ${tmpdir}/`basename ${0}` "$@"; exit;}
 while getopts p:j:f:c:l:t:h arg; do
 	case ${arg} in
 	p)  prefix=${OPTARG};;
