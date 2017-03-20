@@ -842,7 +842,7 @@ clean()
 {
 	[ "${enable_ccache}" != yes ] || ccache -C > /dev/null || return
 	find ${prefix}/src -mindepth 2 -maxdepth 2 \
-		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' -exec rm -fr {} +
+		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' -exec rm -fvr {} +
 }
 
 strip()
@@ -882,7 +882,7 @@ reset()
 # Reset '${prefix}' except '${prefix}/src/'.
 {
 	clean || return
-	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src ! -name .git -exec rm -fr '{}' +
+	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src ! -name .git -exec rm -fvr '{}' +
 	[ `whoami` = root ] && rm -fv /etc/ld.so.conf.d/`basename ${prefix}`.conf
 	[ `whoami` = root ] && ldconfig || true
 }
@@ -1129,7 +1129,7 @@ search_header()
 get_include_path()
 {
 	path=`search_header $@`
-	[ $? = 0 ] && echo ${path} | sed -e 's/\(include\)\/.\+/\1/' || return
+	[ $? = 0 ] && echo ${path} | sed -e "s%${2:+/${2}}/${1}\$%%" || return
 }
 
 get_prefix()
@@ -1238,7 +1238,7 @@ install_native_bzip2()
 		make -C ${bzip2_org_src_dir} -j ${jobs} -k check || return
 	cp -fv ${bzip2_org_src_dir}/libbz2.so.${bzip2_ver} ${prefix}/lib || return
 	chmod a+r ${prefix}/lib/libbz2.so.${bzip2_ver} || return
-	ln -fsv ./libbz2.so.${bzip2_ver} ${prefix}/lib/libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` || return
+	ln -fsv libbz2.so.${bzip2_ver} ${prefix}/lib/libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` || return
 	cp -fv ${bzip2_org_src_dir}/bzlib.h ${prefix}/include || return
 	cp -fv ${bzip2_org_src_dir}/bzlib_private.h ${prefix}/include || return
 	update_library_search_path || return
@@ -2415,7 +2415,7 @@ install_native_global()
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			--with-ncurses=`get_prefix curses.h ncurses` CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return
+			--with-ncurses=`get_prefix curses.h` CPPFLAGS="${CPPFLAGS} -I`get_include_path curses.h`") || return
 	make -C ${global_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${global_org_src_dir} -j ${jobs} -k check || return
@@ -2603,7 +2603,7 @@ install_native_tmux()
 	[ -f ${tmux_org_src_dir}/Makefile ] ||
 		(cd ${tmux_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			CPPFLAGS="${CPPFLAGS} -I${prefix}/include/ncurses") || return
+			CPPFLAGS="${CPPFLAGS} -I`get_include_path curses.h`") || return
 	make -C ${tmux_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${tmux_org_src_dir} -j ${jobs} -k check || return
@@ -2958,7 +2958,7 @@ install_native_libedit()
 	[ -f ${libedit_org_src_dir}/Makefile ] ||
 		(cd ${libedit_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			--disable-silent-rules CFLAGS="${CFLAGS} -I${prefix}/include/ncurses") || return
+			--disable-silent-rules CFLAGS="${CFLAGS} -I`get_include_path curses.h`") || return
 	make -C ${libedit_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libedit_org_src_dir} -j ${jobs} -k check || return
@@ -3125,7 +3125,7 @@ install_native_lldb()
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 			-DCMAKE_C_FLAGS="${CFLAGS} -I`get_include_path Version.h clang/Basic`" \
 			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`get_include_path histedit.h`" \
-			-DCURSES_INCLUDE_PATH=`dirname \`search_header curses.h\`` ${llvm_org_src_dir}) || return
+			-DCURSES_INCLUDE_PATH=`get_include_path curses.h` ${llvm_org_src_dir}) || return
 	make -C ${lldb_bld_dir} -j ${jobs} || return
 	make -C ${lldb_bld_dir} -j ${jobs} check-lldb || return
 	make -C ${lldb_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
@@ -3449,7 +3449,7 @@ install_native_go()
 	(cd ${go_org_src_dir}/src
 	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=`which go | sed -e 's/\/bin\/go//'` \
 		GOROOT=${go_org_src_dir} GOROOT_FINAL=${prefix}/go ${go_org_src_dir}/src/make.bash) || return
-	[ ! -d ${prefix}/go ] || rm -fr ${prefix}/go || return
+	[ ! -d ${prefix}/go ] || rm -fvr ${prefix}/go || return
 	mv -v ${go_org_src_dir} ${prefix}/go || return
 	${prefix}/go/bin/go get golang.org/x/tools/cmd/... || return
 }
@@ -3835,6 +3835,7 @@ install_crossed_native_libtiff()
 	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
 
+readlink -e ${0} | grep -qe ^/tmp/ || { tmpdir=`mktemp -dp /tmp` && trap 'rm -vr ${tmpdir}' EXIT HUP INT QUIT TERM && cp -v ${0} ${tmpdir} && ${tmpdir}/`basename ${0}` "$@"; exit;}
 while getopts p:j:f:c:l:t:h arg; do
 	case ${arg} in
 	p)  prefix=${OPTARG};;
