@@ -3074,15 +3074,21 @@ install_native_cfe()
 
 install_native_clang_tools_extra()
 {
+# TODO チェック。
 	which cmake > /dev/null || install_native_cmake || return
+	fetch llvm || return
+	unpack ${llvm_org_src_dir} ${llvm_src_base} || return
 	fetch clang-tools-extra || return
-	unpack ${clang_tools_extra_org_src_dir} ${clang_tools_extra_src_base} || return
+	[ -d ${llvm_org_src_dir}/tools/extra ] ||
+		(unpack ${clang_tools_extra_org_src_dir} ${clang_tools_extra_src_base} &&
+		mv -v ${clang_tools_extra_org_src_dir} ${llvm_org_src_dir}/tools/extra) || return
 	mkdir -pv ${clang_tools_extra_bld_dir} || return
 	[ -f ${clang_tools_extra_bld_dir}/Makefile ] ||
 		(cd ${clang_tools_extra_bld_dir}
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${clang_tools_extra_org_src_dir}) || return
+		cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return
 	make -C ${clang_tools_extra_bld_dir} -j ${jobs} || return
+# TODO make -C ${clang_tools_extra_bld_dir} -j ${jobs} || return
 	make -C ${clang_tools_extra_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 }
 
@@ -3110,7 +3116,9 @@ install_native_lldb()
 {
 	[ -x ${prefix}/bin/lldb -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
+	search_header curses.h > /dev/null || install_native_ncurses || return
 	search_header histedit.h > /dev/null || install_native_libedit || return
+	search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
 	which swig > /dev/null || install_native_swig || return
 	fetch llvm || return
 	unpack ${llvm_org_src_dir} ${llvm_src_base} || return
@@ -3124,8 +3132,8 @@ install_native_lldb()
 		cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 			-DCMAKE_C_FLAGS="${CFLAGS} -I`get_include_path Version.h clang/Basic`" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`get_include_path histedit.h`" \
-			-DCURSES_INCLUDE_PATH=`get_include_path curses.h` ${llvm_org_src_dir}) || return
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`get_include_path curses.h` -I`get_include_path ncurses_dll.h ncurses` -I`get_include_path histedit.h`" \
+			${llvm_org_src_dir}) || return
 	make -C ${lldb_bld_dir} -j ${jobs} || return
 	make -C ${lldb_bld_dir} -j ${jobs} check-lldb || return
 	make -C ${lldb_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
