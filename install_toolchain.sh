@@ -3850,6 +3850,7 @@ install_crossed_native_libtiff()
 }
 
 readlink -e ${0} | grep -qe ^/tmp/ || { tmpdir=`mktemp -dp /tmp` && trap 'rm -fvr ${tmpdir}' EXIT HUP INT QUIT TERM && cp -v ${0} ${tmpdir} && ${tmpdir}/`basename ${0}` "$@"; exit;}
+trap 'set' USR1
 while getopts p:j:f:c:l:t:h arg; do
 	case ${arg} in
 	p)  prefix=${OPTARG};;
