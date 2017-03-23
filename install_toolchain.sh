@@ -87,7 +87,7 @@
 : ${libxslt_ver:=1.1.29}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
-: ${git_ver:=2.12.0}
+: ${git_ver:=2.12.1}
 : ${mercurial_ver:=4.1.1}
 : ${sqlite_autoconf_ver:=3170000}
 : ${apr_ver:=1.5.2}
@@ -108,7 +108,7 @@
 : ${boost_ver:=1_63_0}
 : ${mingw_w64_ver:=5.0.1}
 : ${Python_ver:=3.6.0}
-: ${ruby_ver:=2.4.0}
+: ${ruby_ver:=2.4.1}
 : ${go_ver:=1.8}
 : ${perl_ver:=5.24.0}
 : ${tcl_ver:=8.6.6}
@@ -3065,7 +3065,9 @@ install_native_cfe()
 		(cd ${cfe_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-			-DENABLE_LINKER_BUILD_ID=ON ${cfe_org_src_dir}) || return
+			-DENABLE_LINKER_BUILD_ID=ON \
+			-DGCC_INSTALL_PREFIX=`get_prefix iostream c++/\`gcc -dumpversion\`` \
+			${cfe_org_src_dir}) || return
 	make -C ${cfe_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${cfe_bld_dir} -j ${jobs} -k check-all || return
@@ -3110,7 +3112,8 @@ install_native_lld()
 	[ -f ${lld_bld_dir}/Makefile ] ||
 		(cd ${lld_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+			-DLLVM_LINK_LLVM_DYLIB=ON ${llvm_org_src_dir}) || return
 	make -C ${lld_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${lld_bld_dir} -j ${jobs} -k check || return
@@ -3136,6 +3139,7 @@ install_native_lldb()
 		(cd ${lldb_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+			-DLLVM_LINK_LLVM_DYLIB=ON \
 			-DCMAKE_C_FLAGS="${CFLAGS} -I`get_include_path Version.h clang/Basic`" \
 			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`get_include_path curses.h` -I`get_include_path ncurses_dll.h ncurses` -I`get_include_path histedit.h`" \
 			${llvm_org_src_dir}) || return
@@ -3403,8 +3407,8 @@ install_mingw_w64_gcc()
 	prev_target=${target}; target=x86_64-w64-mingw32
 	prev_languages=${languages}; languages=c,c++
 	set_variables || return
-	which ${target}-as > /dev/null || install_cross_binutils || return
 	[ ${build} != ${target} ] || ! echo "target(${target}) must be different from build(${build})" >&2 || return
+	which ${target}-as > /dev/null || install_cross_binutils || return
 	search_header gmp.h > /dev/null || install_native_gmp || return
 	search_header mpfr.h > /dev/null || install_native_mpfr || return
 	search_header mpc.h > /dev/null || install_native_mpc || return
