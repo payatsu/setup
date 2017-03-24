@@ -3295,7 +3295,7 @@ install_cross_newlib()
 	mkdir -pv ${newlib_bld_dir_crs_hdr} || return
 	[ -f ${newlib_bld_dir_crs_hdr}/Makefile ] ||
 		(cd ${newlib_bld_dir_crs_hdr}
-		${newlib_src_dir_crs_hdr}/configure --prefix=/usr --build=${build} --host=${target}) || return
+		${newlib_src_dir_crs_hdr}/configure --prefix=/usr --build=${build} --target=${target}) || return
 	make -C ${newlib_bld_dir_crs_hdr} -j ${jobs} || return
 	make -C ${newlib_bld_dir_crs_hdr} -j ${jobs} DESTDIR=${sysroot} install || return
 }
