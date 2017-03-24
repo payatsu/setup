@@ -3249,7 +3249,7 @@ install_cross_glibc()
 			mv -v ${glibc_org_src_dir} ${glibc_src_dir_crs_1st}) || return
 
 	[ ${cross_linux_arch} != microblaze ] ||
-		(cd ${glibc_src_dir_crs_1st}; patch -N -p0 -d ${glibc_src_dir_crs_1st} <<EOF || [ $? = 1 ] || return
+		patch -N -p0 -d ${glibc_src_dir_crs_1st} <<EOF || [ $? = 1 ] || return
 --- sysdeps/unix/sysv/linux/microblaze/sysdep.h
 +++ sysdeps/unix/sysv/linux/microblaze/sysdep.h
 @@ -16,8 +16,11 @@
@@ -3272,7 +3272,6 @@ install_cross_glibc()
 +
 +#endif /* _LINUX_MICROBLAZE_SYSDEP_H */
 EOF
-) || return
 
 	mkdir -pv ${glibc_bld_dir_crs_1st} || return
 	[ -f ${glibc_bld_dir_crs_1st}/Makefile ] ||
@@ -3853,7 +3852,7 @@ install_crossed_native_libtiff()
 	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
 
-readlink -e ${0} | grep -qe ^/tmp/ || { tmpdir=`mktemp -dp /tmp` && trap 'rm -fvr ${tmpdir}' EXIT HUP INT QUIT TERM && cp -v ${0} ${tmpdir} && ${tmpdir}/`basename ${0}` "$@"; exit;}
+readlink -e ${0} | grep -qe ^/tmp/ || { tmpdir=`mktemp -dp /tmp` && trap 'rm -fvr ${tmpdir}' EXIT HUP INT QUIT TERM && cp -v ${0} ${tmpdir} && sh -$- ${tmpdir}/`basename ${0}` "$@"; exit;}
 trap 'set' USR1
 while getopts p:j:f:c:l:t:h arg; do
 	case ${arg} in
