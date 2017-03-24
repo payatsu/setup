@@ -1638,32 +1638,32 @@ install_native_ncurses()
 	unpack ${ncurses_org_src_dir} ${ncurses_src_base} || return
 
 	# [XXX] workaround for GCC 5.x
-	patch -N -p0 -d ${ncurses_org_src_dir} <<EOF || [ $? = 1 ] || return
+	patch -N -p0 -d ${ncurses_org_src_dir} <<\EOF || [ $? = 1 ] || return
 --- ncurses/base/MKlib_gen.sh
 +++ ncurses/base/MKlib_gen.sh
 @@ -491,11 +491,18 @@
- 	-e 's/gen_\$//' \\
- 	-e 's/  / /g' >>\$TMP
+ 	-e 's/gen_$//' \
+ 	-e 's/  / /g' >>$TMP
  
-+cat >\$ED1 <<EOF
++cat >$ED1 <<EOF
 +s/  / /g
 +s/^ //
-+s/ \$//
++s/ $//
 +s/P_NCURSES_BOOL/NCURSES_BOOL/g
 +EOF
 +
-+sed -e 's/bool/P_NCURSES_BOOL/g' \$TMP > \$ED2
-+cat \$ED2 >\$TMP
++sed -e 's/bool/P_NCURSES_BOOL/g' $TMP > $ED2
++cat $ED2 >$TMP
 +
- \$preprocessor \$TMP 2>/dev/null \\
--| sed \\
--	-e 's/  / /g' \\
--	-e 's/^ //' \\
--	-e 's/_Bool/NCURSES_BOOL/g' \\
-+| sed -f \$ED1 \\
- | \$AWK -f \$AW2 \\
- | sed -f \$ED3 \\
- | sed \\
+ $preprocessor $TMP 2>/dev/null \
+-| sed \
+-	-e 's/  / /g' \
+-	-e 's/^ //' \
+-	-e 's/_Bool/NCURSES_BOOL/g' \
++| sed -f $ED1 \
+ | $AWK -f $AW2 \
+ | sed -f $ED3 \
+ | sed \
 EOF
 
 	[ -f ${ncurses_org_src_dir}/Makefile ] ||
