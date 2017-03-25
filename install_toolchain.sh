@@ -3391,12 +3391,12 @@ install_mingw_w64_header()
 	mkdir -pv ${mingw_w64_bld_dir_crs_hdr} || return
 	[ -f ${mingw_w64_bld_dir_crs_hdr}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_crs_hdr}
-		${mingw_w64_src_dir_crs_hdr}/configure --prefix=/mingw --build=${build} --host=${target} \
+		${mingw_w64_src_dir_crs_hdr}/configure --prefix=${sysroot}/mingw --build=${build} --host=${target} \
 			--disable-multilib --without-crt --with-sysroot=${sysroot}) || return
 	make -C ${mingw_w64_bld_dir_crs_hdr} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${mingw_w64_bld_dir_crs_hdr} -j ${jobs} -k check || return
-	make -C ${mingw_w64_bld_dir_crs_hdr} -j ${jobs} DESTDIR=${sysroot} install || return
+	make -C ${mingw_w64_bld_dir_crs_hdr} -j ${jobs} install || return
 }
 
 install_mingw_w64_crt()
@@ -3408,12 +3408,12 @@ install_mingw_w64_crt()
 	mkdir -pv ${mingw_w64_bld_dir_crs_1st} || return
 	[ -f ${mingw_w64_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_crs_1st}
-		CFLAGS="${CFLAGS} -I${sysroot}/mingw/include" ${mingw_w64_src_dir_crs_1st}/configure --prefix=/mingw --build=${build} --host=${target} \
+		CFLAGS="${CFLAGS} -I${sysroot}/mingw/include" ${mingw_w64_src_dir_crs_1st}/configure --prefix=${sysroot}/mingw --build=${build} --host=${target} \
 			--disable-multilib --without-headers --with-sysroot=${sysroot}) || return
 	make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} -k check || return
-	make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} install || return
+	make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} install || return
 }
 
 install_mingw_w64_gcc()
@@ -3769,7 +3769,7 @@ install_crossed_native_mpfr()
 			mv -v ${mpfr_org_src_dir} ${mpfr_src_dir_crs_ntv}) || return
 	[ -f ${mpfr_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${mpfr_src_dir_crs_ntv}
-		./configure --prefix=/usr --build=${build} --host=${target} --with-gmp=${sysroot}/usr) || return
+		./configure --prefix=/usr --build=${build} --host=${target} --with-gmp=${sysroot}/usr ${enable_static_disable_shared}) || return
 	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} || return
 	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 	sed -i -e /^dependency_libs=/s/\'.\*\'\$/\'\'/ ${sysroot}/usr/lib/libmpfr.la || return
@@ -3787,7 +3787,7 @@ install_crossed_native_mpc()
 			mv -v ${mpc_org_src_dir} ${mpc_src_dir_crs_ntv}) || return
 	[ -f ${mpc_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${mpc_src_dir_crs_ntv}
-		./configure --prefix=/usr --build=${build} --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr) || return
+		./configure --prefix=/usr --build=${build} --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr ${enable_static_disable_shared}) || return
 	make -C ${mpc_src_dir_crs_ntv} -j ${jobs} || return
 	make -C ${mpc_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
@@ -3796,7 +3796,7 @@ install_crossed_native_gcc()
 {
 	[ -x ${sysroot}/usr/bin/gcc -a "${force_install}" != yes ] && return
 	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
-	install_crossed_native_zlib || return
+	[ ${target} = x86_64-w64-mingw32 ] && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
 	[ -f ${sysroot}/usr/include/gmp.h ] || install_crossed_native_gmp || return
 	[ -f ${sysroot}/usr/include/mpfr.h ] || install_crossed_native_mpfr || return
 	[ -f ${sysroot}/usr/include/mpc.h ] || install_crossed_native_mpc || return
