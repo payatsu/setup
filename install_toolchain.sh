@@ -4,7 +4,6 @@
 # [TODO] valgrind
 # [TODO] elfutils, insight
 # [TODO] util-linux
-# [TODO] newlib
 # [TODO] perf
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] X11, gtk周りのインストールが未完成＆不安定
@@ -160,12 +159,12 @@
 
 : ${prefix:=/toolchains}
 : ${jobs:=`grep -e processor /proc/cpuinfo | wc -l`}
+: ${enable_ccache:=no}
 : ${enable_check:=no}
+: ${languages:=c,c++,go}
 : ${target:=`uname -m`-linux-gnu}
 
-: ${enable_ccache:=no}
 : ${build:=`uname -m`-linux-gnu}
-: ${languages:=c,c++,go}
 : ${strip:=strip}
 : ${cmake_build_type:=Release}
 
@@ -3204,6 +3203,13 @@ install_cross_binutils()
 
 install_cross_gcc_without_headers()
 {
+	[ -x ${prefix}/bin/${target}-gcc -a "${force_install}" != yes ] && return
+	[ ${build} != ${target} ] || ! echo "target(${target}) must be different from build(${build})" >&2 || return
+	which ${target}-as > /dev/null || install_cross_binutils || return
+	search_header gmp.h > /dev/null || install_native_gmp || return
+	search_header mpfr.h > /dev/null || install_native_mpfr || return
+	search_header mpc.h > /dev/null || install_native_mpc || return
+	which perl > /dev/null || install_native_perl || return
 	fetch gcc || return
 	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
 	mkdir -pv ${gcc_bld_dir_crs_1st} || return
@@ -3230,6 +3236,8 @@ install_cross_gcc_without_headers()
 
 install_cross_linux_header()
 {
+	[ -d ${sysroot}/usr/include/linux -a "${force_install}" != yes ] && return
+	which ${target}-gcc > /dev/null || install_cross_gcc_without_headers || return
 	fetch linux || return
 	[ -d ${linux_src_dir_crs} ] ||
 		(unpack ${linux_org_src_dir} ${linux_src_base} &&
@@ -3241,6 +3249,8 @@ install_cross_linux_header()
 
 install_cross_glibc()
 {
+	[ -f ${sysroot}/usr/include/stdio.h -a "${force_install}" != yes ] && return
+	which ${target}-gcc > /dev/null || install_cross_gcc_without_headers || return
 	which awk > /dev/null || install_native_gawk || return
 	which gperf > /dev/null || install_native_gperf || return
 	fetch glibc || return
@@ -3288,6 +3298,8 @@ EOF
 
 install_cross_newlib()
 {
+	[ -f ${sysroot}/usr/include/stdio.h -a "${force_install}" != yes ] && return
+	which ${target}-gcc > /dev/null || install_cross_gcc_without_headers || return
 	fetch newlib || return
 	[ -d ${newlib_src_dir_crs_hdr} ] ||
 		(unpack ${newlib_org_src_dir} ${newlib_src_base} &&
@@ -3295,13 +3307,19 @@ install_cross_newlib()
 	mkdir -pv ${newlib_bld_dir_crs_hdr} || return
 	[ -f ${newlib_bld_dir_crs_hdr}/Makefile ] ||
 		(cd ${newlib_bld_dir_crs_hdr}
-		${newlib_src_dir_crs_hdr}/configure --prefix=/usr --build=${build} --target=${target}) || return
+		${newlib_src_dir_crs_hdr}/configure --prefix=/ --build=${build} --target=${target}) || return
 	make -C ${newlib_bld_dir_crs_hdr} -j ${jobs} || return
 	make -C ${newlib_bld_dir_crs_hdr} -j ${jobs} DESTDIR=${sysroot} install || return
+	mv -v ${sysroot}/${target} ${sysroot}/usr || return
 }
 
 install_cross_functional_gcc()
 {
+	which ${target}-as > /dev/null || install_cross_binutils || return
+	search_header gmp.h > /dev/null || install_native_gmp || return
+	search_header mpfr.h > /dev/null || install_native_mpfr || return
+	search_header mpc.h > /dev/null || install_native_mpc || return
+	which perl > /dev/null || install_native_perl || return
 	fetch gcc || return
 	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
 	mkdir -pv ${gcc_bld_dir_crs_2nd} || return
@@ -3322,14 +3340,12 @@ install_cross_gcc()
 {
 	[ -x ${prefix}/bin/${target}-gcc -a "${force_install}" != yes ] && return
 	[ ${build} != ${target} ] || ! echo "target(${target}) must be different from build(${build})" >&2 || return
-	which ${target}-as > /dev/null || install_cross_binutils || return
-	search_header gmp.h > /dev/null || install_native_gmp || return
-	search_header mpfr.h > /dev/null || install_native_mpfr || return
-	search_header mpc.h > /dev/null || install_native_mpc || return
-	which perl > /dev/null || install_native_perl || return
 	install_cross_gcc_without_headers || return
-	install_cross_linux_header || return
-	install_cross_glibc || return
+	case ${target} in
+	*-elf) install_cross_newlib || return;;
+	*)     install_cross_linux_header || return
+           install_cross_glibc || return;;
+	esac
 	install_cross_functional_gcc || return
 }
 
@@ -3407,11 +3423,6 @@ install_mingw_w64_gcc()
 	prev_languages=${languages}; languages=c,c++
 	set_variables || return
 	[ ${build} != ${target} ] || ! echo "target(${target}) must be different from build(${build})" >&2 || return
-	which ${target}-as > /dev/null || install_cross_binutils || return
-	search_header gmp.h > /dev/null || install_native_gmp || return
-	search_header mpfr.h > /dev/null || install_native_mpfr || return
-	search_header mpc.h > /dev/null || install_native_mpc || return
-	which perl > /dev/null || install_native_perl || return
 	install_cross_gcc_without_headers || return
 	install_mingw_w64_header || return
 	install_mingw_w64_crt || return
