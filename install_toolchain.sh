@@ -3810,7 +3810,7 @@ install_crossed_native_gcc()
 		(cd ${gcc_bld_dir_crs_ntv}
 		${gcc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
-			--enable-languages=${languages} --with-sysroot=/ --without-isl --with-system-zlib \
+			--enable-languages=${languages} --with-sysroot=${sysroot} --without-isl --with-system-zlib \
 			--enable-libstdcxx-debug \
 			CC_FOR_TARGET=${target}-gcc CXX_FOR_TARGET=${target}-g++ GOC_FOR_TARGET=${target}-gccgo) || return
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} || return
