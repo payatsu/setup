@@ -3729,6 +3729,7 @@ install_crossed_native_binutils()
 {
 	[ -x ${sysroot}/usr/bin/as -a "${force_install}" != yes ] && return
 	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
+	[ -f ${sysroot}/usr/include/zlib.h ] || install_crossed_native_zlib || return
 	which yacc > /dev/null || install_native_bison || return
 	fetch binutils || return
 	[ -d ${binutils_src_dir_crs_ntv} ] ||
@@ -3738,7 +3739,7 @@ install_crossed_native_binutils()
 		(cd ${binutils_src_dir_crs_ntv}
 		./configure --prefix=/usr --build=${build} --host=${target} --with-sysroot=/ \
 			--enable-64-bit-bfd --enable-gold --enable-targets=all --with-system-zlib \
-			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
+			CFLAGS="${CFLAGS} -I${sysroot}/usr/include -L${sysroot}/usr/lib -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
 			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function") || return
 	make -C ${binutils_src_dir_crs_ntv} -j 1 || return
 	make -C ${binutils_src_dir_crs_ntv} -j 1 DESTDIR=${sysroot} install${strip:+-${strip}} || return
@@ -3797,6 +3798,7 @@ install_crossed_native_gcc()
 	[ -x ${sysroot}/usr/bin/gcc -a "${force_install}" != yes ] && return
 	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
 	[ ${target} = x86_64-w64-mingw32 ] && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
+	[ -f ${sysroot}/usr/bin/as -o -f ${sysroot}/usr/bin/as.exe ] || install_crossed_native_binutils || return
 	[ -f ${sysroot}/usr/include/gmp.h ] || install_crossed_native_gmp || return
 	[ -f ${sysroot}/usr/include/mpfr.h ] || install_crossed_native_mpfr || return
 	[ -f ${sysroot}/usr/include/mpc.h ] || install_crossed_native_mpc || return
@@ -3824,7 +3826,8 @@ install_crossed_native_zlib()
 		(unpack ${zlib_org_src_dir} ${zlib_src_base} &&
 			mv -v ${zlib_org_src_dir} ${zlib_src_dir_crs_ntv}) || return
 	(cd ${zlib_src_dir_crs_ntv}
-	CC=${target}-gcc AR=${target}-ar RANLIB=${target}-ranlib ./configure --prefix=/usr) || return
+	[ ${target} = x86_64-w64-mingw32 ] && static=--static || static=''
+	CC=${target}-gcc AR=${target}-ar RANLIB=${target}-ranlib ./configure --prefix=/usr ${static}) || return
 	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} || return
 	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install || return
 }
