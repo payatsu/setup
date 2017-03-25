@@ -3729,7 +3729,6 @@ install_crossed_native_binutils()
 {
 	[ -x ${sysroot}/usr/bin/as -a "${force_install}" != yes ] && return
 	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
-	search_header zlib.h > /dev/null || install_native_zlib || return
 	which yacc > /dev/null || install_native_bison || return
 	fetch binutils || return
 	[ -d ${binutils_src_dir_crs_ntv} ] ||
