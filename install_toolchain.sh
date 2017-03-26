@@ -162,6 +162,7 @@
 : ${enable_ccache:=no}
 : ${enable_check:=no}
 : ${languages:=c,c++,go}
+: ${host:=`uname -m`-linux-gnu}
 : ${target:=`uname -m`-linux-gnu}
 
 : ${build:=`uname -m`-linux-gnu}
@@ -173,7 +174,7 @@ usage()
 {
 	cat <<EOF
 [Usage]
-	${0} [-p prefix] [-j jobs] [-f yes|no] [-c yes|no] [-t target] [-h] [variable=value]... commands...
+	${0} [-p prefix] [-j jobs] [-f yes|no] [-c yes|no] [-h host] [-t target] [variable=value]... commands...
 
 [Options]
 	-p prefix
@@ -188,6 +189,8 @@ usage()
 		Enable 'make check' before 'make install', currently '${enable_check}'.
 	-l languages
 		Enable languages in GCC build configulation, currently '${languages}'.
+	-h host
+		Host-triplet, currently '${host}'.
 	-t target
 		Target-triplet of new cross toolchain, currently '${target}'.
 		ex.
@@ -196,8 +199,6 @@ usage()
 			i686-unknown-linux
 			microblaze-none-linux
 			nios2-none-linux (linux_ver=4.8.1)
-	-h
-		Show detailed help.
 
 EOF
 	list_major_commands
@@ -965,7 +966,7 @@ set_variables()
 {
 	prefix=`readlink -m ${prefix}`
 	sysroot=${prefix}/${target}/sysroot
-	os=`head -1 /etc/issue | cut -d' ' -f1`
+	[ -f /etc/issue ] && os=`head -1 /etc/issue | cut -d' ' -f1`
 	[ "${strip}" = strip ] || cmake_build_type=Debug
 
 	case ${build} in
@@ -3775,7 +3776,8 @@ install_crossed_native_gcc()
 {
 	[ \( -x ${sysroot}/usr/bin/gcc -o -x ${sysroot}/usr/bin/gcc.exe \) -a "${force_install}" != yes ] && return
 	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
-	install_cross_gcc || return
+	install_cross_binutils || return # XXX libgccのconfigureが${target}-nm, ${target}-ranlib見つけてくれないので現状は${prefix}/bin/${target}-{nm,ranlib}が必須。
+	which ${target}-gcc > /dev/null || install_cross_gcc || return
 	[ -f ${sysroot}/usr/bin/as -o -f ${sysroot}/usr/bin/as.exe ] || install_crossed_native_binutils || return
 	[ ${target} = x86_64-w64-mingw32 ] && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
 	[ -f ${sysroot}/usr/include/gmp.h ] || install_crossed_native_gmp || return
@@ -3789,7 +3791,7 @@ install_crossed_native_gcc()
 		(cd ${gcc_bld_dir_crs_ntv}
 		${gcc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
-			--enable-languages=${languages} --with-sysroot=/ --with-build-sysroot=${sysroot} --without-isl --with-system-zlib \
+			--enable-languages=${languages} --with-sysroot=${sysroot_mingw:-/} --with-build-sysroot=${sysroot} --without-isl --with-system-zlib \
 			--enable-libstdcxx-debug \
 			CC_FOR_TARGET=${target}-gcc CXX_FOR_TARGET=${target}-g++ GOC_FOR_TARGET=${target}-gccgo) || return
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} || return
@@ -3846,15 +3848,15 @@ install_crossed_native_libtiff()
 
 readlink -e ${0} | grep -qe ^/tmp/ || { tmpdir=`mktemp -dp /tmp` && trap 'rm -fvr ${tmpdir}' EXIT HUP INT QUIT TERM && cp -v ${0} ${tmpdir} && sh -$- ${tmpdir}/`basename ${0}` "$@"; exit;}
 trap 'set' USR1
-while getopts p:j:f:c:l:t:h arg; do
+while getopts p:j:f:c:l:t:h: arg; do
 	case ${arg} in
 	p)  prefix=${OPTARG};;
 	j)  jobs=${OPTARG};;
 	f)  enable_ccache=${OPTARG};;
 	c)  enable_check=${OPTARG};;
 	l)  languages=${OPTARG};;
+	h)  host=${OPTARG};;
 	t)  target=${OPTARG};;
-	h)  set_variables || true; help; exit 0;;
 	\?) set_variables || true; usage >&2; exit 1;;
 	esac
 done
@@ -3868,7 +3870,7 @@ while [ $# -gt 0 ]; do
 	debug) ${1} `[ -n "${BASH}" ] && echo shell || echo ${1}`;;
 	shell) [ -n "${BASH}" ] \
 				&& set placeholder debug \
-				|| exec bash --noprofile --norc --posix -e ${0} -p ${prefix} -t ${target} -j ${jobs} shell
+				|| exec bash --noprofile --norc --posix -e ${0} -p ${prefix} -j ${jobs} -l ${languages} -h ${host} -t ${target} shell
 		   count=`expr ${count} + 1`;;
 	*=*)   eval export ${1}; set_variables;;
 	*)     eval ${1} || exit 1; count=`expr ${count} + 1`;;
