@@ -762,7 +762,7 @@ install()
 		install_cross_gcc || return
 		install_cross_gdb || return;;
 	crossed)
-		install_crossed_native_binutils || return
+		install_crossed_binutils || return
 		install_crossed_native_gcc || return;;
 	*)
 		echo install: no match: ${1} >&2; return 1;;
@@ -963,7 +963,7 @@ set_src_directory()
 set_variables()
 {
 	prefix=`readlink -m ${prefix}`
-	sysroot=${prefix}/${target}/sysroot
+	[ ${build} = ${host} ] && sysroot=${prefix}/${target}/sysroot || sysroot=${prefix}/${host}/sysroot
 	[ -f /etc/issue ] && os=`head -1 /etc/issue | cut -d' ' -f1`
 	[ "${strip}" = strip ] || cmake_build_type=Debug
 
@@ -3702,10 +3702,11 @@ install_native_opencv()
 	update_pkg_config_path || return
 }
 
-install_crossed_native_binutils()
+install_crossed_binutils()
 {
-	[ -x ${sysroot}/usr/bin/as -a "${force_install}" != yes ] && return
-	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
+	[ \( ${host}  = ${target} -a -x ${sysroot}/usr/bin/as -o \
+		 ${host} != ${target} -a -x ${sysroot}/usr/bin/${target}-as \) -a "${force_install}" != yes ] && return
+	[ ${build} != ${host} ] || ! echo "host(${host}) must be different from build(${build})" >&2 || return
 	[ -f ${sysroot}/usr/include/zlib.h ] || install_crossed_native_zlib || return
 	which yacc > /dev/null || install_native_bison || return
 	fetch binutils || return
@@ -3714,7 +3715,7 @@ install_crossed_native_binutils()
 			mv -v ${binutils_org_src_dir} ${binutils_src_dir_crs_ntv}) || return
 	[ -f ${binutils_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_crs_ntv}
-		./configure --prefix=/usr --build=${build} --host=${target} --with-sysroot=/ \
+		./configure --prefix=/usr --build=${build} --host=${host} --target=${target} --with-sysroot=/ \
 			--enable-64-bit-bfd --enable-gold --enable-targets=all --with-system-zlib \
 			CFLAGS="${CFLAGS} -I${sysroot}/usr/include -L${sysroot}/usr/lib -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
 			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function") || return
@@ -3776,7 +3777,7 @@ install_crossed_native_gcc()
 	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
 	install_cross_binutils || return # XXX libgccのconfigureが${target}-nm, ${target}-ranlib見つけてくれないので現状は${prefix}/bin/${target}-{nm,ranlib}が必須。
 	which ${target}-gcc > /dev/null || install_cross_gcc || return
-	[ -f ${sysroot}/usr/bin/as -o -f ${sysroot}/usr/bin/as.exe ] || install_crossed_native_binutils || return
+	[ -f ${sysroot}/usr/bin/as -o -f ${sysroot}/usr/bin/as.exe ] || install_crossed_binutils || return
 	[ ${target} = x86_64-w64-mingw32 ] && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
 	[ -f ${sysroot}/usr/include/gmp.h ] || install_crossed_native_gmp || return
 	[ -f ${sysroot}/usr/include/mpfr.h ] || install_crossed_native_mpfr || return
@@ -3799,14 +3800,14 @@ install_crossed_native_gcc()
 install_crossed_native_zlib()
 {
 	[ -f ${sysroot}/usr/include/zlib.h -a "${force_install}" != yes ] && return
-	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
+	[ ${build} != ${host} ] || ! echo "host(${host}) must be different from build(${build})" >&2 || return
 	fetch zlib || return
 	[ -d ${zlib_src_dir_crs_ntv} ] ||
 		(unpack ${zlib_org_src_dir} ${zlib_src_base} &&
 			mv -v ${zlib_org_src_dir} ${zlib_src_dir_crs_ntv}) || return
 	(cd ${zlib_src_dir_crs_ntv}
-	[ ${target} = x86_64-w64-mingw32 ] && static=--static || static=''
-	CC=${target}-gcc AR=${target}-ar RANLIB=${target}-ranlib ./configure --prefix=/usr ${static}) || return
+	[ ${host} = x86_64-w64-mingw32 ] && static=--static || static=''
+	CC=${host}-gcc AR=${host}-ar RANLIB=${host}-ranlib ./configure --prefix=/usr ${static}) || return
 	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} || return
 	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install || return
 }
