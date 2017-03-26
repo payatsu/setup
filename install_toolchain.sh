@@ -415,6 +415,9 @@ help()
 	For microblaze cross compiler
 	# ${0} -p /toolchains -t microblaze-linux-gnu -j 8 binutils_ver=2.25 linux_ver=4.3.3 glibc_ver=2.22 gcc_ver=5.3.0 'install cross'
 
+	For MinGW64 cross compiler
+	# ${0} -p /toolchains -t x86_64-w64-mingw32 -l c,c++ install_cross_gcc
+
 EOF
 }
 
@@ -821,11 +824,9 @@ full()
 			|| echo \'$f\' failed.    | logger -p user.notice -t `basename ${0}`
 	done || return
 
-	for f in install_mingw_w64_binutils install_mingw_w64_gcc; do
-		$f \
-			&& echo \'$f\' succeeded. | logger -p user.notice -t `basename ${0}` \
-			|| echo \'$f\' failed.    | logger -p user.notice -t `basename ${0}`
-	done || return
+	(target=x86_64-w64-mingw32; languages=c,c++; set_variables; install_cross_gcc) \
+		&& echo "'install_cross_gcc(mingw)'" succeeded. | logger -p user.notice -t `basename ${0}` \
+		|| echo "'install_cross_gcc(mingw)'" failed.    | logger -p user.notice -t `basename ${0}`
 
 	for f in `sed -e '/^install_crossed_native_[_[:alnum:]]\+()$/{s/()$//;p};d' ${0}`; do
 		$f \
@@ -3342,6 +3343,9 @@ install_cross_gcc()
 	[ ${build} != ${target} ] || ! echo "target(${target}) must be different from build(${build})" >&2 || return
 	install_cross_gcc_without_headers || return
 	case ${target} in
+	x86_64-w64-mingw32)
+           install_mingw_w64_header || return
+           install_mingw_w64_crt || return;;
 	*-elf) install_cross_newlib || return;;
 	*)     install_cross_linux_header || return
            install_cross_glibc || return;;
@@ -3370,16 +3374,6 @@ install_cross_gdb()
 	make -C ${gdb_bld_dir_crs} -j ${jobs} install || return
 	make -C ${gdb_bld_dir_crs}/gdb -j ${jobs} install${strip:+-${strip}} || return
 	make -C ${gdb_bld_dir_crs}/sim -j ${jobs} install${strip:+-${strip}} || return
-}
-
-install_mingw_w64_binutils()
-{
-	[ -x ${prefix}/bin/x86_64-w64-mingw32-as -a "${force_install}" != yes ] && return
-	prev_target=${target}; target=x86_64-w64-mingw32
-	set_variables || return
-	install_cross_binutils || return
-	target=${prev_target}
-	set_variables || return
 }
 
 install_mingw_w64_header()
@@ -3414,22 +3408,6 @@ install_mingw_w64_crt()
 	[ "${enable_check}" != yes ] ||
 		make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} -k check || return
 	make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} install || return
-}
-
-install_mingw_w64_gcc()
-{
-	[ -x ${prefix}/bin/x86_64-w64-mingw32-gcc -a "${force_install}" != yes ] && return
-	prev_target=${target}; target=x86_64-w64-mingw32
-	prev_languages=${languages}; languages=c,c++
-	set_variables || return
-	[ ${build} != ${target} ] || ! echo "target(${target}) must be different from build(${build})" >&2 || return
-	install_cross_gcc_without_headers || return
-	install_mingw_w64_header || return
-	install_mingw_w64_crt || return
-	install_cross_functional_gcc || return
-	target=${prev_target}
-	languages=${prev_languages}
-	set_variables || return
 }
 
 install_native_python()
