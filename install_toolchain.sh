@@ -830,7 +830,7 @@ full()
 		|| echo "'install_cross_gcc(mingw)'" failed.    | logger -p user.notice -t `basename ${0}`
 
 	for f in `sed -e '/^install_crossed_native_[_[:alnum:]]\+()$/{s/()$//;p};d' ${0}`; do
-		$f \
+		(host=${target}; set_variables; $f) \
 			&& echo \'$f\' succeeded. | logger -p user.notice -t `basename ${0}` \
 			|| echo \'$f\' failed.    | logger -p user.notice -t `basename ${0}`
 	done || return
@@ -3726,14 +3726,14 @@ install_crossed_binutils()
 install_crossed_native_gmp()
 {
 	[ -f ${sysroot}/usr/include/gmp.h -a "${force_install}" != yes ] && return
-	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
+	[ ${build} != ${host} ] || ! echo "host(${host}) must be different from build(${build})" >&2 || return
 	fetch gmp || return
 	[ -d ${gmp_src_dir_crs_ntv} ] ||
 		(unpack ${gmp_org_src_dir} ${gmp_src_base} &&
 			mv -v ${gmp_org_src_dir} ${gmp_src_dir_crs_ntv}) || return
 	[ -f ${gmp_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${gmp_src_dir_crs_ntv}
-		./configure --prefix=/usr --build=${build} --host=${target} --enable-cxx) || return
+		./configure --prefix=/usr --build=${build} --host=${host} --enable-cxx) || return
 	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} || return
 	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
@@ -3741,14 +3741,15 @@ install_crossed_native_gmp()
 install_crossed_native_mpfr()
 {
 	[ -f ${sysroot}/usr/include/mpfr.h -a "${force_install}" != yes ] && return
-	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
+	[ ${build} != ${host} ] || ! echo "host(${host}) must be different from build(${build})" >&2 || return
+	install_crossed_native_gmp || return
 	fetch mpfr || return
 	[ -d ${mpfr_src_dir_crs_ntv} ] ||
 		(unpack ${mpfr_org_src_dir} ${mpfr_src_base} &&
 			mv -v ${mpfr_org_src_dir} ${mpfr_src_dir_crs_ntv}) || return
 	[ -f ${mpfr_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${mpfr_src_dir_crs_ntv}
-		./configure --prefix=/usr --build=${build} --host=${target} --with-gmp=${sysroot}/usr ${enable_static_disable_shared}) || return
+		./configure --prefix=/usr --build=${build} --host=${host} --with-gmp=${sysroot}/usr ${enable_static_disable_shared}) || return
 	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} || return
 	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 	sed -i -e /^dependency_libs=/s/\'.\*\'\$/\'\'/ ${sysroot}/usr/lib/libmpfr.la || return
@@ -3759,14 +3760,15 @@ install_crossed_native_mpfr()
 install_crossed_native_mpc()
 {
 	[ -f ${sysroot}/usr/include/mpc.h -a "${force_install}" != yes ] && return
-	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
+	[ ${build} != ${host} ] || ! echo "host(${host}) must be different from build(${build})" >&2 || return
+	install_crossed_native_mpfr || return
 	fetch mpc || return
 	[ -d ${mpc_src_dir_crs_ntv} ] ||
 		(unpack ${mpc_org_src_dir} ${mpc_src_base} &&
 			mv -v ${mpc_org_src_dir} ${mpc_src_dir_crs_ntv}) || return
 	[ -f ${mpc_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${mpc_src_dir_crs_ntv}
-		./configure --prefix=/usr --build=${build} --host=${target} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr ${enable_static_disable_shared}) || return
+		./configure --prefix=/usr --build=${build} --host=${host} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr ${enable_static_disable_shared}) || return
 	make -C ${mpc_src_dir_crs_ntv} -j ${jobs} || return
 	make -C ${mpc_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
