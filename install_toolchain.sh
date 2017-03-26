@@ -849,10 +849,8 @@ clean()
 strip()
 # Strip binary files.
 {
-	for strip_command in strip ${target}-strip x86_64-w64-mingw32-strip; do
-		find ${prefix} -type f \( -perm /111 -o -name '*.o' -o -name '*.a' -o -name '*.so' -o -name '*.gox' \) \
-			| xargs file | grep -e 'not stripped' | cut -d: -f1 | xargs -I "{}" sh -c "chmod u+w {}; ${strip_command} {}" || true
-	done
+	find ${prefix} -type f \( -perm /111 -o -name '*.o' -o -name '*.a' -o -name '*.so' -o -name '*.gox' \) \
+		| xargs file | grep -e 'not stripped' | cut -d: -f1 | xargs -I "{}" sh -c "chmod u+w {}; strip {}" || true
 }
 
 archive()
