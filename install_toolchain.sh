@@ -763,7 +763,7 @@ install()
 		install_cross_gdb || return;;
 	crossed)
 		install_crossed_binutils || return
-		install_crossed_native_gcc || return;;
+		install_crossed_gcc || return;;
 	*)
 		echo install: no match: ${1} >&2; return 1;;
 	esac
@@ -3774,14 +3774,14 @@ install_crossed_native_mpc()
 	make -C ${mpc_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
 
-install_crossed_native_gcc()
+install_crossed_gcc()
 {
 	[ -x ${sysroot}/usr/bin/gcc${exe} -a "${force_install}" != yes ] && return
-	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
-	install_cross_binutils || return # XXX libgccのconfigureが${target}-nm, ${target}-ranlib見つけてくれないので現状は${prefix}/bin/${target}-{nm,ranlib}が必須。
-	which ${target}-gcc > /dev/null || install_cross_gcc || return
+	[ ${build} != ${host} ] || ! echo "host(${host}) must be different from build(${build})" >&2 || return
+	(target=${host}; set_variables; install_cross_binutils) || return # XXX libgccのconfigureが${target}-nm, ${target}-ranlib見つけてくれないので現状は${prefix}/bin/${target}-{nm,ranlib}が必須。
+	(target=${host}; set_variables; install_cross_gcc) || return
 	[ -f ${sysroot}/usr/bin/as${exe} ] || install_crossed_binutils || return
-	[ ${target} = x86_64-w64-mingw32 ] && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
+	[ ${host} = x86_64-w64-mingw32 ] && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
 	[ -f ${sysroot}/usr/include/gmp.h ] || install_crossed_native_gmp || return
 	[ -f ${sysroot}/usr/include/mpfr.h ] || install_crossed_native_mpfr || return
 	[ -f ${sysroot}/usr/include/mpc.h ] || install_crossed_native_mpc || return
@@ -3791,7 +3791,7 @@ install_crossed_native_gcc()
 	mkdir -pv ${gcc_bld_dir_crs_ntv} || return
 	[ -f ${gcc_bld_dir_crs_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_ntv}
-		${gcc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${target} \
+		${gcc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${host} --target=${target} \
 			--with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
 			--enable-languages=${languages} --with-sysroot=${sysroot_mingw:-/} --with-build-sysroot=${sysroot} --without-isl --with-system-zlib \
 			--enable-libstdcxx-debug \
