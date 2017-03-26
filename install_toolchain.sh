@@ -964,6 +964,7 @@ set_variables()
 {
 	prefix=`readlink -m ${prefix}`
 	[ ${build} = ${host} ] && sysroot=${prefix}/${target}/sysroot || sysroot=${prefix}/${host}/sysroot
+	[ ${host} = x86_64-w64-mingw32 ] && exe=.exe || exe=''
 	[ -f /etc/issue ] && os=`head -1 /etc/issue | cut -d' ' -f1`
 	[ "${strip}" = strip ] || cmake_build_type=Debug
 
@@ -3704,8 +3705,8 @@ install_native_opencv()
 
 install_crossed_binutils()
 {
-	[ \( ${host}  = ${target} -a -x ${sysroot}/usr/bin/as -o \
-		 ${host} != ${target} -a -x ${sysroot}/usr/bin/${target}-as \) -a "${force_install}" != yes ] && return
+	[ \( ${host}  = ${target} -a -x ${sysroot}/usr/bin/as${exe} -o \
+		 ${host} != ${target} -a -x ${sysroot}/usr/bin/${target}-as${exe} \) -a "${force_install}" != yes ] && return
 	[ ${build} != ${host} ] || ! echo "host(${host}) must be different from build(${build})" >&2 || return
 	[ -f ${sysroot}/usr/include/zlib.h ] || install_crossed_native_zlib || return
 	which yacc > /dev/null || install_native_bison || return
@@ -3775,11 +3776,11 @@ install_crossed_native_mpc()
 
 install_crossed_native_gcc()
 {
-	[ \( -x ${sysroot}/usr/bin/gcc -o -x ${sysroot}/usr/bin/gcc.exe \) -a "${force_install}" != yes ] && return
+	[ -x ${sysroot}/usr/bin/gcc${exe} -a "${force_install}" != yes ] && return
 	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
 	install_cross_binutils || return # XXX libgccのconfigureが${target}-nm, ${target}-ranlib見つけてくれないので現状は${prefix}/bin/${target}-{nm,ranlib}が必須。
 	which ${target}-gcc > /dev/null || install_cross_gcc || return
-	[ -f ${sysroot}/usr/bin/as -o -f ${sysroot}/usr/bin/as.exe ] || install_crossed_binutils || return
+	[ -f ${sysroot}/usr/bin/as${exe} ] || install_crossed_binutils || return
 	[ ${target} = x86_64-w64-mingw32 ] && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
 	[ -f ${sysroot}/usr/include/gmp.h ] || install_crossed_native_gmp || return
 	[ -f ${sysroot}/usr/include/mpfr.h ] || install_crossed_native_mpfr || return
