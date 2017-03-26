@@ -3773,10 +3773,11 @@ install_crossed_native_mpc()
 
 install_crossed_native_gcc()
 {
-	[ -x ${sysroot}/usr/bin/gcc -a "${force_install}" != yes ] && return
+	[ \( -x ${sysroot}/usr/bin/gcc -o -x ${sysroot}/usr/bin/gcc.exe \) -a "${force_install}" != yes ] && return
 	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
-	[ ${target} = x86_64-w64-mingw32 ] && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
+	install_cross_gcc || return
 	[ -f ${sysroot}/usr/bin/as -o -f ${sysroot}/usr/bin/as.exe ] || install_crossed_native_binutils || return
+	[ ${target} = x86_64-w64-mingw32 ] && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
 	[ -f ${sysroot}/usr/include/gmp.h ] || install_crossed_native_gmp || return
 	[ -f ${sysroot}/usr/include/mpfr.h ] || install_crossed_native_mpfr || return
 	[ -f ${sysroot}/usr/include/mpc.h ] || install_crossed_native_mpc || return
@@ -3790,7 +3791,7 @@ install_crossed_native_gcc()
 			--with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
 			--enable-languages=${languages} --with-sysroot=/ --with-build-sysroot=${sysroot} --without-isl --with-system-zlib \
 			--enable-libstdcxx-debug \
-			CC_FOR_TARGET=${target}-gcc CXX_FOR_TARGET=${target}-g++ GOC_FOR_TARGET=${target}-gccgo RANLIB_FOR_TARGET=${target}-ranlib) || return
+			CC_FOR_TARGET=${target}-gcc CXX_FOR_TARGET=${target}-g++ GOC_FOR_TARGET=${target}-gccgo) || return
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} || return
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
