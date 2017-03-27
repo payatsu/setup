@@ -824,7 +824,7 @@ full()
 			|| echo \'$f\' failed.    | logger -p user.notice -t `basename ${0}`
 	done || return
 
-	(target=x86_64-w64-mingw32; languages=c,c++; set_variables; install_cross_gcc) \
+	(target=x86_64-w64-mingw32; host=${build}; languages=c,c++; set_variables; install_cross_gcc) \
 		&& echo "'install_cross_gcc(mingw)'" succeeded. | logger -p user.notice -t `basename ${0}` \
 		|| echo "'install_cross_gcc(mingw)'" failed.    | logger -p user.notice -t `basename ${0}`
 
@@ -963,6 +963,7 @@ set_variables()
 {
 	prefix=`readlink -m ${prefix}`
 	[ ${build} = ${host} ] && sysroot=${prefix}/${target}/sysroot || sysroot=${prefix}/${host}/sysroot
+	sysroot_mingw='C:/MinGW64'
 	[ ${host} = x86_64-w64-mingw32 ] && exe=.exe || exe=''
 	[ -f /etc/issue ] && os=`head -1 /etc/issue | cut -d' ' -f1`
 	[ "${strip}" = strip ] || cmake_build_type=Debug
@@ -1017,6 +1018,21 @@ set_variables()
 	[ "${enable_ccache}" = yes ] || ! echo ${CC} | grep -qe ccache || export CC=`echo ${CC} | sed -e 's/ccache //'` CXX=`echo ${CXX} | sed -e 's/ccache //'`
 	export GOPATH=${GOPATH:-${HOME}/.go}
 	update_pkg_config_path || return
+}
+
+check_platform()
+{
+	echo build:${1}, host:${2}, target:${3}. >&2
+	case ${1} in
+	${2}) case ${2} in
+		${3}) echo native;;
+		*)    echo cross;;
+		esac;;
+	*)    case ${2} in
+		${3}) echo crossed;;
+		*)    echo canadian;;
+		esac;;
+	esac
 }
 
 convert_archives()
@@ -3181,7 +3197,7 @@ install_native_boost()
 install_cross_binutils()
 {
 	[ -x ${prefix}/bin/${target}-as -a "${force_install}" != yes ] && return
-	[ ${build} != ${target} ] || ! echo "target(${target}) must be different from build(${build})" >&2 || return
+	[ `check_platform ${build} ${host} ${target}` = cross ] || return
 	search_header zlib.h > /dev/null || install_native_zlib || return
 	which yacc > /dev/null || install_native_bison || return
 	fetch binutils || return
@@ -3203,7 +3219,7 @@ install_cross_binutils()
 install_cross_gcc_without_headers()
 {
 	[ -x ${prefix}/bin/${target}-gcc -a "${force_install}" != yes ] && return
-	[ ${build} != ${target} ] || ! echo "target(${target}) must be different from build(${build})" >&2 || return
+	[ `check_platform ${build} ${host} ${target}` = cross ] || return
 	which ${target}-as > /dev/null || install_cross_binutils || return
 	search_header gmp.h > /dev/null || install_native_gmp || return
 	search_header mpfr.h > /dev/null || install_native_mpfr || return
@@ -3338,7 +3354,7 @@ install_cross_functional_gcc()
 install_cross_gcc()
 {
 	[ -x ${prefix}/bin/${target}-gcc -a "${force_install}" != yes ] && return
-	[ ${build} != ${target} ] || ! echo "target(${target}) must be different from build(${build})" >&2 || return
+	[ `check_platform ${build} ${host} ${target}` = cross ] || return
 	install_cross_gcc_without_headers || return
 	case ${target} in
 	x86_64-w64-mingw32)
@@ -3354,7 +3370,7 @@ install_cross_gcc()
 install_cross_gdb()
 {
 	[ -x ${prefix}/bin/${target}-gdb -a "${force_install}" != yes ] && return
-	[ ${build} != ${target} ] || ! echo "target(${target}) must be different from build(${build})" >&2 || return
+	[ `check_platform ${build} ${host} ${target}` = cross ] || return
 	search_header readline.h readline > /dev/null || install_native_readline || return
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
 	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m.so > /dev/null || install_native_python || return
@@ -3705,7 +3721,7 @@ install_crossed_binutils()
 {
 	[ \( ${host}  = ${target} -a -x ${sysroot}/usr/bin/as${exe} -o \
 		 ${host} != ${target} -a -x ${sysroot}/usr/bin/${target}-as${exe} \) -a "${force_install}" != yes ] && return
-	[ ${build} != ${host} ] || ! echo "host(${host}) must be different from build(${build})" >&2 || return
+	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
 	[ -f ${sysroot}/usr/include/zlib.h ] || install_crossed_native_zlib || return
 	which yacc > /dev/null || install_native_bison || return
 	fetch binutils || return
@@ -3725,7 +3741,7 @@ install_crossed_binutils()
 install_crossed_native_gmp()
 {
 	[ -f ${sysroot}/usr/include/gmp.h -a "${force_install}" != yes ] && return
-	[ ${build} != ${host} ] || ! echo "host(${host}) must be different from build(${build})" >&2 || return
+	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
 	fetch gmp || return
 	[ -d ${gmp_src_dir_crs_ntv} ] ||
 		(unpack ${gmp_org_src_dir} ${gmp_src_base} &&
@@ -3740,7 +3756,7 @@ install_crossed_native_gmp()
 install_crossed_native_mpfr()
 {
 	[ -f ${sysroot}/usr/include/mpfr.h -a "${force_install}" != yes ] && return
-	[ ${build} != ${host} ] || ! echo "host(${host}) must be different from build(${build})" >&2 || return
+	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
 	install_crossed_native_gmp || return
 	fetch mpfr || return
 	[ -d ${mpfr_src_dir_crs_ntv} ] ||
@@ -3759,7 +3775,7 @@ install_crossed_native_mpfr()
 install_crossed_native_mpc()
 {
 	[ -f ${sysroot}/usr/include/mpc.h -a "${force_install}" != yes ] && return
-	[ ${build} != ${host} ] || ! echo "host(${host}) must be different from build(${build})" >&2 || return
+	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
 	install_crossed_native_mpfr || return
 	fetch mpc || return
 	[ -d ${mpc_src_dir_crs_ntv} ] ||
@@ -3775,9 +3791,9 @@ install_crossed_native_mpc()
 install_crossed_gcc()
 {
 	[ -x ${sysroot}/usr/bin/gcc${exe} -a "${force_install}" != yes ] && return
-	[ ${build} != ${host} ] || ! echo "host(${host}) must be different from build(${build})" >&2 || return
-	(target=${host}; set_variables; install_cross_binutils) || return # XXX libgccのconfigureが${target}-nm, ${target}-ranlib見つけてくれないので現状は${prefix}/bin/${target}-{nm,ranlib}が必須。
-	(target=${host}; set_variables; install_cross_gcc) || return
+	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
+	(target=${host}; host=${build}; set_variables; install_cross_binutils) || return # XXX libgccのconfigureが${target}-nm, ${target}-ranlib見つけてくれないので現状は${prefix}/bin/${target}-{nm,ranlib}が必須。
+	(target=${host}; host=${build}; set_variables; install_cross_gcc) || return
 	[ -f ${sysroot}/usr/bin/as${exe} ] || install_crossed_binutils || return
 	[ ${host} = x86_64-w64-mingw32 ] && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
 	[ -f ${sysroot}/usr/include/gmp.h ] || install_crossed_native_gmp || return
@@ -3801,7 +3817,7 @@ install_crossed_gcc()
 install_crossed_native_zlib()
 {
 	[ -f ${sysroot}/usr/include/zlib.h -a "${force_install}" != yes ] && return
-	[ ${build} != ${host} ] || ! echo "host(${host}) must be different from build(${build})" >&2 || return
+	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
 	fetch zlib || return
 	[ -d ${zlib_src_dir_crs_ntv} ] ||
 		(unpack ${zlib_org_src_dir} ${zlib_src_base} &&
@@ -3816,7 +3832,7 @@ install_crossed_native_zlib()
 install_crossed_native_libpng()
 {
 	[ -f ${sysroot}/usr/include/png.h -a "${force_install}" != yes ] && return
-	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
+	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
 	install_crossed_native_zlib || return
 	fetch libpng || return
 	[ -d ${libpng_src_dir_crs_ntv} ] ||
@@ -3833,7 +3849,7 @@ install_crossed_native_libpng()
 install_crossed_native_libtiff()
 {
 	[ -f ${sysroot}/usr/include/tiffio.h -a "${force_install}" != yes ] && return
-	[ ${build} != ${target} ] || ! echo "host(${target}) must be different from build(${build})" >&2 || return
+	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
 	fetch tiff || return
 	[ -d ${tiff_src_dir_crs_ntv} ] ||
 		(unpack ${tiff_org_src_dir} ${tiff_src_base} &&
