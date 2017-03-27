@@ -14,7 +14,6 @@
 # [TODO] Polly, MySQL, expat, grub, util-linux
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
-# [TODO] install_native_clang_tools_extra()のテスト実行が未完了。
 
 : ${tar_ver:=1.29}
 : ${cpio_ver:=2.12}
@@ -3094,7 +3093,6 @@ install_native_clang_tools_extra()
 		cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return
 	make -C ${clang_tools_extra_bld_dir} -j ${jobs} || return
-# TODO make -C ${clang_tools_extra_bld_dir} -j ${jobs} || return
 	make -C ${clang_tools_extra_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 }
 
