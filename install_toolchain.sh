@@ -3719,8 +3719,8 @@ install_native_opencv()
 
 install_crossed_binutils()
 {
-	[ \( ${host}  = ${target} -a -x ${sysroot}/usr/bin/as${exe} -o \
-		 ${host} != ${target} -a -x ${sysroot}/usr/bin/${target}-as${exe} \) -a "${force_install}" != yes ] && return
+	[ \( `check_platform ${build} ${host} ${target}` = crossed  -a -x ${sysroot}/usr/bin/as${exe} -o \
+		 `check_platform ${build} ${host} ${target}` = canadian -a -x ${sysroot}/usr/bin/${target}-as${exe} \) -a "${force_install}" != yes ] && return
 	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
 	[ -f ${sysroot}/usr/include/zlib.h ] || install_crossed_native_zlib || return
 	which yacc > /dev/null || install_native_bison || return
