@@ -467,6 +467,12 @@ fetch()
 			wget --trust-server-names --no-check-certificate -O ${flex_org_src_dir}.tar.xz \
 				https://sourceforge.net/projects/flex/files/${flex_name}.tar.xz/download || return;;
 	linux)
+		case `echo ${linux_ver} | cut -d. -f1,2` in
+		2.6) linux_major_ver=v2.6;;
+		3.*) linux_major_ver=v3.x;;
+		4.*) linux_major_ver=v4.x;;
+		*)   echo unsupported linux version >&2; return 1;;
+		esac
 		check_archive ${linux_org_src_dir} ||
 			wget --no-check-certificate -O ${linux_org_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/kernel/${linux_major_ver}/${linux_name}.tar.xz || return;;
@@ -968,13 +974,6 @@ set_variables()
 	[ -f /etc/issue ] && os=`head -1 /etc/issue | cut -d' ' -f1`
 	[ "${strip}" = strip ] || cmake_build_type=Debug
 
-	case ${build} in
-	arm*)        native_linux_arch=arm;;
-	i?86*)       native_linux_arch=x86;;
-	microblaze*) native_linux_arch=microblaze;;
-	x86_64*)     native_linux_arch=x86;;
-	*) echo Unknown build architecture: ${build} >&2; return 1;;
-	esac
 	case ${target} in
 	arm*)        cross_linux_arch=arm;;
 	i?86*)       cross_linux_arch=x86;;
@@ -982,13 +981,6 @@ set_variables()
 	nios2*)      cross_linux_arch=nios2;;
 	x86_64*)     cross_linux_arch=x86;;
 	*) echo Unknown target architecture: ${target} >&2; return 1;;
-	esac
-
-	case `echo ${linux_ver} | cut -d. -f1,2` in
-	2.6) linux_major_ver=v2.6;;
-	3.*) linux_major_ver=v3.x;;
-	4.*) linux_major_ver=v4.x;;
-	*)   echo unsupported linux version >&2; return 1;;
 	esac
 
 	for pkg in `sed -e '/^: \${\(.\+\)_ver:=.\+}$/{s//\1/
@@ -1507,6 +1499,13 @@ install_native_linux_header()
 		(unpack ${linux_org_src_dir} ${linux_src_base} &&
 			mv -v ${linux_org_src_dir} ${linux_src_dir_ntv}) || return
 	make -C ${linux_src_dir_ntv} -j ${jobs} V=1 mrproper || return
+	case ${build} in
+	arm*)        native_linux_arch=arm;;
+	i?86*)       native_linux_arch=x86;;
+	microblaze*) native_linux_arch=microblaze;;
+	x86_64*)     native_linux_arch=x86;;
+	*) echo Unknown build architecture: ${build} >&2; return 1;;
+	esac
 	make -C ${linux_src_dir_ntv} -j ${jobs} V=1 \
 		ARCH=${native_linux_arch} INSTALL_HDR_PATH=${prefix} headers_install || return
 }
@@ -3330,6 +3329,7 @@ install_cross_newlib()
 
 install_cross_functional_gcc()
 {
+	[ `check_platform ${build} ${host} ${target}` = cross ] || return
 	which ${target}-as > /dev/null || install_cross_binutils || return
 	search_header gmp.h > /dev/null || install_native_gmp || return
 	search_header mpfr.h > /dev/null || install_native_mpfr || return
