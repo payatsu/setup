@@ -3841,7 +3841,7 @@ install_crossed_native_libpng()
 	[ -f ${libpng_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_crs_ntv}
 		./configure --prefix=/usr --build=${build} --host=${target} \
-			CPPFLAGS="-I ${sysroot}/include ${CPPFLAGS}") || return
+			CPPFLAGS="${CPPFLAGS} -I ${sysroot}/usr/include") || return
 	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} || return
 	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
