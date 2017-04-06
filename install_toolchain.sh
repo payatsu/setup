@@ -2585,7 +2585,7 @@ install_native_screen()
 	[ -f ${screen_org_src_dir}/Makefile ] ||
 		(cd ${screen_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			--enable-colors256 --enable-rxvt_osc) || return
+			--enable-telnet --enable-colors256 --enable-rxvt_osc) || return
 	make -C ${screen_org_src_dir} -j ${jobs} || return
 	mkdir -pv ${prefix}/share/screen/utf8encodings || return
 	make -C ${screen_org_src_dir} -j ${jobs} install || return
