@@ -115,6 +115,7 @@
 : ${libatomic_ops_ver:=7.4.4}
 : ${gc_ver:=7.6.0}
 : ${guile_ver:=2.2.0}
+: ${nasm_ver:=2.12.02}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
 : ${x265_ver:=2.0}
@@ -392,6 +393,8 @@ help()
 		Specify the version of boehm GC you want, currently '${gc_ver}'.
 	guile_ver
 		Specify the version of GNU Guile you want, currently '${guile_ver}'.
+	nasm_ver
+		Specify the version of NASM you want, currently '${nasm_ver}'.
 	yasm_ver
 		Specify the version of YASM you want, currently '${yasm_ver}'.
 	x264_ver
@@ -661,6 +664,10 @@ fetch()
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.gz \
 				https://www.hboehm.info/gc/gc_source/\${${_1}_name}.tar.gz || return;;
+	nasm)
+		check_archive ${nasm_org_src_dir} ||
+			wget -O ${nasm_org_src_dir}.tar.xz \
+				http://www.nasm.us/pub/nasm/releasebuilds/${nasm_ver}/${nasm_name}.tar.xz || return;;
 	yasm)
 		check_archive ${yasm_org_src_dir} ||
 			wget -O ${yasm_org_src_dir}.tar.gz \
@@ -3585,6 +3592,21 @@ install_native_guile()
 	[ "${enable_check}" != yes ] ||
 		make -C ${guile_org_src_dir} -j ${jobs} -k check || return
 	make -C ${guile_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_nasm()
+{
+	[ -x ${prefix}/bin/nasm -a "${force_install}" != yes ] && return
+	fetch nasm || return
+	unpack ${nasm_org_src_dir} ${nasm_src_base} || return
+	[ -f ${nasm_org_src_dir}/Makefile ] ||
+		(cd ${nasm_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return
+	make -C ${nasm_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${nasm_org_src_dir} -j ${jobs} -k test || return
+	[ -z "${strip}" ] || make -C ${nasm_org_src_dir} -j ${jobs} strip || return
+	make -C ${nasm_org_src_dir} -j ${jobs} install || return
 }
 
 install_native_yasm()
