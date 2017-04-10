@@ -36,6 +36,7 @@
 : ${make_ver:=4.2}
 : ${binutils_ver:=2.28}
 : ${linux_ver:=3.18.13}
+: ${qemu_ver:=2.8.1}
 : ${gperf_ver:=3.1}
 : ${glibc_ver:=2.25}
 : ${newlib_ver:=2.5.0}
@@ -253,6 +254,8 @@ help()
 		Specify the version of GNU Binutils you want, currently '${binutils_ver}'.
 	linux_ver
 		Specify the version of Linux kernel you want, currently '${linux_ver}'.
+	qemu_ver
+		Specify the version of QEMU you want, currently '${qemu_ver}'.
 	gperf_ver
 		Specify the version of gperf you want, currently '${gperf_ver}'.
 	glibc_ver
@@ -479,6 +482,10 @@ fetch()
 		check_archive ${linux_org_src_dir} ||
 			wget --no-check-certificate -O ${linux_org_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/kernel/${linux_major_ver}/${linux_name}.tar.xz || return;;
+	qemu)
+		check_archive ${qemu_org_src_dir} ||
+			wget -O ${qemu_org_src_dir}.tar.xz \
+				http://download.qemu-project.org/${qemu_name}.tar.xz || return;;
 	newlib)
 		check_archive ${newlib_org_src_dir} ||
 			wget -O ${newlib_org_src_dir}.tar.gz \
@@ -1517,6 +1524,19 @@ install_native_linux_header()
 		ARCH=${native_linux_arch} INSTALL_HDR_PATH=${prefix} headers_install || return
 }
 
+install_native_qemu()
+{
+#	[ -x ${prefix}/bin/qemu -a "${force_install}" != yes ] && return
+	fetch qemu || return
+	unpack ${qemu_org_src_dir} ${qemu_src_base} || return
+	(cd ${qemu_org_src_dir}
+	./configure --prefix=${prefix} --cc=${CC:-gcc} --host-cc=${CC:-gcc} --cxx=${CXX:-g++}) || return
+	make -C ${qemu_org_src_dir} -j ${jobs} V=1 || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${qemu_org_src_dir} -j ${jobs} -k test || return
+	make -C ${qemu_org_src_dir} -j ${jobs} install || return
+}
+
 install_native_gperf()
 {
 	[ -x ${prefix}/bin/gperf -a "${force_install}" != yes ] && return
@@ -1635,6 +1655,7 @@ install_native_gcc()
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
 	update_library_search_path || return
 	ln -fs gcc ${prefix}/bin/cc || return
+	ln -fs g++ ${prefix}/bin/c++ || return
 }
 
 install_native_readline()
