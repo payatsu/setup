@@ -1,5 +1,7 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
+# [TODO] qemu-kvm
+# [TODO] googletest
 # [TODO] ccache, distcc
 # [TODO] valgrind
 # [TODO] elfutils, insight
