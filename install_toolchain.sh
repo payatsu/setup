@@ -3141,16 +3141,21 @@ install_native_clang_tools_extra()
 	make -C ${clang_tools_extra_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 }
 
+place_llvm_tools()
+{
+	fetch ${1} || return
+	[ -d ${llvm_org_src_dir}/tools/${1} ] ||
+		(eval unpack \${${1}_org_src_dir} \${${1}_src_base} &&
+		eval mv -v \${${1}_org_src_dir} ${llvm_org_src_dir}/tools/${1}) || return
+}
+
 install_native_lld()
 {
 	[ -x ${prefix}/bin/lld -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	fetch llvm || return
 	unpack ${llvm_org_src_dir} ${llvm_src_base} || return
-	fetch lld || return
-	[ -d ${llvm_org_src_dir}/tools/lld ] ||
-		(unpack ${lld_org_src_dir} ${lld_src_base} &&
-		mv -v ${lld_org_src_dir} ${llvm_org_src_dir}/tools/lld) || return
+	place_llvm_tools lld || return
 	mkdir -pv ${lld_bld_dir} || return
 	[ -f ${lld_bld_dir}/Makefile ] ||
 		(cd ${lld_bld_dir}
@@ -3173,10 +3178,7 @@ install_native_lldb()
 	which swig > /dev/null || install_native_swig || return
 	fetch llvm || return
 	unpack ${llvm_org_src_dir} ${llvm_src_base} || return
-	fetch lldb || return
-	[ -d ${llvm_org_src_dir}/tools/lldb ] ||
-		(unpack ${lldb_org_src_dir} ${lldb_src_base} &&
-		mv -v ${lldb_org_src_dir} ${llvm_org_src_dir}/tools/lldb) || return
+	place_llvm_tools lldb || return
 	mkdir -pv ${lldb_bld_dir} || return
 	[ -f ${lldb_bld_dir}/Makefile ] ||
 		(cd ${lldb_bld_dir}
