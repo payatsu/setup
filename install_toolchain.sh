@@ -1,5 +1,6 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
+# [TODO] canadiancross対応する。host, target柔軟性上げる。
 # [TODO] qemu-kvm
 # [TODO] googletest
 # [TODO] ccache, distcc
@@ -125,6 +126,7 @@
 : ${libav_ver:=11.7}
 : ${opencv_ver:=3.2.0}
 : ${opencv_contrib_ver:=3.2.0}
+: ${googletest_ver:=1.8.0}
 
 # TODO X11周りのインストールは未着手。
 : ${xtrans_ver:=1.3.5}
@@ -412,6 +414,8 @@ help()
 		Specify the version of OpenCV you want, currently '${opencv_ver}'.
 	opencv_contrib_ver
 		Specify the version of OpenCV contrib you want, currently '${opencv_contrib_ver}'.
+	googletest_ver
+		Specify the version of google test you want, currently '${googletest_ver}'.
 
 [Examples]
 	For everything which this tool can install
@@ -697,6 +701,10 @@ fetch()
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.gz \
 				https://github.com/opencv/${_1}/archive/\${${_1}_ver}.tar.gz || return;;
+	googletest)
+		check_archive ${googletest_org_src_dir} ||
+			wget --no-check-certificate -O ${googletest_org_src_dir}.tar.gz \
+				https://github.com/google/googletest/archive/release-${googletest_ver}.tar.gz || return;;
 	pkg-config)
 		check_archive ${pkg_config_org_src_dir} ||
 			wget --no-check-certificate -O ${pkg_config_org_src_dir}.tar.gz \
@@ -942,6 +950,8 @@ set_src_directory()
 		eval ${_1}_name=${1}-v\${${_1}_ver};;
 	expect|tcl|tk)
 		eval ${_1}_name=${1}\${${_1}_ver};;
+	googletest)
+		eval ${_1}_name=${1}-release-\${${_1}_ver};;
 	*)
 		eval ${_1}_name=${1}-\${${_1}_ver};;
 	esac
