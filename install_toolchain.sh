@@ -1,8 +1,8 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] canadiancross対応する。host, target柔軟性上げる。
+# [TODO] GOPATH変える。
 # [TODO] qemu-kvm
-# [TODO] googletest
 # [TODO] ccache, distcc
 # [TODO] valgrind
 # [TODO] elfutils, insight
@@ -111,7 +111,7 @@
 : ${mingw_w64_ver:=5.0.1}
 : ${Python_ver:=3.6.0}
 : ${ruby_ver:=2.4.1}
-: ${go_ver:=1.8}
+: ${go_ver:=1.8.1}
 : ${perl_ver:=5.24.0}
 : ${tcl_ver:=8.6.6}
 : ${tk_ver:=8.6.6}
@@ -3771,6 +3771,22 @@ install_native_opencv()
 	[ "${enable_check}" != yes ] ||
 		make -C ${opencv_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${opencv_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
+	update_pkg_config_path || return
+}
+
+install_native_googletest()
+{
+	[ -f ${prefix}/include/gtest/gtest.h -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	fetch googletest || return
+	unpack ${googletest_org_src_dir} ${googletest_src_base} || return
+	mkdir -pv ${googletest_bld_dir_ntv} || return
+	(cd ${googletest_bld_dir_ntv}
+	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DBUILD_SHARED_LIBS=ON ${googletest_org_src_dir}/googletest) || return
+	make -C ${googletest_bld_dir_ntv} -j ${jobs} || return
+	make -C ${googletest_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
 	update_pkg_config_path || return
 }
 
