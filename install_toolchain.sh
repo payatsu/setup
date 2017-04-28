@@ -3012,7 +3012,7 @@ install_native_libedit()
 	[ -f ${libedit_org_src_dir}/Makefile ] ||
 		(cd ${libedit_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			--disable-silent-rules CFLAGS="${CFLAGS} -I`get_include_path curses.h`") || return
+			--disable-silent-rules CFLAGS="${CFLAGS} -I`get_include_path curses.h` -I`get_include_path ncurses_dll.h ncurses`") || return
 	make -C ${libedit_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libedit_org_src_dir} -j ${jobs} -k check || return
@@ -3040,6 +3040,13 @@ install_native_llvm()
 	which cmake > /dev/null || install_native_cmake || return
 	fetch llvm || return
 	unpack ${llvm_org_src_dir} ${llvm_src_base} || return
+	[ -x ${prefix}/bin/lld ] || place_llvm_tools lld || return
+	! which clang || [ -x ${prefix}/bin/lldb ] ||
+		(search_header curses.h > /dev/null || install_native_ncurses || return
+		search_header histedit.h > /dev/null || install_native_libedit || return
+		search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
+		which swig > /dev/null || install_native_swig || return
+		place_llvm_tools lldb) || return
 	mkdir -pv ${llvm_bld_dir} || return
 	[ -f ${llvm_bld_dir}/Makefile ] ||
 		(cd ${llvm_bld_dir}
