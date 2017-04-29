@@ -1,7 +1,6 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] canadiancross対応する。host, target柔軟性上げる。
-# [TODO] GOPATH変える。
 # [TODO] qemu-kvm
 # [TODO] ccache, distcc
 # [TODO] valgrind
@@ -1034,7 +1033,9 @@ set_variables()
 	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${prefix}/src/.ccache CCACHE_BASEDIR=${prefix}/src && ! mkdir -p ${prefix}/src && return 1
 	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-gcc}" CXX="ccache ${CXX:-g++}"
 	[ "${enable_ccache}" = yes ] || ! echo ${CC} | grep -qe ccache || export CC=`echo ${CC} | sed -e 's/ccache //'` CXX=`echo ${CXX} | sed -e 's/ccache //'`
-	export GOPATH=${GOPATH:-${HOME}/.go}
+	echo ${GOPATH} | tr : '\n' | grep -qe ^${prefix}/.go\$ \
+		&& GOPATH=${prefix}/.go:`echo ${GOPATH} | sed -e "s+\(^\|:\)${prefix}/.go\(\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\$//"` \
+		|| GOPATH=${prefix}/.go:${GOPATH}
 	update_pkg_config_path || return
 }
 
