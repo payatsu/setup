@@ -45,7 +45,7 @@
 : ${gmp_ver:=6.1.2}
 : ${mpfr_ver:=3.1.5}
 : ${mpc_ver:=1.0.3}
-: ${gcc_ver:=6.3.0}
+: ${gcc_ver:=7.1.0}
 : ${readline_ver:=7.0}
 : ${ncurses_ver:=6.0}
 : ${gdb_ver:=7.12.1}
