@@ -3285,8 +3285,7 @@ install_cross_gcc_without_headers()
 			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` --without-headers \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
-			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
-		) || return
+			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv) || return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} all-gcc || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_1st} -j ${jobs} -k check-gcc || return
@@ -3372,8 +3371,8 @@ install_cross_newlib()
 	[ -f ${newlib_bld_dir_crs_hdr}/Makefile ] ||
 		(cd ${newlib_bld_dir_crs_hdr}
 		${newlib_src_dir_crs_hdr}/configure --prefix=/ --build=${build} --target=${target}) || return
-	make -C ${newlib_bld_dir_crs_hdr} -j ${jobs} || return
-	make -C ${newlib_bld_dir_crs_hdr} -j ${jobs} DESTDIR=${sysroot} install || return
+	make -C ${newlib_bld_dir_crs_hdr} -j 1 || return
+	make -C ${newlib_bld_dir_crs_hdr} -j 1 DESTDIR=${sysroot} install || return
 	mv -v ${sysroot}/${target} ${sysroot}/usr || return
 }
 
