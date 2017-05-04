@@ -1693,6 +1693,7 @@ install_native_ncurses()
 	unpack ${ncurses_org_src_dir} ${ncurses_src_base} || return
 
 	# [XXX] workaround for GCC 5.x
+	which patch > /dev/null || install_native_patch || return
 	patch -N -p0 -d ${ncurses_org_src_dir} <<\EOF || [ $? = 1 ] || return
 --- ncurses/base/MKlib_gen.sh
 +++ ncurses/base/MKlib_gen.sh
