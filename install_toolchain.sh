@@ -2,6 +2,8 @@
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] canadiancross対応する。host, target柔軟性上げる。
 # [TODO] qemu-kvm
+# [TODO] pcre(not 2) depended by the_silver_searcher, swig
+# [TODO] git-manpages
 # [TODO] ccache, distcc
 # [TODO] valgrind
 # [TODO] elfutils, insight
@@ -1426,7 +1428,7 @@ install_native_automake()
 install_native_autogen()
 {
 	[ -x ${prefix}/bin/autogen -a "${force_install}" != yes ] && return
-#	which autoconf > /dev/null || install_native_autoconf || return
+	search_header libguile.h > /dev/null || install_native_guile || return
 	fetch autogen || return
 	unpack ${autogen_org_src_dir} ${autogen_src_base} || return
 	[ -f ${autogen_org_src_dir}/Makefile ] ||
