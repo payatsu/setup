@@ -44,6 +44,7 @@
 : ${gperf_ver:=3.1}
 : ${glibc_ver:=2.25}
 : ${newlib_ver:=2.5.0}
+: ${mingw_w64_ver:=5.0.1}
 : ${gmp_ver:=6.1.2}
 : ${mpfr_ver:=3.1.5}
 : ${mpc_ver:=1.0.3}
@@ -109,7 +110,6 @@
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
 : ${boost_ver:=1_63_0}
-: ${mingw_w64_ver:=5.0.1}
 : ${Python_ver:=3.6.0}
 : ${ruby_ver:=2.4.1}
 : ${go_ver:=1.8.1}
@@ -267,6 +267,8 @@ help()
 		Specify the version of GNU C Library you want, currently '${glibc_ver}'.
 	newlib_ver
 		Specify the version of Newlib C Library you want, currently '${newlib_ver}'.
+	mingw_w64_ver
+		Specify the version of mingw-w64 you want, currently '${mingw_w64_ver}'.
 	gmp_ver
 		Specify the version of GNU MP Bignum Library you want, currently '${gmp_ver}'.
 	mpfr_ver
@@ -379,8 +381,6 @@ help()
 		Specify the version of llvm you want, currently '${llvm_ver}'.
 	boost_ver
 		Specify the version of boost you want, currently '${boost_ver}'.
-	mingw_w64_ver
-		Specify the version of mingw-w64 you want, currently '${mingw_w64_ver}'.
 	Python_ver
 		Specify the version of python you want, currently '${Python_ver}'.
 	ruby_ver
@@ -497,6 +497,10 @@ fetch()
 		check_archive ${newlib_org_src_dir} ||
 			wget -O ${newlib_org_src_dir}.tar.gz \
 				ftp://sourceware.org/pub/newlib/${newlib_name}.tar.gz || return;;
+	mingw-w64)
+		check_archive ${mingw_w64_org_src_dir} ||
+			wget --trust-server-names --no-check-certificate -O ${mingw_w64_org_src_dir}.tar.bz2 \
+				https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v${mingw_w64_ver}.tar.bz2/download || return;;
 	gcc)
 		check_archive ${gcc_org_src_dir} ||
 			wget -O ${gcc_org_src_dir}.tar.bz2 \
@@ -650,10 +654,6 @@ fetch()
 		check_archive ${boost_org_src_dir} ||
 			wget --trust-server-names --no-check-certificate -O ${boost_org_src_dir}.tar.bz2 \
 				https://sourceforge.net/projects/boost/files/boost/`echo ${boost_ver} | tr _ .`/${boost_name}.tar.bz2/download || return;;
-	mingw-w64)
-		check_archive ${mingw_w64_org_src_dir} ||
-			wget --trust-server-names --no-check-certificate -O ${mingw_w64_org_src_dir}.tar.bz2 \
-				https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v${mingw_w64_ver}.tar.bz2/download || return;;
 	Python)
 		check_archive ${Python_org_src_dir} ||
 			wget --no-check-certificate -O ${Python_org_src_dir}.tar.xz \
@@ -3379,6 +3379,40 @@ install_cross_newlib()
 	mv -v ${sysroot}/${target} ${sysroot}/usr || return
 }
 
+install_mingw_w64_header()
+{
+	fetch mingw-w64 || return
+	[ -d ${mingw_w64_src_dir_crs_hdr} ] ||
+		(unpack ${mingw_w64_org_src_dir} ${mingw_w64_src_base} &&
+			mv -v ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_crs_hdr}) || return
+	mkdir -pv ${mingw_w64_bld_dir_crs_hdr} || return
+	[ -f ${mingw_w64_bld_dir_crs_hdr}/Makefile ] ||
+		(cd ${mingw_w64_bld_dir_crs_hdr}
+		${mingw_w64_src_dir_crs_hdr}/configure --prefix=${sysroot}/mingw --build=${build} --host=${target} \
+			--disable-multilib --without-crt --with-sysroot=${sysroot}) || return
+	make -C ${mingw_w64_bld_dir_crs_hdr} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${mingw_w64_bld_dir_crs_hdr} -j ${jobs} -k check || return
+	make -C ${mingw_w64_bld_dir_crs_hdr} -j ${jobs} install || return
+}
+
+install_mingw_w64_crt()
+{
+	fetch mingw-w64 || return
+	[ -d ${mingw_w64_src_dir_crs_1st} ] ||
+		(unpack ${mingw_w64_org_src_dir} ${mingw_w64_src_base} &&
+			mv -v ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_crs_1st}) || return
+	mkdir -pv ${mingw_w64_bld_dir_crs_1st} || return
+	[ -f ${mingw_w64_bld_dir_crs_1st}/Makefile ] ||
+		(cd ${mingw_w64_bld_dir_crs_1st}
+		CFLAGS="${CFLAGS} -I${sysroot}/mingw/include" ${mingw_w64_src_dir_crs_1st}/configure --prefix=${sysroot}/mingw --build=${build} --host=${target} \
+			--disable-multilib --without-headers --with-sysroot=${sysroot}) || return
+	make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} -k check || return
+	make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} install || return
+}
+
 install_cross_functional_gcc()
 {
 	[ `check_platform ${build} ${host} ${target}` = cross ] || return
@@ -3440,40 +3474,6 @@ install_cross_gdb()
 	make -C ${gdb_bld_dir_crs} -j ${jobs} install || return
 	make -C ${gdb_bld_dir_crs}/gdb -j ${jobs} install${strip:+-${strip}} || return
 	make -C ${gdb_bld_dir_crs}/sim -j ${jobs} install${strip:+-${strip}} || return
-}
-
-install_mingw_w64_header()
-{
-	fetch mingw-w64 || return
-	[ -d ${mingw_w64_src_dir_crs_hdr} ] ||
-		(unpack ${mingw_w64_org_src_dir} ${mingw_w64_src_base} &&
-			mv -v ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_crs_hdr}) || return
-	mkdir -pv ${mingw_w64_bld_dir_crs_hdr} || return
-	[ -f ${mingw_w64_bld_dir_crs_hdr}/Makefile ] ||
-		(cd ${mingw_w64_bld_dir_crs_hdr}
-		${mingw_w64_src_dir_crs_hdr}/configure --prefix=${sysroot}/mingw --build=${build} --host=${target} \
-			--disable-multilib --without-crt --with-sysroot=${sysroot}) || return
-	make -C ${mingw_w64_bld_dir_crs_hdr} -j ${jobs} || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${mingw_w64_bld_dir_crs_hdr} -j ${jobs} -k check || return
-	make -C ${mingw_w64_bld_dir_crs_hdr} -j ${jobs} install || return
-}
-
-install_mingw_w64_crt()
-{
-	fetch mingw-w64 || return
-	[ -d ${mingw_w64_src_dir_crs_1st} ] ||
-		(unpack ${mingw_w64_org_src_dir} ${mingw_w64_src_base} &&
-			mv -v ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_crs_1st}) || return
-	mkdir -pv ${mingw_w64_bld_dir_crs_1st} || return
-	[ -f ${mingw_w64_bld_dir_crs_1st}/Makefile ] ||
-		(cd ${mingw_w64_bld_dir_crs_1st}
-		CFLAGS="${CFLAGS} -I${sysroot}/mingw/include" ${mingw_w64_src_dir_crs_1st}/configure --prefix=${sysroot}/mingw --build=${build} --host=${target} \
-			--disable-multilib --without-headers --with-sysroot=${sysroot}) || return
-	make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} -k check || return
-	make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} install || return
 }
 
 install_native_python()
