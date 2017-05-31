@@ -44,7 +44,7 @@
 : ${gperf_ver:=3.1}
 : ${glibc_ver:=2.25}
 : ${newlib_ver:=2.5.0}
-: ${mingw_w64_ver:=5.0.1}
+: ${mingw_w64_ver:=5.0.2}
 : ${gmp_ver:=6.1.2}
 : ${mpfr_ver:=3.1.5}
 : ${mpc_ver:=1.0.3}
@@ -119,8 +119,8 @@
 : ${libunistring_ver:=0.9.7}
 : ${libatomic_ops_ver:=7.6.0}
 : ${gc_ver:=7.6.0}
-: ${guile_ver:=2.2.0}
-: ${nasm_ver:=2.12.02}
+: ${guile_ver:=2.2.2}
+: ${nasm_ver:=2.13.01}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
 : ${x265_ver:=2.0}
