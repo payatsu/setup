@@ -30,7 +30,7 @@
 : ${coreutils_ver:=8.27}
 : ${bison_ver:=3.0.4}
 : ${flex_ver:=2.6.0}
-: ${m4_ver:=1.4.17}
+: ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
 : ${automake_ver:=1.15}
 : ${autogen_ver:=5.18.12}
@@ -53,46 +53,46 @@
 : ${ncurses_ver:=6.0}
 : ${gdb_ver:=7.12.1}
 : ${zlib_ver:=1.2.11}
-: ${libpng_ver:=1.6.28}
+: ${libpng_ver:=1.6.29}
 : ${tiff_ver:=4.0.6}
 : ${jpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
 : ${libXpm_ver:=3.5.11}
 : ${libwebp_ver:=0.6.0}
 : ${libffi_ver:=3.2.1}
-: ${emacs_ver:=25.1}
-: ${vim_ver:=8.0.0465}
+: ${emacs_ver:=25.2}
+: ${vim_ver:=8.0.0606}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=5.8}
 : ${grep_ver:=3.0}
-: ${global_ver:=6.5.6}
+: ${global_ver:=6.5.7}
 : ${pcre2_ver:=10.22}
-: ${the_silver_searcher_ver:=1.0.2}
+: ${the_silver_searcher_ver:=1.0.3}
 : ${the_platinum_searcher_ver:=2.1.5}
 : ${highway_ver:=1.1.0}
 : ${graphviz_ver:=2.38.0}
-: ${doxygen_ver:=1.8.12}
-: ${diffutils_ver:=3.5}
+: ${doxygen_ver:=1.8.13}
+: ${diffutils_ver:=3.6}
 : ${patch_ver:=2.7.5}
 : ${findutils_ver:=4.6.0}
 : ${screen_ver:=4.5.1}
 : ${libevent_ver:=2.1.8}
-: ${tmux_ver:=2.3}
+: ${tmux_ver:=2.5}
 : ${expect_ver:=5.45}
 : ${dejagnu_ver:=1.6}
 : ${zsh_ver:=5.3.1}
 : ${bash_ver:=4.4}
 : ${inetutils_ver:=1.9.4}
-: ${openssl_ver:=1.0.2j}
+: ${openssl_ver:=1.0.2l}
 : ${openssh_ver:=7.3p1}
-: ${curl_ver:=7.53.1}
+: ${curl_ver:=7.54.0}
 : ${asciidoc_ver:=8.6.9}
 : ${libxml2_ver:=2.9.4}
 : ${libxslt_ver:=1.1.29}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
 : ${git_ver:=2.13.0}
-: ${mercurial_ver:=4.1.1}
+: ${mercurial_ver:=4.2}
 : ${sqlite_autoconf_ver:=3170000}
 : ${apr_ver:=1.5.2}
 : ${apr_util_ver:=1.5.4}
@@ -109,22 +109,22 @@
 : ${lld_ver:=${llvm_ver}}
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
-: ${boost_ver:=1_63_0}
-: ${Python_ver:=3.6.0}
+: ${boost_ver:=1_64_0}
+: ${Python_ver:=3.6.1}
 : ${ruby_ver:=2.4.1}
-: ${go_ver:=1.8.1}
+: ${go_ver:=1.8.3}
 : ${perl_ver:=5.24.0}
 : ${tcl_ver:=8.6.6}
 : ${tk_ver:=8.6.6}
 : ${libunistring_ver:=0.9.7}
-: ${libatomic_ops_ver:=7.4.4}
+: ${libatomic_ops_ver:=7.6.0}
 : ${gc_ver:=7.6.0}
 : ${guile_ver:=2.2.0}
 : ${nasm_ver:=2.12.02}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
 : ${x265_ver:=2.0}
-: ${libav_ver:=11.7}
+: ${libav_ver:=11.9}
 : ${opencv_ver:=3.2.0}
 : ${opencv_contrib_ver:=3.2.0}
 : ${googletest_ver:=1.8.0}
@@ -1389,7 +1389,7 @@ install_native_m4()
 	unpack ${m4_org_src_dir} ${m4_src_base} || return
 	[ -f ${m4_org_src_dir}/Makefile ] ||
 		(cd ${m4_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 	make -C ${m4_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${m4_org_src_dir} -j ${jobs} -k check || return
