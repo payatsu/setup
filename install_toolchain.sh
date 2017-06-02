@@ -117,7 +117,7 @@
 : ${tcl_ver:=8.6.6}
 : ${tk_ver:=8.6.6}
 : ${libunistring_ver:=0.9.7}
-: ${libatomic_ops_ver:=7.6.0}
+: ${libatomic_ops_ver:=7.4.4}
 : ${gc_ver:=7.6.0}
 : ${guile_ver:=2.2.2}
 : ${nasm_ver:=2.13.01}
