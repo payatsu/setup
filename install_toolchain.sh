@@ -1027,7 +1027,7 @@ set_variables()
 
 	echo ${PATH} | tr : '\n' | grep -qe ^${prefix}/bin\$ \
 		&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s+\(^\|:\)${prefix}/bin\(\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\$//"` \
-		|| PATH=${prefix}/bin:${PATH}
+		|| PATH=${prefix}/bin:${PATH:+:${PATH}}
 	echo ${PATH} | tr : '\n' | grep -qe ^/sbin\$ || PATH=/sbin:${PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64:${LD_LIBRARY_PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib:${LD_LIBRARY_PATH}
@@ -1036,8 +1036,8 @@ set_variables()
 	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-gcc}" CXX="ccache ${CXX:-g++}"
 	[ "${enable_ccache}" = yes ] || ! echo ${CC} | grep -qe ccache || export CC=`echo ${CC} | sed -e 's/ccache //'` CXX=`echo ${CXX} | sed -e 's/ccache //'`
 	echo ${GOPATH} | tr : '\n' | grep -qe ^${prefix}/.go\$ \
-		&& GOPATH=${prefix}/.go:`echo ${GOPATH} | sed -e "s+\(^\|:\)${prefix}/.go\(\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\$//"` \
-		|| GOPATH=${prefix}/.go:${GOPATH}
+		&& export GOPATH=${prefix}/.go:`echo ${GOPATH} | sed -e "s+\(^\|:\)${prefix}/.go\(\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\$//"` \
+		|| export GOPATH=${prefix}/.go${GOPATH:+:${GOPATH}}
 	update_pkg_config_path || return
 }
 
