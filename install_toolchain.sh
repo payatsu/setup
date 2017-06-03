@@ -774,6 +774,7 @@ unpack()
 		done;;
 	*)
 		[ -d ${1} ] && return
+		${2:+eval mkdir -pv ${2} || return}
 		[ -f ${1}.tar.gz  -a -s ${1}.tar.gz  ] && tar xzvf ${1}.tar.gz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${1}`} && return
 		[ -f ${1}.tar.bz2 -a -s ${1}.tar.bz2 ] && tar xjvf ${1}.tar.bz2 --no-same-owner --no-same-permissions -C ${2:-`dirname ${1}`} && return
 		[ -f ${1}.tar.xz  -a -s ${1}.tar.xz  ] && tar xJvf ${1}.tar.xz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${1}`} && return
