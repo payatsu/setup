@@ -97,7 +97,7 @@
 : ${apr_ver:=1.5.2}
 : ${apr_util_ver:=1.5.4}
 : ${subversion_ver:=1.9.5}
-: ${cmake_ver:=3.7.2}
+: ${cmake_ver:=3.8.1}
 : ${libedit_ver:=20160903-3.1}
 : ${swig_ver:=3.0.10}
 : ${llvm_ver:=4.0.0}
@@ -1275,6 +1275,7 @@ install_native_bzip2()
 	cp -fv ${bzip2_org_src_dir}/libbz2.so.${bzip2_ver} ${prefix}/lib || return
 	chmod a+r ${prefix}/lib/libbz2.so.${bzip2_ver} || return
 	ln -fsv libbz2.so.${bzip2_ver} ${prefix}/lib/libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` || return
+	ln -fsv libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` ${prefix}/lib/libbz2.so || return
 	cp -fv ${bzip2_org_src_dir}/bzlib.h ${prefix}/include || return
 	cp -fv ${bzip2_org_src_dir}/bzlib_private.h ${prefix}/include || return
 	update_library_search_path || return
@@ -3000,7 +3001,10 @@ install_native_cmake()
 	[ -f ${cmake_org_src_dir}/Makefile ] ||
 		(cd ${cmake_org_src_dir}
 		./bootstrap --prefix=${prefix} --parallel=${jobs} \
-			--system-curl --system-zlib --system-bzip2 --system-liblzma) || return
+			--system-curl --system-zlib --system-bzip2 --system-liblzma -- \
+			-DCURL_INCLUDE_DIR=`get_include_path curl.h curl` -DCURL_LIBRARY=`search_library libcurl.so` \
+			-DBZIP2_INCLUDE_DIR=`get_include_path bzlib.h` -DBZIP2_LIBRARIES=`search_library libbz2.so` \
+			-DLIBLZMA_INCLUDE_DIR=`get_include_path lzma.h` -DLIBLZMA_LIBRARY=`search_library liblzma.so`) || return
 	make -C ${cmake_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${cmake_org_src_dir} -j ${jobs} -k test || return
