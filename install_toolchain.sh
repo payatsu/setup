@@ -4,6 +4,7 @@
 # [TODO] qemu-kvm
 # [TODO] pcre(not 2) depended by the_silver_searcher, swig
 # [TODO] git-manpages
+# [TODO] lldbのビルドをllvmに統合する方法を考える。
 # [TODO] ccache, distcc
 # [TODO] valgrind
 # [TODO] elfutils, insight
@@ -119,7 +120,7 @@
 : ${libunistring_ver:=0.9.7}
 : ${libatomic_ops_ver:=7.4.4}
 : ${gc_ver:=7.6.0}
-: ${guile_ver:=2.2.2}
+: ${guile_ver:=2.0.14}
 : ${nasm_ver:=2.13.01}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
@@ -873,7 +874,9 @@ clean()
 {
 	[ "${enable_ccache}" != yes ] || ccache -C > /dev/null || return
 	find ${prefix}/src -mindepth 2 -maxdepth 2 \
-		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' -exec rm -fvr {} +
+		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' ! -name '*-git' -exec rm -fvr {} +
+	find ${prefix}/src -mindepth 2 -maxdepth 2 \
+		-name '*-git' -exec sh -c "cd {}; make -j ${jobs} clean" \;
 }
 
 strip()
@@ -3045,12 +3048,6 @@ install_native_llvm()
 	fetch llvm || return
 	unpack ${llvm_org_src_dir} ${llvm_src_base} || return
 	[ -x ${prefix}/bin/lld ] || place_llvm_tools lld || return
-	! which clang || [ -x ${prefix}/bin/lldb ] ||
-		(search_header curses.h > /dev/null || install_native_ncurses || return
-		search_header histedit.h > /dev/null || install_native_libedit || return
-		search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
-		which swig > /dev/null || install_native_swig || return
-		place_llvm_tools lldb) || return
 	mkdir -pv ${llvm_bld_dir} || return
 	[ -f ${llvm_bld_dir}/Makefile ] ||
 		(cd ${llvm_bld_dir}
