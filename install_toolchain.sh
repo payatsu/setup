@@ -64,7 +64,7 @@
 : ${emacs_ver:=25.2}
 : ${vim_ver:=8.0.0606}
 : ${vimdoc_ja_ver:=dummy}
-: ${ctags_ver:=5.8}
+: ${ctags_ver:=git}
 : ${grep_ver:=3.0}
 : ${global_ver:=6.5.7}
 : ${pcre2_ver:=10.22}
@@ -543,9 +543,8 @@ fetch()
 			wget --no-check-certificate -O ${vimdoc_ja_org_src_dir}.tar.gz \
 				https://github.com/vim-jp/vimdoc-ja/archive/master.tar.gz || return;;
 	ctags)
-		check_archive ${ctags_org_src_dir} ||
-			wget --no-check-certificate --trust-server-names -O ${ctags_org_src_dir}.tar.gz \
-				https://prdownloads.sourceforge.net/ctags/${ctags_name}.tar.gz || return;;
+		[ -d ${ctags_org_src_dir} ] ||
+			git clone --depth 1 http://github.com/universal-ctags/ctags.git ${ctags_org_src_dir} || return;;
 	pcre2)
 		check_archive ${pcre2_org_src_dir} ||
 			wget --trust-server-names --no-check-certificate -O ${pcre2_org_src_dir}.tar.bz2 \
@@ -2437,9 +2436,12 @@ install_native_ctags()
 	[ -x ${prefix}/bin/ctags -a "${force_install}" != yes ] && return
 	fetch ctags || return
 	unpack ${ctags_org_src_dir} ${ctags_src_base} || return
+	[ -f ${ctags_org_src_dir}/configure ] ||
+		(cd ${ctags_org_src_dir}
+		PATH=/usr/bin:${PATH} ./autogen.sh) || return # modifying PATH is workaround for autoconf; force to use /usr/bin/autoconf
 	[ -f ${ctags_org_src_dir}/Makefile ] ||
 		(cd ${ctags_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 	make -C ${ctags_org_src_dir} -j ${jobs} || return
 	make -C ${ctags_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
