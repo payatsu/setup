@@ -6,7 +6,7 @@
 # [TODO] lldbのビルドをllvmに統合する方法を考える。
 # [TODO] ccache, distcc
 # [TODO] valgrind
-# [TODO] elfutils, insight
+# [TODO] insight
 # [TODO] util-linux
 # [TODO] perf
 # [TODO] haskell(stack<-(ghc, cabal))
@@ -39,6 +39,7 @@
 : ${gawk_ver:=4.1.4}
 : ${make_ver:=4.2}
 : ${binutils_ver:=2.28}
+: ${elfutils_ver:=0.169}
 : ${linux_ver:=3.18.13}
 : ${qemu_ver:=2.8.1}
 : ${gperf_ver:=3.1}
@@ -258,6 +259,8 @@ help()
 		Specify the version of GNU Make you want, currently '${make_ver}'.
 	binutils_ver
 		Specify the version of GNU Binutils you want, currently '${binutils_ver}'.
+	elfutils_ver
+		Specify the version of Elfutils you want, currently '${elfutils_ver}'.
 	linux_ver
 		Specify the version of Linux kernel you want, currently '${linux_ver}'.
 	qemu_ver
@@ -480,6 +483,10 @@ fetch()
 		check_archive ${flex_org_src_dir} ||
 			wget --trust-server-names --no-check-certificate -O ${flex_org_src_dir}.tar.xz \
 				https://sourceforge.net/projects/flex/files/${flex_name}.tar.xz/download || return;;
+	elfutils)
+		check_archive ${elfutils_org_src_dir} ||
+			wget --no-check-certificate -O ${elfutils_org_src_dir}.tar.bz2 \
+				https://sourceware.org/elfutils/ftp/${elfutils_ver}/${elfutils_name}.tar.bz2 || return;;
 	linux)
 		case `echo ${linux_ver} | cut -d. -f1,2` in
 		2.6) linux_major_ver=v2.6;;
@@ -773,7 +780,7 @@ unpack()
 			unpack `echo $f | sed -e 's/\.tar\.gz$//;s/\.tar\.bz2$//;s/\.tar\.xz$//;s/\.zip$//'` `dirname $f`
 		done;;
 	*)
-		[ -d ${1} ] && return
+		[ -z "${2}" -a -d ${1} -o -d ${2}/`basename ${1}` ] && return
 		${2:+eval mkdir -pv ${2} || return}
 		[ -f ${1}.tar.gz  -a -s ${1}.tar.gz  ] && tar xzvf ${1}.tar.gz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${1}`} && return
 		[ -f ${1}.tar.bz2 -a -s ${1}.tar.bz2 ] && tar xjvf ${1}.tar.bz2 --no-same-owner --no-same-permissions -C ${2:-`dirname ${1}`} && return
@@ -1055,7 +1062,7 @@ set_variables()
 
 check_platform()
 {
-	echo build:${1}, host:${2}, target:${3}. >&2
+	echo build: ${1}, host: ${2}, target: ${3}. >&2
 	case ${1} in
 	${2}) case ${2} in
 		${3}) echo native;;
@@ -1532,6 +1539,21 @@ install_native_binutils()
 	[ "${enable_check}" != yes ] ||
 		make -C ${binutils_src_dir_ntv} -j 1 -k check || return
 	make -C ${binutils_src_dir_ntv} -j 1 install${strip:+-${strip}} || return
+}
+
+install_native_elfutils()
+{
+	[ -x ${prefix}/bin/eu-addr2line -a "${force_install}" != yes ] && return
+	fetch elfutils || return
+	unpack ${elfutils_org_src_dir} || return
+	[ -f ${elfutils_org_src_dir}/Makefile ] ||
+		(cd ${elfutils_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+	make -C ${elfutils_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${elfutils_org_src_dir} -j ${jobs} -k check || return
+	make -C ${elfutils_org_src_dir} -j 1 install${strip:+-${strip}} || return
+	update_library_search_path || return
 }
 
 install_native_linux_header()
