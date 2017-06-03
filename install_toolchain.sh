@@ -3,7 +3,6 @@
 # [TODO] canadiancross対応する。host, target柔軟性上げる。
 # [TODO] qemu-kvm
 # [TODO] pcre(not 2) depended by the_silver_searcher, swig
-# [TODO] git-manpages
 # [TODO] lldbのビルドをllvmに統合する方法を考える。
 # [TODO] ccache, distcc
 # [TODO] valgrind
@@ -93,6 +92,7 @@
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
 : ${git_ver:=2.13.0}
+: ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=4.2}
 : ${sqlite_autoconf_ver:=3170000}
 : ${apr_ver:=1.5.2}
@@ -613,6 +613,10 @@ fetch()
 		check_archive ${git_org_src_dir} ||
 			wget --no-check-certificate -O ${git_org_src_dir}.tar.xz \
 				https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return;;
+	git-manpages)
+		check_archive ${git_manpages_org_src_dir} ||
+			wget --no-check-certificate -O ${git_manpages_org_src_dir}.tar.xz \
+				https://www.kernel.org/pub/software/scm/git/${git_manpages_name}.tar.xz || return;;
 	mercurial)
 		check_archive ${mercurial_org_src_dir} ||
 			wget --no-check-certificate -O ${mercurial_org_src_dir}.tar.gz \
@@ -1012,18 +1016,23 @@ set_variables()
 	*) echo Unknown target architecture: ${target} >&2; return 1;;
 	esac
 
-	for pkg in `sed -e '/^: \${\(.\+\)_ver:=.\+}$/{s//\1/
-		s/pkg_config/pkg-config/
-		s/vimdoc_ja/vimdoc-ja/
-		s/sqlite_autoconf/sqlite-autoconf/
-		s/apr_util/apr-util/
-		s/compiler_rt/compiler-rt/
-		s/clang_tools_extra/clang-tools-extra/
-		s/mingw_w64/mingw-w64/
-		s/xcb_proto/xcb-proto/
-		s/gdk_pixbuf/gdk-pixbuf/
-		s/gobject_introspection/gobject-introspection/
-		p};d' ${0}`; do
+	for pkg in `sed -e \
+		'/^: \${\(.\+\)_ver:=.\+}$/{
+			s//\1/
+			s/pkg_config/pkg-config/
+			s/vimdoc_ja/vimdoc-ja/
+			s/git_manpages/git-manpages/
+			s/sqlite_autoconf/sqlite-autoconf/
+			s/apr_util/apr-util/
+			s/compiler_rt/compiler-rt/
+			s/clang_tools_extra/clang-tools-extra/
+			s/mingw_w64/mingw-w64/
+			s/xcb_proto/xcb-proto/
+			s/gdk_pixbuf/gdk-pixbuf/
+			s/gobject_introspection/gobject-introspection/
+			p
+		}
+		d' ${0}`; do
 		set_src_directory ${pkg}
 	done
 
@@ -1034,7 +1043,7 @@ set_variables()
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64:${LD_LIBRARY_PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib:${LD_LIBRARY_PATH}
 	export LD_LIBRARY_PATH
-	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${prefix}/src/.ccache CCACHE_BASEDIR=${prefix}/src && ! mkdir -p ${prefix}/src && return 1
+	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${prefix}/src/.ccache CCACHE_BASEDIR=${prefix}/src && ! mkdir -pv ${prefix}/src && return 1
 	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-gcc}" CXX="ccache ${CXX:-g++}"
 	[ "${enable_ccache}" = yes ] || ! echo ${CC} | grep -qe ccache || export CC=`echo ${CC} | sed -e 's/ccache //'` CXX=`echo ${CXX} | sed -e 's/ccache //'`
 	echo ${GOPATH} | tr : '\n' | grep -qe ^${prefix}/.go\$ \
@@ -2901,11 +2910,18 @@ install_native_git()
 	./configure --prefix=${prefix} --build=${build}) || return
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return
 	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS="${LDFLAGS} -ldl" all || return
-	make -C ${git_org_src_dir} -j ${jobs} V=1 doc || return
+	make -C ${git_org_src_dir} -j ${jobs} V=1 doc || install_native_git_manpages || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${git_org_src_dir} -j ${jobs} V=1 -k test || return
 	make -C ${git_org_src_dir} -j ${jobs} V=1 ${strip} install || return
-	make -C ${git_org_src_dir} -j ${jobs} V=1 ${strip} install-doc install-html || return
+	make -C ${git_org_src_dir} -j ${jobs} V=1 ${strip} install-doc install-html || true # git-manpagesでfallbackするのでmake install-docの失敗はシェル関数の失敗ではない。
+}
+
+install_native_git_manpages()
+{
+	[ -f ${prefix}/share/man/man1/git.1 -a "${force_install}" != yes ] && return
+	fetch git-manpages || return
+	unpack ${git_manpages_org_src_dir} ${prefix}/share/man || return
 }
 
 install_native_mercurial()
@@ -3580,7 +3596,7 @@ install_native_tk()
 
 install_native_libunistring()
 {
-	[ -r ${prefix}/include/unistr.h -a "${force_install}" != yes ] && return
+	[ -f ${prefix}/include/unistr.h -a "${force_install}" != yes ] && return
 	fetch libunistring || return
 	unpack ${libunistring_org_src_dir} ${libunistring_src_base} || return
 	[ -f ${libunistring_org_src_dir}/Makefile ] ||
@@ -3594,7 +3610,7 @@ install_native_libunistring()
 
 install_native_libatomic_ops()
 {
-	[ -r ${prefix}/include/atomic_ops.h -a "${force_install}" != yes ] && return
+	[ -f ${prefix}/include/atomic_ops.h -a "${force_install}" != yes ] && return
 	fetch libatomic_ops || return
 	unpack ${libatomic_ops_org_src_dir} ${libatomic_ops_src_base} || return
 	[ -f ${libatomic_ops_org_src_dir}/Makefile ] ||
@@ -3610,7 +3626,7 @@ install_native_libatomic_ops()
 
 install_native_gc()
 {
-	[ -r ${prefix}/include/gc.h -a "${force_install}" != yes ] && return
+	[ -f ${prefix}/include/gc.h -a "${force_install}" != yes ] && return
 	search_header atomic_ops.h > /dev/null || install_native_libatomic_ops || return
 	fetch gc || return
 	unpack ${gc_org_src_dir} ${gc_src_base} || return
