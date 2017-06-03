@@ -8,7 +8,7 @@ case ${os} in
 		apt-get update
 		apt-get install -y emacs vim
 		apt-get install -y zsh
-		apt-get install -y screen
+		apt-get install -y screen tmux
 		apt-get install -y wget curl zip
 		apt-get install -y bison flex m4 autoconf automake libtool binutils gcc g++ gdb make git 
 		apt-get install -y llvm-dev clang libclang-dev cmake
@@ -20,7 +20,7 @@ case ${os} in
 		yum update
 		yum install -y emacs vim
 		yum install -y zsh
-		yum install -y screen
+		yum install -y screen tmux
 		yum install -y wget curl zip
 		yum install -y bison flex m4 autoconf automake libtool binutils gcc gcc-c++ gdb make git
 		yum install -y python ruby

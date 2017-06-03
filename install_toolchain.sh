@@ -4,6 +4,7 @@
 # [TODO] qemu-kvm
 # [TODO] pcre(not 2) depended by the_silver_searcher, swig
 # [TODO] git-manpages
+# [TODO] lldbのビルドをllvmに統合する方法を考える。
 # [TODO] ccache, distcc
 # [TODO] valgrind
 # [TODO] elfutils, insight
@@ -117,9 +118,9 @@
 : ${tcl_ver:=8.6.6}
 : ${tk_ver:=8.6.6}
 : ${libunistring_ver:=0.9.7}
-: ${libatomic_ops_ver:=7.6.0}
+: ${libatomic_ops_ver:=7.4.4}
 : ${gc_ver:=7.6.0}
-: ${guile_ver:=2.2.2}
+: ${guile_ver:=2.0.14}
 : ${nasm_ver:=2.13.01}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
@@ -873,7 +874,9 @@ clean()
 {
 	[ "${enable_ccache}" != yes ] || ccache -C > /dev/null || return
 	find ${prefix}/src -mindepth 2 -maxdepth 2 \
-		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' -exec rm -fvr {} +
+		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' ! -name '*-git' -exec rm -fvr {} +
+	find ${prefix}/src -mindepth 2 -maxdepth 2 \
+		-name '*-git' -exec sh -c "cd {}; make -j ${jobs} clean" \;
 }
 
 strip()
@@ -1027,7 +1030,7 @@ set_variables()
 
 	echo ${PATH} | tr : '\n' | grep -qe ^${prefix}/bin\$ \
 		&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s+\(^\|:\)${prefix}/bin\(\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\$//"` \
-		|| PATH=${prefix}/bin:${PATH}
+		|| PATH=${prefix}/bin:${PATH:+:${PATH}}
 	echo ${PATH} | tr : '\n' | grep -qe ^/sbin\$ || PATH=/sbin:${PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64:${LD_LIBRARY_PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib:${LD_LIBRARY_PATH}
@@ -1036,8 +1039,8 @@ set_variables()
 	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-gcc}" CXX="ccache ${CXX:-g++}"
 	[ "${enable_ccache}" = yes ] || ! echo ${CC} | grep -qe ccache || export CC=`echo ${CC} | sed -e 's/ccache //'` CXX=`echo ${CXX} | sed -e 's/ccache //'`
 	echo ${GOPATH} | tr : '\n' | grep -qe ^${prefix}/.go\$ \
-		&& GOPATH=${prefix}/.go:`echo ${GOPATH} | sed -e "s+\(^\|:\)${prefix}/.go\(\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\$//"` \
-		|| GOPATH=${prefix}/.go:${GOPATH}
+		&& export GOPATH=${prefix}/.go:`echo ${GOPATH} | sed -e "s+\(^\|:\)${prefix}/.go\(\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\$//"` \
+		|| export GOPATH=${prefix}/.go${GOPATH:+:${GOPATH}}
 	update_pkg_config_path || return
 }
 
@@ -3049,12 +3052,6 @@ install_native_llvm()
 	fetch llvm || return
 	unpack ${llvm_org_src_dir} ${llvm_src_base} || return
 	[ -x ${prefix}/bin/lld ] || place_llvm_tools lld || return
-	! which clang || [ -x ${prefix}/bin/lldb ] ||
-		(search_header curses.h > /dev/null || install_native_ncurses || return
-		search_header histedit.h > /dev/null || install_native_libedit || return
-		search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
-		which swig > /dev/null || install_native_swig || return
-		place_llvm_tools lldb) || return
 	mkdir -pv ${llvm_bld_dir} || return
 	[ -f ${llvm_bld_dir}/Makefile ] ||
 		(cd ${llvm_bld_dir}
