@@ -1233,7 +1233,7 @@ install_native_tar()
 	[ -x ${prefix}/bin/tar -a "${force_install}" != yes ] && return
 	which xz > /dev/null || install_native_xz || return
 	fetch tar || return
-	unpack ${tar_org_src_dir} ${tar_src_base} || return
+	unpack ${tar_org_src_dir} || return
 	[ -f ${tar_org_src_dir}/Makefile ] ||
 		(cd ${tar_org_src_dir}
 		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} \
@@ -1248,7 +1248,7 @@ install_native_cpio()
 {
 	[ -x ${prefix}/bin/cpio -a "${force_install}" != yes ] && return
 	fetch cpio || return
-	unpack ${cpio_org_src_dir} ${cpio_src_base} || return
+	unpack ${cpio_org_src_dir} || return
 	[ -f ${cpio_org_src_dir}/Makefile ] ||
 		(cd ${cpio_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -1262,7 +1262,7 @@ install_native_xz()
 {
 	[ -x ${prefix}/bin/xz -a "${force_install}" != yes ] && return
 	fetch xz || return
-	unpack ${xz_org_src_dir} ${xz_src_base} || return
+	unpack ${xz_org_src_dir} || return
 	[ -f ${xz_org_src_dir}/Makefile ] ||
 		(cd ${xz_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -1276,7 +1276,7 @@ install_native_bzip2()
 {
 	[ -x ${prefix}/bin/bzip2 -a "${force_install}" != yes ] && return
 	fetch bzip2 || return
-	unpack ${bzip2_org_src_dir} ${bzip2_src_base} || return
+	unpack ${bzip2_org_src_dir} || return
 	sed -i -e \
 			'/^CFLAGS=/{
 				s/ -fPIC//g
@@ -1304,7 +1304,7 @@ install_native_gzip()
 {
 	[ -x ${prefix}/bin/gzip -a "${force_install}" != yes ] && return
 	fetch gzip || return
-	unpack ${gzip_org_src_dir} ${gzip_src_base} || return
+	unpack ${gzip_org_src_dir} || return
 	[ -f ${gzip_org_src_dir}/Makefile ] ||
 		(cd ${gzip_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -1319,7 +1319,7 @@ install_native_wget()
 	[ -x ${prefix}/bin/wget -a "${force_install}" != yes ] && return
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch wget || return
-	unpack ${wget_org_src_dir} ${wget_src_base} || return
+	unpack ${wget_org_src_dir} || return
 	[ -f ${wget_org_src_dir}/Makefile ] ||
 		(cd ${wget_org_src_dir}
 		OPENSSL_CFLAGS="-I${prefix}/include -L${prefix}/lib" OPENSSL_LIBS='-lssl -lcrypto' \
@@ -1335,7 +1335,7 @@ install_native_pkg_config()
 	[ -x ${prefix}/bin/pkg-config -a "${force_install}" != yes ] && return
 #	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return
 	fetch pkg-config || return
-	unpack ${pkg_config_org_src_dir} ${pkg_config_src_base} || return
+	unpack ${pkg_config_org_src_dir} || return
 	[ -f ${pkg_config_org_src_dir}/Makefile ] ||
 		(cd ${pkg_config_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -1349,7 +1349,7 @@ install_native_texinfo()
 {
 	[ -x ${prefix}/bin/makeinfo -a "${force_install}" != yes ] && return
 	fetch texinfo || return
-	unpack ${texinfo_org_src_dir} ${texinfo_src_base} || return
+	unpack ${texinfo_org_src_dir} || return
 	[ -f ${texinfo_org_src_dir}/Makefile ] ||
 		(cd ${texinfo_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -1363,7 +1363,7 @@ install_native_coreutils()
 {
 	[ -x ${prefix}/bin/cat -a "${force_install}" != yes ] && return
 	fetch coreutils || return
-	unpack ${coreutils_org_src_dir} ${coreutils_src_base} || return
+	unpack ${coreutils_org_src_dir} || return
 	[ -f ${coreutils_org_src_dir}/Makefile ] ||
 		(cd ${coreutils_org_src_dir}
 		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} \
@@ -1378,7 +1378,7 @@ install_native_bison()
 {
 	[ -x ${prefix}/bin/bison -a "${force_install}" != yes ] && return
 	fetch bison || return
-	unpack ${bison_org_src_dir} ${bison_src_base} || return
+	unpack ${bison_org_src_dir} || return
 	[ -f ${bison_org_src_dir}/Makefile ] ||
 		(cd ${bison_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -1391,7 +1391,7 @@ install_native_flex()
 	[ -x ${prefix}/bin/flex -a "${force_install}" != yes ] && return
 	which yacc > /dev/null || install_native_bison || return
 	fetch flex || return
-	unpack ${flex_org_src_dir} ${flex_src_base} || return
+	unpack ${flex_org_src_dir} || return
 	[ -f ${flex_org_src_dir}/Makefile ] ||
 		(cd ${flex_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -1406,7 +1406,7 @@ install_native_m4()
 {
 	[ -x ${prefix}/bin/m4 -a "${force_install}" != yes ] && return
 	fetch m4 || return
-	unpack ${m4_org_src_dir} ${m4_src_base} || return
+	unpack ${m4_org_src_dir} || return
 	[ -f ${m4_org_src_dir}/Makefile ] ||
 		(cd ${m4_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -1420,7 +1420,7 @@ install_native_autoconf()
 {
 	[ -x ${prefix}/bin/autoconf -a "${force_install}" != yes ] && return
 	fetch autoconf || return
-	unpack ${autoconf_org_src_dir} ${autoconf_src_base} || return
+	unpack ${autoconf_org_src_dir} || return
 	[ -f ${autoconf_org_src_dir}/Makefile ] ||
 		(cd ${autoconf_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -1435,7 +1435,7 @@ install_native_automake()
 	[ -x ${prefix}/bin/automake -a "${force_install}" != yes ] && return
 	which autoconf > /dev/null || install_native_autoconf || return
 	fetch automake || return
-	unpack ${automake_org_src_dir} ${automake_src_base} || return
+	unpack ${automake_org_src_dir} || return
 	[ -f ${automake_org_src_dir}/Makefile ] ||
 		(cd ${automake_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -1450,7 +1450,7 @@ install_native_autogen()
 	[ -x ${prefix}/bin/autogen -a "${force_install}" != yes ] && return
 	search_header libguile.h > /dev/null || install_native_guile || return
 	fetch autogen || return
-	unpack ${autogen_org_src_dir} ${autogen_src_base} || return
+	unpack ${autogen_org_src_dir} || return
 	[ -f ${autogen_org_src_dir}/Makefile ] ||
 		(cd ${autogen_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -1465,7 +1465,7 @@ install_native_libtool()
 	[ -x ${prefix}/bin/libtool -a "${force_install}" != yes ] && return
 	which flex > /dev/null || install_native_flex || return
 	fetch libtool || return
-	unpack ${libtool_org_src_dir} ${libtool_src_base} || return
+	unpack ${libtool_org_src_dir} || return
 	[ -f ${libtool_org_src_dir}/Makefile ] ||
 		(cd ${libtool_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -1479,7 +1479,7 @@ install_native_sed()
 {
 	[ -x ${prefix}/bin/sed -a "${force_install}" != yes ] && return
 	fetch sed || return
-	unpack ${sed_org_src_dir} ${sed_src_base} || return
+	unpack ${sed_org_src_dir} || return
 	[ -f ${sed_org_src_dir}/Makefile ] ||
 		(cd ${sed_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -1493,7 +1493,7 @@ install_native_gawk()
 {
 	[ -x ${prefix}/bin/gawk -a "${force_install}" != yes ] && return
 	fetch gawk || return
-	unpack ${gawk_org_src_dir} ${gawk_src_base} || return
+	unpack ${gawk_org_src_dir} || return
 	[ -f ${gawk_org_src_dir}/Makefile ] ||
 		(cd ${gawk_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -1508,7 +1508,7 @@ install_native_make()
 	[ -x ${prefix}/bin/make -a "${force_install}" != yes ] && return
 	search_header libguile.h > /dev/null || install_native_guile || return
 	fetch make || return
-	unpack ${make_org_src_dir} ${make_src_base} || return
+	unpack ${make_org_src_dir} || return
 	[ -f ${make_org_src_dir}/Makefile ] ||
 		(cd ${make_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --host=${build} \
@@ -1526,7 +1526,7 @@ install_native_binutils()
 	which yacc > /dev/null || install_native_bison || return
 	fetch binutils || return
 	[ -d ${binutils_src_dir_ntv} ] ||
-		(unpack ${binutils_org_src_dir} ${binutils_src_base} &&
+		(unpack ${binutils_org_src_dir} &&
 			mv -v ${binutils_org_src_dir} ${binutils_src_dir_ntv}) || return
 	[ -f ${binutils_src_dir_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_ntv}
@@ -1560,7 +1560,7 @@ install_native_linux_header()
 {
 	fetch linux || return
 	[ -d ${linux_src_dir_ntv} ] ||
-		(unpack ${linux_org_src_dir} ${linux_src_base} &&
+		(unpack ${linux_org_src_dir} &&
 			mv -v ${linux_org_src_dir} ${linux_src_dir_ntv}) || return
 	make -C ${linux_src_dir_ntv} -j ${jobs} V=1 mrproper || return
 	case ${build} in
@@ -1578,7 +1578,7 @@ install_native_qemu()
 {
 #	[ -x ${prefix}/bin/qemu -a "${force_install}" != yes ] && return
 	fetch qemu || return
-	unpack ${qemu_org_src_dir} ${qemu_src_base} || return
+	unpack ${qemu_org_src_dir} || return
 	(cd ${qemu_org_src_dir}
 	./configure --prefix=${prefix} --cc=${CC:-gcc} --host-cc=${CC:-gcc} --cxx=${CXX:-g++}) || return
 	make -C ${qemu_org_src_dir} -j ${jobs} V=1 || return
@@ -1591,7 +1591,7 @@ install_native_gperf()
 {
 	[ -x ${prefix}/bin/gperf -a "${force_install}" != yes ] && return
 	fetch gperf || return
-	unpack ${gperf_org_src_dir} ${gperf_src_base} || return
+	unpack ${gperf_org_src_dir} || return
 	[ -f ${gperf_org_src_dir}/Makefile ] ||
 		(cd ${gperf_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -1609,7 +1609,7 @@ install_native_glibc()
 	which gperf > /dev/null || install_native_gperf || return
 	fetch glibc || return
 	[ -d ${glibc_src_dir_ntv} ] ||
-		(unpack ${glibc_org_src_dir} ${glibc_src_base} &&
+		(unpack ${glibc_org_src_dir} &&
 			mv -v ${glibc_org_src_dir} ${glibc_src_dir_ntv}) || return
 	mkdir -pv ${glibc_bld_dir_ntv} || return
 	[ -f ${glibc_bld_dir_ntv}/Makefile ] ||
@@ -1632,7 +1632,7 @@ install_native_gmp()
 	[ -f ${prefix}/include/gmp.h -a "${force_install}" != yes ] && return
 	fetch gmp || return
 	[ -d ${gmp_src_dir_ntv} ] ||
-		(unpack ${gmp_org_src_dir} ${gmp_src_base} &&
+		(unpack ${gmp_org_src_dir} &&
 			mv -v ${gmp_org_src_dir} ${gmp_src_dir_ntv}) || return
 	[ -f ${gmp_src_dir_ntv}/Makefile ] ||
 		(cd ${gmp_src_dir_ntv}
@@ -1650,7 +1650,7 @@ install_native_mpfr()
 	search_header gmp.h > /dev/null || install_native_gmp || return
 	fetch mpfr || return
 	[ -d ${mpfr_src_dir_ntv} ] ||
-		(unpack ${mpfr_org_src_dir} ${mpfr_src_base} &&
+		(unpack ${mpfr_org_src_dir} &&
 			mv -v ${mpfr_org_src_dir} ${mpfr_src_dir_ntv}) || return
 	[ -f ${mpfr_src_dir_ntv}/Makefile ] ||
 		(cd ${mpfr_src_dir_ntv}
@@ -1668,7 +1668,7 @@ install_native_mpc()
 	search_header mpfr.h > /dev/null || install_native_mpfr || return
 	fetch mpc || return
 	[ -d ${mpc_src_dir_ntv} ] ||
-		(unpack ${mpc_org_src_dir} ${mpc_src_base} &&
+		(unpack ${mpc_org_src_dir} &&
 			mv -v ${mpc_org_src_dir} ${mpc_src_dir_ntv}) || return
 	[ -f ${mpc_src_dir_ntv}/Makefile ] ||
 		(cd ${mpc_src_dir_ntv}
@@ -1690,7 +1690,7 @@ install_native_gcc()
 	search_header mpc.h > /dev/null || install_native_mpc || return
 	which perl > /dev/null || install_native_perl || return
 	fetch gcc || return
-	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
+	unpack ${gcc_org_src_dir} || return
 	mkdir -pv ${gcc_bld_dir_ntv} || return
 	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_ntv}
@@ -1712,7 +1712,7 @@ install_native_readline()
 {
 	[ -f ${prefix}/include/readline/readline.h -a "${force_install}" != yes ] && return
 	fetch readline || return
-	unpack ${readline_org_src_dir} ${readline_src_base} || return
+	unpack ${readline_org_src_dir} || return
 	[ -f ${readline_org_src_dir}/Makefile ] ||
 		(cd ${readline_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -1727,7 +1727,7 @@ install_native_ncurses()
 {
 	[ -f ${prefix}/include/ncurses/curses.h -a "${force_install}" != yes ] && return
 	fetch ncurses || return
-	unpack ${ncurses_org_src_dir} ${ncurses_src_base} || return
+	unpack ${ncurses_org_src_dir} || return
 
 	# [XXX] workaround for GCC 5.x
 	which patch > /dev/null || install_native_patch || return
@@ -1776,7 +1776,7 @@ install_native_gdb()
 	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m.so > /dev/null || install_native_python || return
 	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gdb || return
-	unpack ${gdb_org_src_dir} ${gdb_src_base} || return
+	unpack ${gdb_org_src_dir} || return
 	mkdir -pv ${gdb_bld_dir_ntv} || return
 	[ -f ${gdb_bld_dir_ntv}/Makefile ] ||
 		(cd ${gdb_bld_dir_ntv}
@@ -1795,7 +1795,7 @@ install_native_zlib()
 	[ -f ${prefix}/include/zlib.h -a "${force_install}" != yes ] && return
 	fetch zlib || return
 	[ -d ${zlib_src_dir_ntv} ] ||
-		(unpack ${zlib_org_src_dir} ${zlib_src_base} &&
+		(unpack ${zlib_org_src_dir} &&
 			mv -v ${zlib_org_src_dir} ${zlib_src_dir_ntv}) || return
 	(cd ${zlib_src_dir_ntv}
 	./configure --prefix=${prefix}) || return
@@ -1813,7 +1813,7 @@ install_native_libpng()
 	search_header zlib.h > /dev/null || install_native_zlib || return
 	fetch libpng || return
 	[ -d ${libpng_src_dir_ntv} ] ||
-		(unpack ${libpng_org_src_dir} ${libpng_src_base} &&
+		(unpack ${libpng_org_src_dir} &&
 			mv -v ${libpng_org_src_dir} ${libpng_src_dir_ntv}) || return
 	[ -f ${libpng_src_dir_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_ntv}
@@ -1831,7 +1831,7 @@ install_native_libtiff()
 	[ -f ${prefix}/include/tiffio.h -a "${force_install}" != yes ] && return
 	fetch tiff || return
 	[ -d ${tiff_src_dir_ntv} ] ||
-		(unpack ${tiff_org_src_dir} ${tiff_src_base} &&
+		(unpack ${tiff_org_src_dir} &&
 			mv -v ${tiff_org_src_dir} ${tiff_src_dir_ntv}) || return
 	[ -f ${tiff_src_dir_ntv}/Makefile ] ||
 		(cd ${tiff_src_dir_ntv}
@@ -1849,7 +1849,7 @@ install_native_libjpeg()
 	[ -f ${prefix}/include/jpeglib.h -a "${force_install}" != yes ] && return
 	fetch jpeg || return
 	[ -d ${jpeg_src_dir_ntv} ] ||
-		(unpack ${jpeg_org_src_dir} ${jpeg_src_base} &&
+		(unpack ${jpeg_org_src_dir} &&
 			mv -v ${jpeg_org_src_dir} ${jpeg_src_dir_ntv}) || return
 	[ -f ${jpeg_src_dir_ntv}/Makefile ] ||
 		(cd ${jpeg_src_dir_ntv}
@@ -1867,7 +1867,7 @@ install_native_giflib()
 	which xmlto > /dev/null || install_native_xmlto || return
 	fetch giflib || return
 	[ -d ${giflib_src_dir_ntv} ] ||
-		(unpack ${giflib_org_src_dir} ${giflib_src_base} &&
+		(unpack ${giflib_org_src_dir} &&
 			mv -v ${giflib_org_src_dir} ${giflib_src_dir_ntv}) || return
 	[ -f ${giflib_src_dir_ntv}/Makefile ] ||
 		(cd ${giflib_src_dir_ntv}
@@ -1886,7 +1886,7 @@ install_native_libXpm()
 	search_header XKBproto.h X11 > /dev/null || install_native_kbproto || return
 	search_header Xlib.h X11 > /dev/null || install_native_libX11 || return
 	fetch libXpm || return
-	unpack ${libXpm_org_src_dir} ${libXpm_src_base} || return
+	unpack ${libXpm_org_src_dir} || return
 	[ -f ${libXpm_org_src_dir}/Makefile ] ||
 		(cd ${libXpm_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -1906,7 +1906,7 @@ install_native_libwebp()
 	search_header jpeglib.h > /dev/null || install_native_libjpeg || return
 	search_header gif_lib.h > /dev/null || install_native_giflib || return
 	fetch libwebp || return
-	unpack ${libwebp_org_src_dir} ${libwebp_src_base} || return
+	unpack ${libwebp_org_src_dir} || return
 	[ -f ${libwebp_org_src_dir}/Makefile ] ||
 		(cd ${libwebp_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -1922,7 +1922,7 @@ install_native_libffi()
 {
 	[ -f ${prefix}/lib/libffi-*/include/ffi.h -a "${force_install}" != yes ] && return
 	fetch libffi || return
-	unpack ${libffi_org_src_dir} ${libffi_src_base} || return
+	unpack ${libffi_org_src_dir} || return
 	[ -f ${libffi_org_src_dir}/Makefile ] ||
 		(cd ${libffi_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -1940,7 +1940,7 @@ install_native_libffi()
 #	search_header ffi.h > /dev/null || install_native_libffi || return
 #	search_header pcre2.h > /dev/null || install_native_pcre2 || return
 #	fetch glib || return
-#	unpack ${glib_org_src_dir} ${glib_src_base} || return
+#	unpack ${glib_org_src_dir} || return
 #	[ -f ${glib_org_src_dir}/Makefile ] ||
 #		(cd ${glib_org_src_dir}
 #		update_pkg_config_path
@@ -1955,7 +1955,7 @@ install_native_libffi()
 #{
 #	[ -f ${prefix}/include/cairo/cairo.h -a "${force_install}" != yes ] && return
 #	fetch cairo || return
-#	unpack ${cairo_org_src_dir} ${cairo_src_base} || return
+#	unpack ${cairo_org_src_dir} || return
 #	[ -f ${cairo_org_src_dir}/Makefile ] ||
 #		(cd ${cairo_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -1968,7 +1968,7 @@ install_native_libffi()
 #{
 #	[ -f ${prefix}/include/pixman-1.0/pixman.h -a "${force_install}" != yes ] && return
 #	fetch pixman || return
-#	unpack ${pixman_org_src_dir} ${pixman_src_base} || return
+#	unpack ${pixman_org_src_dir} || return
 #	[ -f ${pixman_org_src_dir}/Makefile ] ||
 #		(cd ${pixman_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -1983,7 +1983,7 @@ install_native_libffi()
 #	search_header cairo.h cairo > /dev/null || install_native_cairo || return
 #	search_header pixman.h pixman-1.0 > /dev/null || install_native_pixman || return
 #	fetch pango || return
-#	unpack ${pango_org_src_dir} ${pango_src_base} || return
+#	unpack ${pango_org_src_dir} || return
 #	[ -f ${pango_org_src_dir}/Makefile ] ||
 #		(cd ${pango_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --enable-static \
@@ -1998,7 +1998,7 @@ install_native_libffi()
 #	[ -f ${prefix}/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h -a "${force_install}" != yes ] && return
 #	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return
 #	fetch gdk-pixbuf || return
-#	unpack ${gdk_pixbuf_org_src_dir} ${gdk_pixbuf_src_base} || return
+#	unpack ${gdk_pixbuf_org_src_dir} || return
 #	[ -f ${gdk_pixbuf_org_src_dir}/Makefile ] ||
 #		(cd ${gdk_pixbuf_org_src_dir}
 #		update_pkg_config_path
@@ -2014,7 +2014,7 @@ install_native_libffi()
 #	[ -f ${prefix}/include/atk-1.0/atk/atk.h -a "${force_install}" != yes ] && return
 #	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return
 #	fetch atk || return
-#	unpack ${atk_org_src_dir} ${atk_src_base} || return
+#	unpack ${atk_org_src_dir} || return
 #	[ -f ${atk_org_src_dir}/Makefile ] ||
 #		(cd ${atk_org_src_dir}
 #		update_pkg_config_path
@@ -2030,7 +2030,7 @@ install_native_libffi()
 #	[ -d ${prefix}/include/gobject-introspection-1.0 -a "${force_install}" != yes ] && return
 #	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return
 #	fetch gobject-introspection || return
-#	unpack ${gobject_introspection_org_src_dir} ${gobject_introspection_src_base} || return
+#	unpack ${gobject_introspection_org_src_dir} || return
 #	[ -f ${gobject_introspection_org_src_dir}/Makefile ] ||
 #		(cd ${gobject_introspection_org_src_dir}
 #		update_pkg_config_path
@@ -2045,7 +2045,7 @@ install_native_libffi()
 #{
 #	[ -d ${prefix}/include/X11/extensions/XI.h -a "${force_install}" != yes ] && return
 #	fetch inputproto || return
-#	unpack ${inputproto_org_src_dir} ${inputproto_src_base} || return
+#	unpack ${inputproto_org_src_dir} || return
 #	[ -f ${inputproto_org_src_dir}/Makefile ] ||
 #		(cd ${inputproto_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2058,7 +2058,7 @@ install_native_libffi()
 #{
 #	[ -f ${prefix}/include/X11/Xtrans/Xtrans.h -a "${force_install}" != yes ] && return
 #	fetch xtrans || return
-#	unpack ${xtrans_org_src_dir} ${xtrans_src_base} || return
+#	unpack ${xtrans_org_src_dir} || return
 #	[ -f ${xtrans_org_src_dir}/Makefile ] ||
 #		(cd ${xtrans_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2075,7 +2075,7 @@ install_native_libffi()
 #	search_header lbx.h X11/extensions > /dev/null || install_native_xextproto || return
 #	search_header xcb.h xcb > /dev/null || install_native_libxcb || return
 #	fetch libX11 || return
-#	unpack ${libX11_org_src_dir} ${libX11_src_base} || return
+#	unpack ${libX11_org_src_dir} || return
 #	[ -f ${libX11_org_src_dir}/Makefile ] ||
 #		(cd ${libX11_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2089,7 +2089,7 @@ install_native_libffi()
 #	[ -f ${prefix}/include/xcb/xcb.h -a "${force_install}" != yes ] && return
 #	[ -d ${prefix}/share/xcb ] || install_native_xcb_proto || return
 #	fetch libxcb || return
-#	unpack ${libxcb_org_src_dir} ${libxcb_src_base} || return
+#	unpack ${libxcb_org_src_dir} || return
 #	[ -f ${libxcb_org_src_dir}/Makefile ] ||
 #		(cd ${libxcb_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2102,7 +2102,7 @@ install_native_libffi()
 #{
 #	[ -d ${prefix}/share/xcb -a "${force_install}" != yes ] && return
 #	fetch xcb-proto || return
-#	unpack ${xcb_proto_org_src_dir} ${xcb_proto_src_base} || return
+#	unpack ${xcb_proto_org_src_dir} || return
 #	[ -f ${xcb_proto_org_src_dir}/Makefile ] ||
 #		(cd ${xcb_proto_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2115,7 +2115,7 @@ install_native_libffi()
 #{
 #	[ -f ${prefix}/include/X11/extensions/lbx.h -a "${force_install}" != yes ] && return
 #	fetch xextproto || return
-#	unpack ${xextproto_org_src_dir} ${xextproto_src_base} || return
+#	unpack ${xextproto_org_src_dir} || return
 #	[ -f ${xextproto_org_src_dir}/Makefile ] ||
 #		(cd ${xextproto_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2129,7 +2129,7 @@ install_native_libffi()
 #	[ -f ${prefix}/include/X11/extensions/Xext.h -a "${force_install}" != yes ] && return
 #	search_header lbx.h X11/extensions > /dev/null || install_native_xextproto || return
 #	fetch libXext || return
-#	unpack ${libXext_org_src_dir} ${libXext_src_base} || return
+#	unpack ${libXext_org_src_dir} || return
 #	[ -f ${libXext_org_src_dir}/Makefile ] ||
 #		(cd ${libXext_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2142,7 +2142,7 @@ install_native_libffi()
 #{
 #	[ -f ${prefix}/include/X11/extensions/xfixesproto.h -a "${force_install}" != yes ] && return
 #	fetch fixesproto || return
-#	unpack ${fixesproto_org_src_dir} ${fixesproto_src_base} || return
+#	unpack ${fixesproto_org_src_dir} || return
 #	[ -f ${fixesproto_org_src_dir}/Makefile ] ||
 #		(cd ${fixesproto_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2156,7 +2156,7 @@ install_native_libffi()
 #	[ -f ${prefix}/include/X11/extensions/Xfixes.h -a "${force_install}" != yes ] && return
 #	search_header xfixesproto.h X11/extensions > /dev/null || install_native_fixesproto || return
 #	fetch libXfixes || return
-#	unpack ${libXfixes_org_src_dir} ${libXfixes_src_base} || return
+#	unpack ${libXfixes_org_src_dir} || return
 #	[ -f ${libXfixes_org_src_dir}/Makefile ] ||
 #		(cd ${libXfixes_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2169,7 +2169,7 @@ install_native_libffi()
 #{
 #	[ -f ${prefix}/include/X11/extensions/damageproto.h -a "${force_install}" != yes ] && return
 #	fetch damageproto || return
-#	unpack ${damageproto_org_src_dir} ${damageproto_src_base} || return
+#	unpack ${damageproto_org_src_dir} || return
 #	[ -f ${damageproto_org_src_dir}/Makefile ] ||
 #		(cd ${damageproto_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2184,7 +2184,7 @@ install_native_libffi()
 #	search_header damageproto.h X11/extensions > /dev/null || install_native_damageproto || return
 #	search_header Xfixes.h X11/extensions > /dev/null || install_native_libXfixes || return
 #	fetch libXdamage || return
-#	unpack ${libXdamage_org_src_dir} ${libXdamage_src_base} || return
+#	unpack ${libXdamage_org_src_dir} || return
 #	[ -f ${libXdamage_org_src_dir}/Makefile ] ||
 #		(cd ${libXdamage_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2197,7 +2197,7 @@ install_native_libffi()
 #{
 #	[ -f ${prefix}/include/X11/Core.h -a "${force_install}" != yes ] && return
 #	fetch libXt || return
-#	unpack ${libXt_org_src_dir} ${libXt_src_base} || return
+#	unpack ${libXt_org_src_dir} || return
 #	[ -f ${libXt_org_src_dir}/Makefile ] ||
 #		(cd ${libXt_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2210,7 +2210,7 @@ install_native_libffi()
 #{
 #	[ -f ${prefix}/include/X11/Xproto.h -a "${force_install}" != yes ] && return
 #	fetch xproto || return
-#	unpack ${xproto_org_src_dir} ${xproto_src_base} || return
+#	unpack ${xproto_org_src_dir} || return
 #	[ -f ${xproto_org_src_dir}/Makefile ] ||
 #		(cd ${xproto_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2222,7 +2222,7 @@ install_native_libffi()
 #{
 #	[ -f ${prefix}/include/X11/XKBproto.h -a "${force_install}" != yes ] && return
 #	fetch kbproto || return
-#	unpack ${kbproto_org_src_dir} ${kbproto_src_base} || return
+#	unpack ${kbproto_org_src_dir} || return
 #	[ -f ${kbproto_org_src_dir}/Makefile ] ||
 #		(cd ${kbproto_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2234,7 +2234,7 @@ install_native_libffi()
 #{
 #	[ -f ${prefix}/include/GL/glxproto.h -a "${force_install}" != yes ] && return
 #	fetch glproto || return
-#	unpack ${glproto_org_src_dir} ${glproto_src_base} || return
+#	unpack ${glproto_org_src_dir} || return
 #	[ -f ${glproto_org_src_dir}/Makefile ] ||
 #		(cd ${glproto_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2246,7 +2246,7 @@ install_native_libffi()
 #{
 #	[ -f ${prefix}/include/pciaccess.h -a "${force_install}" != yes ] && return
 #	fetch libpciaccess || return
-#	unpack ${libpciaccess_org_src_dir} ${libpciaccess_src_base} || return
+#	unpack ${libpciaccess_org_src_dir} || return
 #	[ -f ${libpciaccess_org_src_dir}/Makefile ] ||
 #		(cd ${libpciaccess_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2260,7 +2260,7 @@ install_native_libffi()
 #	[ -f ${prefix}/include/xf86drm.h -a "${force_install}" != yes ] && return
 #	search_header pciaccess.h > /dev/null || install_native_libpciaccess || return
 #	fetch libdrm || return
-#	unpack ${libdrm_org_src_dir} ${libdrm_src_base} || return
+#	unpack ${libdrm_org_src_dir} || return
 #	[ -f ${libdrm_org_src_dir}/Makefile ] ||
 #		(cd ${libdrm_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
@@ -2274,7 +2274,7 @@ install_native_libffi()
 #{
 #	[ -f ${prefix}/include/X11/extensions/dri2proto.h -a "${force_install}" != yes ] && return
 #	fetch dri2proto || return
-#	unpack ${dri2proto_org_src_dir} ${dri2proto_src_base} || return
+#	unpack ${dri2proto_org_src_dir} || return
 #	[ -f ${dri2proto_org_src_dir}/Makefile ] ||
 #		(cd ${dri2proto_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2286,7 +2286,7 @@ install_native_libffi()
 #{
 #	[ -f ${prefix}/include/X11/extensions/dri3proto.h -a "${force_install}" != yes ] && return
 #	fetch dri3proto || return
-#	unpack ${dri3proto_org_src_dir} ${dri3proto_src_base} || return
+#	unpack ${dri3proto_org_src_dir} || return
 #	[ -f ${dri3proto_org_src_dir}/Makefile ] ||
 #		(cd ${dri3proto_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2298,7 +2298,7 @@ install_native_libffi()
 #{
 #	[ -f ${prefix}/include/X11/extensions/presentproto.h -a "${force_install}" != yes ] && return
 #	fetch presentproto || return
-#	unpack ${presentproto_org_src_dir} ${presentproto_src_base} || return
+#	unpack ${presentproto_org_src_dir} || return
 #	[ -f ${presentproto_org_src_dir}/Makefile ] ||
 #		(cd ${presentproto_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2310,7 +2310,7 @@ install_native_libffi()
 #{
 #	[ -f ${prefix}/include/X11/xshmfence.h -a "${force_install}" != yes ] && return
 #	fetch libxshmfence || return
-#	unpack ${libxshmfence_org_src_dir} ${libxshmfence_src_base} || return
+#	unpack ${libxshmfence_org_src_dir} || return
 #	[ -f ${libxshmfence_org_src_dir}/Makefile ] ||
 #		(cd ${libxshmfence_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2334,7 +2334,7 @@ install_native_libffi()
 #	search_header Xdamage.h X11/extensions > /dev/null || install_native_libXdamage || return
 #	search_header Xlib.h X11 > /dev/null || install_native_libX11 || return
 #	fetch mesa || return
-#	unpack ${mesa_org_src_dir} ${mesa_src_base} || return
+#	unpack ${mesa_org_src_dir} || return
 #	[ -f ${mesa_org_src_dir}/Makefile ] ||
 #		(cd ${mesa_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2348,7 +2348,7 @@ install_native_libffi()
 #	[ -f ${prefix}/include/epoxy/egl.h -a "${force_install}" != yes ] && return
 #	search_header Core.h X11 > /dev/null || install_native_libXt || return
 #	fetch libepoxy || return
-#	unpack ${libepoxy_org_src_dir} ${libepoxy_src_base} || return
+#	unpack ${libepoxy_org_src_dir} || return
 #	[ -f ${libepoxy_org_src_dir}/Makefile ] ||
 #		(cd ${libepoxy_org_src_dir}
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2367,7 +2367,7 @@ install_native_libffi()
 #	search_header giversionmacros.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return
 #	search_header egl.h epoxy > /dev/null || install_native_libepoxy || return
 #	fetch gtk || return
-#	unpack ${gtk_org_src_dir} ${gtk_src_base} || return
+#	unpack ${gtk_org_src_dir} || return
 #	[ -f ${gtk_org_src_dir}/Makefile ] ||
 #		(cd ${gtk_org_src_dir}
 #		update_pkg_config_path
@@ -2389,7 +2389,7 @@ install_native_libffi()
 #	search_header gif_lib.h > /dev/null || install_native_giflib || return
 #	search_header decode.h webp > /dev/null || install_native_libwebp || return
 #	fetch webkitgtk || return
-#	unpack ${webkitgtk_org_src_dir} ${webkitgtk_src_base} || return
+#	unpack ${webkitgtk_org_src_dir} || return
 #	mkdir -pv ${webkitgtk_bld_dir_ntv} || return
 #	[ -f ${webkitgtk_bld_dir_ntv}/Makefile ] ||
 #		(cd ${webkitgtk_bld_dir_ntv}
@@ -2416,7 +2416,7 @@ install_native_emacs()
 	search_header gif_lib.h > /dev/null || install_native_giflib || return
 	search_header xpm.h X11 > /dev/null || install_native_libXpm || return
 	fetch emacs || return
-	unpack ${emacs_org_src_dir} ${emacs_src_base} || return
+	unpack ${emacs_org_src_dir} || return
 	[ -f ${emacs_org_src_dir}/Makefile ] ||
 		(cd ${emacs_org_src_dir}
 		CPPFLAGS="${CPPFLAGS} -I${prefix}/include" LDFLAGS="${LDFLAGS} -L${prefix}/lib" \
@@ -2437,7 +2437,7 @@ install_native_vim()
 	search_header Python.h > /dev/null || install_native_python || return
 	search_header ruby.h > /dev/null || install_native_ruby || return
 	fetch vim || return
-	unpack ${vim_org_src_dir} ${vim_src_base} || return
+	unpack ${vim_org_src_dir} || return
 	(cd ${vim_org_src_dir}
 	./configure --prefix=${prefix} --build=${build} \
 		--with-features=huge --enable-fail-if-missing \
@@ -2456,7 +2456,7 @@ install_native_vim()
 	make -C ${vim_org_src_dir} -j ${jobs} install || return
 	fetch vimdoc-ja || return
 	[ -d ${vimdoc_ja_org_src_dir} ] ||
-		(unpack ${vimdoc_ja_org_src_dir} ${vimdoc_ja_src_base} &&
+		(unpack ${vimdoc_ja_org_src_dir} &&
 		mv -fv ${vimdoc_ja_src_base}/vimdoc-ja-master ${vimdoc_ja_org_src_dir}) || return
 	mkdir -pv ${prefix}/share/vim/vimfiles || return
 	cp -rvt ${prefix}/share/vim/vimfiles ${vimdoc_ja_org_src_dir}/* || return
@@ -2467,7 +2467,7 @@ install_native_ctags()
 {
 	[ -x ${prefix}/bin/ctags -a "${force_install}" != yes ] && return
 	fetch ctags || return
-	unpack ${ctags_org_src_dir} ${ctags_src_base} || return
+	unpack ${ctags_org_src_dir} || return
 	[ -f ${ctags_org_src_dir}/configure ] ||
 		(cd ${ctags_org_src_dir}
 		PATH=/usr/bin:${PATH} ./autogen.sh) || return # modifying PATH is workaround for autoconf; force to use /usr/bin/autoconf
@@ -2492,7 +2492,7 @@ install_native_grep()
 {
 	[ -x ${prefix}/bin/grep -a "${force_install}" != yes ] && return
 	fetch grep || return
-	unpack ${grep_org_src_dir} ${grep_src_base} || return
+	unpack ${grep_org_src_dir} || return
 	[ -f ${grep_org_src_dir}/Makefile ] ||
 		(cd ${grep_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2507,7 +2507,7 @@ install_native_global()
 	[ -x ${prefix}/bin/global -a "${force_install}" != yes ] && return
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
 	fetch global || return
-	unpack ${global_org_src_dir} ${global_src_base} || return
+	unpack ${global_org_src_dir} || return
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
@@ -2522,7 +2522,7 @@ install_native_pcre2()
 {
 	[ -f ${prefix}/include/pcre2.h -a "${force_install}" != yes ] && return
 	fetch pcre2 || return
-	unpack ${pcre2_org_src_dir} ${pcre2_src_base} || return
+	unpack ${pcre2_org_src_dir} || return
 	[ -f ${pcre2_org_src_dir}/Makefile ] ||
 		(cd ${pcre2_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2540,7 +2540,7 @@ install_native_the_silver_searcher()
 	search_header zlib.h > /dev/null || install_native_zlib || return
 	search_header lzma.h > /dev/null || install_native_xz || return
 	fetch the_silver_searcher || return
-	unpack ${the_silver_searcher_org_src_dir} ${the_silver_searcher_src_base} || return
+	unpack ${the_silver_searcher_org_src_dir} || return
 	[ -f ${the_silver_searcher_org_src_dir}/Makefile ] ||
 		(cd ${the_silver_searcher_org_src_dir}
 		update_pkg_config_path
@@ -2558,7 +2558,7 @@ install_native_the_platinum_searcher()
 	[ -x ${prefix}/bin/pt -a "${force_install}" != yes ] && return
 	which go > /dev/null || install_native_go || return
 	fetch the_platinum_searcher || return
-	unpack ${the_platinum_searcher_org_src_dir} ${the_platinum_searcher_src_base} || return
+	unpack ${the_platinum_searcher_org_src_dir} || return
 	(cd ${the_platinum_searcher_org_src_dir}
 	go get ./...) || return
 }
@@ -2570,7 +2570,7 @@ install_native_highway()
 	which autoconf > /dev/null || install_native_autoconf || return
 	which automake > /dev/null || install_native_automake || return
 	fetch highway || return
-	unpack ${highway_org_src_dir} ${highway_src_base} || return
+	unpack ${highway_org_src_dir} || return
 	sed -ie "s%^\./configure %&--prefix=${prefix}%;
 				s/^make\$/& -j ${jobs} \&\& make -j ${jobs} install${strip:+-${strip}}/" \
 				${highway_org_src_dir}/tools/build.sh || return
@@ -2583,7 +2583,7 @@ install_native_graphviz()
 	[ -x ${prefix}/bin/dot -a "${force_install}" != yes ] && return
 	which swig > /dev/null || install_native_swig || return
 	fetch graphviz || return
-	unpack ${graphviz_org_src_dir} ${graphviz_src_base} || return
+	unpack ${graphviz_org_src_dir} || return
 	[ -f ${graphviz_org_src_dir}/Makefile ] ||
 		(cd ${graphviz_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
@@ -2602,7 +2602,7 @@ install_native_doxygen()
 	which cmake > /dev/null || install_native_cmake || return
 	which clang > /dev/null || install_native_cfe || return
 	fetch doxygen || return
-	unpack ${doxygen_org_src_dir} ${doxygen_src_base} || return
+	unpack ${doxygen_org_src_dir} || return
 	mkdir -pv ${doxygen_bld_dir_ntv} || return
 	[ -f ${doxygen_bld_dir_ntv}/Makefile ] ||
 		(cd ${doxygen_bld_dir_ntv}
@@ -2620,7 +2620,7 @@ install_native_diffutils()
 {
 	[ -x ${prefix}/bin/diff -a "${force_install}" != yes ] && return
 	fetch diffutils || return
-	unpack ${diffutils_org_src_dir} ${diffutils_src_base} || return
+	unpack ${diffutils_org_src_dir} || return
 	[ -f ${diffutils_org_src_dir}/Makefile ] ||
 		(cd ${diffutils_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2634,7 +2634,7 @@ install_native_patch()
 {
 	[ -x ${prefix}/bin/patch -a "${force_install}" != yes ] && return
 	fetch patch || return
-	unpack ${patch_org_src_dir} ${patch_src_base} || return
+	unpack ${patch_org_src_dir} || return
 	[ -f ${patch_org_src_dir}/Makefile ] ||
 		(cd ${patch_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2648,7 +2648,7 @@ install_native_findutils()
 {
 	[ -x ${prefix}/bin/find -a "${force_install}" != yes ] && return
 	fetch findutils || return
-	unpack ${findutils_org_src_dir} ${findutils_src_base} || return
+	unpack ${findutils_org_src_dir} || return
 	[ -f ${findutils_org_src_dir}/Makefile ] ||
 		(cd ${findutils_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -2663,7 +2663,7 @@ install_native_screen()
 	[ -x ${prefix}/bin/screen -a "${force_install}" != yes ] && return
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
 	fetch screen || return
-	unpack ${screen_org_src_dir} ${screen_src_base} || return
+	unpack ${screen_org_src_dir} || return
 	[ -f ${screen_org_src_dir}/Makefile ] ||
 		(cd ${screen_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
@@ -2677,7 +2677,7 @@ install_native_libevent()
 {
 	[ -f ${prefix}/include/event2/event.h -a "${force_install}" != yes ] && return
 	fetch libevent || return
-	unpack ${libevent_org_src_dir}-stable ${libevent_src_base} || return
+	unpack ${libevent_org_src_dir}-stable || return
 	[ -f ${libevent_org_src_dir}-stable/Makefile ] ||
 		(cd ${libevent_org_src_dir}-stable
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -2695,7 +2695,7 @@ install_native_tmux()
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
 	search_header event.h event2 > /dev/null || install_native_libevent || return
 	fetch tmux || return
-	unpack ${tmux_org_src_dir} ${tmux_src_base} || return
+	unpack ${tmux_org_src_dir} || return
 	[ -f ${tmux_org_src_dir}/Makefile ] ||
 		(cd ${tmux_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
@@ -2711,7 +2711,7 @@ install_native_expect()
 	[ -x ${prefix}/bin/expect -a "${force_install}" != yes ] && return
 	search_library tclConfig.sh > /dev/null || install_native_tcl || return
 	fetch expect || return
-	unpack ${expect_org_src_dir} ${expect_src_base} || return
+	unpack ${expect_org_src_dir} || return
 	[ -f ${expect_org_src_dir}/Makefile ] ||
 		(cd ${expect_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --enable-threads \
@@ -2728,7 +2728,7 @@ install_native_dejagnu()
 	[ -x ${prefix}/bin/runtest -a "${force_install}" != yes ] && return
 	which expect > /dev/null || install_native_expect || return
 	fetch dejagnu || return
-	unpack ${dejagnu_org_src_dir} ${dejagnu_src_base} || return
+	unpack ${dejagnu_org_src_dir} || return
 	[ -f ${dejagnu_org_src_dir}/Makefile ] ||
 		(cd ${dejagnu_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -2743,7 +2743,7 @@ install_native_zsh()
 	[ -x ${prefix}/bin/zsh -a "${force_install}" != yes ] && return
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
 	fetch zsh || return
-	unpack ${zsh_org_src_dir} ${zsh_src_base} || return
+	unpack ${zsh_org_src_dir} || return
 	[ -f ${zsh_org_src_dir}/Makefile ] ||
 		(cd ${zsh_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -2757,7 +2757,7 @@ install_native_bash()
 {
 	[ -x ${prefix}/bin/bash -a "${force_install}" != yes ] && return
 	fetch bash || return
-	unpack ${bash_org_src_dir} ${bash_src_base} || return
+	unpack ${bash_org_src_dir} || return
 	[ -f ${bash_org_src_dir}/Makefile ] ||
 		(cd ${bash_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -2773,7 +2773,7 @@ install_native_inetutils()
 {
 	[ -x ${prefix}/bin/telnet -a "${force_install}" != yes ] && return
 	fetch inetutils || return
-	unpack ${inetutils_org_src_dir} ${inetutils_src_base} || return
+	unpack ${inetutils_org_src_dir} || return
 	[ -f ${inetutils_org_src_dir}/Makefile ] ||
 		(cd ${inetutils_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2787,7 +2787,7 @@ install_native_openssl()
 {
 	[ -d ${prefix}/include/openssl -a "${force_install}" != yes ] && return
 	fetch openssl || return
-	unpack ${openssl_org_src_dir} ${openssl_src_base} || return
+	unpack ${openssl_org_src_dir} || return
 	(cd ${openssl_org_src_dir}
 	./config --prefix=${prefix} shared) || return
 	make -C ${openssl_org_src_dir} -j ${jobs} || return
@@ -2804,7 +2804,7 @@ install_native_openssh()
 	search_header zlib.h > /dev/null || install_native_zlib || return
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch openssh || return
-	unpack ${openssh_org_src_dir} ${openssh_src_base} || return
+	unpack ${openssh_org_src_dir} || return
 	[ -f ${openssh_org_src_dir}/Makefile ] ||
 		(cd ${openssh_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -2819,7 +2819,7 @@ install_native_curl()
 	[ -x ${prefix}/bin/curl -a "${force_install}" != yes ] && return
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch curl || return
-	unpack ${curl_org_src_dir} ${curl_src_base} || return
+	unpack ${curl_org_src_dir} || return
 	(cd ${curl_org_src_dir}
 	./configure --prefix=${prefix} --build=${build} \
 		--enable-optimize --disable-silent-rules \
@@ -2838,7 +2838,7 @@ install_native_asciidoc()
 {
 	[ -x ${prefix}/bin/asciidoc -a "${force_install}" != yes ] && return
 	fetch asciidoc || return
-	unpack ${asciidoc_org_src_dir} ${asciidoc_src_base} || return
+	unpack ${asciidoc_org_src_dir} || return
 	[ -f ${asciidoc_org_src_dir}/Makefile ] ||
 		(cd ${asciidoc_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -2853,7 +2853,7 @@ install_native_libxml2()
 	[ -d ${prefix}/include/libxml2 -a "${force_install}" != yes ] && return
 	search_header Python.h > /dev/null || install_native_python || return
 	fetch libxml2 || return
-	unpack ${libxml2_org_src_dir} ${libxml2_src_base} || return
+	unpack ${libxml2_org_src_dir} || return
 	[ -f ${libxml2_org_src_dir}/Makefile ] ||
 		(cd ${libxml2_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
@@ -2871,7 +2871,7 @@ install_native_libxslt()
 	[ -d ${prefix}/include/libxslt -a "${force_install}" != yes ] && return
 	search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
 	fetch libxslt || return
-	unpack ${libxslt_org_src_dir} ${libxslt_src_base} || return
+	unpack ${libxslt_org_src_dir} || return
 	[ -f ${libxslt_org_src_dir}/Makefile ] ||
 		(cd ${libxslt_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2887,7 +2887,7 @@ install_native_xmlto()
 	[ -x ${prefix}/bin/xmlto -a "${force_install}" != yes ] && return
 	search_header xslt.h libxslt > /dev/null || install_native_libxslt || return
 	fetch xmlto || return
-	unpack ${xmlto_org_src_dir} ${xmlto_src_base} || return
+	unpack ${xmlto_org_src_dir} || return
 	[ -f ${xmlto_org_src_dir}/Makefile ] ||
 		(cd ${xmlto_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -2901,7 +2901,7 @@ install_native_gettext()
 {
 	[ -x ${prefix}/bin/gettext -a "${force_install}" != yes ] && return
 	fetch gettext || return
-	unpack ${gettext_org_src_dir} ${gettext_src_base} || return
+	unpack ${gettext_org_src_dir} || return
 	[ -f ${gettext_org_src_dir}/Makefile ] ||
 		(cd ${gettext_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -2927,7 +2927,7 @@ install_native_git()
 	which perl > /dev/null || install_native_perl || return
 	which wish > /dev/null || install_native_tk || return
 	fetch git || return
-	unpack ${git_org_src_dir} ${git_src_base} || return
+	unpack ${git_org_src_dir} || return
 	make -C ${git_org_src_dir} -j ${jobs} V=1 configure || return
 	(cd ${git_org_src_dir}
 	./configure --prefix=${prefix} --build=${build}) || return
@@ -2952,7 +2952,7 @@ install_native_mercurial()
 	[ -x ${prefix}/bin/hg -a "${force_install}" != yes ] && return
 	which python > /dev/null || install_native_python || return
 	fetch mercurial || return
-	unpack ${mercurial_org_src_dir} ${mercurial_src_base} || return
+	unpack ${mercurial_org_src_dir} || return
 	pip install docutils || return
 	make -C ${mercurial_org_src_dir} -j ${jobs} PYTHON=python all || return
 	[ "${enable_check}" != yes ] ||
@@ -2964,7 +2964,7 @@ install_native_sqlite()
 {
 	[ -f ${prefix}/include/sqlite3.h -a "${force_install}" != yes ] && return
 	fetch sqlite-autoconf || return
-	unpack ${sqlite_autoconf_org_src_dir} ${sqlite_autoconf_src_base} || return
+	unpack ${sqlite_autoconf_org_src_dir} || return
 	[ -f ${sqlite_autoconf_org_src_dir}/Makefile ] ||
 		(cd ${sqlite_autoconf_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -2979,7 +2979,7 @@ install_native_apr()
 {
 	[ -d ${prefix}/include/apr-1 -a "${force_install}" != yes ] && return
 	fetch apr || return
-	unpack ${apr_org_src_dir} ${apr_src_base} || return
+	unpack ${apr_org_src_dir} || return
 	[ -f ${apr_org_src_dir}/Makefile ] ||
 		(cd ${apr_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
@@ -2997,7 +2997,7 @@ install_native_apr_util()
 	search_header apr.h apr-1 > /dev/null || install_native_apr || return
 	search_header sqlite3.h > /dev/null || install_native_sqlite || return
 	fetch apr-util || return
-	unpack ${apr_util_org_src_dir} ${apr_util_src_base} || return
+	unpack ${apr_util_org_src_dir} || return
 	[ -f ${apr_util_org_src_dir}/Makefile ] ||
 		(cd ${apr_util_org_src_dir}
 		./configure --prefix=${prefix} --with-apr=`get_prefix apr.h apr-1` \
@@ -3020,7 +3020,7 @@ install_native_subversion()
 	which perl > /dev/null || install_native_perl || return
 	which ruby > /dev/null || install_native_ruby || return
 	fetch subversion || return
-	unpack ${subversion_org_src_dir} ${subversion_src_base} || return
+	unpack ${subversion_org_src_dir} || return
 	[ -f ${subversion_org_src_dir}/Makefile ] ||
 		(cd ${subversion_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --with-zlib=`get_prefix zlib.h` \
@@ -3041,7 +3041,7 @@ install_native_cmake()
 	search_header bzlib.h > /dev/null || install_native_bzip2 || return
 	search_header lzma.h > /dev/null || install_native_xz || return
 	fetch cmake || return
-	unpack ${cmake_org_src_dir} ${cmake_src_base} || return
+	unpack ${cmake_org_src_dir} || return
 	[ -f ${cmake_org_src_dir}/Makefile ] ||
 		(cd ${cmake_org_src_dir}
 		./bootstrap --prefix=${prefix} --parallel=${jobs} \
@@ -3060,7 +3060,7 @@ install_native_libedit()
 	[ -f ${prefix}/include/histedit.h -a "${force_install}" != yes ] && return
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
 	fetch libedit || return
-	unpack ${libedit_org_src_dir} ${libedit_src_base} || return
+	unpack ${libedit_org_src_dir} || return
 	[ -f ${libedit_org_src_dir}/Makefile ] ||
 		(cd ${libedit_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
@@ -3076,7 +3076,7 @@ install_native_swig()
 {
 	[ -x ${prefix}/bin/swig -a "${force_install}" != yes ] && return
 	fetch swig || return
-	unpack ${swig_org_src_dir} ${swig_src_base} || return
+	unpack ${swig_org_src_dir} || return
 	[ -f ${swig_org_src_dir}/Makefile ] ||
 		(cd ${swig_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --enable-cpp11-testing) || return
@@ -3091,7 +3091,7 @@ install_native_llvm()
 	[ -d ${prefix}/include/llvm -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	fetch llvm || return
-	unpack ${llvm_org_src_dir} ${llvm_src_base} || return
+	unpack ${llvm_org_src_dir} || return
 	[ -x ${prefix}/bin/lld ] || place_llvm_tools lld || return
 	mkdir -pv ${llvm_bld_dir} || return
 	[ -f ${llvm_bld_dir}/Makefile ] ||
@@ -3110,7 +3110,7 @@ install_native_libcxx()
 	[ -e ${prefix}/lib/libc++.so -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	fetch libcxx || return
-	unpack ${libcxx_org_src_dir} ${libcxx_src_base} || return
+	unpack ${libcxx_org_src_dir} || return
 	mkdir -pv ${libcxx_bld_dir} || return
 	[ -f ${libcxx_bld_dir}/Makefile ] ||
 		(cd ${libcxx_bld_dir}
@@ -3130,7 +3130,7 @@ install_native_libcxxabi()
 	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	search_header iostream c++/v1 > /dev/null || install_native_libcxx || return
 	fetch libcxxabi || return
-	unpack ${libcxxabi_org_src_dir} ${libcxxabi_src_base} || return
+	unpack ${libcxxabi_org_src_dir} || return
 	sed -ie '/set(LLVM_CMAKE_PATH /s%share/llvm/cmake%lib/cmake/llvm%' ${libcxxabi_org_src_dir}/CMakeLists.txt || return # [XXX] workaround for LLVM 3.9.0
 	mkdir -pv ${libcxxabi_bld_dir} || return
 	[ -f ${libcxxabi_bld_dir}/Makefile ] ||
@@ -3147,7 +3147,7 @@ install_native_compiler_rt()
 	which cmake > /dev/null || install_native_cmake || return
 	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	fetch compiler-rt || return
-	unpack ${compiler_rt_org_src_dir} ${compiler_rt_src_base} || return
+	unpack ${compiler_rt_org_src_dir} || return
 	mkdir -pv ${compiler_rt_bld_dir} || return
 	[ -f ${compiler_rt_bld_dir}/Makefile ] ||
 		(cd ${compiler_rt_bld_dir}
@@ -3166,7 +3166,7 @@ install_native_cfe()
 	search_header ABI.h clang/Basic > /dev/null || install_native_libcxxabi || return
 	search_header allocator_interface.h sanitizer > /dev/null || install_native_compiler_rt || return
 	fetch cfe || return
-	unpack ${cfe_org_src_dir} ${cfe_src_base} || return
+	unpack ${cfe_org_src_dir} || return
 	mkdir -pv ${cfe_bld_dir} || return
 	[ -f ${cfe_bld_dir}/Makefile ] ||
 		(cd ${cfe_bld_dir}
@@ -3186,14 +3186,14 @@ install_native_clang_tools_extra()
 	[ -x ${prefix}/bin/clang-tidy -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	fetch llvm || return
-	unpack ${llvm_org_src_dir} ${llvm_src_base} || return
+	unpack ${llvm_org_src_dir} || return
 	fetch cfe || return
 	[ -d ${llvm_org_src_dir}/tools/clang ] ||
-		(unpack ${cfe_org_src_dir} ${cfe_src_base} &&
+		(unpack ${cfe_org_src_dir} &&
 		mv -v ${cfe_org_src_dir} ${llvm_org_src_dir}/tools/clang) || return
 	fetch clang-tools-extra || return
 	[ -d ${llvm_org_src_dir}/tools/clang/tools/extra ] ||
-		(unpack ${clang_tools_extra_org_src_dir} ${clang_tools_extra_src_base} &&
+		(unpack ${clang_tools_extra_org_src_dir} &&
 		mv -v ${clang_tools_extra_org_src_dir} ${llvm_org_src_dir}/tools/clang/tools/extra) || return
 	mkdir -pv ${clang_tools_extra_bld_dir} || return
 	[ -f ${clang_tools_extra_bld_dir}/Makefile ] ||
@@ -3208,7 +3208,7 @@ place_llvm_tools()
 {
 	fetch ${1} || return
 	[ -d ${llvm_org_src_dir}/tools/${1} ] ||
-		(eval unpack \${${1}_org_src_dir} \${${1}_src_base} &&
+		(eval unpack \${${1}_org_src_dir} &&
 		eval mv -v \${${1}_org_src_dir} ${llvm_org_src_dir}/tools/${1}) || return
 }
 
@@ -3217,7 +3217,7 @@ install_native_lld()
 	[ -x ${prefix}/bin/lld -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	fetch llvm || return
-	unpack ${llvm_org_src_dir} ${llvm_src_base} || return
+	unpack ${llvm_org_src_dir} || return
 	place_llvm_tools lld || return
 	mkdir -pv ${lld_bld_dir} || return
 	[ -f ${lld_bld_dir}/Makefile ] ||
@@ -3240,7 +3240,7 @@ install_native_lldb()
 	search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
 	which swig > /dev/null || install_native_swig || return
 	fetch llvm || return
-	unpack ${llvm_org_src_dir} ${llvm_src_base} || return
+	unpack ${llvm_org_src_dir} || return
 	place_llvm_tools lldb || return
 	mkdir -pv ${lldb_bld_dir} || return
 	[ -f ${lldb_bld_dir}/Makefile ] ||
@@ -3280,7 +3280,7 @@ install_native_boost()
 	[ -d ${prefix}/include/boost -a "${force_install}" != yes ] && return
 	search_header bzlib.h > /dev/null || install_native_bzip2 || return
 	fetch boost || return
-	unpack ${boost_org_src_dir} ${boost_src_base} || return
+	unpack ${boost_org_src_dir} || return
 	(cd ${boost_org_src_dir}
 	./bootstrap.sh --prefix=${prefix} --with-toolset=gcc &&
 	./b2 --prefix=${prefix} --build-dir=${boost_bld_dir_ntv} \
@@ -3296,7 +3296,7 @@ install_cross_binutils()
 	which yacc > /dev/null || install_native_bison || return
 	fetch binutils || return
 	[ -d ${binutils_src_dir_crs} ] ||
-		(unpack ${binutils_org_src_dir} ${binutils_src_base} &&
+		(unpack ${binutils_org_src_dir} &&
 			mv -v ${binutils_org_src_dir} ${binutils_src_dir_crs}) || return
 	[ -f ${binutils_src_dir_crs}/Makefile ] ||
 		(cd ${binutils_src_dir_crs}
@@ -3320,7 +3320,7 @@ install_cross_gcc_without_headers()
 	search_header mpc.h > /dev/null || install_native_mpc || return
 	which perl > /dev/null || install_native_perl || return
 	fetch gcc || return
-	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
+	unpack ${gcc_org_src_dir} || return
 	mkdir -pv ${gcc_bld_dir_crs_1st} || return
 	[ -f ${gcc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_1st}
@@ -3348,7 +3348,7 @@ install_cross_linux_header()
 	which ${target}-gcc > /dev/null || install_cross_gcc_without_headers || return
 	fetch linux || return
 	[ -d ${linux_src_dir_crs} ] ||
-		(unpack ${linux_org_src_dir} ${linux_src_base} &&
+		(unpack ${linux_org_src_dir} &&
 			mv -v ${linux_org_src_dir} ${linux_src_dir_crs}) || return
 	make -C ${linux_src_dir_crs} -j ${jobs} V=1 mrproper || return
 	make -C ${linux_src_dir_crs} -j ${jobs} V=1 \
@@ -3363,7 +3363,7 @@ install_cross_glibc()
 	which gperf > /dev/null || install_native_gperf || return
 	fetch glibc || return
 	[ -d ${glibc_src_dir_crs_1st} ] ||
-		(unpack ${glibc_org_src_dir} ${glibc_src_base} &&
+		(unpack ${glibc_org_src_dir} &&
 			mv -v ${glibc_org_src_dir} ${glibc_src_dir_crs_1st}) || return
 
 	[ ${cross_linux_arch} != microblaze ] ||
@@ -3410,7 +3410,7 @@ install_cross_newlib()
 	which ${target}-gcc > /dev/null || install_cross_gcc_without_headers || return
 	fetch newlib || return
 	[ -d ${newlib_src_dir_crs_hdr} ] ||
-		(unpack ${newlib_org_src_dir} ${newlib_src_base} &&
+		(unpack ${newlib_org_src_dir} &&
 			mv -v ${newlib_org_src_dir} ${newlib_src_dir_crs_hdr}) || return
 	mkdir -pv ${newlib_bld_dir_crs_hdr} || return
 	[ -f ${newlib_bld_dir_crs_hdr}/Makefile ] ||
@@ -3425,7 +3425,7 @@ install_mingw_w64_header()
 {
 	fetch mingw-w64 || return
 	[ -d ${mingw_w64_src_dir_crs_hdr} ] ||
-		(unpack ${mingw_w64_org_src_dir} ${mingw_w64_src_base} &&
+		(unpack ${mingw_w64_org_src_dir} &&
 			mv -v ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_crs_hdr}) || return
 	mkdir -pv ${mingw_w64_bld_dir_crs_hdr} || return
 	[ -f ${mingw_w64_bld_dir_crs_hdr}/Makefile ] ||
@@ -3442,7 +3442,7 @@ install_mingw_w64_crt()
 {
 	fetch mingw-w64 || return
 	[ -d ${mingw_w64_src_dir_crs_1st} ] ||
-		(unpack ${mingw_w64_org_src_dir} ${mingw_w64_src_base} &&
+		(unpack ${mingw_w64_org_src_dir} &&
 			mv -v ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_crs_1st}) || return
 	mkdir -pv ${mingw_w64_bld_dir_crs_1st} || return
 	[ -f ${mingw_w64_bld_dir_crs_1st}/Makefile ] ||
@@ -3464,7 +3464,7 @@ install_cross_functional_gcc()
 	search_header mpc.h > /dev/null || install_native_mpc || return
 	which perl > /dev/null || install_native_perl || return
 	fetch gcc || return
-	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
+	unpack ${gcc_org_src_dir} || return
 	mkdir -pv ${gcc_bld_dir_crs_2nd} || return
 	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_2nd}
@@ -3503,7 +3503,7 @@ install_cross_gdb()
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
 	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m.so > /dev/null || install_native_python || return
 	fetch gdb || return
-	unpack ${gdb_org_src_dir} ${gdb_src_base} || return
+	unpack ${gdb_org_src_dir} || return
 	mkdir -pv ${gdb_bld_dir_crs} || return
 	[ -f ${gdb_bld_dir_crs}/Makefile ] ||
 		(cd ${gdb_bld_dir_crs}
@@ -3522,7 +3522,7 @@ install_native_python()
 {
 	[ -x ${prefix}/bin/python3 -a "${force_install}" != yes ] && return
 	fetch Python || return
-	unpack ${Python_org_src_dir} ${Python_src_base} || return
+	unpack ${Python_org_src_dir} || return
 	[ -f ${Python_org_src_dir}/Makefile ] ||
 		(cd ${Python_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --enable-shared --disable-ipv6 \
@@ -3540,7 +3540,7 @@ install_native_ruby()
 {
 	[ -x ${prefix}/bin/ruby -a "${force_install}" != yes ] && return
 	fetch ruby || return
-	unpack ${ruby_org_src_dir} ${ruby_src_base} || return
+	unpack ${ruby_org_src_dir} || return
 	[ -f ${ruby_org_src_dir}/Makefile ] ||
 		(cd ${ruby_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
@@ -3558,7 +3558,7 @@ install_native_go()
 	[ -n "${GOPATH}" ] || ! echo Error. GOPATH not set. >&2 || return
 	which git > /dev/null || install_native_git || return
 	fetch go || return
-	[ -d ${go_org_src_dir} ] || unpack ${go_src_base}/go${go_ver}.src ${go_src_base} || return
+	[ -d ${go_org_src_dir} ] || unpack ${go_src_base}/go${go_ver}.src || return
 	[ -d ${go_src_base}/go ] && mv -v ${go_src_base}/go ${go_org_src_dir}
 	(cd ${go_org_src_dir}/src
 	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=`which go | sed -e 's/\/bin\/go//'` \
@@ -3572,7 +3572,7 @@ install_native_perl()
 {
 	[ -x ${prefix}/bin/perl -a "${force_install}" != yes ] && return
 	fetch perl || return
-	unpack ${perl_org_src_dir} ${perl_src_base} || return
+	unpack ${perl_org_src_dir} || return
 	[ -f ${perl_org_src_dir}/Makefile ] ||
 		(cd ${perl_org_src_dir}
 		./Configure -de -Dprefix=${prefix} -Dcc=${CC:-gcc} \
@@ -3586,7 +3586,7 @@ install_native_tcl()
 {
 	[ -x ${prefix}/bin/tclsh -a "${force_install}" != yes ] && return
 	fetch tcl || return
-	unpack ${tcl_org_src_dir} ${tcl_src_base} || return
+	unpack ${tcl_org_src_dir} || return
 	[ -f ${tcl_org_src_dir}/unix/Makefile ] ||
 		(cd ${tcl_org_src_dir}/unix
 		./configure --prefix=${prefix} -build=${build} \
@@ -3605,7 +3605,7 @@ install_native_tk()
 	[ -x ${prefix}/bin/wish -a "${force_install}" != yes ] && return
 	search_library tclConfig.sh > /dev/null || install_native_tcl || return
 	fetch tk || return
-	unpack ${tk_org_src_dir} ${tk_src_base} || return
+	unpack ${tk_org_src_dir} || return
 	[ -f ${tk_org_src_dir}/unix/Makefile ] ||
 		(cd ${tk_org_src_dir}/unix
 		./configure --prefix=${prefix} -build=${build} \
@@ -3621,7 +3621,7 @@ install_native_libunistring()
 {
 	[ -f ${prefix}/include/unistr.h -a "${force_install}" != yes ] && return
 	fetch libunistring || return
-	unpack ${libunistring_org_src_dir} ${libunistring_src_base} || return
+	unpack ${libunistring_org_src_dir} || return
 	[ -f ${libunistring_org_src_dir}/Makefile ] ||
 		(cd ${libunistring_org_src_dir}
 		./configure --prefix=${prefix} -build=${build} --disable-silent-rules) || return
@@ -3635,7 +3635,7 @@ install_native_libatomic_ops()
 {
 	[ -f ${prefix}/include/atomic_ops.h -a "${force_install}" != yes ] && return
 	fetch libatomic_ops || return
-	unpack ${libatomic_ops_org_src_dir} ${libatomic_ops_src_base} || return
+	unpack ${libatomic_ops_org_src_dir} || return
 	[ -f ${libatomic_ops_org_src_dir}/Makefile ] ||
 		(cd ${libatomic_ops_org_src_dir}
 		./configure --prefix=${prefix} -build=${build} --disable-silent-rules \
@@ -3652,7 +3652,7 @@ install_native_gc()
 	[ -f ${prefix}/include/gc.h -a "${force_install}" != yes ] && return
 	search_header atomic_ops.h > /dev/null || install_native_libatomic_ops || return
 	fetch gc || return
-	unpack ${gc_org_src_dir} ${gc_src_base} || return
+	unpack ${gc_org_src_dir} || return
 	[ -f ${gc_org_src_dir}/Makefile ] ||
 		(cd ${gc_org_src_dir}
 		./configure --prefix=${prefix} -build=${build} --disable-silent-rules) || return
@@ -3670,7 +3670,7 @@ install_native_guile()
 	search_header ffi.h > /dev/null || install_native_libffi || return
 	search_header gc.h > /dev/null || install_native_gc || return
 	fetch guile || return
-	unpack ${guile_org_src_dir} ${guile_src_base} || return
+	unpack ${guile_org_src_dir} || return
 	[ -f ${guile_org_src_dir}/Makefile ] ||
 		(cd ${guile_org_src_dir}
 		./configure --prefix=${prefix} -build=${build} \
@@ -3685,7 +3685,7 @@ install_native_nasm()
 {
 	[ -x ${prefix}/bin/nasm -a "${force_install}" != yes ] && return
 	fetch nasm || return
-	unpack ${nasm_org_src_dir} ${nasm_src_base} || return
+	unpack ${nasm_org_src_dir} || return
 	[ -f ${nasm_org_src_dir}/Makefile ] ||
 		(cd ${nasm_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -3700,7 +3700,7 @@ install_native_yasm()
 {
 	[ -x ${prefix}/bin/yasm -a "${force_install}" != yes ] && return
 	fetch yasm || return
-	unpack ${yasm_org_src_dir} ${yasm_src_base} || return
+	unpack ${yasm_org_src_dir} || return
 	[ -f ${yasm_org_src_dir}/Makefile ] ||
 		(cd ${yasm_org_src_dir}
 		./configure --prefix=${prefix} --build=${build}) || return
@@ -3716,7 +3716,7 @@ install_native_x264()
 	which yasm > /dev/null || install_native_yasm || return
 	fetch x264 || return
 	[ -d ${x264_org_src_dir} ] ||
-		(unpack ${x264_org_src_dir} ${x264_src_base} &&
+		(unpack ${x264_org_src_dir} &&
 		mv -v ${x264_src_base}/x264-snapshot-* ${x264_org_src_dir}) || return
 	(cd ${x264_org_src_dir}
 	./configure --prefix=${prefix} \
@@ -3734,7 +3734,7 @@ install_native_x265()
 	which yasm > /dev/null || install_native_yasm || return
 	fetch x265 || return
 	[ -d ${x265_org_src_dir} ] ||
-		(unpack ${x265_org_src_dir} ${x265_src_base} &&
+		(unpack ${x265_org_src_dir} &&
 		mv -v ${x265_src_base}/x265_${x265_ver} ${x265_org_src_dir}) || return
 	(cd ${x265_org_src_dir}/source
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
@@ -3754,7 +3754,7 @@ install_native_libav()
 	search_header x265.h > /dev/null || install_native_x265 || return
 	fetch libav || return
 	[ -d ${libav_org_src_dir} ] ||
-		unpack ${libav_org_src_dir} ${libav_src_base} || return
+		unpack ${libav_org_src_dir} || return
 	(cd ${libav_org_src_dir}
 	./configure --prefix=${prefix} --enable-gpl --enable-version3 --enable-nonfree --enable-shared \
 		--enable-gray \
@@ -3805,9 +3805,9 @@ install_native_opencv()
 	search_header tiff.h > /dev/null || install_native_libtiff || return
 	search_header jpeglib.h > /dev/null || install_native_libjpeg || return # systemのlibjpegだと古くて新規インストール必須かも。
 	fetch opencv || return
-	unpack ${opencv_org_src_dir} ${opencv_src_base} || return
+	unpack ${opencv_org_src_dir} || return
 	fetch opencv_contrib || return
-	unpack ${opencv_contrib_org_src_dir} ${opencv_contrib_src_base} || return
+	unpack ${opencv_contrib_org_src_dir} || return
 	mkdir -pv ${opencv_bld_dir_ntv} || return
 	(cd ${opencv_bld_dir_ntv}
 	libdirs="-L`get_library_path libpng.so` -L`get_library_path libtiff.so` -L`get_library_path libjpeg.so` -L${prefix}/lib"
@@ -3831,7 +3831,7 @@ install_native_googletest()
 	[ -f ${prefix}/include/gtest/gtest.h -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	fetch googletest || return
-	unpack ${googletest_org_src_dir} ${googletest_src_base} || return
+	unpack ${googletest_org_src_dir} || return
 	mkdir -pv ${googletest_bld_dir_ntv} || return
 	(cd ${googletest_bld_dir_ntv}
 	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
@@ -3851,7 +3851,7 @@ install_crossed_binutils()
 	which yacc > /dev/null || install_native_bison || return
 	fetch binutils || return
 	[ -d ${binutils_src_dir_crs_ntv} ] ||
-		(unpack ${binutils_org_src_dir} ${binutils_src_base} &&
+		(unpack ${binutils_org_src_dir} &&
 			mv -v ${binutils_org_src_dir} ${binutils_src_dir_crs_ntv}) || return
 	[ -f ${binutils_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_crs_ntv}
@@ -3869,7 +3869,7 @@ install_crossed_native_gmp()
 	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
 	fetch gmp || return
 	[ -d ${gmp_src_dir_crs_ntv} ] ||
-		(unpack ${gmp_org_src_dir} ${gmp_src_base} &&
+		(unpack ${gmp_org_src_dir} &&
 			mv -v ${gmp_org_src_dir} ${gmp_src_dir_crs_ntv}) || return
 	[ -f ${gmp_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${gmp_src_dir_crs_ntv}
@@ -3885,7 +3885,7 @@ install_crossed_native_mpfr()
 	install_crossed_native_gmp || return
 	fetch mpfr || return
 	[ -d ${mpfr_src_dir_crs_ntv} ] ||
-		(unpack ${mpfr_org_src_dir} ${mpfr_src_base} &&
+		(unpack ${mpfr_org_src_dir} &&
 			mv -v ${mpfr_org_src_dir} ${mpfr_src_dir_crs_ntv}) || return
 	[ -f ${mpfr_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${mpfr_src_dir_crs_ntv}
@@ -3904,7 +3904,7 @@ install_crossed_native_mpc()
 	install_crossed_native_mpfr || return
 	fetch mpc || return
 	[ -d ${mpc_src_dir_crs_ntv} ] ||
-		(unpack ${mpc_org_src_dir} ${mpc_src_base} &&
+		(unpack ${mpc_org_src_dir} &&
 			mv -v ${mpc_org_src_dir} ${mpc_src_dir_crs_ntv}) || return
 	[ -f ${mpc_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${mpc_src_dir_crs_ntv}
@@ -3926,7 +3926,7 @@ install_crossed_gcc()
 	[ -f ${sysroot}/usr/include/mpc.h ] || install_crossed_native_mpc || return
 	which perl > /dev/null || install_native_perl || return
 	fetch gcc || return
-	unpack ${gcc_org_src_dir} ${gcc_src_base} || return
+	unpack ${gcc_org_src_dir} || return
 	mkdir -pv ${gcc_bld_dir_crs_ntv} || return
 	[ -f ${gcc_bld_dir_crs_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_ntv}
@@ -3945,7 +3945,7 @@ install_crossed_native_zlib()
 	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
 	fetch zlib || return
 	[ -d ${zlib_src_dir_crs_ntv} ] ||
-		(unpack ${zlib_org_src_dir} ${zlib_src_base} &&
+		(unpack ${zlib_org_src_dir} &&
 			mv -v ${zlib_org_src_dir} ${zlib_src_dir_crs_ntv}) || return
 	(cd ${zlib_src_dir_crs_ntv}
 	[ ${host} = x86_64-w64-mingw32 ] && static=--static || static=''
@@ -3961,7 +3961,7 @@ install_crossed_native_libpng()
 	install_crossed_native_zlib || return
 	fetch libpng || return
 	[ -d ${libpng_src_dir_crs_ntv} ] ||
-		(unpack ${libpng_org_src_dir} ${libpng_src_base} &&
+		(unpack ${libpng_org_src_dir} &&
 			mv -v ${libpng_org_src_dir} ${libpng_src_dir_crs_ntv}) || return
 	[ -f ${libpng_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_crs_ntv}
@@ -3977,7 +3977,7 @@ install_crossed_native_libtiff()
 	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
 	fetch tiff || return
 	[ -d ${tiff_src_dir_crs_ntv} ] ||
-		(unpack ${tiff_org_src_dir} ${tiff_src_base} &&
+		(unpack ${tiff_org_src_dir} &&
 			mv -v ${tiff_org_src_dir} ${tiff_src_dir_crs_ntv}) || return
 	[ -f ${tiff_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${tiff_src_dir_crs_ntv}
