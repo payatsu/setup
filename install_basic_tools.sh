@@ -5,7 +5,7 @@ os=`head -1 /etc/issue | cut -d ' ' -f 1`
 case ${os} in
 	Debian|Ubuntu|Raspbian)
 		sed -i -e 's/^# \(deb..*partner\)$/\1/' /etc/apt/sources.list
-		apt-get update
+		apt-get update -y
 		apt-get install -y emacs vim
 		apt-get install -y zsh
 		apt-get install -y screen tmux
@@ -17,7 +17,7 @@ case ${os} in
 		apt-get install -y doxygen graphviz
 		;;
 	Red|CentOS|\\S)
-		yum update
+		yum update -y
 		yum install -y emacs vim
 		yum install -y zsh
 		yum install -y screen tmux
