@@ -15,7 +15,7 @@
 # [TODO] webkitgtk<-libsoup
 # [TODO] libmount, dtrace (GLib)
 # [TODO] rsvg, imagemagick
-# [TODO] Polly, MySQL, expat, grub, util-linux
+# [TODO] Polly, MySQL, expat(git), grub, util-linux
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 
