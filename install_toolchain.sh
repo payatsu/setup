@@ -3394,7 +3394,7 @@ EOF
 	mkdir -pv ${glibc_bld_dir_crs_1st} || return
 	[ -f ${glibc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${glibc_bld_dir_crs_1st}
-		LD_LIBRARY_PATH='' ${glibc_src_dir_crs_1st}/configure --prefix=/usr --build=${build} --host=${target} \
+		${glibc_src_dir_crs_1st}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-headers=${sysroot}/usr/include CFLAGS="${CFLAGS} -Wno-error=parentheses -O2" \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return
 	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} install-headers || return
