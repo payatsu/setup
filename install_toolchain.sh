@@ -2920,7 +2920,7 @@ install_native_git()
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return
 	search_header curl.h curl > /dev/null || install_native_curl || return
 	which asciidoc > /dev/null || install_native_asciidoc || return
-	which xmlto > /dev/null || install_native_xmlto || return
+	which xmlto > /dev/null || install_native_xmlto || install_native_git_manpages || return
 	search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
 	search_header xslt.h libxslt > /dev/null || install_native_libxslt || return
 	which msgfmt > /dev/null || install_native_gettext || return
