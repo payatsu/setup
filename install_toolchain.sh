@@ -90,6 +90,7 @@
 : ${asciidoc_ver:=8.6.9}
 : ${libxml2_ver:=2.9.4}
 : ${libxslt_ver:=1.1.29}
+: ${expat_ver:=2.2.0}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
 : ${git_ver:=2.13.0}
@@ -359,6 +360,8 @@ help()
 		Specify the version of libxml2 you want, currently '${libxml2_ver}'.
 	libxslt_ver
 		Specify the version of libxslt you want, currently '${libxslt_ver}'.
+	expat_ver
+		Specify the version of expat you want, currently '${expat_ver}'.
 	xmlto_ver
 		Specify the version of xmlto you want, currently '${xmlto_ver}'.
 	gettext_ver
@@ -612,6 +615,10 @@ fetch()
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget -O \${${_1}_org_src_dir}.tar.gz \
 				ftp://xmlsoft.org/${_1}/\${${_1}_name}.tar.gz || return;;
+	expat)
+		check_archive ${expat_org_src_dir} ||
+			wget --no-check-certificate -O ${expat_org_src_dir}.tar.bz2 \
+				https://sourceforge.net/projects/expat/files/expat/${expat_ver}/${expat_name}.tar.bz2/download || return;;
 	xmlto)
 		check_archive ${xmlto_org_src_dir} ||
 			wget --no-check-certificate -O ${xmlto_org_src_dir}.tar.bz2 \
@@ -2879,6 +2886,22 @@ install_native_libxslt()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libxslt_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libxslt_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_pkg_config_path || return
+}
+
+install_native_expat()
+{
+	[ -f ${prefix}/include/expat.h -a "${force_install}" != yes ] && return
+	fetch expat || return
+	unpack ${expat_org_src_dir} || return
+	[ -f ${expat_org_src_dir}/Makefile ] ||
+		(cd ${expat_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return
+	make -C ${expat_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${expat_org_src_dir} -j ${jobs} -k check || return
+	make -C ${expat_org_src_dir} -j ${jobs} install || return
+	update_library_search_path || return
 	update_pkg_config_path || return
 }
 
