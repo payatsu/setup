@@ -15,7 +15,7 @@
 # [TODO] webkitgtk<-libsoup
 # [TODO] libmount, dtrace (GLib)
 # [TODO] rsvg, imagemagick
-# [TODO] Polly, MySQL, expat(git), grub, util-linux
+# [TODO] Polly, MySQL, grub, util-linux
 # [TODO] update-alternatives
 # [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 
@@ -87,10 +87,10 @@
 : ${openssl_ver:=1.0.2l}
 : ${openssh_ver:=7.3p1}
 : ${curl_ver:=7.54.0}
+: ${expat_ver:=2.2.0}
 : ${asciidoc_ver:=8.6.9}
 : ${libxml2_ver:=2.9.4}
 : ${libxslt_ver:=1.1.29}
-: ${expat_ver:=2.2.0}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
 : ${git_ver:=2.13.0}
@@ -354,14 +354,14 @@ help()
 		Specify the version of openssh you want, currently '${openssh_ver}'.
 	curl_ver
 		Specify the version of Curl you want, currently '${libcur_ver}'.
+	expat_ver
+		Specify the version of expat you want, currently '${expat_ver}'.
 	asciidoc_ver
 		Specify the version of asciidoc you want, currently '${asciidoc_ver}'.
 	libxml2_ver
 		Specify the version of libxml2 you want, currently '${libxml2_ver}'.
 	libxslt_ver
 		Specify the version of libxslt you want, currently '${libxslt_ver}'.
-	expat_ver
-		Specify the version of expat you want, currently '${expat_ver}'.
 	xmlto_ver
 		Specify the version of xmlto you want, currently '${xmlto_ver}'.
 	gettext_ver
@@ -607,6 +607,10 @@ fetch()
 		check_archive ${curl_org_src_dir} ||
 			wget --no-check-certificate -O ${curl_org_src_dir}.tar.bz2 \
 				https://curl.haxx.se/download/${curl_name}.tar.bz2 || return;;
+	expat)
+		check_archive ${expat_org_src_dir} ||
+			wget --no-check-certificate -O ${expat_org_src_dir}.tar.bz2 \
+				https://sourceforge.net/projects/expat/files/expat/${expat_ver}/${expat_name}.tar.bz2/download || return;;
 	asciidoc)
 		check_archive ${asciidoc_org_src_dir} ||
 			wget --no-check-certificate -O ${asciidoc_org_src_dir}.tar.gz \
@@ -615,10 +619,6 @@ fetch()
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget -O \${${_1}_org_src_dir}.tar.gz \
 				ftp://xmlsoft.org/${_1}/\${${_1}_name}.tar.gz || return;;
-	expat)
-		check_archive ${expat_org_src_dir} ||
-			wget --no-check-certificate -O ${expat_org_src_dir}.tar.bz2 \
-				https://sourceforge.net/projects/expat/files/expat/${expat_ver}/${expat_name}.tar.bz2/download || return;;
 	xmlto)
 		check_archive ${xmlto_org_src_dir} ||
 			wget --no-check-certificate -O ${xmlto_org_src_dir}.tar.bz2 \
@@ -2841,6 +2841,22 @@ install_native_curl()
 	update_pkg_config_path || return
 }
 
+install_native_expat()
+{
+	[ -f ${prefix}/include/expat.h -a "${force_install}" != yes ] && return
+	fetch expat || return
+	unpack ${expat_org_src_dir} || return
+	[ -f ${expat_org_src_dir}/Makefile ] ||
+		(cd ${expat_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return
+	make -C ${expat_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${expat_org_src_dir} -j ${jobs} -k check || return
+	make -C ${expat_org_src_dir} -j ${jobs} install || return
+	update_library_search_path || return
+	update_pkg_config_path || return
+}
+
 install_native_asciidoc()
 {
 	[ -x ${prefix}/bin/asciidoc -a "${force_install}" != yes ] && return
@@ -2889,22 +2905,6 @@ install_native_libxslt()
 	update_pkg_config_path || return
 }
 
-install_native_expat()
-{
-	[ -f ${prefix}/include/expat.h -a "${force_install}" != yes ] && return
-	fetch expat || return
-	unpack ${expat_org_src_dir} || return
-	[ -f ${expat_org_src_dir}/Makefile ] ||
-		(cd ${expat_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
-	make -C ${expat_org_src_dir} -j ${jobs} || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${expat_org_src_dir} -j ${jobs} -k check || return
-	make -C ${expat_org_src_dir} -j ${jobs} install || return
-	update_library_search_path || return
-	update_pkg_config_path || return
-}
-
 install_native_xmlto()
 {
 	[ -x ${prefix}/bin/xmlto -a "${force_install}" != yes ] && return
@@ -2942,10 +2942,9 @@ install_native_git()
 	search_header zlib.h > /dev/null || install_native_zlib || return
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return
 	search_header curl.h curl > /dev/null || install_native_curl || return
+	search_header expat.h > /dev/null || install_native_expat || return
 	which asciidoc > /dev/null || install_native_asciidoc || return
 	which xmlto > /dev/null || install_native_xmlto || install_native_git_manpages || return
-	search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
-	search_header xslt.h libxslt > /dev/null || install_native_libxslt || return
 	which msgfmt > /dev/null || install_native_gettext || return
 	which perl > /dev/null || install_native_perl || return
 	which wish > /dev/null || install_native_tk || return
