@@ -35,6 +35,7 @@ Red|CentOS|\\S)
 		pacman -S --noconfirm --needed tmux
 		pacman -S --noconfirm --needed wget curl zip
 		pacman -S --noconfirm --needed bison flex m4 autoconf automake libtool binutils gcc gdb make git
+		pacman -S --noconfirm --needed mingw-w64-{i686,x86_64}-{gcc,gdb}
 		[ -f /c/msys64/msys2_shell.cmd ] && sed -i -e 's/^rem \(set MSYS2_PATH_TYPE=inherit\)$/\1/' /c/msys64/msys2_shell.cmd
 		[ -f /c/msys32/msys2_shell.cmd ] && sed -i -e 's/^rem \(set MSYS2_PATH_TYPE=inherit\)$/\1/' /c/msys32/msys2_shell.cmd
 		;;
