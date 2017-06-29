@@ -62,6 +62,7 @@
 : ${libwebp_ver:=0.6.0}
 : ${libffi_ver:=3.2.1}
 : ${emacs_ver:=25.2}
+: ${libiconv_ver:=1.15}
 : ${vim_ver:=8.0.0606}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
@@ -306,6 +307,8 @@ help()
 		Specify the version of libffi you want, currently '${libffi_ver}'.
 	emacs_ver
 		Specify the version of GNU Emacs you want, currently '${emacs_ver}'.
+	libiconv_ver
+		Specify the version of libiconv you want, currently '${libiconv_ver}'.
 	vim_ver
 		Specify the version of Vim you want, currently '${vim_ver}'.
 	ctags_ver
@@ -461,7 +464,7 @@ fetch()
 			fetch ${pkg} || return
 		done;;
 	tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|automake|libtool|sed|gawk|\
-	make|binutils|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|grep|global|\
+	make|binutils|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
 	diffutils|patch|findutils|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
 		eval check_archive \${${_1}_org_src_dir} ||
 			for compress_format in xz bz2 gz; do
@@ -1583,7 +1586,7 @@ install_native_linux_header()
 
 install_native_qemu()
 {
-#	[ -x ${prefix}/bin/qemu -a "${force_install}" != yes ] && return
+	[ -x ${prefix}/bin/qemu-img -a "${force_install}" != yes ] && return
 	fetch qemu || return
 	unpack ${qemu_org_src_dir} || return
 	(cd ${qemu_org_src_dir}
@@ -2433,6 +2436,21 @@ install_native_emacs()
 	[ "${enable_check}" != yes ] ||
 		make -C ${emacs_org_src_dir} -j ${jobs} -k check || return
 	make -C ${emacs_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_libiconv()
+{
+	[ -x ${prefix}/bin/iconv -a "${force_install}" != yes ] && return
+	fetch libiconv || return
+	unpack ${libiconv_org_src_dir} || return
+	[ -f ${libiconv_org_src_dir}/Makefile ] ||
+		(cd ${libiconv_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return
+	make -C ${libiconv_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libiconv_org_src_dir} -j ${jobs} -k check || return
+	make -C ${libiconv_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_library_search_path || return
 }
 
 install_native_vim()
