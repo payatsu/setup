@@ -52,7 +52,7 @@
 : ${gcc_ver:=7.1.0}
 : ${readline_ver:=7.0}
 : ${ncurses_ver:=6.0}
-: ${gdb_ver:=7.12.1}
+: ${gdb_ver:=8.0}
 : ${zlib_ver:=1.2.11}
 : ${libpng_ver:=1.6.29}
 : ${tiff_ver:=4.0.6}
@@ -94,7 +94,7 @@
 : ${libxslt_ver:=1.1.29}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
-: ${git_ver:=2.13.0}
+: ${git_ver:=2.13.1}
 : ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=4.2}
 : ${sqlite_autoconf_ver:=3170000}
@@ -2705,7 +2705,7 @@ install_native_libevent()
 	unpack ${libevent_org_src_dir}-stable || return
 	[ -f ${libevent_org_src_dir}-stable/Makefile ] ||
 		(cd ${libevent_org_src_dir}-stable
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 	make -C ${libevent_org_src_dir}-stable -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libevent_org_src_dir}-stable -j ${jobs} -k check || return
@@ -2972,7 +2972,7 @@ install_native_git()
 	(cd ${git_org_src_dir}
 	./configure --prefix=${prefix} --build=${build}) || return
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return
-	make -C ${git_org_src_dir} -j ${jobs} V=1 LDFLAGS="${LDFLAGS} -ldl" all || return
+	make -C ${git_org_src_dir} -j 1       V=1 LDFLAGS="${LDFLAGS} -ldl" all || return
 	make -C ${git_org_src_dir} -j ${jobs} V=1 doc || install_native_git_manpages || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${git_org_src_dir} -j ${jobs} V=1 -k test || return
