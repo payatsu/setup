@@ -3695,7 +3695,9 @@ install_native_gc()
 	unpack ${gc_org_src_dir} || return
 	[ -f ${gc_org_src_dir}/Makefile ] ||
 		(cd ${gc_org_src_dir}
-		./configure --prefix=${prefix} -build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} -build=${build} --disable-silent-rules \
+			ATOMIC_OPS_CFLAGS=-I`get_include_path atomic_ops.h` \
+			ATOMIC_OPS_LIBS=-L`get_library_path libatomic_ops.so`) || return
 	make -C ${gc_org_src_dir} -j ${jobs} || return
 	make -C ${gc_org_src_dir} -j ${jobs} check || return
 	make -C ${gc_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
@@ -3714,7 +3716,10 @@ install_native_guile()
 	[ -f ${guile_org_src_dir}/Makefile ] ||
 		(cd ${guile_org_src_dir}
 		./configure --prefix=${prefix} -build=${build} \
-			--disable-silent-rules --with-libunistring-prefix=`get_prefix unistr.h`) || return
+			--disable-silent-rules --with-libunistring-prefix=`get_prefix unistr.h` \
+			LIBFFI_CFLAGS=-I`get_include_path ffi.h` LIBFFI_LIBS="-L`get_library_path libffi.so` -lffi" \
+			BDW_GC_CFLAGS="-I`get_include_path gc.h` -DHAVE_GC_SET_FINALIZER_NOTIFIER -DHAVE_GC_GET_HEAP_USAGE_SAFE -DHAVE_GC_GET_FREE_SPACE_DIVISOR -DHAVE_GC_SET_FINALIZE_ON_DEMAND" \
+			BDW_GC_LIBS="-L`get_library_path libgc.so` -lgc") || return
 	make -C ${guile_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${guile_org_src_dir} -j ${jobs} -k check || return
