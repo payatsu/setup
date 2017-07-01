@@ -3617,7 +3617,7 @@ install_native_perl()
 		(cd ${perl_org_src_dir}
 		./Configure -de -Dprefix=${prefix} -Dcc=${CC:-gcc} \
 			-Dusethreads -Duse64bitint -Duse64bitall -Dusemorebits -Duseshrplib) || return
-	make -C ${perl_org_src_dir} -j ${jobs} || return
+	make -C ${perl_org_src_dir} -j 1 || return
 	make -C ${perl_org_src_dir} -j ${jobs} test || return
 	make -C ${perl_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
