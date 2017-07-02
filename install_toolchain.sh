@@ -2,7 +2,6 @@
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] canadiancross対応する。host, target柔軟性上げる。
 # [TODO] qemu-kvm
-# [TODO] pcre(not 2) depended by the_silver_searcher, swig
 # [TODO] lldbのビルドをllvmに統合する方法を考える。
 # [TODO] ccache, distcc
 # [TODO] valgrind
@@ -158,7 +157,7 @@
 : ${libxshmfence_ver:=1.2}
 : ${mesa_ver:=12.0.3}
 : ${libepoxy_ver:=1.3.1}
-: ${glib_ver:=2.50.0}
+: ${glib_ver:=2.52.3}
 : ${cairo_ver:=1.14.6}
 : ${pixman_ver:=0.34.0}
 : ${pango_ver:=1.40.3}
@@ -1346,12 +1345,14 @@ install_native_wget()
 install_native_pkg_config()
 {
 	[ -x ${prefix}/bin/pkg-config -a "${force_install}" != yes ] && return
-#	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return
+	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return
 	fetch pkg-config || return
 	unpack ${pkg_config_org_src_dir} || return
 	[ -f ${pkg_config_org_src_dir}/Makefile ] ||
 		(cd ${pkg_config_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			GLIB_CFLAGS="-I`get_include_path glib.h` -I`get_library_path libglib-2.0.so`/glib-2.0/include" \
+			GLIB_LIBS="-L`get_library_path libglib-2.0.so` -lglib-2.0") || return
 	make -C ${pkg_config_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${pkg_config_org_src_dir} -j ${jobs} -k check || return
@@ -1947,23 +1948,26 @@ install_native_libffi()
 	update_pkg_config_path || return
 }
 
-#install_native_glib()
-#{
-#	[ -f ${prefix}/include/glib-2.0/glib.h -a "${force_install}" != yes ] && return
-#	search_header ffi.h > /dev/null || install_native_libffi || return
-#	search_header pcre2.h > /dev/null || install_native_pcre2 || return
-#	fetch glib || return
-#	unpack ${glib_org_src_dir} || return
-#	[ -f ${glib_org_src_dir}/Makefile ] ||
-#		(cd ${glib_org_src_dir}
-#		update_pkg_config_path
-#		./configure --prefix=${prefix} --build=${build} --enable-static \
-#			--disable-silent-rules --disable-libmount --disable-dtrace --enable-systemtap) || return
-#	make -C ${glib_org_src_dir} -j ${jobs} || return
-#	make -C ${glib_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
-#}
-#
+install_native_glib()
+{
+	[ -f ${prefix}/include/glib-2.0/glib.h -a "${force_install}" != yes ] && return
+	search_header iconv.h > /dev/null || install_native_libiconv || return
+	search_header ffi.h > /dev/null || install_native_libffi || return
+	search_header pcre.h > /dev/null || install_native_pcre || return
+	fetch glib || return
+	unpack ${glib_org_src_dir} || return
+	[ -f ${glib_org_src_dir}/Makefile ] ||
+		(cd ${glib_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --enable-static \
+			--disable-silent-rules --disable-libmount --disable-dtrace --enable-systemtap --with-libiconv \
+			LIBFFI_CFLAGS=-I`get_include_path ffi.h` LIBFFI_LIBS="-L`get_library_path libffi.so` -lffi" \
+			PCRE_CFLAGS=-I`get_include_path pcre.h` PCRE_LIBS="-L`get_library_path libpcre.so` -lpcre") || return
+	make -C ${glib_org_src_dir} -j ${jobs} || return
+	make -C ${glib_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_library_search_path || return
+	update_pkg_config_path || return
+}
+
 #install_native_cairo()
 #{
 #	[ -f ${prefix}/include/cairo/cairo.h -a "${force_install}" != yes ] && return
@@ -2494,6 +2498,7 @@ install_native_vim()
 install_native_ctags()
 {
 	[ -x ${prefix}/bin/ctags -a "${force_install}" != yes ] && return
+	which pkg-config > /dev/null || install_native_pkg_config || return
 	fetch ctags || return
 	unpack ${ctags_org_src_dir} || return
 	[ -f ${ctags_org_src_dir}/configure ] ||
@@ -2554,13 +2559,14 @@ install_native_pcre()
 	[ -f ${pcre_org_src_dir}/Makefile ] ||
 		(cd ${pcre_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
-			--enable-pcre16 --enable-pcre32 --enable-jit --enable-utf \
-			--enable-newline-is-anycrlf --enable-pcregrep-libz \
-			--enable-pcregrep-libbz2 --enable-pcretest-libreadline) || return
+			--enable-pcre16 --enable-pcre32 --enable-jit --enable-utf --enable-unicode-properties \
+			--enable-newline-is-any --enable-pcregrep-libz --enable-pcregrep-libbz2 \
+			--enable-pcretest-libreadline) || return
 	make -C ${pcre_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${pcre_org_src_dir} -j ${jobs} -k check || return
 	make -C ${pcre_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_library_search_path || return
 	update_pkg_config_path || return
 }
 
@@ -2576,13 +2582,14 @@ install_native_pcre2()
 	[ "${enable_check}" != yes ] ||
 		make -C ${pcre2_org_src_dir} -j ${jobs} -k check || return
 	make -C ${pcre2_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_library_search_path || return
 	update_pkg_config_path || return
 }
 
 install_native_the_silver_searcher()
 {
 	[ -x ${prefix}/bin/ag -a "${force_install}" != yes ] && return
-	search_header pcre2.h > /dev/null || install_native_pcre2 || return
+	search_header pcre.h > /dev/null || install_native_pcre || return
 	search_header zlib.h > /dev/null || install_native_zlib || return
 	search_header lzma.h > /dev/null || install_native_xz || return
 	fetch the_silver_searcher || return
@@ -2590,8 +2597,9 @@ install_native_the_silver_searcher()
 	[ -f ${the_silver_searcher_org_src_dir}/Makefile ] ||
 		(cd ${the_silver_searcher_org_src_dir}
 		update_pkg_config_path
-		./configure --prefix=${prefix} --build=${build} \
-			--disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			PCRE_CFLAGS=-I`get_include_path pcre.h` PCRE_LIBS="-L`get_library_path libpcre.so` -lpcre" \
+			LZMA_CFLAGS=-I`get_include_path lzma.h` LZMA_LIBS="-L`get_library_path liblzma.so` -llzma") || return
 	make -C ${the_silver_searcher_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${the_silver_searcher_org_src_dir} -j ${jobs} -k check || return
@@ -3136,6 +3144,7 @@ install_native_libedit()
 install_native_swig()
 {
 	[ -x ${prefix}/bin/swig -a "${force_install}" != yes ] && return
+	search_header pcre.h > /dev/null || install_native_pcre || return
 	fetch swig || return
 	unpack ${swig_org_src_dir} || return
 	[ -f ${swig_org_src_dir}/Makefile ] ||
