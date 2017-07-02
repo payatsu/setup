@@ -68,7 +68,8 @@
 : ${ctags_ver:=git}
 : ${grep_ver:=3.0}
 : ${global_ver:=6.5.7}
-: ${pcre2_ver:=10.22}
+: ${pcre_ver:=8.40}
+: ${pcre2_ver:=10.23}
 : ${the_silver_searcher_ver:=1.0.3}
 : ${the_platinum_searcher_ver:=2.1.5}
 : ${highway_ver:=1.1.0}
@@ -317,6 +318,8 @@ help()
 		Specify the version of GNU Grep you want, currently '${grep_ver}'.
 	global_ver
 		Specify the version of GNU Global you want, currently '${global_ver}'.
+	pcre_ver
+		Specify the version of PCRE you want, currently '${pcre_ver}'.
 	pcre2_ver
 		Specify the version of PCRE2 you want, currently '${pcre2_ver}'.
 	the_silver_searcher_ver
@@ -558,10 +561,10 @@ fetch()
 	ctags)
 		[ -d ${ctags_org_src_dir} ] ||
 			git clone --depth 1 http://github.com/universal-ctags/ctags.git ${ctags_org_src_dir} || return;;
-	pcre2)
-		check_archive ${pcre2_org_src_dir} ||
-			wget --trust-server-names --no-check-certificate -O ${pcre2_org_src_dir}.tar.bz2 \
-				https://sourceforge.net/projects/pcre/files/pcre2/${pcre2_ver}/${pcre2_name}.tar.bz2/download || return;;
+	pcre|pcre2)
+		eval check_archive \${${_1}_org_src_dir} ||
+			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.bz2 \
+				https://ftp.pcre.org/pub/pcre/\${${_1}_name}.tar.bz2 || return;;
 	the_silver_searcher)
 		check_archive ${the_silver_searcher_org_src_dir} ||
 			wget --no-check-certificate -O ${the_silver_searcher_org_src_dir}.tar.gz \
@@ -2541,6 +2544,24 @@ install_native_global()
 	[ "${enable_check}" != yes ] ||
 		make -C ${global_org_src_dir} -j ${jobs} -k check || return
 	make -C ${global_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_pcre()
+{
+	[ -f ${prefix}/include/pcre.h -a "${force_install}" != yes ] && return
+	fetch pcre || return
+	unpack ${pcre_org_src_dir} || return
+	[ -f ${pcre_org_src_dir}/Makefile ] ||
+		(cd ${pcre_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			--enable-pcre16 --enable-pcre32 --enable-jit --enable-utf \
+			--enable-newline-is-anycrlf --enable-pcregrep-libz \
+			--enable-pcregrep-libbz2 --enable-pcretest-libreadline) || return
+	make -C ${pcre_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${pcre_org_src_dir} -j ${jobs} -k check || return
+	make -C ${pcre_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_pkg_config_path || return
 }
 
 install_native_pcre2()
