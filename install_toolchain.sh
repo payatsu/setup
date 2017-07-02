@@ -1541,7 +1541,7 @@ install_native_binutils()
 	[ -f ${binutils_src_dir_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_ntv}
 		./configure --prefix=${prefix} --build=${build} --with-sysroot=/ \
-			--enable-64-bit-bfd --enable-gold --enable-targets=all --with-system-zlib \
+			--enable-shared --enable-64-bit-bfd --enable-gold --enable-targets=all --with-system-zlib \
 #			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
 #			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function"
 		) || return
