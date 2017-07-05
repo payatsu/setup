@@ -1462,6 +1462,7 @@ install_native_automake()
 install_native_autogen()
 {
 	[ -x ${prefix}/bin/autogen -a "${force_install}" != yes ] && return
+	which pkg-config > /dev/null || install_native_pkg_config || return
 	search_header libguile.h > /dev/null || install_native_guile || return
 	fetch autogen || return
 	unpack ${autogen_org_src_dir} || return
