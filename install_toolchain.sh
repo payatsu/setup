@@ -1592,6 +1592,7 @@ install_native_linux_header()
 install_native_qemu()
 {
 	[ -x ${prefix}/bin/qemu-img -a "${force_install}" != yes ] && return
+	which pkg-config > /dev/null || install_native_pkg_config || return
 	fetch qemu || return
 	unpack ${qemu_org_src_dir} || return
 	(cd ${qemu_org_src_dir}
