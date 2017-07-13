@@ -52,6 +52,7 @@
 : ${readline_ver:=7.0}
 : ${ncurses_ver:=6.0}
 : ${gdb_ver:=8.0}
+: ${lcov_ver:=1.13}
 : ${zlib_ver:=1.2.11}
 : ${libpng_ver:=1.6.29}
 : ${tiff_ver:=4.0.6}
@@ -289,6 +290,8 @@ help()
 		Specify the version of ncurses you want, currently '${ncurses_ver}'.
 	gdb_ver
 		Specify the version of GNU Debugger you want, currently '${gdb_ver}'.
+	lcov_ver
+		Specify the version of lcov you want, currently '${lcov_ver}'.
 	zlib_ver
 		Specify the version of zlib you want, currently '${zlib_ver}'.
 	libpng_ver
@@ -429,6 +432,8 @@ help()
 		Specify the version of OpenCV contrib you want, currently '${opencv_contrib_ver}'.
 	googletest_ver
 		Specify the version of google test you want, currently '${googletest_ver}'.
+	glib_ver
+		Specify the version of GLib you want, currently '${glib_ver}'.
 
 [Examples]
 	For everything which this tool can install
@@ -521,6 +526,10 @@ fetch()
 		check_archive ${gcc_org_src_dir} ||
 			wget -O ${gcc_org_src_dir}.tar.bz2 \
 				http://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.bz2 || return;;
+	lcov)
+		check_archive ${lcov_org_src_dir} ||
+			wget --no-check-certificate -O ${lcov_org_src_dir}.tar.gz \
+				https://github.com/linux-test-project/lcov/archive/v${lcov_ver}.tar.gz || return;;
 	zlib)
 		check_archive ${zlib_org_src_dir} ||
 			wget -O ${zlib_org_src_dir}.tar.xz \
@@ -1753,7 +1762,7 @@ install_native_ncurses()
 @@ -491,11 +491,18 @@
  	-e 's/gen_$//' \
  	-e 's/  / /g' >>$TMP
- 
+
 +cat >$ED1 <<EOF
 +s/  / /g
 +s/^ //
@@ -1804,6 +1813,14 @@ install_native_gdb()
 		make -C ${gdb_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${gdb_bld_dir_ntv} -j ${jobs} install || return
 	make -C ${gdb_bld_dir_ntv}/gdb -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_lcov()
+{
+	[ -x ${prefix}/bin/lcov -a "${force_install}" != yes ] && return
+	fetch lcov || return
+	unpack ${lcov_org_src_dir} || return
+	make -C ${lcov_org_src_dir} -j ${jobs} PREFIX=${prefix} install || return
 }
 
 install_native_zlib()
@@ -3445,19 +3462,19 @@ install_cross_glibc()
 @@ -16,8 +16,11 @@
     License along with the GNU C Library; if not, see
     <http://www.gnu.org/licenses/>.  */
- 
+
 +#ifndef _LINUX_MICROBLAZE_SYSDEP_H
 +#define _LINUX_MICROBLAZE_SYSDEP_H 1
 +
 +#include <sysdeps/unix/sysdep.h>
  #include <sysdeps/microblaze/sysdep.h>
 -#include <sys/syscall.h>
- 
+
  /* Defines RTLD_PRIVATE_ERRNO.  */
  #include <dl-sysdep>
 @@ -305,3 +308,5 @@
  # define PTR_DEMANGLE(var) (void) (var)
- 
+
  #endif /* not __ASSEMBLER__ */
 +
 +#endif /* _LINUX_MICROBLAZE_SYSDEP_H */
