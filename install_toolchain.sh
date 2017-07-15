@@ -3,6 +3,10 @@
 # [TODO] canadiancross対応する。host, target柔軟性上げる。
 # [TODO] qemu-kvm
 # [TODO] lldbのビルドをllvmに統合する方法を考える。
+# [TODO] cross_gccとlibiconvの依存関係確認。
+# [TODO] GCCマルチバージョン対応。
+# [TODO] busybox
+# [TODO] lua
 # [TODO] ccache, distcc
 # [TODO] valgrind
 # [TODO] insight
@@ -16,7 +20,6 @@
 # [TODO] rsvg, imagemagick
 # [TODO] Polly, MySQL, grub, util-linux
 # [TODO] update-alternatives
-# [TODO] linux-2.6.18, glibc-2.16.0の組み合わせを試す。
 
 : ${tar_ver:=1.29}
 : ${cpio_ver:=2.12}
@@ -125,6 +128,7 @@
 : ${libatomic_ops_ver:=7.4.4}
 : ${gc_ver:=7.6.0}
 : ${guile_ver:=2.0.14}
+: ${lua_ver:=5.3.4}
 : ${nasm_ver:=2.13.01}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
@@ -416,6 +420,8 @@ help()
 		Specify the version of boehm GC you want, currently '${gc_ver}'.
 	guile_ver
 		Specify the version of GNU Guile you want, currently '${guile_ver}'.
+	lua_ver
+		Specify the version of Lua you want, currently '${lua_ver}'.
 	nasm_ver
 		Specify the version of NASM you want, currently '${nasm_ver}'.
 	yasm_ver
@@ -710,6 +716,10 @@ fetch()
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.gz \
 				https://www.hboehm.info/gc/gc_source/\${${_1}_name}.tar.gz || return;;
+	lua)
+		check_archive ${lua_org_src_dir} ||
+			wget -O ${lua_org_src_dir}.tar.gz \
+				http://www.lua.org/ftp/${lua_name}.tar.gz || return;;
 	nasm)
 		check_archive ${nasm_org_src_dir} ||
 			wget -O ${nasm_org_src_dir}.tar.xz \
@@ -3773,6 +3783,17 @@ install_native_guile()
 	[ "${enable_check}" != yes ] ||
 		make -C ${guile_org_src_dir} -j ${jobs} -k check || return
 	make -C ${guile_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_lua()
+{
+	[ -x ${prefix}/bin/lua -a "${force_install}" != yes ] && return
+	fetch lua || return
+	unpack ${lua_org_src_dir} || return
+	make -C ${lua_org_src_dir} -j ${jobs} MYLIBS=-lncurses linux || return # XXX linuxにしか対応していない。
+	[ "${enable_check}" != yes ] ||
+		make -C ${lua_org_src_dir} -j ${jobs} -k test || return
+	make -C ${lua_org_src_dir} -j ${jobs} INSTALL_TOP=${prefix} install || return
 }
 
 install_native_nasm()
