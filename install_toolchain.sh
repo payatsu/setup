@@ -6,6 +6,8 @@
 # [TODO] cross_gccとlibiconvの依存関係確認。
 # [TODO] GCCマルチバージョン対応。
 # [TODO] busybox
+# [TODO] peco
+# [TODO] Rtags
 # [TODO] ccache, distcc
 # [TODO] valgrind
 # [TODO] insight
@@ -1038,7 +1040,7 @@ set_src_directory()
 
 set_variables()
 {
-	prefix=`readlink -m ${prefix}`
+	prefix=`realpath -m ${prefix}`
 	[ ${build} = ${host} ] && sysroot=${prefix}/${target}/sysroot || sysroot=${prefix}/${host}/sysroot
 	sysroot_mingw='C:/MinGW64'
 	[ ${host} = x86_64-w64-mingw32 ] && exe=.exe || exe=''
@@ -1179,7 +1181,7 @@ update_pkg_config_path()
 	PKG_CONFIG_PATH=`([ -d ${prefix}/lib ] && find ${prefix}/lib -type d -name pkgconfig
 						[ -d ${prefix}/share ] && find ${prefix}/share -type d -name pkgconfig
 						LANG=C ${CC:-gcc} -print-search-dirs | sed -e '/^libraries: =/{s/^libraries: =//;p};d' |
-							tr : '\n' | xargs readlink -e | xargs -I dir find dir -maxdepth 1 -type d -name pkgconfig) |
+							tr : '\n' | xargs realpath -eq | xargs -I dir find dir -maxdepth 1 -type d -name pkgconfig) |
 							tr '\n' : | sed -e 's/:$//'`
 	export PKG_CONFIG_PATH
 }
@@ -1187,7 +1189,7 @@ update_pkg_config_path()
 search_library()
 {
 	for dir in ${prefix}/lib64 ${prefix}/lib `LANG=C ${CC:-gcc} -print-search-dirs |
-		sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs readlink -e`; do
+		sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs realpath -eq`; do
 		[ -f ${dir}/${1} ] && echo ${dir}/${1} && return
 	done
 	return 1
@@ -1203,7 +1205,7 @@ search_header()
 {
 	for dir in ${prefix}/include ${prefix}/lib/libffi-*/include \
 		`LANG=C ${CC:-gcc} -x c -E -v /dev/null -o /dev/null 2>&1 |
-			sed -e '/^#include /,/^End of search list.$/p;d' | xargs readlink -e`; do
+			sed -e '/^#include /,/^End of search list.$/p;d' | xargs realpath -eq`; do
 		[ -d ${dir}${2:+/${2}} ] || continue
 		candidates=`find ${dir}${2:+/${2}} -type f -name ${1}`
 		[ -n "${candidates}" ] && echo "${candidates}" | head -n 1 && return
@@ -1724,10 +1726,11 @@ install_native_gcc()
 	mkdir -pv ${gcc_bld_dir_ntv} || return
 	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_ntv}
+		with_libiconv_prefix(){ [ -n "`search_library libiconv.so`" ] && echo --with-libiconv-prefix=`get_prefix iconv.h`;}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
 			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
-			--enable-libstdcxx-debug --enable-linker-build-id \
+			--enable-libstdcxx-debug --enable-linker-build-id `with_libiconv_prefix` \
 		) || return
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -4151,7 +4154,7 @@ install_crossed_native_libtiff()
 	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
 
-readlink -e ${0} | grep -qe ^/tmp/ || { tmpdir=`mktemp -dp /tmp` && trap 'rm -fvr ${tmpdir}' EXIT HUP INT QUIT TERM && cp -v ${0} ${tmpdir} && sh -$- ${tmpdir}/`basename ${0}` "$@"; exit;}
+realpath -e ${0} | grep -qe ^/tmp/ || { tmpdir=`mktemp -dp /tmp` && trap 'rm -fvr ${tmpdir}' EXIT HUP INT QUIT TERM && cp -v ${0} ${tmpdir} && sh -$- ${tmpdir}/`basename ${0}` "$@"; exit;}
 trap 'set' USR1
 while getopts p:j:f:c:l:t:h: arg; do
 	case ${arg} in
