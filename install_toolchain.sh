@@ -2492,8 +2492,10 @@ install_native_vim()
 	[ -x ${prefix}/bin/vim -a "${force_install}" != yes ] && return
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
 	which gettext > /dev/null || install_native_gettext || return
+	search_header lua.h > /dev/null || install_native_lua || return
 	which perl > /dev/null || install_native_perl || return
 	search_header Python.h > /dev/null || install_native_python || return
+	search_library tclConfig.sh > /dev/null || install_native_tcl || return
 	search_header ruby.h > /dev/null || install_native_ruby || return
 	fetch vim || return
 	unpack ${vim_org_src_dir} || return
