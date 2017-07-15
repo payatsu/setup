@@ -6,7 +6,6 @@
 # [TODO] cross_gccとlibiconvの依存関係確認。
 # [TODO] GCCマルチバージョン対応。
 # [TODO] busybox
-# [TODO] lua
 # [TODO] ccache, distcc
 # [TODO] valgrind
 # [TODO] insight
@@ -1234,16 +1233,12 @@ install_prerequisites()
 		apt-get install -y libgtk-3-dev libgnome2-dev libgnomeui-dev libx11-dev || return # for emacs
 		apt-get install -y libudev-dev || return # for webkitgtk
 		apt-get install -y libwebkitgtk-3.0-dev python-dev # libicu-dev # for emacs(xwidgets)
-		apt-get install -y lua5.2 liblua5.2-dev || return # for vim
-		apt-get install -y luajit libluajit-5.1 || return # for vim
 		apt-get install -y libgnomeui-dev libxt-dev || return # for vim
 		;;
 	Red|CentOS|\\S)
 		yum install -y make gcc gcc-c++ || return
 		yum install -y unifdef || return
 		yum install -y gtk3-devel || return
-		yum install -y lua lua-devel || return
-		yum install -y luajit luajit-devel || return
 		;;
 	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1 ;;
 	esac
@@ -1739,8 +1734,8 @@ install_native_gcc()
 		make -C ${gcc_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
 	update_library_search_path || return
-	ln -fs gcc ${prefix}/bin/cc || return
-	ln -fs g++ ${prefix}/bin/c++ || return
+	ln -fsv gcc ${prefix}/bin/cc || return
+	ln -fsv g++ ${prefix}/bin/c++ || return
 }
 
 install_native_readline()
@@ -2502,10 +2497,11 @@ install_native_vim()
 	(cd ${vim_org_src_dir}
 	./configure --prefix=${prefix} --build=${build} \
 		--with-features=huge --enable-fail-if-missing \
+		--enable-luainterp=dynamic --with-lua-prefix=`get_prefix lua.h` \
 		--enable-perlinterp=dynamic \
 		--enable-python3interp=dynamic \
+		--enable-tclinterp=dynamic \
 		--enable-rubyinterp=dynamic \
-		--enable-luainterp=dynamic --with-luajit \
 		--enable-cscope --enable-multibyte \
 		--enable-gui=gnome2 --enable-xim --enable-fontset \
 #		+footer \
@@ -2518,7 +2514,7 @@ install_native_vim()
 	fetch vimdoc-ja || return
 	[ -d ${vimdoc_ja_org_src_dir} ] ||
 		(unpack ${vimdoc_ja_org_src_dir} &&
-		mv -fv ${vimdoc_ja_src_base}/vimdoc-ja-master ${vimdoc_ja_org_src_dir}) || return
+		mv -v ${vimdoc_ja_src_base}/vimdoc-ja-master ${vimdoc_ja_org_src_dir}) || return
 	mkdir -pv ${prefix}/share/vim/vimfiles || return
 	cp -rvt ${prefix}/share/vim/vimfiles ${vimdoc_ja_org_src_dir}/* || return
 	vim -i NONE -u NONE -N -c "helptags ${prefix}/share/vim/vimfiles/doc" -c qall || return
@@ -2849,7 +2845,7 @@ install_native_bash()
 		make -C ${bash_org_src_dir} -j ${jobs} -k check || return
 	make -C ${bash_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_pkg_config_path || return
-	ln -fs bash ${prefix}/bin/sh || return
+	ln -fsv bash ${prefix}/bin/sh || return
 }
 
 install_native_inetutils()
@@ -3790,10 +3786,63 @@ install_native_lua()
 	[ -x ${prefix}/bin/lua -a "${force_install}" != yes ] && return
 	fetch lua || return
 	unpack ${lua_org_src_dir} || return
+	patch -N -p0 -d ${lua_org_src_dir} <<'EOF' || [ $? = 1 ] || return
+--- Makefile
++++ Makefile
+@@ -41,7 +41,7 @@
+ # What to install.
+ TO_BIN= lua luac
+ TO_INC= lua.h luaconf.h lualib.h lauxlib.h lua.hpp
+-TO_LIB= liblua.a
++TO_LIB= liblua.a liblua.so
+ TO_MAN= lua.1 luac.1
+
+ # Lua version and release.
+--- src/Makefile
++++ src/Makefile
+@@ -6,7 +6,7 @@
+ # Your platform. See PLATS for possible values.
+ PLAT= none
+
+-CC= gcc -std=gnu99
++CC= gcc -std=gnu99 -fPIC
+ CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
+ LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
+ LIBS= -lm $(SYSLIBS) $(MYLIBS)
+@@ -29,6 +29,7 @@
+ PLATS= aix bsd c89 freebsd generic linux macosx mingw posix solaris
+
+ LUA_A=	liblua.a
++LUA_SO=	liblua.so
+ CORE_O=	lapi.o lcode.o lctype.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o \
+ 	lmem.o lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o \
+ 	ltm.o lundump.o lvm.o lzio.o
+@@ -43,7 +44,7 @@
+ LUAC_O=	luac.o
+
+ ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O)
+-ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T)
++ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T) $(LUA_SO)
+ ALL_A= $(LUA_A)
+
+ # Targets start here.
+@@ -59,6 +60,9 @@
+ 	$(AR) $@ $(BASE_O)
+ 	$(RANLIB) $@
+
++$(LUA_SO): $(BASE_O)
++	$(CC) --shared -o $@ $^
++
+ $(LUA_T): $(LUA_O) $(LUA_A)
+ 	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
+EOF
 	make -C ${lua_org_src_dir} -j ${jobs} MYLIBS=-lncurses linux || return # XXX linuxにしか対応していない。
 	[ "${enable_check}" != yes ] ||
 		make -C ${lua_org_src_dir} -j ${jobs} -k test || return
 	make -C ${lua_org_src_dir} -j ${jobs} INSTALL_TOP=${prefix} install || return
+	mv -v ${prefix}/lib/liblua.so ${prefix}/lib/liblua.so.`echo ${lua_ver} | cut -d. -f-2` || return
+	ln -fsv liblua.so.`echo ${lua_ver} | cut -d. -f-2` ${prefix}/lib/liblua.so || return
+	update_library_search_path || return
 }
 
 install_native_nasm()
