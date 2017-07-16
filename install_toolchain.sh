@@ -31,6 +31,7 @@
 : ${pkg_config_ver:=0.29.1}
 : ${texinfo_ver:=6.3}
 : ${coreutils_ver:=8.27}
+: ${busybox_ver:=1.26.2}
 : ${bison_ver:=3.0.4}
 : ${flex_ver:=2.6.0}
 : ${m4_ver:=1.4.18}
@@ -245,6 +246,8 @@ help()
 		Specify the version of GNU Texinfo you want, currently '${texinfo_ver}'.
 	coreutils_ver
 		Specify the version of GNU Coreutils you want, currently '${coreutils_ver}'.
+	busybox_ver
+		Specify the version of BusyBox you want, currently '${busybox_ver}'.
 	bison_ver
 		Specify the version of GNU Bison you want, currently '${bison_ver}'.
 	flex_ver
@@ -499,6 +502,10 @@ fetch()
 		check_archive ${bzip2_org_src_dir} ||
 			wget -O ${bzip2_org_src_dir}.tar.gz \
 				http://www.bzip.org/${bzip2_ver}/${bzip2_name}.tar.gz || return;;
+	busybox)
+		check_archive ${busybox_org_src_dir} ||
+			wget --no-check-certificate -O ${busybox_org_src_dir}.tar.bz2 \
+				https://www.busybox.net/downloads/${busybox_name}.tar.bz2 || return;;
 	flex)
 		check_archive ${flex_org_src_dir} ||
 			wget --trust-server-names --no-check-certificate -O ${flex_org_src_dir}.tar.xz \
@@ -1078,7 +1085,7 @@ set_variables()
 
 	echo ${PATH} | tr : '\n' | grep -qe ^${prefix}/bin\$ \
 		&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s+\(^\|:\)${prefix}/bin\(\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\$//"` \
-		|| PATH=${prefix}/bin:${PATH:+:${PATH}}
+		|| PATH=${prefix}/bin${PATH:+:${PATH}}
 	echo ${PATH} | tr : '\n' | grep -qe ^/sbin\$ || PATH=/sbin:${PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64:${LD_LIBRARY_PATH}
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib:${LD_LIBRARY_PATH}
