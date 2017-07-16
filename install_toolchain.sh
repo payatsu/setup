@@ -537,8 +537,12 @@ fetch()
 				https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v${mingw_w64_ver}.tar.bz2/download || return;;
 	gcc)
 		check_archive ${gcc_org_src_dir} ||
-			wget -O ${gcc_org_src_dir}.tar.bz2 \
-				http://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.bz2 || return;;
+			for compress_format in xz bz2 gz; do
+				wget -O ${gcc_org_src_dir}.tar.${compress_format} \
+					http://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.${compress_format} \
+					&& break \
+					|| rm -v ${gcc_org_src_dir}.tar.${compress_format}
+			done || return;;
 	lcov)
 		check_archive ${lcov_org_src_dir} ||
 			wget --no-check-certificate -O ${lcov_org_src_dir}.tar.gz \
