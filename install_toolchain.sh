@@ -1742,11 +1742,10 @@ install_native_gcc()
 	mkdir -pv ${gcc_bld_dir_ntv} || return
 	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_ntv}
-		with_libiconv_prefix(){ [ -n "`search_library libiconv.so`" ] && echo --with-libiconv-prefix=`get_prefix iconv.h`;}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
 			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
-			--enable-libstdcxx-debug --enable-linker-build-id `with_libiconv_prefix` \
+			--enable-libstdcxx-debug --enable-linker-build-id \
 		) || return
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
