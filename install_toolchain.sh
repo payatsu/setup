@@ -5,7 +5,6 @@
 # [TODO] lldbのビルドをllvmに統合する方法を考える。
 # [TODO] cross_gccとlibiconvの依存関係確認。
 # [TODO] GCCマルチバージョン対応。
-# [TODO] busybox
 # [TODO] peco
 # [TODO] Rtags
 # [TODO] ccache, distcc
@@ -1409,6 +1408,16 @@ install_native_coreutils()
 	[ "${enable_check}" != yes ] ||
 		make -C ${coreutils_org_src_dir} -j ${jobs} -k check || return
 	make -C ${coreutils_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_busybox()
+{
+	[ -x ${prefix}/bin/busybox/busybox -a "${force_install}" != yes ] && return
+	fetch busybox || return
+	unpack ${busybox_org_src_dir} || return
+	make -C ${busybox_org_src_dir} -j ${jobs} V=1 defconfig || return
+	make -C ${busybox_org_src_dir} -j ${jobs} V=1 || return
+	make -C ${busybox_org_src_dir} -j ${jobs} CONFIG_PREFIX=${prefix}/busybox install || return
 }
 
 install_native_bison()
