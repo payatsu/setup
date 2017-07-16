@@ -1087,8 +1087,8 @@ set_variables()
 		&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s+\(^\|:\)${prefix}/bin\(\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\$//"` \
 		|| PATH=${prefix}/bin${PATH:+:${PATH}}
 	echo ${PATH} | tr : '\n' | grep -qe ^/sbin\$ || PATH=/sbin:${PATH}
-	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64:${LD_LIBRARY_PATH}
-	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib:${LD_LIBRARY_PATH}
+	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 	export LD_LIBRARY_PATH
 	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${prefix}/src/.ccache CCACHE_BASEDIR=${prefix}/src && ! mkdir -pv ${prefix}/src && return 1
 	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-gcc}" CXX="ccache ${CXX:-g++}"
