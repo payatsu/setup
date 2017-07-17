@@ -2578,6 +2578,7 @@ install_native_dein()
 install_native_grep()
 {
 	[ -x ${prefix}/bin/grep -a "${force_install}" != yes ] && return
+	search_header pcre.h > /dev/null || install_native_pcre || return
 	fetch grep || return
 	unpack ${grep_org_src_dir} || return
 	[ -f ${grep_org_src_dir}/Makefile ] ||
