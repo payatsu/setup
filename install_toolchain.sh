@@ -1746,16 +1746,21 @@ install_native_gcc()
 	mkdir -pv ${gcc_bld_dir_ntv} || return
 	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_ntv}
+		with_libiconv_prefix(){ [ -n "`search_library libiconv.so`" ] && echo --with-libiconv-prefix=`get_prefix iconv.h`;}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
-			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
-			--enable-libstdcxx-debug --enable-linker-build-id \
+			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib `with_libiconv_prefix` \
+			--program-suffix=-${gcc_ver} --enable-version-specific-runtime-libs --enable-linker-build-id --enable-libstdcxx-debug \
 		) || return
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
 	update_library_search_path || return
+	[ ! -f ${prefix}/bin/${build}-gcc-tmp ] || rm -v ${prefix}/bin/${build}-gcc-tmp || return
+	for b in c++ cpp g++ gcc gccgo gcov gcov-dump gcov-tool go gofmt; do
+		[ ! -f ${prefix}/bin/${b}-${gcc_ver} ] || ln -fsv ${b}-${gcc_ver} ${prefix}/bin/${b} || return
+	done
 	ln -fsv gcc ${prefix}/bin/cc || return
 	ln -fsv g++ ${prefix}/bin/c++ || return
 }
