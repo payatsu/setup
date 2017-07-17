@@ -3,8 +3,6 @@
 # [TODO] canadiancross対応する。host, target柔軟性上げる。
 # [TODO] qemu-kvm
 # [TODO] lldbのビルドをllvmに統合する方法を考える。
-# [TODO] cross_gccとlibiconvの依存関係確認。
-# [TODO] GCCマルチバージョン対応。
 # [TODO] peco
 # [TODO] Rtags
 # [TODO] ccache, distcc
