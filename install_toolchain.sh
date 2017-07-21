@@ -3450,6 +3450,7 @@ install_cross_gcc_without_headers()
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
 			--enable-languages=c --disable-multilib --without-isl --with-system-zlib \
+			--program-prefix=${target}- --program-suffix=-${gcc_ver} --enable-version-specific-runtime-libs \
 			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` --without-headers \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
@@ -3463,6 +3464,9 @@ install_cross_gcc_without_headers()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_1st} -j ${jobs} -k check-target-libgcc || return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-target-libgcc || return
+	for b in cpp gcc gcc-ar gcc-nm gcc-ranlib gcov gcov-dump gcov-tool; do
+		[ ! -f ${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${prefix}/bin/${target}-${b} || return
+	done
 }
 
 install_cross_linux_header()
@@ -3594,12 +3598,16 @@ install_cross_functional_gcc()
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
 			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
+			--program-prefix=${target}- --program-suffix=-${gcc_ver} --enable-version-specific-runtime-libs \
 			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` \
 			--enable-libstdcxx-debug --with-sysroot=${sysroot}) || return
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} LIBS=-lgcc_s || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k install${strip:+-${strip}} ${strip:+STRIP=${target}-strip} || true # [XXX] install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
+	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool; do
+		[ ! -f ${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${prefix}/bin/${target}-${b} || return
+	done
 }
 
 install_cross_gcc()
