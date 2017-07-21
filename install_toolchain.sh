@@ -50,6 +50,7 @@
 : ${gmp_ver:=6.1.2}
 : ${mpfr_ver:=3.1.5}
 : ${mpc_ver:=1.0.3}
+: ${isl_ver:=0.18}
 : ${gcc_ver:=7.1.0}
 : ${readline_ver:=7.0}
 : ${ncurses_ver:=6.0}
@@ -287,6 +288,8 @@ help()
 		Specify the version of GNU MPFR Library you want, currently '${mpfr_ver}'.
 	mpc_ver
 		Specify the version of GNU MPC Library you want, currently '${mpc_ver}'.
+	isl_ver
+		Specify the version of ISL you want, currently '${isl_ver}'.
 	gcc_ver
 		Specify the version of GNU Compiler Collection you want, currently '${gcc_ver}'.
 	readline_ver
@@ -533,6 +536,10 @@ fetch()
 		check_archive ${mingw_w64_org_src_dir} ||
 			wget --trust-server-names --no-check-certificate -O ${mingw_w64_org_src_dir}.tar.bz2 \
 				https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v${mingw_w64_ver}.tar.bz2/download || return;;
+	isl)
+		check_archive ${isl_org_src_dir} ||
+			wget -O ${isl_org_src_dir}.tar.xz \
+				http://isl.gforge.inria.fr/${isl_name}.tar.xz || return;;
 	gcc)
 		check_archive ${gcc_org_src_dir} ||
 			for compress_format in xz bz2 gz; do
@@ -1728,6 +1735,22 @@ install_native_mpc()
 	[ "${enable_check}" != yes ] ||
 		make -C ${mpc_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${mpc_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
+	update_library_search_path || return
+}
+
+install_native_isl()
+{
+	[ -f ${prefix}/include/isl/version.h -a "${force_install}" != yes ] && return
+	search_header gmp.h > /dev/null || install_native_gmp || return
+	fetch isl || return
+	unpack ${isl_org_src_dir} || return
+	[ -f ${isl_org_src_dir}/Makefile ] ||
+		(cd ${isl_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+	make -C ${isl_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${isl_org_src_dir} -j ${jobs} -k check || return
+	make -C ${isl_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_library_search_path || return
 }
 
