@@ -3,6 +3,7 @@
 # [TODO] canadiancross対応する。host, target柔軟性上げる。
 # [TODO] qemu-kvm
 # [TODO] lldbのビルドをllvmに統合する方法を考える。
+# [TODO] lib/に配置されるlibstdc++.so.*gdb.pyをなんとかする。
 # [TODO] peco
 # [TODO] Rtags
 # [TODO] ccache, distcc
@@ -1184,10 +1185,12 @@ update_library_search_path()
 {
 	[ `whoami` != root ] && return
 	[ -f /etc/ld.so.conf.d/`basename ${prefix}`.conf ] ||
-		echo \
-"${prefix}/lib
+		cat <<EOF > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return
+${prefix}/lib
 ${prefix}/lib64
-${prefix}/lib32" > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return
+${prefix}/lib32
+${prefix}/lib/gcc/${host}/${gcc_ver}
+EOF
 	ldconfig || return
 }
 
