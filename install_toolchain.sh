@@ -1761,6 +1761,7 @@ install_native_gcc()
 	search_header gmp.h > /dev/null || install_native_gmp || return
 	search_header mpfr.h > /dev/null || install_native_mpfr || return
 	search_header mpc.h > /dev/null || install_native_mpc || return
+	search_header version.h isl > /dev/null || install_native_isl || return
 	which perl > /dev/null || install_native_perl || return
 	fetch gcc || return
 	unpack ${gcc_org_src_dir} || return
@@ -1770,8 +1771,9 @@ install_native_gcc()
 		with_libiconv_prefix(){ [ -n "`search_library libiconv.so`" ] && echo --with-libiconv-prefix=`get_prefix iconv.h`;}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
-			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib `with_libiconv_prefix` \
-			--program-suffix=-${gcc_ver} --enable-version-specific-runtime-libs --enable-linker-build-id --enable-libstdcxx-debug \
+			--with-isl=`get_prefix version.h isl` --with-system-zlib `with_libiconv_prefix` \
+			--enable-languages=${languages} --disable-multilib --enable-linker-build-id --enable-libstdcxx-debug \
+			--program-suffix=-${gcc_ver} --enable-version-specific-runtime-libs \
 		) || return
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -1779,11 +1781,10 @@ install_native_gcc()
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
 	update_library_search_path || return
 	[ ! -f ${prefix}/bin/${build}-gcc-tmp ] || rm -v ${prefix}/bin/${build}-gcc-tmp || return
-	for b in c++ cpp g++ gcc gccgo gcov gcov-dump gcov-tool go gofmt; do
+	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
 		[ ! -f ${prefix}/bin/${b}-${gcc_ver} ] || ln -fsv ${b}-${gcc_ver} ${prefix}/bin/${b} || return
 	done
 	ln -fsv gcc ${prefix}/bin/cc || return
-	ln -fsv g++ ${prefix}/bin/c++ || return
 }
 
 install_native_readline()
@@ -3464,6 +3465,7 @@ install_cross_gcc_without_headers()
 	search_header gmp.h > /dev/null || install_native_gmp || return
 	search_header mpfr.h > /dev/null || install_native_mpfr || return
 	search_header mpc.h > /dev/null || install_native_mpc || return
+	search_header version.h isl > /dev/null || install_native_isl || return
 	which perl > /dev/null || install_native_perl || return
 	fetch gcc || return
 	unpack ${gcc_org_src_dir} || return
@@ -3472,7 +3474,7 @@ install_cross_gcc_without_headers()
 		(cd ${gcc_bld_dir_crs_1st}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
-			--enable-languages=c --disable-multilib --without-isl --with-system-zlib \
+			--with-isl=`get_prefix version.h isl` --with-system-zlib --enable-languages=c --disable-multilib \
 			--program-prefix=${target}- --program-suffix=-${gcc_ver} --enable-version-specific-runtime-libs \
 			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` --without-headers \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
@@ -3612,6 +3614,7 @@ install_cross_functional_gcc()
 	search_header gmp.h > /dev/null || install_native_gmp || return
 	search_header mpfr.h > /dev/null || install_native_mpfr || return
 	search_header mpc.h > /dev/null || install_native_mpc || return
+	search_header version.h isl > /dev/null || install_native_isl || return
 	which perl > /dev/null || install_native_perl || return
 	fetch gcc || return
 	unpack ${gcc_org_src_dir} || return
@@ -3620,7 +3623,7 @@ install_cross_functional_gcc()
 		(cd ${gcc_bld_dir_crs_2nd}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
-			--enable-languages=${languages} --disable-multilib --without-isl --with-system-zlib \
+			--with-isl=`get_prefix version.h isl` --with-system-zlib --enable-languages=${languages} --disable-multilib \
 			--program-prefix=${target}- --program-suffix=-${gcc_ver} --enable-version-specific-runtime-libs \
 			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` \
 			--enable-libstdcxx-debug --with-sysroot=${sysroot}) || return
