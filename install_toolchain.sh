@@ -1184,13 +1184,13 @@ EOF
 update_library_search_path()
 {
 	[ `whoami` != root ] && return
-	[ -f /etc/ld.so.conf.d/`basename ${prefix}`.conf ] ||
-		cat <<EOF > /etc/ld.so.conf.d/`basename ${prefix}`.conf || return
+	ld_so_conf=/etc/ld.so.conf.d/`basename ${prefix}`.conf
+	[ -f ${ld_so_conf} ] || cat <<EOF > ${ld_so_conf} || return
 ${prefix}/lib
 ${prefix}/lib64
 ${prefix}/lib32
-${prefix}/lib/gcc/${host}/${gcc_ver}
 EOF
+	grep -qe ^${prefix}/lib/gcc/${host}/${gcc_ver}\$ ${ld_so_conf} || echo ${prefix}/lib/gcc/${host}/${gcc_ver} >> ${ld_so_conf} || return
 	ldconfig || return
 }
 
