@@ -1199,8 +1199,8 @@ update_pkg_config_path()
 	PKG_CONFIG_PATH=`([ -d ${prefix}/lib ] && find ${prefix}/lib -type d -name pkgconfig
 						[ -d ${prefix}/share ] && find ${prefix}/share -type d -name pkgconfig
 						LANG=C ${CC:-gcc} -print-search-dirs | sed -e '/^libraries: =/{s/^libraries: =//;p};d' |
-							tr : '\n' | xargs realpath -eq | xargs -I dir find dir -maxdepth 1 -type d -name pkgconfig) |
-							tr '\n' : | sed -e 's/:$//'`
+							tr : '\n' | xargs realpath -eq | xargs -I dir find dir -maxdepth 1 -type d -name pkgconfig
+						[ -d /usr/share ] && find /usr/share -type d -name pkgconfig) | tr '\n' : | sed -e 's/:$//'`
 	export PKG_CONFIG_PATH
 }
 
@@ -1844,7 +1844,8 @@ EOF
 	[ -f ${ncurses_org_src_dir}/Makefile ] ||
 		(cd ${ncurses_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			--with-libtool --with-shared --with-cxx-shared) || return
+			--with-libtool --with-shared --with-cxx-shared --with-termlib \
+			--enable-termcap --enable-colors) || return
 	make -C ${ncurses_org_src_dir} -j ${jobs} || return
 	make -C ${ncurses_org_src_dir} -j ${jobs} install || return
 	update_library_search_path || return
