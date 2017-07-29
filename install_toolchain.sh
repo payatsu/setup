@@ -1,6 +1,9 @@
 #!/bin/sh -e
 # [TODO] ホームディレクトリにusr/ができてしますバグ。
 # [TODO] canadiancross対応する。host, target柔軟性上げる。
+# [TODO] pigz
+# [TODO] ulibc
+# [TODO] i686-w64-mingw32
 # [TODO] qemu-kvm
 # [TODO] lldbのビルドをllvmに統合する方法を考える。
 # [TODO] lib/に配置されるlibstdc++.so.*gdb.pyをなんとかする。
