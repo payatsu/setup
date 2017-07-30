@@ -3094,7 +3094,8 @@ install_native_git()
 	unpack ${git_org_src_dir} || return
 	make -C ${git_org_src_dir} -j ${jobs} V=1 configure || return
 	(cd ${git_org_src_dir}
-	./configure --prefix=${prefix} --build=${build}) || return
+	./configure --prefix=${prefix} --build=${build} \
+		--with-iconv=`get_prefix iconv.h` --with-openssl=`get_prefix ssl.h openssl`) || return
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return
 	make -C ${git_org_src_dir} -j 1       V=1 LDFLAGS="${LDFLAGS} -ldl" all || return
 	make -C ${git_org_src_dir} -j ${jobs} V=1 doc || install_native_git_manpages || return
