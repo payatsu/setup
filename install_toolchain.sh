@@ -108,7 +108,7 @@
 : ${sqlite_autoconf_ver:=3170000}
 : ${apr_ver:=1.5.2}
 : ${apr_util_ver:=1.5.4}
-: ${subversion_ver:=1.9.5}
+: ${subversion_ver:=1.9.6}
 : ${cmake_ver:=3.8.1}
 : ${libedit_ver:=20160903-3.1}
 : ${swig_ver:=3.0.10}
@@ -1594,6 +1594,8 @@ install_native_binutils()
 		(cd ${binutils_src_dir_ntv}
 		./configure --prefix=${prefix} --build=${build} --with-sysroot=/ \
 			--enable-shared --enable-64-bit-bfd --enable-gold --enable-targets=all --with-system-zlib \
+			CFLAGS="${CFLAGS} -I`get_include_path zlib.h`" CXXFLAGS="${CXXFLAGS} -I`get_include_path zlib.h`" \
+			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`" \
 #			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
 #			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function"
 		) || return
@@ -1610,7 +1612,8 @@ install_native_elfutils()
 	unpack ${elfutils_org_src_dir} || return
 	[ -f ${elfutils_org_src_dir}/Makefile ] ||
 		(cd ${elfutils_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			CFLAGS="${CFLAGS} -I`get_include_path zlib.h`" LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
 	make -C ${elfutils_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${elfutils_org_src_dir} -j ${jobs} -k check || return
@@ -1643,7 +1646,8 @@ install_native_qemu()
 	fetch qemu || return
 	unpack ${qemu_org_src_dir} || return
 	(cd ${qemu_org_src_dir}
-	./configure --prefix=${prefix} --cc=${CC:-gcc} --host-cc=${CC:-gcc} --cxx=${CXX:-g++}) || return
+	./configure --prefix=${prefix} --cc=${CC:-gcc} --host-cc=${CC:-gcc} --cxx=${CXX:-g++} \
+		--extra-cflags=-I`get_include_path zlib.h` --extra-ldflags=-L`get_library_path libz.so`) || return
 	make -C ${qemu_org_src_dir} -j ${jobs} V=1 || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${qemu_org_src_dir} -j ${jobs} -k test || return
@@ -1868,7 +1872,8 @@ install_native_gdb()
 		(cd ${gdb_bld_dir_ntv}
 		${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--enable-targets=all --enable-tui --with-python=python3 \
-			--with-system-zlib --with-system-readline) || return
+			--with-system-zlib --with-system-readline \
+			CFLAGS="${CFLAGS} -I`get_include_path zlib.h`" LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
 	make -C ${gdb_bld_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gdb_bld_dir_ntv} -j ${jobs} -k check || return
@@ -1911,7 +1916,9 @@ install_native_libpng()
 			mv -v ${libpng_org_src_dir} ${libpng_src_dir_ntv}) || return
 	[ -f ${libpng_src_dir_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
+		./configure --prefix=${prefix} --build=${build} \
+			CPPFLAGS="${CPPFLAGS} -I`get_include_path zlib.h`" \
+			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
 	make -C ${libpng_src_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libpng_src_dir_ntv} -j ${jobs} -k check || return
@@ -2040,6 +2047,7 @@ install_native_glib()
 		(cd ${glib_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --enable-static \
 			--disable-silent-rules --disable-libmount --disable-dtrace --enable-systemtap --with-libiconv \
+			CPPFLAGS="${CPPFLAGS} -I`get_include_path zlib.h`" LDFLAGS="${LDFLAGS} -L`get_library_path libiconv.so`" \
 			LIBFFI_CFLAGS=-I`get_include_path ffi.h` LIBFFI_LIBS="-L`get_library_path libffi.so` -lffi" \
 			PCRE_CFLAGS=-I`get_include_path pcre.h` PCRE_LIBS="-L`get_library_path libpcre.so` -lpcre") || return
 	make -C ${glib_org_src_dir} -j ${jobs} || return
@@ -2586,7 +2594,7 @@ install_native_ctags()
 	unpack ${ctags_org_src_dir} || return
 	[ -f ${ctags_org_src_dir}/configure ] ||
 		(cd ${ctags_org_src_dir}
-		PATH=/usr/bin:${PATH} ./autogen.sh) || return # modifying PATH is workaround for autoconf; force to use /usr/bin/autoconf
+		./autogen.sh) || return
 	[ -f ${ctags_org_src_dir}/Makefile ] ||
 		(cd ${ctags_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -2638,6 +2646,7 @@ install_native_global()
 install_native_pcre()
 {
 	[ -f ${prefix}/include/pcre.h -a "${force_install}" != yes ] && return
+	search_header zlib.h > /dev/null || install_native_zlib || return
 	fetch pcre || return
 	unpack ${pcre_org_src_dir} || return
 	[ -f ${pcre_org_src_dir}/Makefile ] ||
@@ -2645,7 +2654,8 @@ install_native_pcre()
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
 			--enable-pcre16 --enable-pcre32 --enable-jit --enable-utf --enable-unicode-properties \
 			--enable-newline-is-any --enable-pcregrep-libz --enable-pcregrep-libbz2 \
-			--enable-pcretest-libreadline) || return
+			--enable-pcretest-libreadline CPPFLAGS="${CPPFLAGS} -I`get_include_path zlib.h`" \
+			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
 	make -C ${pcre_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${pcre_org_src_dir} -j ${jobs} -k check || return
@@ -2682,6 +2692,7 @@ install_native_the_silver_searcher()
 		(cd ${the_silver_searcher_org_src_dir}
 		update_pkg_config_path
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`" LIBS=-lz \
 			PCRE_CFLAGS=-I`get_include_path pcre.h` PCRE_LIBS="-L`get_library_path libpcre.so` -lpcre" \
 			LZMA_CFLAGS=-I`get_include_path lzma.h` LZMA_LIBS="-L`get_library_path liblzma.so` -llzma") || return
 	make -C ${the_silver_searcher_org_src_dir} -j ${jobs} || return
@@ -2945,7 +2956,7 @@ install_native_openssh()
 	unpack ${openssh_org_src_dir} || return
 	[ -f ${openssh_org_src_dir}/Makefile ] ||
 		(cd ${openssh_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --with-zlib=`get_prefix zlib.h`) || return
 	make -C ${openssh_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${openssh_org_src_dir} -j ${jobs} -k tests || return
@@ -3154,7 +3165,7 @@ install_native_apr_util()
 	[ -f ${apr_util_org_src_dir}/Makefile ] ||
 		(cd ${apr_util_org_src_dir}
 		./configure --prefix=${prefix} --with-apr=`get_prefix apr.h apr-1` \
-			--with-crypto --with-openssl --with-sqlite3=`get_prefix sqlite3.h`) || return
+			--with-crypto --with-openssl=`get_prefix ssl.h openssl` --with-sqlite3=`get_prefix sqlite3.h`) || return
 	make -C ${apr_util_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${apr_util_org_src_dir} -j ${jobs} -k check || return
@@ -3177,8 +3188,8 @@ install_native_subversion()
 	[ -f ${subversion_org_src_dir}/Makefile ] ||
 		(cd ${subversion_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --with-zlib=`get_prefix zlib.h` \
-			--with-sqlite=`get_prefix sqlite3.h` \
-			${strip:+--enable-optimize}) || return
+			--with-sqlite=`get_prefix sqlite3.h` ${strip:+--enable-optimize} \
+			LDFLAGS="${LDFLAGS} -L`get_library_path libiconv.so`" LIBS=-liconv) || return
 	make -C ${subversion_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${subversion_org_src_dir} -j ${jobs} -k check || return
