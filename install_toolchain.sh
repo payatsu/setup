@@ -1099,8 +1099,9 @@ set_variables()
 		&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s+\(^\|:\)${prefix}/bin\(\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\$//"` \
 		|| PATH=${prefix}/bin${PATH:+:${PATH}}
 	echo ${PATH} | tr : '\n' | grep -qe ^/sbin\$ || PATH=/sbin:${PATH}
-	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib64\$ || LD_LIBRARY_PATH=${prefix}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${prefix}/lib\$   || LD_LIBRARY_PATH=${prefix}/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+	for p in ${prefix}/lib ${prefix}/lib64 `ls -d ${prefix}/lib/gcc/${host}/?.?.? 2> /dev/null`; do
+		echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ || LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+	done
 	export LD_LIBRARY_PATH
 	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${prefix}/src/.ccache CCACHE_BASEDIR=${prefix}/src && ! mkdir -pv ${prefix}/src && return 1
 	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-gcc}" CXX="ccache ${CXX:-g++}"
@@ -1790,11 +1791,12 @@ install_native_gcc()
 		make -C ${gcc_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
 	update_library_search_path || return
+	ln -fsv gcc ${prefix}/bin/cc || return
 	[ ! -f ${prefix}/bin/${build}-gcc-tmp ] || rm -v ${prefix}/bin/${build}-gcc-tmp || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
 		[ ! -f ${prefix}/bin/${b}-${gcc_ver} ] || ln -fsv ${b}-${gcc_ver} ${prefix}/bin/${b} || return
 	done
-	ln -fsv gcc ${prefix}/bin/cc || return
+	ln -fsv ../lib64/libgcc_s.so ${prefix}/lib/gcc/${host}/${gcc_ver} || return # work around for --enable-version-specific-runtime-libs
 }
 
 install_native_readline()
