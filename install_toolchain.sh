@@ -3470,8 +3470,9 @@ install_cross_binutils()
 		(cd ${binutils_src_dir_crs}
 		./configure --prefix=${prefix} --build=${build} --target=${target} \
 			--with-sysroot=${sysroot} --enable-64-bit-bfd --enable-gold --enable-targets=all --with-system-zlib \
-			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
-			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function") || return
+			CFLAGS="${CFLAGS} -I`get_include_path zlib.h` -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
+			CXXFLAGS="${CXXFLAGS} -I`get_include_path zlib.h` -Wno-error=unused-function" \
+			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
 	make -C ${binutils_src_dir_crs} -j 1 || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${binutils_src_dir_crs} -j 1 -k check || return
@@ -3505,14 +3506,14 @@ install_cross_gcc_without_headers()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_1st} -j ${jobs} -k check-gcc || return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-gcc || return
+	for b in cpp gcc gcc-ar gcc-nm gcc-ranlib gcov gcov-dump gcov-tool; do
+		[ ! -f ${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${prefix}/bin/${target}-${b} || return
+	done
 	[ ${target} = x86_64-w64-mingw32 ] && return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} all-target-libgcc || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_1st} -j ${jobs} -k check-target-libgcc || return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-target-libgcc || return
-	for b in cpp gcc gcc-ar gcc-nm gcc-ranlib gcov gcov-dump gcov-tool; do
-		[ ! -f ${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${prefix}/bin/${target}-${b} || return
-	done
 }
 
 install_cross_linux_header()
@@ -3645,9 +3646,9 @@ install_cross_functional_gcc()
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
 			--with-isl=`get_prefix version.h isl` --with-system-zlib --enable-languages=${languages} --disable-multilib \
+			--enable-linker-build-id --enable-libstdcxx-debug \
 			--program-prefix=${target}- --program-suffix=-${gcc_ver} --enable-version-specific-runtime-libs \
-			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` \
-			--enable-libstdcxx-debug --with-sysroot=${sysroot}) || return
+			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` --with-sysroot=${sysroot}) || return
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} LIBS=-lgcc_s || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k check || return
