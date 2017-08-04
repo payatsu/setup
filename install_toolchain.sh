@@ -1253,7 +1253,7 @@ install_prerequisites()
 	Debian|Ubuntu|Raspbian)
 		apt-get install -y make gcc g++ || return
 		apt-get install -y unifdef || return # for linux kernel(microblaze)
-		apt-get install -y libgtk-3-dev libgnome2-dev libgnomeui-dev libx11-dev || return # for emacs
+		apt-get install -y libgtk-3-dev libgnomeui-dev || return # for emacs
 		apt-get install -y libudev-dev || return # for webkitgtk
 		apt-get install -y libwebkitgtk-3.0-dev python-dev # libicu-dev # for emacs(xwidgets)
 		apt-get install -y libgnomeui-dev libxt-dev || return # for vim
