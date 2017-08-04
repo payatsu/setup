@@ -28,12 +28,12 @@
 : ${bzip2_ver:=1.0.6}
 : ${gzip_ver:=1.8}
 : ${wget_ver:=1.19}
-: ${pkg_config_ver:=0.29.1}
-: ${texinfo_ver:=6.3}
+: ${pkg_config_ver:=0.29.2}
+: ${texinfo_ver:=6.4}
 : ${coreutils_ver:=8.27}
 : ${busybox_ver:=1.26.2}
 : ${bison_ver:=3.0.4}
-: ${flex_ver:=2.6.0}
+: ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
 : ${automake_ver:=1.15}
@@ -42,12 +42,12 @@
 : ${sed_ver:=4.4}
 : ${gawk_ver:=4.1.4}
 : ${make_ver:=4.2}
-: ${binutils_ver:=2.28}
-: ${elfutils_ver:=0.169}
+: ${binutils_ver:=2.29}
+: ${elfutils_ver:=0.170}
 : ${linux_ver:=3.18.13}
 : ${qemu_ver:=2.8.1}
 : ${gperf_ver:=3.1}
-: ${glibc_ver:=2.25}
+: ${glibc_ver:=2.26}
 : ${newlib_ver:=2.5.0}
 : ${mingw_w64_ver:=5.0.2}
 : ${gmp_ver:=6.1.2}
@@ -60,7 +60,7 @@
 : ${gdb_ver:=8.0}
 : ${lcov_ver:=1.13}
 : ${zlib_ver:=1.2.11}
-: ${libpng_ver:=1.6.29}
+: ${libpng_ver:=1.6.30}
 : ${tiff_ver:=4.0.6}
 : ${jpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
@@ -69,14 +69,14 @@
 : ${libffi_ver:=3.2.1}
 : ${emacs_ver:=25.2}
 : ${libiconv_ver:=1.15}
-: ${vim_ver:=8.0.0606}
+: ${vim_ver:=8.0.0858}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
-: ${grep_ver:=3.0}
+: ${grep_ver:=3.1}
 : ${global_ver:=6.5.7}
-: ${pcre_ver:=8.40}
+: ${pcre_ver:=8.41}
 : ${pcre2_ver:=10.23}
-: ${the_silver_searcher_ver:=1.0.3}
+: ${the_silver_searcher_ver:=2.0.0}
 : ${the_platinum_searcher_ver:=2.1.5}
 : ${highway_ver:=1.1.0}
 : ${graphviz_ver:=2.38.0}
@@ -84,7 +84,7 @@
 : ${diffutils_ver:=3.6}
 : ${patch_ver:=2.7.5}
 : ${findutils_ver:=4.6.0}
-: ${screen_ver:=4.5.1}
+: ${screen_ver:=4.6.1}
 : ${libevent_ver:=2.1.8}
 : ${tmux_ver:=2.5}
 : ${expect_ver:=5.45}
@@ -94,21 +94,21 @@
 : ${inetutils_ver:=1.9.4}
 : ${openssl_ver:=1.0.2l}
 : ${openssh_ver:=7.3p1}
-: ${curl_ver:=7.54.0}
-: ${expat_ver:=2.2.0}
+: ${curl_ver:=7.54.1}
+: ${expat_ver:=2.2.3}
 : ${asciidoc_ver:=8.6.9}
 : ${libxml2_ver:=2.9.4}
 : ${libxslt_ver:=1.1.29}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
-: ${git_ver:=2.13.1}
+: ${git_ver:=2.13.4}
 : ${git_manpages_ver:=${git_ver}}
-: ${mercurial_ver:=4.2}
+: ${mercurial_ver:=4.2.2}
 : ${sqlite_autoconf_ver:=3170000}
-: ${apr_ver:=1.5.2}
-: ${apr_util_ver:=1.5.4}
+: ${apr_ver:=1.6.2}
+: ${apr_util_ver:=1.6.0}
 : ${subversion_ver:=1.9.6}
-: ${cmake_ver:=3.8.1}
+: ${cmake_ver:=3.9.0}
 : ${libedit_ver:=20160903-3.1}
 : ${swig_ver:=3.0.10}
 : ${llvm_ver:=4.0.0}
@@ -121,10 +121,10 @@
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
 : ${boost_ver:=1_64_0}
-: ${Python_ver:=3.6.1}
+: ${Python_ver:=3.6.2}
 : ${ruby_ver:=2.4.1}
 : ${go_ver:=1.8.3}
-: ${perl_ver:=5.24.0}
+: ${perl_ver:=5.26.0}
 : ${tcl_ver:=8.6.6}
 : ${tk_ver:=8.6.6}
 : ${libunistring_ver:=0.9.7}
@@ -511,8 +511,8 @@ fetch()
 				https://www.busybox.net/downloads/${busybox_name}.tar.bz2 || return;;
 	flex)
 		check_archive ${flex_org_src_dir} ||
-			wget --trust-server-names --no-check-certificate -O ${flex_org_src_dir}.tar.xz \
-				https://sourceforge.net/projects/flex/files/${flex_name}.tar.xz/download || return;;
+			wget --no-check-certificate -O ${flex_org_src_dir}.tar.gz \
+				https://github.com/westes/flex/releases/download/v${flex_ver}/${flex_name}.tar.gz || return;;
 	elfutils)
 		check_archive ${elfutils_org_src_dir} ||
 			wget --no-check-certificate -O ${elfutils_org_src_dir}.tar.bz2 \
