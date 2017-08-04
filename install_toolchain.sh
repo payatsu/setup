@@ -1966,7 +1966,6 @@ install_native_libjpeg()
 install_native_giflib()
 {
 	[ -f ${prefix}/include/gif_lib.h -a "${force_install}" != yes ] && return
-	which xmlto > /dev/null || install_native_xmlto || return
 	fetch giflib || return
 	[ -d ${giflib_src_dir_ntv} ] ||
 		(unpack ${giflib_org_src_dir} &&
