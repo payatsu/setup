@@ -3,7 +3,6 @@
 # [TODO] canadiancross対応する。host, target柔軟性上げる。
 # [TODO] pigz
 # [TODO] ulibc
-# [TODO] i686-w64-mingw32
 # [TODO] qemu-kvm
 # [TODO] lldbのビルドをllvmに統合する方法を考える。
 # [TODO] lib/に配置されるlibstdc++.so.*gdb.pyをなんとかする。
@@ -1062,7 +1061,7 @@ set_variables()
 	prefix=`realpath -m ${prefix}`
 	[ ${build} = ${host} ] && sysroot=${prefix}/${target}/sysroot || sysroot=${prefix}/${host}/sysroot
 	sysroot_mingw='C:/MinGW64'
-	[ ${host} = x86_64-w64-mingw32 ] && exe=.exe || exe=''
+	echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && exe=.exe || exe=''
 	[ -f /etc/issue ] && os=`head -1 /etc/issue | cut -d' ' -f1`
 	[ "${strip}" = strip ] || cmake_build_type=Debug
 
@@ -1796,7 +1795,7 @@ install_native_gcc()
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
 		[ ! -f ${prefix}/bin/${b}-${gcc_ver} ] || ln -fsv ${b}-${gcc_ver} ${prefix}/bin/${b} || return
 	done
-	ln -fsv ../lib64/libgcc_s.so ${prefix}/lib/gcc/${host}/${gcc_ver} || return # work around for --enable-version-specific-runtime-libs
+	ln -fsv ../lib64/libgcc_s.so ${prefix}/lib/gcc/${host}/${gcc_ver} || return # XXX work around for --enable-version-specific-runtime-libs
 }
 
 install_native_readline()
@@ -3509,7 +3508,7 @@ install_cross_gcc_without_headers()
 	for b in cpp gcc gcc-ar gcc-nm gcc-ranlib gcov gcov-dump gcov-tool; do
 		[ ! -f ${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${prefix}/bin/${target}-${b} || return
 	done
-	[ ${target} = x86_64-w64-mingw32 ] && return
+	echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} all-target-libgcc || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_1st} -j ${jobs} -k check-target-libgcc || return
@@ -3656,6 +3655,8 @@ install_cross_functional_gcc()
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool; do
 		[ ! -f ${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${prefix}/bin/${target}-${b} || return
 	done
+	! echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' ||
+		ln -fsv ../lib/libgcc_s.a ${prefix}/lib/gcc/${target}/${gcc_ver} || return # XXX work around for --enable-version-specific-runtime-libs
 }
 
 install_cross_gcc()
@@ -3664,7 +3665,7 @@ install_cross_gcc()
 	[ `check_platform ${build} ${host} ${target}` = cross ] || return
 	install_cross_gcc_without_headers || return
 	case ${target} in
-	x86_64-w64-mingw32)
+	x86_64-w64-mingw32|i686-w64-mingw32)
            install_mingw_w64_header || return
            install_mingw_w64_crt || return;;
 	*-elf) install_cross_newlib || return;;
@@ -4168,7 +4169,7 @@ install_crossed_gcc()
 	(target=${host}; host=${build}; set_variables; install_cross_binutils) || return # XXX libgccのconfigureが${target}-nm, ${target}-ranlib見つけてくれないので現状は${prefix}/bin/${target}-{nm,ranlib}が必須。
 	(target=${host}; host=${build}; set_variables; install_cross_gcc) || return
 	[ -f ${sysroot}/usr/bin/as${exe} ] || install_crossed_binutils || return
-	[ ${host} = x86_64-w64-mingw32 ] && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
+	echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
 	[ -f ${sysroot}/usr/include/gmp.h ] || install_crossed_native_gmp || return
 	[ -f ${sysroot}/usr/include/mpfr.h ] || install_crossed_native_mpfr || return
 	[ -f ${sysroot}/usr/include/mpc.h ] || install_crossed_native_mpc || return
@@ -4196,7 +4197,7 @@ install_crossed_native_zlib()
 		(unpack ${zlib_org_src_dir} &&
 			mv -v ${zlib_org_src_dir} ${zlib_src_dir_crs_ntv}) || return
 	(cd ${zlib_src_dir_crs_ntv}
-	[ ${host} = x86_64-w64-mingw32 ] && static=--static || static=''
+	echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && static=--static || static=''
 	CC=${host}-gcc AR=${host}-ar RANLIB=${host}-ranlib ./configure --prefix=/usr ${static}) || return
 	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} || return
 	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install || return
