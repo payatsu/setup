@@ -2597,7 +2597,8 @@ install_native_ctags()
 		./autogen.sh) || return
 	[ -f ${ctags_org_src_dir}/Makefile ] ||
 		(cd ${ctags_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			LDFLAGS="${LDFLAGS} -liconv") || return
 	make -C ${ctags_org_src_dir} -j ${jobs} || return
 	make -C ${ctags_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
