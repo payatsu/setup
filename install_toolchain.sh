@@ -1818,6 +1818,7 @@ install_native_readline()
 install_native_ncurses()
 {
 	[ -f ${prefix}/include/ncurses/curses.h -a "${force_install}" != yes ] && return
+	which libtool > /dev/null || install_native_libtool || return
 	fetch ncurses || return
 	unpack ${ncurses_org_src_dir} || return
 
@@ -1856,7 +1857,15 @@ EOF
 		./configure --prefix=${prefix} --build=${build} \
 			--with-libtool --with-shared --with-cxx-shared --with-termlib \
 			--enable-termcap --enable-colors) || return
-	make -C ${ncurses_org_src_dir} -j ${jobs} || return
+	make -C ${ncurses_org_src_dir} -j 1 || return # XXX work around for parallel make
+	make -C ${ncurses_org_src_dir} -j ${jobs} install || return
+	make -C ${ncurses_org_src_dir} -j ${jobs} distclean || return
+	[ -f ${ncurses_org_src_dir}/Makefile ] ||
+		(cd ${ncurses_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} \
+			--with-libtool --with-shared --with-cxx-shared --with-termlib \
+			--enable-termcap --enable-widec --enable-colors --with-pthread --enable-reentrant) || return
+	make -C ${ncurses_org_src_dir} -j 1 || return # XXX work around for parallel make
 	make -C ${ncurses_org_src_dir} -j ${jobs} install || return
 	update_library_search_path || return
 }
@@ -2898,7 +2907,8 @@ install_native_zsh()
 	unpack ${zsh_org_src_dir} || return
 	[ -f ${zsh_org_src_dir}/Makefile ] ||
 		(cd ${zsh_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} \
+			--enable-multibyte --enable-unicode9) || return
 	make -C ${zsh_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${zsh_org_src_dir} -j ${jobs} -k check || return
