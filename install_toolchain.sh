@@ -1470,7 +1470,8 @@ install_native_m4()
 	unpack ${m4_org_src_dir} || return
 	[ -f ${m4_org_src_dir}/Makefile ] ||
 		(cd ${m4_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			--enable-c++ --enable-changeword) || return
 	make -C ${m4_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${m4_org_src_dir} -j ${jobs} -k check || return
