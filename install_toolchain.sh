@@ -1592,8 +1592,10 @@ install_native_binutils()
 			mv -v ${binutils_org_src_dir} ${binutils_src_dir_ntv}) || return
 	[ -f ${binutils_src_dir_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --with-sysroot=/ \
-			--enable-shared --enable-64-bit-bfd --enable-gold --enable-targets=all --with-system-zlib \
+		./configure --prefix=${prefix} --build=${build} \
+			--enable-shared --enable-gold --enable-threads --enable-plugins \
+			--enable-compressed-debug-sections=all --enable-targets=all --enable-64-bit-bfd \
+			--with-sysroot=/ --with-system-zlib \
 			CFLAGS="${CFLAGS} -I`get_include_path zlib.h`" CXXFLAGS="${CXXFLAGS} -I`get_include_path zlib.h`" \
 			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`" \
 #			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
@@ -3468,7 +3470,9 @@ install_cross_binutils()
 	[ -f ${binutils_src_dir_crs}/Makefile ] ||
 		(cd ${binutils_src_dir_crs}
 		./configure --prefix=${prefix} --build=${build} --target=${target} \
-			--with-sysroot=${sysroot} --enable-64-bit-bfd --enable-gold --enable-targets=all --with-system-zlib \
+			--enable-shared --enable-gold --enable-threads --enable-plugins \
+			--enable-compressed-debug-sections=all --enable-targets=all --enable-64-bit-bfd \
+			--with-sysroot=${sysroot} --with-system-zlib \
 			CFLAGS="${CFLAGS} -I`get_include_path zlib.h` -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
 			CXXFLAGS="${CXXFLAGS} -I`get_include_path zlib.h` -Wno-error=unused-function" \
 			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
@@ -3701,12 +3705,15 @@ install_cross_gdb()
 install_native_python()
 {
 	[ -x ${prefix}/bin/python3 -a "${force_install}" != yes ] && return
+	search_header expat.h > /dev/null || install_native_expat || return
+	search_header ffi.h > /dev/null || install_native_libffi || return
 	fetch Python || return
 	unpack ${Python_org_src_dir} || return
 	[ -f ${Python_org_src_dir}/Makefile ] ||
 		(cd ${Python_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --enable-shared --disable-ipv6 \
-			--with-universal-archs=all --enable-universalsdk \
+		./configure --prefix=${prefix} --build=${build} --enable-universalsdk \
+			--enable-shared --enable-optimizations --disable-ipv6 \
+			--with-universal-archs=all --with-lto --with-system-expat --with-system-ffi \
 			--with-signal-module --with-threads --with-doc-strings \
 			--with-tsc --with-pymalloc --with-ensurepip) || return # --enable-ipv6 --with-address-sanitizer --with-system-expat --with-system-ffi
 	make -C ${Python_org_src_dir} -j ${jobs} || return
@@ -4104,8 +4111,10 @@ install_crossed_binutils()
 			mv -v ${binutils_org_src_dir} ${binutils_src_dir_crs_ntv}) || return
 	[ -f ${binutils_src_dir_crs_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_crs_ntv}
-		./configure --prefix=/usr --build=${build} --host=${host} --target=${target} --with-sysroot=/ \
-			--enable-64-bit-bfd --enable-gold --enable-targets=all --with-system-zlib \
+		./configure --prefix=/usr --build=${build} --host=${host} --target=${target} \
+			--enable-shared --enable-gold --enable-threads --enable-plugins \
+			--enable-compressed-debug-sections=all --enable-targets=all --enable-64-bit-bfd \
+			--with-sysroot=/ --with-system-zlib \
 			CFLAGS="${CFLAGS} -I${sysroot}/usr/include -L${sysroot}/usr/lib -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
 			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function") || return
 	make -C ${binutils_src_dir_crs_ntv} -j 1 || return
