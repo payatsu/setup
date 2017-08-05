@@ -1807,7 +1807,8 @@ install_native_readline()
 	unpack ${readline_org_src_dir} || return
 	[ -f ${readline_org_src_dir}/Makefile ] ||
 		(cd ${readline_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} \
+			--enable-multibyte --with-curses) || return
 	make -C ${readline_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${readline_org_src_dir} -j ${jobs} -k check || return
