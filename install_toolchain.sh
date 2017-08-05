@@ -3886,6 +3886,7 @@ install_native_guile()
 install_native_lua()
 {
 	[ -x ${prefix}/bin/lua -a "${force_install}" != yes ] && return
+	search_header readline.h readline > /dev/null || install_native_readline || return
 	fetch lua || return
 	unpack ${lua_org_src_dir} || return
 	patch -N -p0 -d ${lua_org_src_dir} <<'EOF' || [ $? = 1 ] || return
@@ -3938,7 +3939,10 @@ install_native_lua()
  $(LUA_T): $(LUA_O) $(LUA_A)
  	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
 EOF
-	make -C ${lua_org_src_dir} -j ${jobs} MYLIBS=-lncurses linux || return # XXX linuxにしか対応していない。
+	make -C ${lua_org_src_dir} -j ${jobs} \
+		MYCFLAGS="${CFLAGS} -I`get_include_path readline.h readline`" \
+		MYLDFLAGS="${LDFLAGS} -L`get_library_path libreadline.so` -L`get_library_path libncurses.so`" \
+		MYLIBS=-lncurses linux || return # XXX linuxにしか対応していない。
 	[ "${enable_check}" != yes ] ||
 		make -C ${lua_org_src_dir} -j ${jobs} -k test || return
 	make -C ${lua_org_src_dir} -j ${jobs} INSTALL_TOP=${prefix} install || return
