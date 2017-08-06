@@ -1372,7 +1372,8 @@ install_native_wget()
 	[ -f ${wget_org_src_dir}/Makefile ] ||
 		(cd ${wget_org_src_dir}
 		OPENSSL_CFLAGS="-I${prefix}/include -L${prefix}/lib" OPENSSL_LIBS='-lssl -lcrypto' \
-			./configure --prefix=${prefix} --build=${build} --disable-silent-rules --with-ssl=openssl) || return
+			./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			--enable-threads --with-ssl=openssl) || return
 	make -C ${wget_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${wget_org_src_dir} -j ${jobs} -k check || return
@@ -2814,7 +2815,7 @@ install_native_findutils()
 	unpack ${findutils_org_src_dir} || return
 	[ -f ${findutils_org_src_dir}/Makefile ] ||
 		(cd ${findutils_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --enable-threads) || return
 	make -C ${findutils_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${findutils_org_src_dir} -j ${jobs} -k check || return
