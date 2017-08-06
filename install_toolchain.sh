@@ -2558,7 +2558,7 @@ install_native_libiconv()
 	unpack ${libiconv_org_src_dir} || return
 	[ -f ${libiconv_org_src_dir}/Makefile ] ||
 		(cd ${libiconv_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --enable-static) || return
 	make -C ${libiconv_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libiconv_org_src_dir} -j ${jobs} -k check || return
@@ -3728,7 +3728,7 @@ install_native_python()
 			--enable-shared --enable-optimizations --disable-ipv6 \
 			--with-universal-archs=all --with-lto --with-system-expat --with-system-ffi \
 			--with-signal-module --with-threads --with-doc-strings \
-			--with-tsc --with-pymalloc --with-ensurepip) || return # --enable-ipv6 --with-address-sanitizer --with-system-expat --with-system-ffi
+			--with-tsc --with-pymalloc --with-ensurepip) || return # --enable-ipv6
 	make -C ${Python_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${Python_org_src_dir} -j ${jobs} -k test || return
@@ -3744,7 +3744,8 @@ install_native_ruby()
 	[ -f ${ruby_org_src_dir}/Makefile ] ||
 		(cd ${ruby_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			--enable-multiarch --enable-shared --disable-silent-rules) || return
+			--disable-silent-rules --enable-multiarch --enable-shared \
+			--with-compress-debug-sections) || return
 	make -C ${ruby_org_src_dir} -j ${jobs} V=1 || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${ruby_org_src_dir} -j ${jobs} -k V=1 check || return
