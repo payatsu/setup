@@ -2683,11 +2683,16 @@ install_native_pcre()
 install_native_pcre2()
 {
 	[ -f ${prefix}/include/pcre2.h -a "${force_install}" != yes ] && return
+	search_header bzlib.h > /dev/null || install_native_bzip2 || return
 	fetch pcre2 || return
 	unpack ${pcre2_org_src_dir} || return
 	[ -f ${pcre2_org_src_dir}/Makefile ] ||
 		(cd ${pcre2_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			--enable-pcre2-16 --enable-pcre2-32 --enable-jit --enable-newline-is-any \
+			--enable-pcre2grep-libz --enable-pcre2grep-libbz2 \
+			CPPFLAGS="${CPPFLAGS} -I`get_include_path bzlib.h`" \
+			LDFLAGS="${LDFLAGS} -L`get_library_path libbz2.so`") || return
 	make -C ${pcre2_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${pcre2_org_src_dir} -j ${jobs} -k check || return
