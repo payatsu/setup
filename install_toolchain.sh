@@ -1414,12 +1414,13 @@ install_native_texinfo()
 install_native_coreutils()
 {
 	[ -x ${prefix}/bin/cat -a "${force_install}" != yes ] && return
+	search_header gmp.h > /dev/null || install_native_gmp || return
 	fetch coreutils || return
 	unpack ${coreutils_org_src_dir} || return
 	[ -f ${coreutils_org_src_dir}/Makefile ] ||
 		(cd ${coreutils_org_src_dir}
 		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} \
-			--build=${build} --disable-silent-rules) || return
+			--build=${build} --disable-silent-rules --enable-threads) || return
 	make -C ${coreutils_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${coreutils_org_src_dir} -j ${jobs} -k check || return
