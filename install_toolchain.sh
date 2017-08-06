@@ -1556,11 +1556,15 @@ install_native_sed()
 install_native_gawk()
 {
 	[ -x ${prefix}/bin/gawk -a "${force_install}" != yes ] && return
+	search_header readline.h readline > /dev/null || install_native_readline || return
+	search_header mpfr.h > /dev/null || install_native_mpfr || return
 	fetch gawk || return
 	unpack ${gawk_org_src_dir} || return
 	[ -f ${gawk_org_src_dir}/Makefile ] ||
 		(cd ${gawk_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --enable-static \
+			--with-readline=`get_prefix readline.h readline` \
+			--with-mpfr=`get_prefix mpfr.h`) || return
 	make -C ${gawk_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gawk_org_src_dir} -j ${jobs} -k check || return
