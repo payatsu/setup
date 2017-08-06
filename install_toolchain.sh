@@ -1889,10 +1889,11 @@ install_native_gdb()
 	mkdir -pv ${gdb_bld_dir_ntv} || return
 	[ -f ${gdb_bld_dir_ntv}/Makefile ] ||
 		(cd ${gdb_bld_dir_ntv}
-		${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} \
-			--enable-targets=all --enable-tui --with-python=python3 \
+		CFLAGS="${CFLAGS} -I`get_include_path zlib.h` -I`get_include_path curses.h ncurses`" \
+			${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} \
+			--enable-targets=all --enable-64-bit-bfd --enable-tui --with-python=python3 \
 			--with-system-zlib --with-system-readline \
-			CFLAGS="${CFLAGS} -I`get_include_path zlib.h`" LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
+			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so` -L`get_library_path libncurses.so`") || return # XXX gdb/configure にCFLAGSが伝播しないことへの work around として、CFLAGSだけ環境変数として設定する。
 	make -C ${gdb_bld_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gdb_bld_dir_ntv} -j ${jobs} -k check || return
@@ -3699,14 +3700,17 @@ install_cross_gdb()
 	search_header readline.h readline > /dev/null || install_native_readline || return
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
 	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m.so > /dev/null || install_native_python || return
+	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gdb || return
 	unpack ${gdb_org_src_dir} || return
 	mkdir -pv ${gdb_bld_dir_crs} || return
 	[ -f ${gdb_bld_dir_crs}/Makefile ] ||
 		(cd ${gdb_bld_dir_crs}
-		${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
-			--enable-targets=all --enable-tui --with-python=python3 \
-			--with-system-zlib --with-system-readline --with-sysroot=${sysroot}) || return
+		CFLAGS="${CFLAGS} -I`get_include_path zlib.h` -I`get_include_path curses.h ncurses`" \
+			${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
+			--enable-targets=all --enable-64-bit-bfd --enable-tui --with-python=python3 \
+			--with-system-zlib --with-system-readline --with-sysroot=${sysroot} \
+			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so` -L`get_library_path libncurses.so`") || return # XXX gdb/configure にCFLAGSが伝播しないことへの work around として、CFLAGSだけ環境変数として設定する。
 	make -C ${gdb_bld_dir_crs} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gdb_bld_dir_crs} -j ${jobs} -k check || return
