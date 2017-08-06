@@ -3091,7 +3091,8 @@ install_native_gettext()
 	unpack ${gettext_org_src_dir} || return
 	[ -f ${gettext_org_src_dir}/Makefile ] ||
 		(cd ${gettext_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} \
+			--enable-threads) || return
 	make -C ${gettext_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gettext_org_src_dir} -j ${jobs} -k check || return
