@@ -2572,7 +2572,7 @@ install_native_vim()
 	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
 	which gettext > /dev/null || install_native_gettext || return
 	search_header lua.h > /dev/null || install_native_lua || return
-	which perl > /dev/null || install_native_perl || return
+	search_library libperl.so > /dev/null || install_native_perl || return
 	search_header Python.h > /dev/null || install_native_python || return
 	search_library tclConfig.sh > /dev/null || install_native_tcl || return
 	search_header ruby.h > /dev/null || install_native_ruby || return
@@ -2586,12 +2586,8 @@ install_native_vim()
 		--enable-python3interp=dynamic \
 		--enable-tclinterp=dynamic \
 		--enable-rubyinterp=dynamic \
-		--enable-cscope --enable-multibyte \
-		--enable-gui=gnome2 --enable-xim --enable-fontset \
-#		+footer \
-#		+mouse_jsbterm \
-#		+mouse_gpm \
-#		+xterm_save \
+		--enable-cscope --enable-terminal --enable-multibyte \
+		--enable-xim --enable-fontset --enable-gui=gnome2 \
 	) || return
 	make -C ${vim_org_src_dir} -j ${jobs} || return
 	make -C ${vim_org_src_dir} -j ${jobs} install || return
