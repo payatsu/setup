@@ -34,7 +34,7 @@ Red|CentOS|\\S)
 		pacman -S --noconfirm --needed zsh
 		pacman -S --noconfirm --needed tmux
 		pacman -S --noconfirm --needed wget curl zip
-		pacman -S --noconfirm --needed bison flex m4 autoconf automake libtool binutils gcc gdb make git
+		pacman -S --noconfirm --needed bison flex m4 autoconf automake libtool binutils gcc gdb make
 		pacman -S --noconfirm --needed cmake
 		pacman -S --noconfirm --needed man
 		pacman -S --noconfirm --needed mingw-w64-{i686,x86_64}-{gcc,gdb,cmake}
