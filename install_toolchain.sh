@@ -1098,7 +1098,7 @@ set_variables()
 		&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s+\(^\|:\)${prefix}/bin\(\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\$//"` \
 		|| PATH=${prefix}/bin${PATH:+:${PATH}}
 	echo ${PATH} | tr : '\n' | grep -qe ^/sbin\$ || PATH=/sbin:${PATH}
-	for p in ${prefix}/lib ${prefix}/lib64 `ls -d ${prefix}/lib/gcc/${host}/?.?.? 2> /dev/null`; do
+	for p in ${prefix}/lib ${prefix}/lib64 `ls -d ${prefix}/lib/gcc/${host}/*.?.? 2> /dev/null`; do
 		echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ || LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 	done
 	export LD_LIBRARY_PATH
