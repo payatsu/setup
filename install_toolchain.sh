@@ -92,6 +92,7 @@
 : ${zsh_ver:=5.3.1}
 : ${bash_ver:=4.4}
 : ${inetutils_ver:=1.9.4}
+: ${util_linux_ver:=2.30.1}
 : ${openssl_ver:=1.0.2l}
 : ${openssh_ver:=7.3p1}
 : ${curl_ver:=7.54.1}
@@ -367,6 +368,8 @@ help()
 		Specify the version of Bash you want, currently '${bash_ver}'.
 	inetutils
 		Specify the version of inetutils you want, currently '${inetutils_ver}'.
+	util_linux_ver
+		Specify the version of util-linux you want, currently '${util_linux_ver}'.
 	openssl_ver
 		Specify the version of openssl you want, currently '${openssl_ver}'.
 	openssh_ver
@@ -634,6 +637,10 @@ fetch()
 		check_archive ${zsh_org_src_dir} ||
 			wget --trust-server-names --no-check-certificate -O ${zsh_org_src_dir}.tar.xz \
 				https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return;;
+	util-linux)
+		check_archive ${util_linux_org_src_dir} ||
+			wget --no-check-certificate -O ${util_linux_org_src_dir}.tar.xz \
+				https://kernel.org/pub/linux/utils/util-linux/v`echo ${util_linux_ver} | cut -d. -f1,2`/${util_linux_name}.tar.xz || return;;
 	openssl)
 		check_archive ${openssl_org_src_dir} ||
 			wget --no-check-certificate -O ${openssl_org_src_dir}.tar.gz \
@@ -1079,6 +1086,7 @@ set_variables()
 			s//\1/
 			s/pkg_config/pkg-config/
 			s/vimdoc_ja/vimdoc-ja/
+			s/util_linux/util-linux/
 			s/git_manpages/git-manpages/
 			s/sqlite_autoconf/sqlite-autoconf/
 			s/apr_util/apr-util/
@@ -2953,6 +2961,21 @@ install_native_inetutils()
 	[ "${enable_check}" != yes ] ||
 		make -C ${inetutils_org_src_dir} -j ${jobs} -k check || return
 	make -C ${inetutils_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_util_linux()
+{
+	[ -x ${prefix}/bin/hexdump -a "${force_install}" != yes ] && return
+	fetch util-linux || return
+	unpack ${util_linux_org_src_dir} || return
+	[ -f ${util_linux_org_src_dir}/Makefile ] ||
+		(cd ${util_linux_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			--enable-write --disable-use-tty-group --with-bashcompletiondir=${prefix}/share/bash-completion) || return
+	make -C ${util_linux_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${util_linux_org_src_dir} -j ${jobs} -k check || return
+	make -C ${util_linux_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_openssl()
