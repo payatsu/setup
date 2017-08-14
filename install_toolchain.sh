@@ -11,7 +11,6 @@
 # [TODO] ccache, distcc
 # [TODO] valgrind
 # [TODO] insight
-# [TODO] util-linux
 # [TODO] perf
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] X11, gtk周りのインストールが未完成＆不安定
@@ -19,7 +18,7 @@
 # [TODO] webkitgtk<-libsoup
 # [TODO] libmount, dtrace (GLib)
 # [TODO] rsvg, imagemagick
-# [TODO] Polly, MySQL, grub, util-linux
+# [TODO] Polly, MySQL, grub
 # [TODO] update-alternatives
 
 : ${tar_ver:=1.29}
