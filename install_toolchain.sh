@@ -1065,6 +1065,7 @@ set_src_directory()
 set_variables()
 {
 	prefix=`realpath -m ${prefix}`
+	set_path_sh=${prefix}/set_path.sh
 	[ ${build} = ${host} ] && sysroot=${prefix}/${target}/sysroot || sysroot=${prefix}/${host}/sysroot
 	sysroot_mingw='C:/MinGW64'
 	echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && exe=.exe || exe=''
@@ -1101,14 +1102,9 @@ set_variables()
 		set_src_directory ${pkg}
 	done
 
-	echo ${PATH} | tr : '\n' | grep -qe ^${prefix}/bin\$ \
-		&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s+\(^\|:\)${prefix}/bin\(\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\$//"` \
-		|| PATH=${prefix}/bin${PATH:+:${PATH}}
+	[ -f ${set_path_sh} ] || generate_shell_run_command || return
+	. ${set_path_sh}
 	echo ${PATH} | tr : '\n' | grep -qe ^/sbin\$ || PATH=/sbin:${PATH}
-	for p in ${prefix}/lib ${prefix}/lib64 `ls -d ${prefix}/lib/gcc/${host}/*.?.? 2> /dev/null`; do
-		echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ || LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-	done
-	export LD_LIBRARY_PATH
 	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${prefix}/src/.ccache CCACHE_BASEDIR=${prefix}/src && ! mkdir -pv ${prefix}/src && return 1
 	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-gcc}" CXX="ccache ${CXX:-g++}"
 	[ "${enable_ccache}" = yes ] || ! echo ${CC} | grep -qe ccache || export CC=`echo ${CC} | sed -e 's/ccache //'` CXX=`echo ${CXX} | sed -e 's/ccache //'`
@@ -1212,6 +1208,19 @@ update_pkg_config_path()
 							tr : '\n' | xargs realpath -eq | xargs -I dir find dir -maxdepth 1 -type d -name pkgconfig
 						[ -d /usr/share ] && find /usr/share -type d -name pkgconfig) | tr '\n' : | sed -e 's/:$//'`
 	export PKG_CONFIG_PATH
+}
+
+generate_shell_run_command()
+{
+	cat <<EOF > ${set_path_sh} || return
+echo \${PATH} | tr : '\n' | grep -qe ^${prefix}/bin\\\$ \\
+	&& PATH=${prefix}/bin:\`echo \${PATH} | sed -e "s+\(^\|:\)${prefix}/bin\(\\\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\\\$//"\` \\
+	|| PATH=${prefix}/bin\${PATH:+:\${PATH}}
+for p in ${prefix}/lib ${prefix}/lib64 `find ${prefix}/lib/gcc/${build} -mindepth 1 -maxdepth 1 -name '*.?.?' | sort -rV | head -n 1`; do
+	[ ! -d \${p} ] || echo \${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^\${p}\\\$ || LD_LIBRARY_PATH=\${p}\${LD_LIBRARY_PATH:+:\${LD_LIBRARY_PATH}}
+done
+export LD_LIBRARY_PATH
+EOF
 }
 
 search_library()
