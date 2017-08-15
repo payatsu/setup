@@ -1108,9 +1108,6 @@ set_variables()
 	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${prefix}/src/.ccache CCACHE_BASEDIR=${prefix}/src && ! mkdir -pv ${prefix}/src && return 1
 	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-gcc}" CXX="ccache ${CXX:-g++}"
 	[ "${enable_ccache}" = yes ] || ! echo ${CC} | grep -qe ccache || export CC=`echo ${CC} | sed -e 's/ccache //'` CXX=`echo ${CXX} | sed -e 's/ccache //'`
-	echo ${GOPATH} | tr : '\n' | grep -qe ^${prefix}/.go\$ \
-		&& export GOPATH=${prefix}/.go:`echo ${GOPATH} | sed -e "s+\(^\|:\)${prefix}/.go\(\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\$//"` \
-		|| export GOPATH=${prefix}/.go${GOPATH:+:${GOPATH}}
 	update_pkg_config_path || return
 }
 
@@ -1223,6 +1220,9 @@ for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${native} ] && fi
 	[ ! -d ${p} ] || echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ || LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 done
 export LD_LIBRARY_PATH
+echo ${GOPATH} | tr : '\n' | grep -qe ^${prefix}/.go\$ \
+	&& export GOPATH=${prefix}/.go:`echo ${GOPATH} | sed -e "s%\(^\|:\)${prefix}/.go\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//"` \
+	|| export GOPATH=${prefix}/.go${GOPATH:+:${GOPATH}}
 EOF
 }
 
