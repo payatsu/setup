@@ -1212,11 +1212,12 @@ update_pkg_config_path()
 
 generate_shell_run_command()
 {
+	mkdir -pv `dirname ${set_path_sh}`
 	cat <<EOF > ${set_path_sh} || return
 echo \${PATH} | tr : '\n' | grep -qe ^${prefix}/bin\\\$ \\
 	&& PATH=${prefix}/bin:\`echo \${PATH} | sed -e "s+\(^\|:\)${prefix}/bin\(\\\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\\\$//"\` \\
 	|| PATH=${prefix}/bin\${PATH:+:\${PATH}}
-for p in ${prefix}/lib ${prefix}/lib64 `find ${prefix}/lib/gcc/${build} -mindepth 1 -maxdepth 1 -name '*.?.?' | sort -rV | head -n 1`; do
+for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${build} ] && find ${prefix}/lib/gcc/${build} -mindepth 1 -maxdepth 1 -name '*.?.?' | sort -rV | head -n 1`; do
 	[ ! -d \${p} ] || echo \${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^\${p}\\\$ || LD_LIBRARY_PATH=\${p}\${LD_LIBRARY_PATH:+:\${LD_LIBRARY_PATH}}
 done
 export LD_LIBRARY_PATH
@@ -1815,6 +1816,7 @@ install_native_gcc()
 		make -C ${gcc_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
 	update_library_search_path || return
+	generate_shell_run_command && . ${set_path_sh} || return
 	ln -fsv gcc ${prefix}/bin/cc || return
 	[ ! -f ${prefix}/bin/${build}-gcc-tmp ] || rm -v ${prefix}/bin/${build}-gcc-tmp || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
