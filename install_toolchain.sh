@@ -1213,12 +1213,14 @@ update_pkg_config_path()
 generate_shell_run_command()
 {
 	mkdir -pv `dirname ${set_path_sh}`
-	cat <<EOF > ${set_path_sh} || return
-echo \${PATH} | tr : '\n' | grep -qe ^${prefix}/bin\\\$ \\
-	&& PATH=${prefix}/bin:\`echo \${PATH} | sed -e "s+\(^\|:\)${prefix}/bin\(\\\$\|:\)+\1\2+g;s/::/:/g;s/^://;s/:\\\$//"\` \\
-	|| PATH=${prefix}/bin\${PATH:+:\${PATH}}
-for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${build} ] && find ${prefix}/lib/gcc/${build} -mindepth 1 -maxdepth 1 -name '*.?.?' | sort -rV | head -n 1`; do
-	[ ! -d \${p} ] || echo \${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^\${p}\\\$ || LD_LIBRARY_PATH=\${p}\${LD_LIBRARY_PATH:+:\${LD_LIBRARY_PATH}}
+	cat <<\EOF | sed -e '/^:/{s%prefix_place_holder%'${prefix}'%;s%native_place_holder%'${build}'%}' > ${set_path_sh} || return
+: ${prefix:=prefix_place_holder}
+: ${native:=native_place_holder}
+echo ${PATH} | tr : '\n' | grep -qe ^${prefix}/bin\$ \
+	&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s%\(^\|:\)${prefix}/bin\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//"` \
+	|| PATH=${prefix}/bin${PATH:+:${PATH}}
+for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${native} ] && find ${prefix}/lib/gcc/${native} -mindepth 1 -maxdepth 1 -name '*.?.?' | sort -rV | head -n 1`; do
+	[ ! -d ${p} ] || echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ || LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 done
 export LD_LIBRARY_PATH
 EOF
