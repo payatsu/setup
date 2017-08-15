@@ -1801,6 +1801,7 @@ install_native_gcc()
 	search_header mpc.h > /dev/null || install_native_mpc || return
 	search_header version.h isl > /dev/null || install_native_isl || return
 	which perl > /dev/null || install_native_perl || return
+	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gcc || return
 	unpack ${gcc_org_src_dir} || return
 	mkdir -pv ${gcc_bld_dir_ntv} || return
@@ -3699,6 +3700,7 @@ install_cross_functional_gcc()
 	search_header mpc.h > /dev/null || install_native_mpc || return
 	search_header version.h isl > /dev/null || install_native_isl || return
 	which perl > /dev/null || install_native_perl || return
+	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gcc || return
 	unpack ${gcc_org_src_dir} || return
 	mkdir -pv ${gcc_bld_dir_crs_2nd} || return
