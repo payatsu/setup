@@ -1210,18 +1210,20 @@ update_pkg_config_path()
 generate_shell_run_command()
 {
 	mkdir -pv `dirname ${set_path_sh}`
-	cat <<\EOF | sed -e '/^:/{s%prefix_place_holder%'${prefix}'%;s%native_place_holder%'${build}'%}' > ${set_path_sh} || return
-: ${prefix:=prefix_place_holder}
-: ${native:=native_place_holder}
+	cat <<\EOF | sed -e '1,2{s%prefix_place_holder%'${prefix}'%;s%native_place_holder%'${build}'%}' > ${set_path_sh} || return
+prefix=prefix_place_holder
+native=native_place_holder
 echo ${PATH} | tr : '\n' | grep -qe ^${prefix}/bin\$ \
 	&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s%\(^\|:\)${prefix}/bin\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//"` \
 	|| PATH=${prefix}/bin${PATH:+:${PATH}}
 for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${native} ] && find ${prefix}/lib/gcc/${native} -mindepth 1 -maxdepth 1 -name '*.?.?' | sort -rV | head -n 1`; do
-	[ ! -d ${p} ] || echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ || LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+	[ ! -d ${p} ] || echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ || export LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 done
-export LD_LIBRARY_PATH
+echo ${MANPATH} | tr : '\n' | grep -qe ^${prefix}/share/man\$ \
+	&& export MANPATH=${prefix}/share/man:`echo ${MANPATH} | sed -e 's%\(^\|:\)'${prefix}'/share/man\($\|:\)%\1\2%g;s/::/:/g;s/^://'` \
+	|| export MANPATH=${prefix}/share/man:${MANPATH}
 echo ${GOPATH} | tr : '\n' | grep -qe ^${prefix}/.go\$ \
-	&& export GOPATH=${prefix}/.go:`echo ${GOPATH} | sed -e "s%\(^\|:\)${prefix}/.go\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//"` \
+	&& export GOPATH=${prefix}/.go:`echo ${GOPATH} | sed -e 's%\(^\|:\)'${prefix}'/.go\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//'` \
 	|| export GOPATH=${prefix}/.go${GOPATH:+:${GOPATH}}
 EOF
 }
