@@ -217,6 +217,8 @@ usage()
 			i686-unknown-linux
 			microblaze-none-linux
 			nios2-none-linux (linux_ver=4.8.1)
+			x86_64-w64-mingw32
+			i686-w64-mingw32
 
 EOF
 	list_major_commands
@@ -451,17 +453,19 @@ help()
 		Specify the version of GLib you want, currently '${glib_ver}'.
 
 [Examples]
-	For everything which this tool can install
+	For everything which this tool can install:
 	# ${0} -p /toolchains -t armv7l-linux-gnueabihf -j 8 auto
 
-	For Raspberry pi2 cross compiler
+	For Raspberry pi2 cross compiler:
 	# ${0} -p /toolchains -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 linux_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 'install cross'
 
-	For microblaze cross compiler
+	For microblaze cross compiler:
 	# ${0} -p /toolchains -t microblaze-linux-gnu -j 8 binutils_ver=2.25 linux_ver=4.3.3 glibc_ver=2.22 gcc_ver=5.3.0 'install cross'
 
-	For MinGW64 cross compiler
+	For MinGW64 cross compiler(x86_64):
 	# ${0} -p /toolchains -t x86_64-w64-mingw32 -l c,c++ install_cross_gcc
+	or(i686):
+	# ${0} -p /toolchains -t i686-w64-mingw32 -l c,c++ install_cross_gcc
 
 EOF
 }
@@ -1284,7 +1288,7 @@ install_prerequisites()
 		yum install -y unifdef || return
 		yum install -y gtk3-devel || return
 		;;
-	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1 ;;
+	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1;;
 	esac
 	prerequisites_have_been_already_installed=yes
 }
@@ -1820,6 +1824,7 @@ install_native_gcc()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
+	which doxygen > /dev/null && make -C ${gcc_bld_dir_ntv}/${build}/libstdc++-v3 -j ${jobs} install-man
 	update_library_search_path || return
 	generate_shell_run_command && . ${set_path_sh} || return
 	ln -fsv gcc ${prefix}/bin/cc || return
