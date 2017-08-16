@@ -1824,7 +1824,8 @@ install_native_gcc()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	which doxygen > /dev/null && make -C ${gcc_bld_dir_ntv}/${build}/libstdc++-v3 -j ${jobs} install-man
+	[ -f ${gcc_bld_dir_ntv}/gcc/xg++ -a "${force_install}" = yes ] &&
+		which doxygen > /dev/null && make -C ${gcc_bld_dir_ntv}/${build}/libstdc++-v3 -j ${jobs} install-man
 	update_library_search_path || return
 	generate_shell_run_command && . ${set_path_sh} || return
 	ln -fsv gcc ${prefix}/bin/cc || return
