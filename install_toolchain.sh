@@ -3532,7 +3532,8 @@ install_cross_binutils()
 		(cd ${binutils_src_dir_crs}
 		./configure --prefix=${prefix} --build=${build} --target=${target} \
 			--enable-shared --enable-gold --enable-threads --enable-plugins \
-			--enable-compressed-debug-sections=all --enable-targets=all --enable-64-bit-bfd \
+			`echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' || echo --enable-compressed-debug-sections=all` \
+			--enable-targets=all --enable-64-bit-bfd \
 			--with-sysroot=${sysroot} --with-system-zlib \
 			CFLAGS="${CFLAGS} -I`get_include_path zlib.h` -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
 			CXXFLAGS="${CXXFLAGS} -I`get_include_path zlib.h` -Wno-error=unused-function" \
