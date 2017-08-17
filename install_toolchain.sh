@@ -101,7 +101,7 @@
 : ${libxslt_ver:=1.1.29}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
-: ${git_ver:=2.13.4}
+: ${git_ver:=2.14.1}
 : ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=4.2.2}
 : ${sqlite_autoconf_ver:=3170000}
@@ -3170,9 +3170,9 @@ install_native_git()
 	make -C ${git_org_src_dir} -j 1       V=1 LDFLAGS="${LDFLAGS} -ldl" all || return
 	make -C ${git_org_src_dir} -j ${jobs} V=1 doc || install_native_git_manpages || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${git_org_src_dir} -j ${jobs} V=1 -k test || return
+		make -C ${git_org_src_dir} -j ${jobs} -k V=1 test || return
 	make -C ${git_org_src_dir} -j ${jobs} V=1 ${strip} install || return
-	make -C ${git_org_src_dir} -j ${jobs} V=1 ${strip} install-doc install-html || true # git-manpagesでfallbackするのでmake install-docの失敗はシェル関数の失敗ではない。
+	make -C ${git_org_src_dir} -j ${jobs} -k V=1 install-doc install-html || true # git-manpagesでfallbackするのでmake install-docの失敗はシェル関数の失敗ではない。
 }
 
 install_native_git_manpages()
