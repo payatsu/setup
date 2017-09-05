@@ -68,7 +68,7 @@
 : ${libffi_ver:=3.2.1}
 : ${emacs_ver:=25.2}
 : ${libiconv_ver:=1.15}
-: ${vim_ver:=8.0.0858}
+: ${vim_ver:=8.0.1056}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.1}
@@ -3840,6 +3840,7 @@ install_native_perl()
 	make -C ${perl_org_src_dir} -j 1 || return
 	make -C ${perl_org_src_dir} -j ${jobs} test || return
 	make -C ${perl_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	ln -fsv `find ${prefix}/lib -type f -name libperl.so | sed -e s%^${prefix}%..%` ${prefix}/lib || return
 }
 
 install_native_tcl()
