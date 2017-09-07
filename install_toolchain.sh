@@ -3585,6 +3585,7 @@ install_cross_gcc_without_headers()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_1st} -j ${jobs} -k check-target-libgcc || return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-target-libgcc || return
+	generate_shell_run_command && . ${set_path_sh} || return
 }
 
 install_cross_linux_header()
@@ -3725,6 +3726,7 @@ install_cross_functional_gcc()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k install${strip:+-${strip}} ${strip:+STRIP=${target}-strip} || true # [XXX] install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
+	generate_shell_run_command && . ${set_path_sh} || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool; do
 		[ ! -f ${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${prefix}/bin/${target}-${b} || return
 	done
