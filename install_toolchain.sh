@@ -2605,7 +2605,7 @@ install_native_vim()
 	which gettext > /dev/null || install_native_gettext || return
 	search_header lua.h > /dev/null || install_native_lua || return
 	search_library libperl.so > /dev/null || install_native_perl || return
-	search_header Python.h python`python --version 2>&1 | grep -oe '[[:digit:]]\.[[:digit:]]'`m > /dev/null || (Python_ver=${Python2_ver}; set_variables; install_native_python) || return
+	search_header Python.h python`python --version 2>&1 | grep -oe '[[:digit:]]\.[[:digit:]]'` > /dev/null || (Python_ver=${Python2_ver}; set_variables; install_native_python) || return
 	search_header Python.h python`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m > /dev/null || install_native_python || return
 	search_library tclConfig.sh > /dev/null || install_native_tcl || return
 	search_header ruby.h > /dev/null || install_native_ruby || return
