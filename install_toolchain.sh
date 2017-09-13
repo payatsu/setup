@@ -50,7 +50,7 @@
 : ${newlib_ver:=2.5.0}
 : ${mingw_w64_ver:=5.0.2}
 : ${gmp_ver:=6.1.2}
-: ${mpfr_ver:=3.1.5}
+: ${mpfr_ver:=3.1.6}
 : ${mpc_ver:=1.0.3}
 : ${isl_ver:=0.18}
 : ${gcc_ver:=7.2.0}
@@ -66,7 +66,7 @@
 : ${libXpm_ver:=3.5.11}
 : ${libwebp_ver:=0.6.0}
 : ${libffi_ver:=3.2.1}
-: ${emacs_ver:=25.2}
+: ${emacs_ver:=25.3}
 : ${libiconv_ver:=1.15}
 : ${vim_ver:=8.0.1056}
 : ${vimdoc_ja_ver:=dummy}
@@ -111,7 +111,7 @@
 : ${cmake_ver:=3.9.0}
 : ${libedit_ver:=20160903-3.1}
 : ${swig_ver:=3.0.10}
-: ${llvm_ver:=4.0.0}
+: ${llvm_ver:=5.0.0}
 : ${libcxx_ver:=${llvm_ver}}
 : ${libcxxabi_ver:=${llvm_ver}}
 : ${compiler_rt_ver:=${llvm_ver}}
