@@ -80,6 +80,7 @@
 : ${highway_ver:=1.1.0}
 : ${graphviz_ver:=2.38.0}
 : ${doxygen_ver:=1.8.13}
+: ${plantuml_ver:=1.2017.16}
 : ${diffutils_ver:=3.6}
 : ${patch_ver:=2.7.5}
 : ${findutils_ver:=4.6.0}
@@ -348,6 +349,8 @@ help()
 		Specify the version of Graphviz you want, currently '${graphviz_ver}'.
 	doxygen_ver
 		Specify the version of Doxygen you want, currently '${doxygen_ver}'.
+	plantuml_ver
+		Specify the version of PlantUML you want, currently '${plantuml_ver}'.
 	diffutils_ver
 		Specify the version of GNU diffutils you want, currently '${diffutils_ver}'.
 	patch_ver
@@ -625,6 +628,12 @@ fetch()
 		check_archive ${doxygen_org_src_dir} ||
 			wget -O ${doxygen_org_src_dir}.tar.gz \
 				http://ftp.stack.nl/pub/users/dimitri/${doxygen_name}.src.tar.gz || return;;
+	plantuml)
+		check_archive ${plantuml_org_src_dir} ||
+			wget --trust-server-names --no-check-certificate -O ${plantuml_org_src_dir}.jar \
+				https://sourceforge.net/projects/plantuml/files/${plantuml_name}.jar/download || return
+		[ -f ${plantuml_org_src_dir}.pdf ] ||
+			wget -O ${plantuml_org_src_dir}.pdf http://translate.plantuml.com/ja/PlantUML_Language_Reference_Guide_JA.pdf || return;;
 	libevent)
 		check_archive ${libevent_org_src_dir}-stable ||
 			wget --no-check-certificate -O ${libevent_org_src_dir}-stable.tar.gz \
@@ -1018,6 +1027,8 @@ set_src_directory()
 		eval ${_1}_name=${1}src.\${${_1}_ver};;
 	vimdoc-ja)
 		eval ${_1}_name=${1};;
+	plantuml)
+		eval ${_1}_name=${1}.\${${_1}_ver};;
 	gtk)
 		eval ${_1}_name=${1}+-\${${_1}_ver};;
 	boost)
@@ -1300,6 +1311,7 @@ check_archive()
 	[ -f ${1}.tar.bz2 -a -s ${1}.tar.bz2 ] && return
 	[ -f ${1}.tar.xz  -a -s ${1}.tar.xz  ] && return
 	[ -f ${1}.zip     -a -s ${1}.zip     ] && return
+	[ -f ${1}.jar     -a -s ${1}.jar     ] && return
 	return 1
 }
 
@@ -2817,6 +2829,21 @@ install_native_doxygen()
 	[ "${enable_check}" != yes ] ||
 		make -C ${doxygen_bld_dir_ntv} -j ${jobs} -k tests || return
 	make -C ${doxygen_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
+}
+
+install_native_plantuml()
+{
+	[ -x ${prefix}/bin/plantuml -a "${force_install}" != yes ] && return
+	which dot > /dev/null || install_native_graphviz || return
+	fetch plantuml || return
+	mkdir -pv ${prefix}/bin || return
+	ln -fsv ..`echo ${plantuml_org_src_dir}.jar | sed -e "s%${prefix}%%"` ${prefix}/bin/plantuml.jar || return
+	cat <<EOF > ${prefix}/bin/plantuml && chmod a+x ${prefix}/bin/plantuml || return
+#!/bin/sh -e
+exec java -Djava.awt.headless=true -jar \`dirname \${0}\`/plantuml.jar -graphvizdot \`which dot\` "\$@"
+EOF
+	mkdir -pv ${prefix}/share/plantuml || return
+	ln -fsv ../..`echo ${plantuml_org_src_dir}.pdf | sed -e "s%${prefix}%%"` ${prefix}/share/plantuml/plantuml.pdf || return
 }
 
 install_native_diffutils()
