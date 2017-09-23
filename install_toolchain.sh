@@ -68,7 +68,7 @@
 : ${libffi_ver:=3.2.1}
 : ${emacs_ver:=25.3}
 : ${libiconv_ver:=1.15}
-: ${vim_ver:=8.0.1056}
+: ${vim_ver:=8.0.1140}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.1}
@@ -124,7 +124,7 @@
 : ${boost_ver:=1_64_0}
 : ${Python_ver:=3.6.2}
 : ${Python2_ver:=2.7.13} # internal use only.
-: ${ruby_ver:=2.4.1}
+: ${ruby_ver:=2.4.2}
 : ${go_ver:=1.9}
 : ${perl_ver:=5.26.0}
 : ${tcl_ver:=8.6.6}
@@ -221,6 +221,21 @@ usage()
 			nios2-none-linux (linux_ver=4.8.1)
 			x86_64-w64-mingw32
 			i686-w64-mingw32
+
+[Examples]
+	For everything which can be installed by this tool:
+	# ${0} -p /toolchains -t armv7l-linux-gnueabihf -j 8 auto
+
+	For Raspberry pi 2 cross compiler:
+	# ${0} -p /toolchains -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 linux_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 'install cross'
+
+	For microblaze cross compiler:
+	# ${0} -p /toolchains -t microblaze-linux-gnu -j 8 binutils_ver=2.25 linux_ver=4.3.3 glibc_ver=2.22 gcc_ver=5.3.0 'install cross'
+
+	For MinGW64 cross compiler(x86_64):
+	# ${0} -p /toolchains -t x86_64-w64-mingw32 -l c,c++ install_cross_gcc
+	or(i686):
+	# ${0} -p /toolchains -t i686-w64-mingw32 -l c,c++ install_cross_gcc
 
 EOF
 	list_major_commands
@@ -455,21 +470,6 @@ help()
 		Specify the version of google test you want, currently '${googletest_ver}'.
 	glib_ver
 		Specify the version of GLib you want, currently '${glib_ver}'.
-
-[Examples]
-	For everything which this tool can install:
-	# ${0} -p /toolchains -t armv7l-linux-gnueabihf -j 8 auto
-
-	For Raspberry pi2 cross compiler:
-	# ${0} -p /toolchains -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 linux_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 'install cross'
-
-	For microblaze cross compiler:
-	# ${0} -p /toolchains -t microblaze-linux-gnu -j 8 binutils_ver=2.25 linux_ver=4.3.3 glibc_ver=2.22 gcc_ver=5.3.0 'install cross'
-
-	For MinGW64 cross compiler(x86_64):
-	# ${0} -p /toolchains -t x86_64-w64-mingw32 -l c,c++ install_cross_gcc
-	or(i686):
-	# ${0} -p /toolchains -t i686-w64-mingw32 -l c,c++ install_cross_gcc
 
 EOF
 }
@@ -724,9 +724,11 @@ fetch()
 				http://llvm.org/releases/${llvm_ver}/\${${_1}_name}.tar.xz || return;;
 	cling)
 		[ -d ${cling_org_src_dir} ] ||
-			(git clone --depth 1 http://root.cern.ch/git/llvm.git ${cling_org_src_dir} -b cling-patches &&
-			git clone --depth 1 http://root.cern.ch/git/clang.git ${cling_org_src_dir}/tools/clang -b cling-patches &&
-			git clone --depth 1 http://root.cern.ch/git/cling.git ${cling_org_src_dir}/tools/cling) || return;;
+			git clone --depth 1 http://root.cern.ch/git/llvm.git ${cling_org_src_dir} -b cling-patches || return
+		[ -d ${cling_org_src_dir}/tools/clang ] ||
+			git clone --depth 1 http://root.cern.ch/git/clang.git ${cling_org_src_dir}/tools/clang -b cling-patches || return
+		[ -d ${cling_org_src_dir}/tools/cling ] ||
+			git clone --depth 1 http://root.cern.ch/git/cling.git ${cling_org_src_dir}/tools/cling || return;;
 	boost)
 		check_archive ${boost_org_src_dir} ||
 			wget --trust-server-names --no-check-certificate -O ${boost_org_src_dir}.tar.bz2 \
@@ -957,7 +959,7 @@ clean()
 	find ${prefix}/src -mindepth 2 -maxdepth 2 \
 		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' ! -name '*-git' -exec rm -fvr {} +
 	find ${prefix}/src -mindepth 2 -maxdepth 2 \
-		-name '*-git' -exec sh -c "make -C {} -j ${jobs} clean" \;
+		-name '*-git' -exec git -C {} clean -d -f -x \;
 }
 
 strip()
