@@ -2839,13 +2839,13 @@ install_native_plantuml()
 	which dot > /dev/null || install_native_graphviz || return
 	fetch plantuml || return
 	mkdir -pv ${prefix}/bin || return
-	ln -fsv ..`echo ${plantuml_org_src_dir}.jar | sed -e "s%${prefix}%%"` ${prefix}/bin/plantuml.jar || return
+	cp -fv ${plantuml_org_src_dir}.jar ${prefix}/bin/plantuml.jar || return
 	cat <<EOF > ${prefix}/bin/plantuml && chmod a+x ${prefix}/bin/plantuml || return
 #!/bin/sh -e
 exec java -Djava.awt.headless=true -jar \`dirname \${0}\`/plantuml.jar -graphvizdot \`which dot\` "\$@"
 EOF
 	mkdir -pv ${prefix}/share/plantuml || return
-	ln -fsv ../..`echo ${plantuml_org_src_dir}.pdf | sed -e "s%${prefix}%%"` ${prefix}/share/plantuml/plantuml.pdf || return
+	cp -fv ${plantuml_org_src_dir}.pdf ${prefix}/share/plantuml/plantuml.pdf || return
 }
 
 install_native_diffutils()
