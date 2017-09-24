@@ -109,7 +109,7 @@
 : ${apr_ver:=1.6.2}
 : ${apr_util_ver:=1.6.0}
 : ${subversion_ver:=1.9.6}
-: ${cmake_ver:=3.9.0}
+: ${cmake_ver:=3.9.3}
 : ${libedit_ver:=20160903-3.1}
 : ${swig_ver:=3.0.10}
 : ${llvm_ver:=5.0.0}
@@ -123,7 +123,7 @@
 : ${cling_ver:=git}
 : ${boost_ver:=1_64_0}
 : ${Python_ver:=3.6.2}
-: ${Python2_ver:=2.7.13} # internal use only.
+: ${Python2_ver:=2.7.14} # internal use only.
 : ${ruby_ver:=2.4.2}
 : ${go_ver:=1.9}
 : ${perl_ver:=5.26.0}
