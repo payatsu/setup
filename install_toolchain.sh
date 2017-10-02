@@ -108,7 +108,7 @@
 : ${sqlite_autoconf_ver:=3170000}
 : ${apr_ver:=1.6.2}
 : ${apr_util_ver:=1.6.0}
-: ${subversion_ver:=1.9.6}
+: ${subversion_ver:=1.9.7}
 : ${cmake_ver:=3.9.3}
 : ${libedit_ver:=20160903-3.1}
 : ${swig_ver:=3.0.10}
