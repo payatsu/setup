@@ -1231,9 +1231,12 @@ generate_shell_run_command()
 	cat <<\EOF | sed -e '1,2{s%prefix_place_holder%'${prefix}'%;s%native_place_holder%'${build}'%}' > ${set_path_sh} || return
 prefix=prefix_place_holder
 native=native_place_holder
-echo ${PATH} | tr : '\n' | grep -qe ^${prefix}/bin\$ \
-	&& PATH=${prefix}/bin:`echo ${PATH} | sed -e "s%\(^\|:\)${prefix}/bin\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//"` \
-	|| PATH=${prefix}/bin${PATH:+:${PATH}}
+for p in ${prefix}/cling/bin ${prefix}/bin ${prefix}/go/bin; do
+	[ -d ${p} ] || continue
+	echo ${PATH} | tr : '\n' | grep -qe ^${p}\$ \
+		&& PATH=${p}:`echo ${PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//"` \
+		|| PATH=${p}${PATH:+:${PATH}}
+done
 for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${native} ] && find ${prefix}/lib/gcc/${native} -mindepth 1 -maxdepth 1 -name '*.?.?' | sort -rV | head -n 1`; do
 	[ ! -d ${p} ] || echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ || export LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 done
