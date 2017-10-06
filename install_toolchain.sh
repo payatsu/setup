@@ -125,7 +125,7 @@
 : ${Python_ver:=3.6.3}
 : ${Python2_ver:=2.7.14} # internal use only.
 : ${ruby_ver:=2.4.2}
-: ${go_ver:=1.9}
+: ${go_ver:=1.9.1}
 : ${perl_ver:=5.26.0}
 : ${tcl_ver:=8.6.6}
 : ${tk_ver:=8.6.6}
