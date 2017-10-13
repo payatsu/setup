@@ -886,8 +886,8 @@ install()
 full()
 # Install native/cross GNU toolchain and other tools. as many as possible.
 {
-	for f in `sed -e \
-		'/^install_native_[_[:alnum:]]\+()$/{
+	for f in `sed -e '
+		/^install_native_[_[:alnum:]]\+()$/{
 			s/()$//
 			s/install_native_pkg_config//
 			s/install_native_linux_header//
@@ -1099,8 +1099,8 @@ set_variables()
 	*) echo Unknown target architecture: ${target} >&2; return 1;;
 	esac
 
-	for pkg in `sed -e \
-		'/^: \${\(.\+\)_ver:=.\+}$/{
+	for pkg in `sed -e '
+		/^: \${\(.\+\)_ver:=.\+}$/{
 			s//\1/
 			s/pkg_config/pkg-config/
 			s/vimdoc_ja/vimdoc-ja/
@@ -1238,7 +1238,10 @@ for p in ${prefix}/cling/bin ${prefix}/bin ${prefix}/go/bin; do
 		|| PATH=${p}${PATH:+:${PATH}}
 done
 for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${native} ] && find ${prefix}/lib/gcc/${native} -mindepth 1 -maxdepth 1 -name '*.?.?' | sort -rV | head -n 1`; do
-	[ ! -d ${p} ] || echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ || export LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+	[ -d ${p} ] || continue
+	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ \
+		&& export LD_LIBRARY_PATH=${p}:`echo ${LD_LIBRARY_PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//"` \
+		|| export LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 done
 echo ${MANPATH} | tr : '\n' | grep -qe ^${prefix}/share/man\$ \
 	&& export MANPATH=${prefix}/share/man:`echo ${MANPATH} | sed -e 's%\(^\|:\)'${prefix}'/share/man\($\|:\)%\1\2%g;s/::/:/g;s/^://'` \
@@ -1369,12 +1372,12 @@ install_native_bzip2()
 	[ -x ${prefix}/bin/bzip2 -a "${force_install}" != yes ] && return
 	fetch bzip2 || return
 	unpack ${bzip2_org_src_dir} || return
-	sed -i -e \
-			'/^CFLAGS=/{
-				s/ -fPIC//g
-				s/$/ -fPIC/
-			}
-			s/ln -s -f \$(PREFIX)\/bin\//ln -s -f /' ${bzip2_org_src_dir}/Makefile || return
+	sed -i -e '
+		/^CFLAGS=/{
+			s/ -fPIC//g
+			s/$/ -fPIC/
+		}
+		s/ln -s -f \$(PREFIX)\/bin\//ln -s -f /' ${bzip2_org_src_dir}/Makefile || return
 	make -C ${bzip2_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${bzip2_org_src_dir} -j ${jobs} -k check || return
