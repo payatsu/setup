@@ -959,7 +959,7 @@ clean()
 	find ${prefix}/src -mindepth 2 -maxdepth 2 \
 		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' ! -name '*-git' -exec rm -fvr {} +
 	find ${prefix}/src -mindepth 2 -maxdepth 2 \
-		-name '*-git' -exec git -C \{\} clean -d -f -x \; -exec git -C \{\} checkout -- . \;
+		-name '*-git' | xargs -I \{\} find \{\} -type d -name .git -execdir git clean -dfx \; -execdir git checkout -- . \;
 }
 
 strip()
