@@ -142,6 +142,7 @@
 : ${opencv_ver:=3.2.0}
 : ${opencv_contrib_ver:=3.2.0}
 : ${googletest_ver:=1.8.0}
+: ${jq_ver:=1.5}
 
 # TODO X11周りのインストールは未着手。
 : ${xtrans_ver:=1.3.5}
@@ -468,6 +469,8 @@ help()
 		Specify the version of OpenCV contrib you want, currently '${opencv_contrib_ver}'.
 	googletest_ver
 		Specify the version of google test you want, currently '${googletest_ver}'.
+	jq_ver
+		Specify the version of jq you want, currently '${jq_ver}'.
 	glib_ver
 		Specify the version of GLib you want, currently '${glib_ver}'.
 
@@ -789,6 +792,10 @@ fetch()
 		check_archive ${googletest_org_src_dir} ||
 			wget --no-check-certificate -O ${googletest_org_src_dir}.tar.gz \
 				https://github.com/google/googletest/archive/release-${googletest_ver}.tar.gz || return;;
+	jq)
+		check_archive ${jq_org_src_dir} ||
+			wget --no-check-certificate -O ${jq_org_src_dir}.tar.gz \
+				https://github.com/stedolan/jq/releases/download/${jq_name}/${jq_name}.tar.gz || return;;
 	pkg-config)
 		check_archive ${pkg_config_org_src_dir} ||
 			wget --no-check-certificate -O ${pkg_config_org_src_dir}.tar.gz \
@@ -4214,6 +4221,21 @@ install_native_googletest()
 	make -C ${googletest_bld_dir_ntv} -j ${jobs} || return
 	make -C ${googletest_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
 	update_pkg_config_path || return
+}
+
+install_native_jq()
+{
+	[ -x ${prefix}/bin/jq -a "${force_install}" != yes ] && return
+	fetch jq || return
+	unpack ${jq_org_src_dir} || return
+	[ -f ${jq_org_src_dir}/Makefile ] ||
+		(cd ${jq_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			--disable-maintainer-mode) || return
+	make -C ${jq_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${jq_org_src_dir} -j ${jobs} -k check || return
+	make -C ${jq_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_crossed_binutils()
