@@ -143,6 +143,7 @@
 : ${opencv_contrib_ver:=3.2.0}
 : ${googletest_ver:=1.8.0}
 : ${jq_ver:=1.5}
+: ${libpcap_ver:=1.8.1}
 
 # TODO X11周りのインストールは未着手。
 : ${xtrans_ver:=1.3.5}
@@ -471,6 +472,8 @@ help()
 		Specify the version of google test you want, currently '${googletest_ver}'.
 	jq_ver
 		Specify the version of jq you want, currently '${jq_ver}'.
+	libpcap_ver
+		Specify the version of libpcap you want, currently '${libpcap_ver}'.
 	glib_ver
 		Specify the version of GLib you want, currently '${glib_ver}'.
 
@@ -796,6 +799,10 @@ fetch()
 		check_archive ${jq_org_src_dir} ||
 			wget --no-check-certificate -O ${jq_org_src_dir}.tar.gz \
 				https://github.com/stedolan/jq/releases/download/${jq_name}/${jq_name}.tar.gz || return;;
+	libpcap)
+		check_archive ${libpcap_org_src_dir} ||
+			wget -O ${libpcap_org_src_dir}.tar.gz \
+				http://www.tcpdump.org/release/${libpcap_name}.tar.gz || return;;
 	pkg-config)
 		check_archive ${pkg_config_org_src_dir} ||
 			wget --no-check-certificate -O ${pkg_config_org_src_dir}.tar.gz \
@@ -4236,6 +4243,22 @@ install_native_jq()
 	[ "${enable_check}" != yes ] ||
 		make -C ${jq_org_src_dir} -j ${jobs} -k check || return
 	make -C ${jq_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_libpcap()
+{
+	[ -f ${prefix}/include/pcap/pcap.h -a "${force_install}" != yes ] && return
+	which yacc > /dev/null || install_native_bison || return
+	which lex > /dev/null || which flex > /dev/null || install_native_flex || return
+	fetch libpcap || return
+	unpack ${libpcap_org_src_dir} || return
+	[ -f ${libpcap_org_src_dir}/Makefile ] ||
+		(cd ${libpcap_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+	make -C ${libpcap_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libpcap_org_src_dir} -j ${jobs} -k test || return
+	make -C ${libpcap_org_src_dir} -j ${jobs} install || return
 }
 
 install_crossed_binutils()
