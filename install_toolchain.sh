@@ -490,7 +490,7 @@ fetch()
 # Fetch source files.
 {
 	_1=`echo ${1} | tr - _`
-	[ -z "${_1}" ] || eval mkdir -pv \${${_1}_src_base} || return
+	[ -z "${_1}" ] || { eval [ -n \"\${${_1}_src_base}\" ] && eval mkdir -pv \${${_1}_src_base} || return;}
 	case ${1} in
 	'')
 		for pkg in `sed -e '/^fetch()$/,/^}$/p;d' ${0} | sed -e '/\([-_[:alnum:]]\+|\?\)\+\(\\\\\|)\)$/{y/|)\\\/   /;p};d'`; do
