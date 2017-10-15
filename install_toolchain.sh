@@ -58,6 +58,7 @@
 : ${ncurses_ver:=6.0}
 : ${gdb_ver:=8.0.1}
 : ${lcov_ver:=1.13}
+: ${strace_ver:=4.19}
 : ${zlib_ver:=1.2.11}
 : ${libpng_ver:=1.6.30}
 : ${tiff_ver:=4.0.6}
@@ -325,6 +326,8 @@ help()
 		Specify the version of GNU Debugger you want, currently '${gdb_ver}'.
 	lcov_ver
 		Specify the version of lcov you want, currently '${lcov_ver}'.
+	strace_ver
+		Specify the version of strace you want, currently '${strace_ver}'.
 	zlib_ver
 		Specify the version of zlib you want, currently '${zlib_ver}'.
 	libpng_ver
@@ -574,6 +577,10 @@ fetch()
 		check_archive ${lcov_org_src_dir} ||
 			wget --no-check-certificate -O ${lcov_org_src_dir}.tar.gz \
 				https://github.com/linux-test-project/lcov/archive/v${lcov_ver}.tar.gz || return;;
+	strace)
+		check_archive ${strace_org_src_dir} ||
+			wget --no-check-certificate -O ${strace_org_src_dir}.tar.xz \
+				https://sourceforge.net/projects/strace/files/strace/${strace_ver}/${strace_name}.tar.xz/download || return;;
 	zlib)
 		check_archive ${zlib_org_src_dir} ||
 			wget -O ${zlib_org_src_dir}.tar.xz \
@@ -1975,6 +1982,20 @@ install_native_lcov()
 	fetch lcov || return
 	unpack ${lcov_org_src_dir} || return
 	make -C ${lcov_org_src_dir} -j ${jobs} PREFIX=${prefix} install || return
+}
+
+install_native_strace()
+{
+	[ -x ${prefix}/bin/strace -a "${force_install}" != yes ] && return
+	fetch strace || return
+	unpack ${strace_org_src_dir} || return
+	[ -f ${strace_org_src_dir}/Makefile ] ||
+		(cd ${strace_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return
+	make -C ${strace_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${strace_org_src_dir} -j ${jobs} -k check || return
+	make -C ${strace_org_src_dir} -j ${jobs} install || return
 }
 
 install_native_zlib()
