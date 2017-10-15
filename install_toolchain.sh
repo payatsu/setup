@@ -9,7 +9,6 @@
 # [TODO] peco
 # [TODO] Rtags
 # [TODO] ccache, distcc
-# [TODO] valgrind
 # [TODO] insight
 # [TODO] perf
 # [TODO] haskell(stack<-(ghc, cabal))
@@ -59,6 +58,7 @@
 : ${gdb_ver:=8.0.1}
 : ${lcov_ver:=1.13}
 : ${strace_ver:=4.19}
+: ${valgrind_ver:=3.13.0}
 : ${zlib_ver:=1.2.11}
 : ${libpng_ver:=1.6.30}
 : ${tiff_ver:=4.0.6}
@@ -328,6 +328,8 @@ help()
 		Specify the version of lcov you want, currently '${lcov_ver}'.
 	strace_ver
 		Specify the version of strace you want, currently '${strace_ver}'.
+	valgrind_ver
+		Specify the version of Valgrind you want, currently '${valgrind_ver}'.
 	zlib_ver
 		Specify the version of zlib you want, currently '${zlib_ver}'.
 	libpng_ver
@@ -581,6 +583,10 @@ fetch()
 		check_archive ${strace_org_src_dir} ||
 			wget --no-check-certificate -O ${strace_org_src_dir}.tar.xz \
 				https://sourceforge.net/projects/strace/files/strace/${strace_ver}/${strace_name}.tar.xz/download || return;;
+	valgrind)
+		check_archive ${valgrind_org_src_dir} ||
+			wget --no-check-certificate -O ${valgrind_org_src_dir}.tar.bz2 \
+				http://sourceware.org/pub/valgrind/${valgrind_name}.tar.bz2 || return;;
 	zlib)
 		check_archive ${zlib_org_src_dir} ||
 			wget -O ${zlib_org_src_dir}.tar.xz \
@@ -1996,6 +2002,20 @@ install_native_strace()
 	[ "${enable_check}" != yes ] ||
 		make -C ${strace_org_src_dir} -j ${jobs} -k check || return
 	make -C ${strace_org_src_dir} -j ${jobs} install || return
+}
+
+install_native_valgrind()
+{
+	[ -x ${prefix}/bin/valgrind -a "${force_install}" != yes ] && return
+	fetch valgrind || return
+	unpack ${valgrind_org_src_dir} || return
+	[ -f ${valgrind_org_src_dir}/Makefile ] ||
+		(cd ${valgrind_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return
+	make -C ${valgrind_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${valgrind_org_src_dir} -j ${jobs} -k check || return
+	make -C ${valgrind_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_zlib()
