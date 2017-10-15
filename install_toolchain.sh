@@ -1248,7 +1248,7 @@ generate_shell_run_command()
 	cat <<\EOF | sed -e '1,2{s%prefix_place_holder%'${prefix}'%;s%native_place_holder%'${build}'%}' > ${set_path_sh} || return
 prefix=prefix_place_holder
 native=native_place_holder
-for p in ${prefix}/cling/bin ${prefix}/bin ${prefix}/go/bin; do
+for p in ${prefix}/cling/bin ${prefix}/sbin ${prefix}/bin ${prefix}/go/bin; do
 	[ -d ${p} ] || continue
 	echo ${PATH} | tr : '\n' | grep -qe ^${p}\$ \
 		&& PATH=${p}:`echo ${PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//"` \
