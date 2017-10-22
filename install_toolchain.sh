@@ -4288,7 +4288,10 @@ install_native_fzf()
 	unpack ${fzf_org_src_dir} || return
 	make -C ${fzf_org_src_dir} -j ${jobs} || return
 	make -C ${fzf_org_src_dir} -j ${jobs} install || return
-	mkdir -pv ${prefix}/bin && cp -fv ${fzf_org_src_dir}/bin/fzf ${prefix}/bin/fzf || return
+	mkdir -pv ${prefix}/bin || return
+	cp -fv ${fzf_org_src_dir}/bin/fzf ${prefix}/bin/fzf || return
+	cp -fv ${fzf_org_src_dir}/bin/fzf-tmux ${prefix}/bin/fzf-tmux || return
+	mkdir -pv ${prefix}/share/man && cp -fvr ${fzf_org_src_dir}/man/man1 ${prefix}/share/man || return
 }
 
 install_native_jq()
