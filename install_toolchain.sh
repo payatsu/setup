@@ -143,6 +143,7 @@
 : ${opencv_ver:=3.2.0}
 : ${opencv_contrib_ver:=3.2.0}
 : ${googletest_ver:=1.8.0}
+: ${fzf_ver:=0.17.1}
 : ${jq_ver:=1.5}
 : ${libpcap_ver:=1.8.1}
 : ${tcpdump_ver:=4.9.2}
@@ -476,6 +477,8 @@ help()
 		Specify the version of OpenCV contrib you want, currently '${opencv_contrib_ver}'.
 	googletest_ver
 		Specify the version of google test you want, currently '${googletest_ver}'.
+	fzf_ver
+		Specify the version of fzf you want, currently '${fzf_ver}'.
 	jq_ver
 		Specify the version of jq you want, currently '${jq_ver}'.
 	libpcap_ver
@@ -811,6 +814,10 @@ fetch()
 		check_archive ${googletest_org_src_dir} ||
 			wget --no-check-certificate -O ${googletest_org_src_dir}.tar.gz \
 				https://github.com/google/googletest/archive/release-${googletest_ver}.tar.gz || return;;
+	fzf)
+		check_archive ${fzf_org_src_dir} ||
+			wget --no-check-certificate -O ${fzf_org_src_dir}.tar.gz \
+				https://github.com/junegunn/fzf/archive/${fzf_ver}.tar.gz || return;;
 	jq)
 		check_archive ${jq_org_src_dir} ||
 			wget --no-check-certificate -O ${jq_org_src_dir}.tar.gz \
@@ -4271,6 +4278,17 @@ install_native_googletest()
 	make -C ${googletest_bld_dir_ntv} -j ${jobs} || return
 	make -C ${googletest_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
 	update_pkg_config_path || return
+}
+
+install_native_fzf()
+{
+	[ -x ${prefix}/bin/fzf -a "${force_install}" != yes ] && return
+	which go > /dev/null 2>&1 || install_native_go || return
+	fetch fzf || return
+	unpack ${fzf_org_src_dir} || return
+	make -C ${fzf_org_src_dir} -j ${jobs} || return
+	make -C ${fzf_org_src_dir} -j ${jobs} install || return
+	mkdir -pv ${prefix}/bin && cp -fv ${fzf_org_src_dir}/bin/fzf ${prefix}/bin/fzf || return
 }
 
 install_native_jq()
