@@ -1264,20 +1264,20 @@ native=native_place_holder
 for p in ${prefix}/cling/bin ${prefix}/sbin ${prefix}/bin ${prefix}/go/bin; do
 	[ -d ${p} ] || continue
 	echo ${PATH} | tr : '\n' | grep -qe ^${p}\$ \
-		&& PATH=${p}:`echo ${PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//"` \
+		&& PATH=${p}`echo ${PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//;s/^./:&/"` \
 		|| PATH=${p}${PATH:+:${PATH}}
 done
 for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${native} ] && find ${prefix}/lib/gcc/${native} -mindepth 1 -maxdepth 1 -name '*.?.?' | sort -rV | head -n 1`; do
 	[ -d ${p} ] || continue
 	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ \
-		&& export LD_LIBRARY_PATH=${p}:`echo ${LD_LIBRARY_PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//"` \
+		&& export LD_LIBRARY_PATH=${p}`echo ${LD_LIBRARY_PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//;s/^./:&/"` \
 		|| export LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 done
 echo ${MANPATH} | tr : '\n' | grep -qe ^${prefix}/share/man\$ \
 	&& export MANPATH=${prefix}/share/man:`echo ${MANPATH} | sed -e 's%\(^\|:\)'${prefix}'/share/man\($\|:\)%\1\2%g;s/::/:/g;s/^://'` \
 	|| export MANPATH=${prefix}/share/man:${MANPATH}
 echo ${GOPATH} | tr : '\n' | grep -qe ^${prefix}/.go\$ \
-	&& export GOPATH=${prefix}/.go:`echo ${GOPATH} | sed -e 's%\(^\|:\)'${prefix}'/.go\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//'` \
+	&& export GOPATH=${prefix}/.go`echo ${GOPATH} | sed -e 's%\(^\|:\)'${prefix}'/.go\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//;s/^./:&/'` \
 	|| export GOPATH=${prefix}/.go${GOPATH:+:${GOPATH}}
 EOF
 }
@@ -3923,7 +3923,8 @@ install_native_go()
 		GOROOT=${go_org_src_dir} GOROOT_FINAL=${prefix}/go ${go_org_src_dir}/src/make.bash) || return
 	[ ! -d ${prefix}/go ] || rm -fvr ${prefix}/go || return
 	mv -v ${go_org_src_dir} ${prefix}/go || return
-	${prefix}/go/bin/go get golang.org/x/tools/cmd/... || return
+	generate_shell_run_command && . ${set_path_sh} || return
+	GOPATH=${prefix}/.go go get golang.org/x/tools/cmd/... || return
 }
 
 install_native_perl()
