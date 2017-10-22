@@ -2838,10 +2838,8 @@ install_native_the_platinum_searcher()
 {
 	[ -x ${prefix}/bin/pt -a "${force_install}" != yes ] && return
 	which go > /dev/null || install_native_go || return
-	fetch the_platinum_searcher || return
-	unpack ${the_platinum_searcher_org_src_dir} || return
-	(cd ${the_platinum_searcher_org_src_dir}
-	go get ./...) || return
+	GOPATH=${prefix}/.go go get -v github.com/monochromegane/the_platinum_searcher/... || return
+	mkdir -pv ${prefix}/bin && ln -fsv ../.go/bin/pt ${prefix}/bin || return
 }
 
 install_native_highway()
