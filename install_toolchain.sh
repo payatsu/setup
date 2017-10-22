@@ -5,6 +5,7 @@
 # [TODO] ulibc
 # [TODO] qemu-kvm
 # [TODO] lldbのビルドをllvmに統合する方法を考える。
+# [TODO] debかrpm化に対応する。
 # [TODO] lib/に配置されるlibstdc++.so.*gdb.pyをなんとかする。
 # [TODO] peco
 # [TODO] Rtags
