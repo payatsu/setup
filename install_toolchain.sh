@@ -113,7 +113,7 @@
 : ${subversion_ver:=1.9.7}
 : ${cmake_ver:=3.9.3}
 : ${libedit_ver:=20160903-3.1}
-: ${swig_ver:=3.0.10}
+: ${swig_ver:=3.0.12}
 : ${llvm_ver:=5.0.0}
 : ${libcxx_ver:=${llvm_ver}}
 : ${libcxxabi_ver:=${llvm_ver}}
