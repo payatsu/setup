@@ -1341,12 +1341,12 @@ install_prerequisites()
 	[ -n "${prerequisites_have_been_already_installed}" ] && return
 	case ${os} in
 	Debian|Ubuntu|Raspbian)
-		apt-get install -y make gcc g++ || return
-		apt-get install -y unifdef || return # for linux kernel(microblaze)
-		apt-get install -y libgtk-3-dev libgnomeui-dev || return # for emacs
-		apt-get install -y libudev-dev || return # for webkitgtk
-		apt-get install -y libwebkitgtk-3.0-dev python-dev # libicu-dev # for emacs(xwidgets)
-		apt-get install -y libgnomeui-dev libxt-dev || return # for vim
+		apt install -y make gcc g++ || return
+		apt install -y unifdef || return # for linux kernel(microblaze)
+		apt install -y libgtk-3-dev libgnomeui-dev || return # for emacs
+		apt install -y libudev-dev || return # for webkitgtk
+		apt install -y libwebkitgtk-3.0-dev python-dev # libicu-dev # for emacs(xwidgets)
+		apt install -y libgnomeui-dev libxt-dev || return # for vim
 		;;
 	Red|CentOS|\\S)
 		yum install -y make gcc gcc-c++ || return
