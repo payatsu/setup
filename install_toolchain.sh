@@ -95,6 +95,7 @@
 : ${bash_ver:=4.4}
 : ${inetutils_ver:=1.9.4}
 : ${util_linux_ver:=2.30.1}
+: ${squashfs_ver:=4.3}
 : ${openssl_ver:=1.0.2l}
 : ${openssh_ver:=7.3p1}
 : ${curl_ver:=7.54.1}
@@ -400,6 +401,8 @@ help()
 		Specify the version of inetutils you want, currently '${inetutils_ver}'.
 	util_linux_ver
 		Specify the version of util-linux you want, currently '${util_linux_ver}'.
+	squashfs_ver
+		Specify the version of squashfs you want, currently '${squashfs_ver}'.
 	openssl_ver
 		Specify the version of openssl you want, currently '${openssl_ver}'.
 	openssh_ver
@@ -680,6 +683,10 @@ fetch()
 		check_archive ${util_linux_org_src_dir} ||
 			wget --no-check-certificate -O ${util_linux_org_src_dir}.tar.xz \
 				https://kernel.org/pub/linux/utils/util-linux/v`echo ${util_linux_ver} | cut -d. -f1,2`/${util_linux_name}.tar.xz || return;;
+	squashfs)
+		check_archive ${squashfs_org_src_dir} ||
+			wget --no-check-certificate -O ${squashfs_org_src_dir}.tar.gz \
+				https://sourceforge.net/projects/squashfs/files/squashfs/${squashfs_name}/${squashfs_name}.tar.gz/download || return;;
 	openssl)
 		check_archive ${openssl_org_src_dir} ||
 			wget --no-check-certificate -O ${openssl_org_src_dir}.tar.gz \
@@ -1075,7 +1082,7 @@ set_src_directory()
 		eval ${_1}_name=${1}_\${${_1}_ver};;
 	mingw-w64)
 		eval ${_1}_name=${1}-v\${${_1}_ver};;
-	expect|tcl|tk)
+	squashfs|expect|tcl|tk)
 		eval ${_1}_name=${1}\${${_1}_ver};;
 	googletest)
 		eval ${_1}_name=${1}-release-\${${_1}_ver};;
@@ -3099,6 +3106,16 @@ install_native_util_linux()
 	[ "${enable_check}" != yes ] ||
 		make -C ${util_linux_org_src_dir} -j ${jobs} -k check || return
 	make -C ${util_linux_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_squashfs()
+{
+	[ -x ${prefix}/bin/mksquashfs -a "${force_install}" != yes ] && return
+	fetch squashfs || return
+	unpack ${squashfs_org_src_dir} || return
+	make -C ${squashfs_org_src_dir}/squashfs-tools -j ${jobs} XZ_SUPPORT=1 || return
+	mkdir -pv ${prefix}/bin || return
+	make -C ${squashfs_org_src_dir}/squashfs-tools -j ${jobs} INSTALL_DIR=${prefix}/bin install || return
 }
 
 install_native_openssl()
