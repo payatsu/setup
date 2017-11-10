@@ -2711,7 +2711,7 @@ install_native_vim()
 		--enable-perlinterp=dynamic \
 		--enable-pythoninterp=dynamic \
 		--enable-python3interp=dynamic \
-		--enable-tclinterp=dynamic \
+		--enable-tclinterp=dynamic --with-tclsh=tclsh \
 		--enable-rubyinterp=dynamic \
 		--enable-cscope --enable-terminal --enable-multibyte \
 		--enable-xim --enable-fontset --enable-gui=gnome2 \
