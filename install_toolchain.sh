@@ -26,7 +26,7 @@
 : ${xz_ver:=5.2.3}
 : ${bzip2_ver:=1.0.6}
 : ${gzip_ver:=1.8}
-: ${wget_ver:=1.19}
+: ${wget_ver:=1.19.2}
 : ${pkg_config_ver:=0.29.2}
 : ${texinfo_ver:=6.5}
 : ${coreutils_ver:=8.28}
@@ -86,7 +86,7 @@
 : ${diffutils_ver:=3.6}
 : ${patch_ver:=2.7.5}
 : ${findutils_ver:=4.6.0}
-: ${screen_ver:=4.6.1}
+: ${screen_ver:=4.6.2}
 : ${libevent_ver:=2.1.8}
 : ${tmux_ver:=2.5}
 : ${expect_ver:=5.45}
