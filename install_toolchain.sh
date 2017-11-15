@@ -95,6 +95,7 @@
 : ${bash_ver:=4.4}
 : ${inetutils_ver:=1.9.4}
 : ${util_linux_ver:=2.30.1}
+: ${e2fsprogs_ver:=1.43.7}
 : ${squashfs_ver:=4.3}
 : ${openssl_ver:=1.0.2l}
 : ${openssh_ver:=7.3p1}
@@ -401,6 +402,8 @@ help()
 		Specify the version of inetutils you want, currently '${inetutils_ver}'.
 	util_linux_ver
 		Specify the version of util-linux you want, currently '${util_linux_ver}'.
+	e2fsprogs_ver
+		Specify the version of e2fsprogs you want, currently '${e2fsprogs_ver}'.
 	squashfs_ver
 		Specify the version of squashfs you want, currently '${squashfs_ver}'.
 	openssl_ver
@@ -683,6 +686,10 @@ fetch()
 		check_archive ${util_linux_org_src_dir} ||
 			wget --no-check-certificate -O ${util_linux_org_src_dir}.tar.xz \
 				https://kernel.org/pub/linux/utils/util-linux/v`echo ${util_linux_ver} | cut -d. -f1,2`/${util_linux_name}.tar.xz || return;;
+	e2fsprogs)
+		check_archive ${e2fsprogs_org_src_dir} ||
+			wget --no-check-certificate -O ${e2fsprogs_org_src_dir}.tar.gz \
+				https://sourceforge.net/projects/e2fsprogs/files/e2fsprogs/v${e2fsprogs_ver}/${e2fsprogs_name}.tar.gz/download || return;;
 	squashfs)
 		check_archive ${squashfs_org_src_dir} ||
 			wget --no-check-certificate -O ${squashfs_org_src_dir}.tar.gz \
@@ -3106,6 +3113,22 @@ install_native_util_linux()
 	[ "${enable_check}" != yes ] ||
 		make -C ${util_linux_org_src_dir} -j ${jobs} -k check || return
 	make -C ${util_linux_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_e2fsprogs()
+{
+	[ -x ${prefix}/bin/mkfs.ext2 -a "${force_install}" != yes ] && return
+	fetch e2fsprogs || return
+	unpack ${e2fsprogs_org_src_dir} || return
+	mkdir -pv ${e2fsprogs_org_src_dir}/build || return
+	[ -f ${e2fsprogs_org_src_dir}/build/Makefile ] ||
+		(cd ${e2fsprogs_org_src_dir}/build
+		../configure --prefix=${prefix} --enable-verbose-makecmds --enable-elf-shlibs) || return
+	make -C ${e2fsprogs_org_src_dir}/build -j 1 || return # -j '1' is for workaround
+	[ "${enable_check}" != yes ] ||
+		make -C ${e2fsprogs_org_src_dir}/build -j ${jobs} -k check || return
+	make -C ${e2fsprogs_org_src_dir}/build -j ${jobs} install || return
+	make -C ${e2fsprogs_org_src_dir}/build -j ${jobs} install-libs || return
 }
 
 install_native_squashfs()
