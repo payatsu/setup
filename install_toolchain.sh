@@ -965,7 +965,7 @@ unpack()
 	case ${1} in
 	'')
 		clean || return
-		for f in `find ${prefix}/src -name '*.tar.gz' -o -name '*.tar.bz2' -o -name '*.tar.xz' -o -name '*.zip'`; do
+		for f in `find ${src} -name '*.tar.gz' -o -name '*.tar.bz2' -o -name '*.tar.xz' -o -name '*.zip'`; do
 			unpack `echo $f | sed -e 's/\.tar\.gz$//;s/\.tar\.bz2$//;s/\.tar\.xz$//;s/\.zip$//'` `dirname $f`
 		done;;
 	*)
@@ -1074,16 +1074,16 @@ clean()
 # Delete no longer required source trees.
 {
 	[ "${enable_ccache}" != yes ] || ccache -C > /dev/null || return
-	find ${prefix}/src -mindepth 2 -maxdepth 2 \
+	find ${src} -mindepth 2 -maxdepth 2 \
 		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' ! -name '*-git' -exec rm -fvr {} +
-	find ${prefix}/src -mindepth 2 -maxdepth 2 \
+	find ${src} -mindepth 2 -maxdepth 2 \
 		-name '*-git' | xargs -I \{\} find \{\} -type d -name .git -execdir git clean -dfx \; -execdir git checkout -- . \;
 }
 
 archive()
 # Archive related files.
 {
-	[ ${prefix}/src = `dirname ${0}` ] || cp -fv ${0} ${prefix}/src || return
+	[ ${src} = `dirname ${0}` ] || cp -fv ${0} ${src} || return
 	convert_archives || return
 	tar cJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz \
 		-C `dirname ${prefix}` `basename ${prefix}` || return
@@ -1128,7 +1128,7 @@ set_src_directory()
 	case ${1} in
 	llvm|libcxx|libcxxabi|compiler-rt|cfe|clang-tools-extra|lld|lldb)
 		eval ${_1}_name=${1}-\${${_1}_ver}.src
-		eval ${_1}_src_base=${prefix}/src/${1}
+		eval ${_1}_src_base=${src}/${1}
 		eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
 		eval ${_1}_bld_dir=\${${_1}_src_base}/\${${_1}_name}-bld
 		return 0
@@ -1156,7 +1156,7 @@ set_src_directory()
 		eval ${_1}_name=${1}-\${${_1}_ver};;
 	esac
 
-	eval ${_1}_src_base=${prefix}/src/${1}
+	eval ${_1}_src_base=${src}/${1}
 	eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
 
 	case ${1} in
@@ -1194,6 +1194,7 @@ set_src_directory()
 set_variables()
 {
 	prefix=`realpath -m ${prefix}`
+	src=${prefix}/src
 	set_path_sh=${prefix}/set_path.sh
 	[ ${build} = ${host} ] && sysroot=${prefix}/${target}/sysroot || sysroot=${prefix}/${host}/sysroot
 	sysroot_mingw='C:/MinGW64'
@@ -1236,7 +1237,7 @@ set_variables()
 	[ -f ${set_path_sh} ] || generate_shell_run_command || return
 	. ${set_path_sh}
 	echo ${PATH} | tr : '\n' | grep -qe ^/sbin\$ || PATH=/sbin:${PATH}
-	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${prefix}/src/.ccache CCACHE_BASEDIR=${prefix}/src && ! mkdir -pv ${prefix}/src && return 1
+	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${src}/.ccache CCACHE_BASEDIR=${src} && ! mkdir -pv ${src} && return 1
 	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-gcc}" CXX="ccache ${CXX:-g++}"
 	[ "${enable_ccache}" = yes ] || ! echo ${CC} | grep -qe ccache || export CC=`echo ${CC} | sed -e 's/ccache //'` CXX=`echo ${CXX} | sed -e 's/ccache //'`
 	update_pkg_config_path || return
@@ -1259,9 +1260,9 @@ check_platform()
 
 convert_archives()
 {
-	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.tar.gz'  -exec sh -c 'xzfile=`echo {} | sed -e "s/\\.gz\$/.xz/"`;  [ -f ${xzfile} ] && exit 0; echo converting {} into ${xzfile} ...; gzip  -cd {} | xz -T '${jobs}' -cv > ${xzfile}' \; -delete || return
-	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.tar.bz2' -exec sh -c 'xzfile=`echo {} | sed -e "s/\\.bz2\$/.xz/"`; [ -f ${xzfile} ] && exit 0; echo converting {} into ${xzfile} ...; bzip2 -cd {} | xz -T '${jobs}' -cv > ${xzfile}' \; -delete || return
-	find ${prefix}/src -mindepth 2 -maxdepth 2 -name '*.zip'  -execdir sh -c '[ -f `basename {} .zip`.tar.xz ] && exit 0; unzip {} && tar cJvf `basename {} .zip`.tar.xz `basename {} .zip`' \; -delete || return
+	find ${src} -mindepth 2 -maxdepth 2 -name '*.tar.gz'  -exec sh -c 'xzfile=`echo {} | sed -e "s/\\.gz\$/.xz/"`;  [ -f ${xzfile} ] && exit 0; echo converting {} into ${xzfile} ...; gzip  -cd {} | xz -T '${jobs}' -cv > ${xzfile}' \; -delete || return
+	find ${src} -mindepth 2 -maxdepth 2 -name '*.tar.bz2' -exec sh -c 'xzfile=`echo {} | sed -e "s/\\.bz2\$/.xz/"`; [ -f ${xzfile} ] && exit 0; echo converting {} into ${xzfile} ...; bzip2 -cd {} | xz -T '${jobs}' -cv > ${xzfile}' \; -delete || return
+	find ${src} -mindepth 2 -maxdepth 2 -name '*.zip'  -execdir sh -c '[ -f `basename {} .zip`.tar.xz ] && exit 0; unzip {} && tar cJvf `basename {} .zip`.tar.xz `basename {} .zip`' \; -delete || return
 }
 
 archive_sources()
@@ -1269,7 +1270,7 @@ archive_sources()
 	fetch || return
 	clean || return
 	convert_archives || return
-	tar cJvf ${prefix}/src.tar.xz -C ${prefix} src
+	tar cJvf ${src}.tar.xz -C `dirname ${src}` `basename ${src}`
 }
 
 list_major_commands()
@@ -2947,12 +2948,12 @@ install_native_ctags()
 
 install_native_dein()
 {
-	[ -f ${prefix}/src/vim/installer.sh ] ||
-		(mkdir -pv ${prefix}/src/vim || return
-		wget --no-check-certificate -O ${prefix}/src/vim/installer.sh \
+	[ -f ${src}/vim/installer.sh ] ||
+		(mkdir -pv ${src}/vim || return
+		wget --no-check-certificate -O ${src}/vim/installer.sh \
 			https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh) || return
 	[ `whoami` != root ] || ! echo Error. run as root is not recommended. >&2 || return
-	sh ${prefix}/src/vim/installer.sh ${HOME}/.vim || return
+	sh ${src}/vim/installer.sh ${HOME}/.vim || return
 }
 
 install_native_grep()
