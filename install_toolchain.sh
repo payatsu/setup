@@ -215,12 +215,15 @@ usage()
 {
 	cat <<EOF
 [Usage]
-	${0} [-p prefix] [-j jobs] [-f yes|no] [-c yes|no] [-h host] [-t target] [variable=value]... commands...
+	${0} [-p prefix] [-s src] [-j jobs] [-f yes|no] [-c yes|no] [-h host] [-t target] [variable=value]... commands...
 
 [Options]
 	-p prefix
 		Installation directory, currently '${prefix}'.
 		'/usr/local' is NOT strongly recommended.
+	-s src
+		Source directory, currently '${src}'.
+		Not necessary to be '${prefix}/src'.
 	-j jobs
 		The number of processes invoked simultaneously by 'make', currently '${jobs}'.
 		Recommended not to be more than the number of CPU cores.
@@ -1074,6 +1077,7 @@ clean()
 # Delete no longer required source trees.
 {
 	[ "${enable_ccache}" != yes ] || ccache -C > /dev/null || return
+	[ ! -d ${src} ] && return
 	find ${src} -mindepth 2 -maxdepth 2 \
 		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' ! -name '*-git' -exec rm -fvr {} +
 	find ${src} -mindepth 2 -maxdepth 2 \
@@ -1194,8 +1198,8 @@ set_src_directory()
 set_variables()
 {
 	prefix=`realpath -m ${prefix}`
-	src=${prefix}/src
-	set_path_sh=${prefix}/set_path.sh
+	[ -n "${src}" ] && src=`realpath -m ${src}` || src=${prefix}/src
+	set_path_sh=${DESTDIR}${prefix}/set_path.sh
 	[ ${build} = ${host} ] && sysroot=${prefix}/${target}/sysroot || sysroot=${prefix}/${host}/sysroot
 	sysroot_mingw='C:/MinGW64'
 	echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && exe=.exe || exe=''
@@ -4883,9 +4887,10 @@ install_crossed_native_libtiff()
 
 realpath -e ${0} | grep -qe ^/tmp/ || { tmpdir=`mktemp -dp /tmp` && trap 'rm -fvr ${tmpdir}' EXIT HUP INT QUIT TERM && cp -v ${0} ${tmpdir} && sh -$- ${tmpdir}/`basename ${0}` "$@"; exit;}
 trap 'set' USR1
-while getopts p:j:f:c:l:t:h: arg; do
+while getopts p:s:j:f:c:l:t:h: arg; do
 	case ${arg} in
 	p)  prefix=${OPTARG};;
+	s)  src=${OPTARG};;
 	j)  jobs=${OPTARG};;
 	f)  enable_ccache=${OPTARG};;
 	c)  enable_check=${OPTARG};;
@@ -4905,7 +4910,7 @@ while [ $# -gt 0 ]; do
 	debug) ${1} `[ -n "${BASH}" ] && echo shell || echo ${1}`;;
 	shell) [ -n "${BASH}" ] \
 				&& set placeholder debug \
-				|| exec bash --noprofile --norc --posix -e ${0} -p ${prefix} -j ${jobs} -l ${languages} -h ${host} -t ${target} shell
+				|| exec bash --noprofile --norc --posix -e ${0} -p ${prefix} -s ${src} -j ${jobs} -l ${languages} -h ${host} -t ${target} shell
 		   count=`expr ${count} + 1`;;
 	*=*)   eval export ${1}; set_variables;;
 	*)     eval ${1} || exit 1; count=`expr ${count} + 1`;;
