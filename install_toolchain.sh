@@ -1093,6 +1093,39 @@ archive()
 		-C `dirname ${prefix}` `basename ${prefix}` || return
 }
 
+deb()
+# Make .deb package.
+{
+	deb_prefix=${src}/deb
+
+	export DESTDIR=${deb_prefix}
+	for pkg in $@; do
+		install_native_${pkg} || return
+	done
+	unset DESTDIR
+	[ $# -gt 0 ] && generate_shell_run_command ${deb_prefix}/${prefix}/`basename ${set_path_sh}`
+
+	mkdir -pv ${deb_prefix}/DEBIAN || return
+	cat <<EOF > ${deb_prefix}/DEBIAN/control || return
+Package: mytoolchains
+Maintainer: ${USER}
+Version: 0.1.0
+Architecture: `dpkg-architecture -q DEB_HOST_ARCH`
+Section: non-free/devel
+Priority: extra
+Description: my toolchains
+EOF
+	(cd ${deb_prefix}
+	find * -type d -name DEBIAN -prune -o -type f -exec md5sum {} \;) > ${deb_prefix}/DEBIAN/md5sums || return
+	for f in ${deb_prefix}/DEBIAN/preinst ${deb_prefix}/DEBIAN/postinst; do
+		cat <<EOF > ${f} && chmod +x ${f} || return
+#!/bin/sh
+exit 0
+EOF
+	done
+	dpkg-deb -b ${deb_prefix} || return
+}
+
 deploy()
 # Deploy related files.
 {
@@ -1238,7 +1271,7 @@ set_variables()
 		set_src_directory ${pkg}
 	done
 
-	[ -f ${set_path_sh} ] || generate_shell_run_command || return
+	[ -f ${set_path_sh} ] || generate_shell_run_command ${set_path_sh} || return
 	. ${set_path_sh}
 	echo ${PATH} | tr : '\n' | grep -qe ^/sbin\$ || PATH=/sbin:${PATH}
 	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${src}/.ccache CCACHE_BASEDIR=${src} && ! mkdir -pv ${src} && return 1
@@ -1345,8 +1378,8 @@ update_pkg_config_path()
 
 generate_shell_run_command()
 {
-	mkdir -pv `dirname ${set_path_sh}`
-	cat <<\EOF | sed -e '1,2{s%prefix_place_holder%'${prefix}'%;s%native_place_holder%'${build}'%}' > ${set_path_sh} || return
+	mkdir -pv `dirname ${1}`
+	cat <<\EOF | sed -e '1,2{s%prefix_place_holder%'${prefix}'%;s%native_place_holder%'${build}'%}' > ${1} || return
 prefix=prefix_place_holder
 native=native_place_holder
 for p in ${prefix}/cling/bin ${prefix}/sbin ${prefix}/bin ${prefix}/go/bin; do
@@ -2057,7 +2090,7 @@ install_native_gcc()
 	[ -f ${gcc_bld_dir_ntv}/gcc/xg++ -a "${force_install}" = yes ] &&
 		which doxygen > /dev/null && make -C ${gcc_bld_dir_ntv}/${build}/libstdc++-v3 -j ${jobs} install-man
 	update_library_search_path || return
-	generate_shell_run_command && . ${set_path_sh} || return
+	generate_shell_run_command ${set_path_sh} && . ${set_path_sh} || return
 	ln -fsv gcc ${prefix}/bin/cc || return
 	[ ! -f ${prefix}/bin/${build}-gcc-tmp ] || rm -v ${prefix}/bin/${build}-gcc-tmp || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
@@ -3969,7 +4002,7 @@ install_cross_gcc_without_headers()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_1st} -j ${jobs} -k check-target-libgcc || return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-target-libgcc || return
-	generate_shell_run_command && . ${set_path_sh} || return
+	generate_shell_run_command ${set_path_sh} && . ${set_path_sh} || return
 }
 
 install_cross_linux_header()
@@ -4111,7 +4144,7 @@ install_cross_functional_gcc()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k install${strip:+-${strip}} ${strip:+STRIP=${target}-strip} || true # [XXX] install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
-	generate_shell_run_command && . ${set_path_sh} || return
+	generate_shell_run_command ${set_path_sh} && . ${set_path_sh} || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool; do
 		[ ! -f ${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${prefix}/bin/${target}-${b} || return
 	done
@@ -4226,7 +4259,7 @@ install_native_go()
 		GOROOT=${go_org_src_dir} GOROOT_FINAL=${prefix}/go ${go_org_src_dir}/src/make.bash) || return
 	[ ! -d ${prefix}/go ] || rm -fvr ${prefix}/go || return
 	mv -v ${go_org_src_dir} ${prefix}/go || return
-	generate_shell_run_command && . ${set_path_sh} || return
+	generate_shell_run_command ${set_path_sh} && . ${set_path_sh} || return
 	GOPATH=${prefix}/.go go get golang.org/x/tools/cmd/... || return
 }
 
