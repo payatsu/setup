@@ -198,7 +198,7 @@
 : ${gtk_ver:=3.22.0}
 : ${webkitgtk_ver:=2.14.0}
 
-: ${prefix:=/toolchains}
+: ${prefix:=/toolchain}
 : ${jobs:=`grep -e processor /proc/cpuinfo | wc -l`}
 : ${enable_ccache:=no}
 : ${enable_check:=no}
@@ -248,18 +248,18 @@ usage()
 
 [Examples]
 	For everything which can be installed by this tool:
-	# ${0} -p /toolchains -t armv7l-linux-gnueabihf -j 8 auto
+	# ${0} -p /toolchain -t armv7l-linux-gnueabihf -j 8 auto
 
 	For Raspberry pi 2 cross compiler:
-	# ${0} -p /toolchains -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 linux_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 'install cross'
+	# ${0} -p /toolchain -t armv7l-linux-gnueabihf -j 8 binutils_ver=2.25 linux_ver=3.18.13 glibc_ver=2.22 gcc_ver=5.3.0 'install cross'
 
 	For microblaze cross compiler:
-	# ${0} -p /toolchains -t microblaze-linux-gnu -j 8 binutils_ver=2.25 linux_ver=4.3.3 glibc_ver=2.22 gcc_ver=5.3.0 'install cross'
+	# ${0} -p /toolchain -t microblaze-linux-gnu -j 8 binutils_ver=2.25 linux_ver=4.3.3 glibc_ver=2.22 gcc_ver=5.3.0 'install cross'
 
 	For MinGW64 cross compiler(x86_64):
-	# ${0} -p /toolchains -t x86_64-w64-mingw32 -l c,c++ install_cross_gcc
+	# ${0} -p /toolchain -t x86_64-w64-mingw32 -l c,c++ install_cross_gcc
 	or(i686):
-	# ${0} -p /toolchains -t i686-w64-mingw32 -l c,c++ install_cross_gcc
+	# ${0} -p /toolchain -t i686-w64-mingw32 -l c,c++ install_cross_gcc
 
 EOF
 	list_major_commands
@@ -543,7 +543,7 @@ EOF
 }
 
 auto()
-# Perform auto installation for all available toolchains and other tools.
+# Perform auto installation for all available toolchain and other tools.
 {
 	fetch || return
 	full || return
@@ -1096,34 +1096,32 @@ archive()
 deb()
 # Make .deb package.
 {
-	deb_prefix=${src}/deb
-
+	deb_prefix=${src}/toolchain
 	export DESTDIR=${deb_prefix}
 	for pkg in $@; do
 		install_native_${pkg} || return
 	done
+	generate_shell_run_command ${DESTDIR}/${set_path_sh}
 	unset DESTDIR
-	[ $# -gt 0 ] && generate_shell_run_command ${deb_prefix}/${prefix}/`basename ${set_path_sh}`
-
 	mkdir -pv ${deb_prefix}/DEBIAN || return
 	cat <<EOF > ${deb_prefix}/DEBIAN/control || return
-Package: mytoolchains
+Package: mytoolchain
 Maintainer: ${USER}
 Version: 0.1.0
 Architecture: `dpkg-architecture -q DEB_HOST_ARCH`
 Section: non-free/devel
 Priority: extra
-Description: my toolchains
+Description: my toolchain
 EOF
 	(cd ${deb_prefix}
-	find * -type d -name DEBIAN -prune -o -type f -exec md5sum {} \;) > ${deb_prefix}/DEBIAN/md5sums || return
+	find * -type d -name DEBIAN -prune -o -type f -exec md5sum {} +) > ${deb_prefix}/DEBIAN/md5sums || return
 	for f in ${deb_prefix}/DEBIAN/preinst ${deb_prefix}/DEBIAN/postinst; do
-		cat <<EOF > ${f} && chmod +x ${f} || return
+		cat <<EOF > ${f} && chmod a+x ${f} || return
 #!/bin/sh
 exit 0
 EOF
 	done
-	dpkg-deb -b ${deb_prefix} || return
+	dpkg -b ${deb_prefix} || return
 }
 
 deploy()
@@ -1232,7 +1230,7 @@ set_variables()
 {
 	prefix=`realpath -m ${prefix}`
 	[ -n "${src}" ] && src=`realpath -m ${src}` || src=${prefix}/src
-	set_path_sh=${DESTDIR}${prefix}/set_path.sh
+	set_path_sh=${prefix}/set_path.sh
 	[ ${build} = ${host} ] && sysroot=${prefix}/${target}/sysroot || sysroot=${prefix}/${host}/sysroot
 	sysroot_mingw='C:/MinGW64'
 	echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && exe=.exe || exe=''
