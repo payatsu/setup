@@ -6,6 +6,7 @@
 # [TODO] qemu-kvm
 # [TODO] clangで使う標準C++ライブラリをlibstdc++とlibc++で切り替えてビルドできるようにする。
 # [TODO] debかrpm化に対応する。
+# [TODO] global, tmuxでlibtinfo, libtinfotwの選択を自動化する。
 # [TODO] lib/に配置されるlibstdc++.so.*gdb.pyをなんとかする。
 # [TODO] peco
 # [TODO] Rtags
@@ -1099,7 +1100,7 @@ deb()
 	deb_prefix=${src}/toolchain
 	export DESTDIR=${deb_prefix}
 	for pkg in $@; do
-		install_native_${pkg} || return
+		${pkg} || return
 	done
 	generate_shell_run_command ${DESTDIR}/${set_path_sh}
 	unset DESTDIR
@@ -1115,13 +1116,7 @@ Description: my toolchain
 EOF
 	(cd ${deb_prefix}
 	find * -type d -name DEBIAN -prune -o -type f -exec md5sum {} +) > ${deb_prefix}/DEBIAN/md5sums || return
-	for f in ${deb_prefix}/DEBIAN/preinst ${deb_prefix}/DEBIAN/postinst; do
-		cat <<EOF > ${f} && chmod a+x ${f} || return
-#!/bin/sh
-exit 0
-EOF
-	done
-	dpkg -b ${deb_prefix} || return
+#	`which fakeroot || true` dpkg -b ${deb_prefix} || return
 }
 
 deploy()
@@ -1140,7 +1135,7 @@ list()
 }
 
 reset()
-# Reset '${prefix}' except '${prefix}/src/'.
+# Reset '${prefix}' except '${prefix}/src'.
 {
 	clean || return
 	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src ! -name .git -exec rm -fvr '{}' +
@@ -1234,7 +1229,7 @@ set_variables()
 	[ ${build} = ${host} ] && sysroot=${prefix}/${target}/sysroot || sysroot=${prefix}/${host}/sysroot
 	sysroot_mingw='C:/MinGW64'
 	echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && exe=.exe || exe=''
-	[ -f /etc/issue ] && os=`head -1 /etc/issue | cut -d' ' -f1`
+	[ -f /etc/issue ] && os=`head -n 1 /etc/issue | cut -d' ' -f1`
 	[ "${strip}" = strip ] || cmake_build_type=Debug
 
 	case ${target} in
@@ -1366,8 +1361,8 @@ EOF
 
 update_pkg_config_path()
 {
-	PKG_CONFIG_PATH=`([ -d ${prefix}/lib ] && find ${prefix}/lib -type d -name pkgconfig
-						[ -d ${prefix}/share ] && find ${prefix}/share -type d -name pkgconfig
+	PKG_CONFIG_PATH=`([ -d ${DESTDIR}${prefix}/lib ] && find ${DESTDIR}${prefix}/lib -type d -name pkgconfig
+						[ -d ${DESTDIR}${prefix}/share ] && find ${DESTDIR}${prefix}/share -type d -name pkgconfig
 						LANG=C ${CC:-gcc} -print-search-dirs | sed -e '/^libraries: =/{s/^libraries: =//;p};d' |
 							tr : '\n' | xargs realpath -eq | xargs -I dir find dir -maxdepth 1 -type d -name pkgconfig
 						[ -d /usr/share ] && find /usr/share -type d -name pkgconfig) | tr '\n' : | sed -e 's/:$//'`
@@ -1403,7 +1398,7 @@ EOF
 
 search_library()
 {
-	for dir in ${prefix}/lib64 ${prefix}/lib `LANG=C ${CC:-gcc} -print-search-dirs |
+	for dir in ${DESTDIR}${prefix}/lib64 ${DESTDIR}${prefix}/lib `LANG=C ${CC:-gcc} -print-search-dirs |
 		sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs realpath -eq`; do
 		[ -f ${dir}/${1} ] && echo ${dir}/${1} && return
 	done
@@ -1418,7 +1413,7 @@ get_library_path()
 
 search_header()
 {
-	for dir in ${prefix}/include ${prefix}/lib/libffi-*/include \
+	for dir in ${DESTDIR}${prefix}/include ${DESTDIR}${prefix}/lib/libffi-*/include \
 		`LANG=C ${CC:-gcc} -x c -E -v /dev/null -o /dev/null 2>&1 |
 			sed -e '/^#include /,/^End of search list.$/p;d' | xargs realpath -eq`; do
 		[ -d ${dir}${2:+/${2}} ] || continue
@@ -1532,21 +1527,21 @@ install_native_bzip2()
 	make -C ${bzip2_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${bzip2_org_src_dir} -j ${jobs} -k check || return
-	make -C ${bzip2_org_src_dir} -j ${jobs} PREFIX=${prefix} install || return
+	make -C ${bzip2_org_src_dir} -j ${jobs} PREFIX=${DESTDIR}${prefix} install || return
 	make -C ${bzip2_org_src_dir} -j ${jobs} clean || return
 	make -C ${bzip2_org_src_dir} -j ${jobs} -f Makefile-libbz2_so || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${bzip2_org_src_dir} -j ${jobs} -k check || return
-	cp -fv ${bzip2_org_src_dir}/libbz2.so.${bzip2_ver} ${prefix}/lib || return
-	chmod a+r ${prefix}/lib/libbz2.so.${bzip2_ver} || return
-	ln -fsv libbz2.so.${bzip2_ver} ${prefix}/lib/libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` || return
-	ln -fsv libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` ${prefix}/lib/libbz2.so || return
-	cp -fv ${bzip2_org_src_dir}/bzlib.h ${prefix}/include || return
-	cp -fv ${bzip2_org_src_dir}/bzlib_private.h ${prefix}/include || return
+	cp -fv ${bzip2_org_src_dir}/libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib || return
+	chmod -v a+r ${DESTDIR}${prefix}/lib/libbz2.so.${bzip2_ver} || return
+	ln -fsv libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib/libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` || return
+	ln -fsv libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/lib/libbz2.so || return
+	cp -fv ${bzip2_org_src_dir}/bzlib.h ${DESTDIR}${prefix}/include || return
+	cp -fv ${bzip2_org_src_dir}/bzlib_private.h ${DESTDIR}${prefix}/include || return
 	update_library_search_path || return
 	[ -z "${strip}" ] && return
 	for b in bunzip2 bzcat bzip2 bzip2recover; do
-		strip -v ${prefix}/bin/${b} || return
+		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 }
 
@@ -1658,12 +1653,12 @@ install_native_coreutils()
 
 install_native_busybox()
 {
-	[ -x ${prefix}/bin/busybox/busybox -a "${force_install}" != yes ] && return
+	[ -x ${prefix}/busybox/bin/busybox -a "${force_install}" != yes ] && return
 	fetch busybox || return
 	unpack ${busybox_org_src_dir} || return
 	make -C ${busybox_org_src_dir} -j ${jobs} V=1 defconfig || return
 	make -C ${busybox_org_src_dir} -j ${jobs} V=1 || return
-	make -C ${busybox_org_src_dir} -j ${jobs} CONFIG_PREFIX=${prefix}/busybox install || return
+	make -C ${busybox_org_src_dir} -j ${jobs} CONFIG_PREFIX=${DESTDIR}${prefix}/busybox install || return
 }
 
 install_native_bison()
@@ -1908,7 +1903,7 @@ install_native_linux_header()
 	*) echo Unknown build architecture: ${build} >&2; return 1;;
 	esac
 	make -C ${linux_src_dir_ntv} -j ${jobs} V=1 \
-		ARCH=${native_linux_arch} INSTALL_HDR_PATH=${prefix} headers_install || return
+		ARCH=${native_linux_arch} INSTALL_HDR_PATH=${DESTDIR}${prefix} headers_install || return
 }
 
 install_native_dtc()
@@ -1978,7 +1973,7 @@ install_native_glibc()
 		(cd ${glibc_bld_dir_ntv}
 		LD_LIBRARY_PATH='' ${glibc_src_dir_ntv}/configure \
 			--prefix=${prefix} --build=${build} \
-			--with-headers=${prefix}/include --without-selinux --enable-add-ons \
+			--with-headers=${DESTDIR}${prefix}/include --without-selinux --enable-add-ons \
 			CPPFLAGS="${CPPFLAGS} -I${prefix}/include -D_LIBC") || return
 	make -C ${glibc_bld_dir_ntv} -j ${jobs} install-headers || return
 	make -C ${glibc_bld_dir_ntv} -j ${jobs} || return
@@ -2089,12 +2084,12 @@ install_native_gcc()
 		which doxygen > /dev/null && make -C ${gcc_bld_dir_ntv}/${build}/libstdc++-v3 -j ${jobs} install-man
 	update_library_search_path || return
 	generate_shell_run_command ${set_path_sh} && . ${set_path_sh} || return
-	ln -fsv gcc ${prefix}/bin/cc || return
-	[ ! -f ${prefix}/bin/${build}-gcc-tmp ] || rm -v ${prefix}/bin/${build}-gcc-tmp || return
+	ln -fsv gcc ${DESTDIR}${prefix}/bin/cc || return
+	[ ! -f ${DESTDIR}${prefix}/bin/${build}-gcc-tmp ] || rm -v ${DESTDIR}${prefix}/bin/${build}-gcc-tmp || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
-		[ ! -f ${prefix}/bin/${b}-${gcc_ver} ] || ln -fsv ${b}-${gcc_ver} ${prefix}/bin/${b} || return
+		[ ! -f ${DESTDIR}${prefix}/bin/${b}-${gcc_ver} ] || ln -fsv ${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${b} || return
 	done
-	 [ -f ${prefix}/lib/gcc/${host}/${gcc_ver}/libgcc_s.so ] || ln -fsv ../lib64/libgcc_s.so ${prefix}/lib/gcc/${host}/${gcc_ver} || return # XXX work around for --enable-version-specific-runtime-libs
+	 [ -f ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_ver}/libgcc_s.so ] || ln -fsv ../lib64/libgcc_s.so ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_ver} || return # XXX work around for --enable-version-specific-runtime-libs
 }
 
 install_native_readline()
@@ -2959,9 +2954,9 @@ EOF
 	[ -d ${vimdoc_ja_org_src_dir} ] ||
 		(unpack ${vimdoc_ja_org_src_dir} &&
 		mv -v ${vimdoc_ja_src_base}/vimdoc-ja-master ${vimdoc_ja_org_src_dir}) || return
-	mkdir -pv ${prefix}/share/vim/vimfiles || return
-	cp -rvt ${prefix}/share/vim/vimfiles ${vimdoc_ja_org_src_dir}/* || return
-	vim -i NONE -u NONE -N -c "helptags ${prefix}/share/vim/vimfiles/doc" -c qall || return
+	mkdir -pv ${DESTDIR}${prefix}/share/vim/vimfiles || return
+	cp -rvt ${DESTDIR}${prefix}/share/vim/vimfiles ${vimdoc_ja_org_src_dir}/* || return
+	vim -i NONE -u NONE -N -c "helptags ${DESTDIR}${prefix}/share/vim/vimfiles/doc" -c qall || return
 }
 
 install_native_ctags()
@@ -3015,7 +3010,8 @@ install_native_global()
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			--with-ncurses=`get_prefix curses.h` CPPFLAGS="${CPPFLAGS} -I`get_include_path curses.h`") || return
+			--with-ncurses=`get_prefix curses.h` CPPFLAGS="${CPPFLAGS} -I`get_include_path curses.h`" \
+			LDFLAGS="${LDFLAGS} -ltinfotw") || return
 	make -C ${global_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${global_org_src_dir} -j ${jobs} -k check || return
@@ -3090,8 +3086,8 @@ install_native_the_platinum_searcher()
 {
 	[ -x ${prefix}/bin/pt -a "${force_install}" != yes ] && return
 	which go > /dev/null || install_native_go || return
-	GOPATH=${prefix}/.go go get -v github.com/monochromegane/the_platinum_searcher/... || return
-	mkdir -pv ${prefix}/bin && ln -fsv ../.go/bin/pt ${prefix}/bin || return
+	GOPATH=${DESTDIR}${prefix}/.go go get -v github.com/monochromegane/the_platinum_searcher/... || return
+	mkdir -pv ${DESTDIR}${prefix}/bin && ln -fsv ../.go/bin/pt ${DESTDIR}${prefix}/bin || return
 }
 
 install_native_highway()
@@ -3152,14 +3148,14 @@ install_native_plantuml()
 	[ -x ${prefix}/bin/plantuml -a "${force_install}" != yes ] && return
 	which dot > /dev/null || install_native_graphviz || return
 	fetch plantuml || return
-	mkdir -pv ${prefix}/bin || return
-	cp -fv ${plantuml_org_src_dir}.jar ${prefix}/bin/plantuml.jar || return
-	cat <<EOF > ${prefix}/bin/plantuml && chmod a+x ${prefix}/bin/plantuml || return
+	mkdir -pv ${DESTDIR}${prefix}/bin || return
+	cp -fv ${plantuml_org_src_dir}.jar ${DESTDIR}${prefix}/bin/plantuml.jar || return
+	cat <<EOF > ${DESTDIR}${prefix}/bin/plantuml && chmod -v a+x ${DESTDIR}${prefix}/bin/plantuml || return
 #!/bin/sh -e
 exec java -Djava.awt.headless=true -jar \`dirname \${0}\`/plantuml.jar -graphvizdot \`which dot\` "\$@"
 EOF
-	mkdir -pv ${prefix}/share/plantuml || return
-	cp -fv ${plantuml_org_src_dir}.pdf ${prefix}/share/plantuml/plantuml.pdf || return
+	mkdir -pv ${DESTDIR}${prefix}/share/plantuml || return
+	cp -fv ${plantuml_org_src_dir}.pdf ${DESTDIR}${prefix}/share/plantuml/plantuml.pdf || return
 }
 
 install_native_diffutils()
@@ -3229,9 +3225,9 @@ install_native_screen()
 		./configure --prefix=${prefix} --build=${build} \
 			--enable-telnet --enable-colors256 --enable-rxvt_osc) || return
 	make -C ${screen_org_src_dir} -j ${jobs} || return
-	mkdir -pv ${prefix}/share/screen/utf8encodings || return
-	make -C ${screen_org_src_dir} -j ${jobs} install || return
-	[ -z "${strip}" ] || strip -v ${prefix}/bin/${screen_name} || return
+	mkdir -pv ${DESTDIR}${prefix}/share/screen/utf8encodings || return
+	make -C ${screen_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/${screen_name} || return
 }
 
 install_native_libevent()
@@ -3260,7 +3256,7 @@ install_native_tmux()
 	[ -f ${tmux_org_src_dir}/Makefile ] ||
 		(cd ${tmux_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			CPPFLAGS="${CPPFLAGS} -I`get_include_path curses.h`") || return
+			CPPFLAGS="${CPPFLAGS} -I`get_include_path curses.h`" LIBTINFO_LIBS=-ltinfotw) || return
 	make -C ${tmux_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${tmux_org_src_dir} -j ${jobs} -k check || return
@@ -3281,8 +3277,8 @@ install_native_expect()
 	make -C ${expect_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${expect_org_src_dir} -j ${jobs} -k check || return
-	make -C ${expect_org_src_dir} -j ${jobs} install || return
-	ln -fsv ./${expect_name}/lib${expect_name}.so ${prefix}/lib || return
+	make -C ${expect_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+	ln -fsv ./${expect_name}/lib${expect_name}.so ${DESTDIR}${prefix}/lib || return
 }
 
 install_native_dejagnu()
@@ -3329,7 +3325,7 @@ install_native_bash()
 		make -C ${bash_org_src_dir} -j ${jobs} -k check || return
 	make -C ${bash_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_pkg_config_path || return
-	ln -fsv bash ${prefix}/bin/sh || return
+	ln -fsv bash ${DESTDIR}${prefix}/bin/sh || return
 }
 
 install_native_inetutils()
@@ -3383,9 +3379,9 @@ install_native_squashfs()
 	fetch squashfs || return
 	unpack ${squashfs_org_src_dir} || return
 	make -C ${squashfs_org_src_dir}/squashfs-tools -j ${jobs} XZ_SUPPORT=1 || return
-	mkdir -pv ${prefix}/bin || return
-	make -C ${squashfs_org_src_dir}/squashfs-tools -j ${jobs} INSTALL_DIR=${prefix}/bin install || return
-	[ -z "${strip}" ] || strip -v ${prefix}/bin/mksquashfs ${prefix}/bin/unsquashfs || return
+	mkdir -pv ${DESTDIR}${prefix}/bin || return
+	make -C ${squashfs_org_src_dir}/squashfs-tools -j ${jobs} INSTALL_DIR=${DESTDIR}${prefix}/bin install || return
+	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/mksquashfs ${DESTDIR}${prefix}/bin/unsquashfs || return
 }
 
 install_native_openssl()
@@ -3398,7 +3394,7 @@ install_native_openssl()
 	make -C ${openssl_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${openssl_org_src_dir} -j ${jobs} -k test || return
-	make -C ${openssl_org_src_dir} -j ${jobs} install || return
+	make -C ${openssl_org_src_dir} -j ${jobs} INSTALL_PREFIX=${DESTDIR} install || return
 	update_library_search_path || return
 	update_pkg_config_path || return
 }
@@ -3450,7 +3446,7 @@ install_native_expat()
 	make -C ${expat_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${expat_org_src_dir} -j ${jobs} -k check || return
-	make -C ${expat_org_src_dir} -j ${jobs} install || return
+	make -C ${expat_org_src_dir} -j ${jobs} INSTALL_ROOT=${DESTDIR} install || return
 	update_library_search_path || return
 	update_pkg_config_path || return
 }
@@ -3568,7 +3564,7 @@ install_native_git_manpages()
 {
 	[ -f ${prefix}/share/man/man1/git.1 -a "${force_install}" != yes ] && return
 	fetch git-manpages || return
-	unpack ${git_manpages_org_src_dir} ${prefix}/share/man || return
+	unpack ${git_manpages_org_src_dir} ${DESTDIR}${prefix}/share/man || return
 }
 
 install_native_mercurial()
@@ -3933,8 +3929,8 @@ install_native_boost()
 	fetch boost || return
 	unpack ${boost_org_src_dir} || return
 	(cd ${boost_org_src_dir}
-	./bootstrap.sh --prefix=${prefix} --with-toolset=gcc &&
-	./b2 --prefix=${prefix} --build-dir=${boost_bld_dir_ntv} \
+	./bootstrap.sh --prefix=${DESTDIR}${prefix} --with-toolset=gcc &&
+	./b2 --prefix=${DESTDIR}${prefix} --build-dir=${boost_bld_dir_ntv} \
 		--layout=system --build-type=minimal -j ${jobs} -q \
 		include=${prefix}/include library-path=${prefix}/lib install) || return
 }
@@ -3993,7 +3989,7 @@ install_cross_gcc_without_headers()
 		make -C ${gcc_bld_dir_crs_1st} -j ${jobs} -k check-gcc || return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-gcc || return
 	for b in cpp gcc gcc-ar gcc-nm gcc-ranlib gcov gcov-dump gcov-tool; do
-		[ ! -f ${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${prefix}/bin/${target}-${b} || return
+		[ ! -f ${DESTDIR}${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${target}-${b} || return
 	done
 	echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} all-target-libgcc || return
@@ -4144,10 +4140,10 @@ install_cross_functional_gcc()
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k install${strip:+-${strip}} ${strip:+STRIP=${target}-strip} || true # [XXX] install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
 	generate_shell_run_command ${set_path_sh} && . ${set_path_sh} || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool; do
-		[ ! -f ${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${prefix}/bin/${target}-${b} || return
+		[ ! -f ${DESTDIR}${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${target}-${b} || return
 	done
 	! echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' ||
-		ln -fsv ../lib/libgcc_s.a ${prefix}/lib/gcc/${target}/${gcc_ver} || return # XXX work around for --enable-version-specific-runtime-libs
+		ln -fsv ../lib/libgcc_s.a ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_ver} || return # XXX work around for --enable-version-specific-runtime-libs
 }
 
 install_cross_gcc()
@@ -4254,11 +4250,11 @@ install_native_go()
 	[ -d ${go_src_base}/go ] && mv -v ${go_src_base}/go ${go_org_src_dir}
 	(cd ${go_org_src_dir}/src
 	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=`which go | sed -e 's/\/bin\/go//'` \
-		GOROOT=${go_org_src_dir} GOROOT_FINAL=${prefix}/go ${go_org_src_dir}/src/make.bash) || return
-	[ ! -d ${prefix}/go ] || rm -fvr ${prefix}/go || return
-	mv -v ${go_org_src_dir} ${prefix}/go || return
+		GOROOT=${go_org_src_dir} GOROOT_FINAL=${DESTDIR}${prefix}/go ${go_org_src_dir}/src/make.bash) || return
+	[ ! -d ${DESTDIR}${prefix}/go ] || rm -fvr ${DESTDIR}${prefix}/go || return
+	mv -v ${go_org_src_dir} ${DESTDIR}${prefix}/go || return
 	generate_shell_run_command ${set_path_sh} && . ${set_path_sh} || return
-	GOPATH=${prefix}/.go go get golang.org/x/tools/cmd/... || return
+	GOPATH=${DESTDIR}${prefix}/.go go get golang.org/x/tools/cmd/... || return
 }
 
 install_native_perl()
@@ -4291,8 +4287,8 @@ install_native_tcl()
 	make -C ${tcl_org_src_dir}/unix -j ${jobs} install || return
 	make -C ${tcl_org_src_dir}/unix -j ${jobs} install-private-headers || return
 	update_pkg_config_path || return
-	ln -fsv tclsh`echo ${tcl_ver} | cut -d. -f-2` ${prefix}/bin/tclsh || return
-	[ -z "${strip}" ] || strip -v ${prefix}/bin/tclsh || return
+	ln -fsv tclsh`echo ${tcl_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/bin/tclsh || return
+	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/tclsh || return
 }
 
 install_native_tk()
@@ -4309,7 +4305,7 @@ install_native_tk()
 	[ "${enable_check}" != yes ] ||
 		make -C ${tk_org_src_dir}/unix -j ${jobs} -k test || return
 	make -C ${tk_org_src_dir}/unix -j ${jobs} install${strip:+-${strip}} || return
-	ln -fsv wish`echo ${tk_ver} | cut -d. -f-2` ${prefix}/bin/wish || return
+	ln -fsv wish`echo ${tk_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/bin/wish || return
 }
 
 install_native_libunistring()
@@ -4373,7 +4369,7 @@ install_native_guile()
 		./configure --prefix=${prefix} -build=${build} \
 			--disable-silent-rules --with-libunistring-prefix=`get_prefix unistr.h` \
 			LIBFFI_CFLAGS=-I`get_include_path ffi.h` LIBFFI_LIBS="-L`get_library_path libffi.so` -lffi" \
-			BDW_GC_CFLAGS="-I`get_include_path gc.h` -DHAVE_GC_SET_FINALIZER_NOTIFIER -DHAVE_GC_GET_HEAP_USAGE_SAFE -DHAVE_GC_GET_FREE_SPACE_DIVISOR -DHAVE_GC_SET_FINALIZE_ON_DEMAND" \
+			BDW_GC_CFLAGS="-I`get_include_path gc.h gc` -DHAVE_GC_SET_FINALIZER_NOTIFIER -DHAVE_GC_GET_HEAP_USAGE_SAFE -DHAVE_GC_GET_FREE_SPACE_DIVISOR -DHAVE_GC_SET_FINALIZE_ON_DEMAND" \
 			BDW_GC_LIBS="-L`get_library_path libgc.so` -lgc") || return
 	make -C ${guile_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -4443,11 +4439,11 @@ EOF
 		MYLIBS=-lncurses linux || return # XXX linuxにしか対応していない。
 	[ "${enable_check}" != yes ] ||
 		make -C ${lua_org_src_dir} -j ${jobs} -k test || return
-	make -C ${lua_org_src_dir} -j ${jobs} INSTALL_TOP=${prefix} install || return
-	mv -v ${prefix}/lib/liblua.so ${prefix}/lib/liblua.so.`echo ${lua_ver} | cut -d. -f-2` || return
-	ln -fsv liblua.so.`echo ${lua_ver} | cut -d. -f-2` ${prefix}/lib/liblua.so || return
+	make -C ${lua_org_src_dir} -j ${jobs} INSTALL_TOP=${DESTDIR}${prefix} install || return
+	mv -v ${DESTDIR}${prefix}/lib/liblua.so ${DESTDIR}${prefix}/lib/liblua.so.`echo ${lua_ver} | cut -d. -f-2` || return
+	ln -fsv liblua.so.`echo ${lua_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/lib/liblua.so || return
 	update_library_search_path || return
-	[ -z "${strip}" ] || strip -v ${prefix}/bin/lua ${prefix}/bin/luac || return
+	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/lua ${DESTDIR}${prefix}/bin/luac || return
 }
 
 install_native_nasm()
@@ -4620,10 +4616,10 @@ install_native_fzf()
 	unpack ${fzf_org_src_dir} || return
 	make -C ${fzf_org_src_dir} -j ${jobs} || return
 	make -C ${fzf_org_src_dir} -j ${jobs} install || return
-	mkdir -pv ${prefix}/bin || return
-	cp -fv ${fzf_org_src_dir}/bin/fzf ${prefix}/bin/fzf || return
-	cp -fv ${fzf_org_src_dir}/bin/fzf-tmux ${prefix}/bin/fzf-tmux || return
-	mkdir -pv ${prefix}/share/man && cp -fvr ${fzf_org_src_dir}/man/man1 ${prefix}/share/man || return
+	mkdir -pv ${DESTDIR}${prefix}/bin || return
+	cp -fv ${fzf_org_src_dir}/bin/fzf ${DESTDIR}${prefix}/bin/fzf || return
+	cp -fv ${fzf_org_src_dir}/bin/fzf-tmux ${DESTDIR}${prefix}/bin/fzf-tmux || return
+	mkdir -pv ${DESTDIR}${prefix}/share/man && cp -fvr ${fzf_org_src_dir}/man/man1 ${DESTDIR}${prefix}/share/man || return
 }
 
 install_native_jq()
