@@ -3335,7 +3335,7 @@ install_native_inetutils()
 	unpack ${inetutils_org_src_dir} || return
 	[ -f ${inetutils_org_src_dir}/Makefile ] ||
 		(cd ${inetutils_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules LDFLAGS=-ltinfo) || return
 	make -C ${inetutils_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${inetutils_org_src_dir} -j ${jobs} -k check || return
@@ -4252,6 +4252,7 @@ install_native_go()
 	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=`which go | sed -e 's/\/bin\/go//'` \
 		GOROOT=${go_org_src_dir} GOROOT_FINAL=${DESTDIR}${prefix}/go ${go_org_src_dir}/src/make.bash) || return
 	[ ! -d ${DESTDIR}${prefix}/go ] || rm -fvr ${DESTDIR}${prefix}/go || return
+	mkdir -pv ${DESTDIR}${prefix} || return
 	mv -v ${go_org_src_dir} ${DESTDIR}${prefix}/go || return
 	generate_shell_run_command ${set_path_sh} && . ${set_path_sh} || return
 	GOPATH=${DESTDIR}${prefix}/.go go get golang.org/x/tools/cmd/... || return
@@ -4269,7 +4270,7 @@ install_native_perl()
 	make -C ${perl_org_src_dir} -j 1 || return
 	make -C ${perl_org_src_dir} -j ${jobs} test || return
 	make -C ${perl_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	ln -fsv `find ${prefix}/lib -type f -name libperl.so | sed -e s%^${prefix}/lib/%%` ${prefix}/lib || return
+	ln -fsv `find ${DESTDIR}${prefix}/lib -type f -name libperl.so | sed -e s%^${DESTDIR}${prefix}/lib/%%` ${DESTDIR}${prefix}/lib || return
 }
 
 install_native_tcl()
@@ -4458,7 +4459,7 @@ install_native_nasm()
 	[ "${enable_check}" != yes ] ||
 		make -C ${nasm_org_src_dir} -j ${jobs} -k test || return
 	[ -z "${strip}" ] || make -C ${nasm_org_src_dir} -j ${jobs} strip || return
-	make -C ${nasm_org_src_dir} -j ${jobs} install || return
+	make -C ${nasm_org_src_dir} -j ${jobs} INSTALLROOT=${DESTDIR} install || return
 }
 
 install_native_yasm()
