@@ -1116,7 +1116,7 @@ Description: my toolchain
 EOF
 	(cd ${deb_prefix}
 	find * -type d -name DEBIAN -prune -o -type f -exec md5sum {} +) > ${deb_prefix}/DEBIAN/md5sums || return
-#	`which fakeroot || true` dpkg -b ${deb_prefix} || return
+	`which fakeroot || true` dpkg -b ${deb_prefix} || return
 }
 
 deploy()
@@ -4009,7 +4009,7 @@ install_cross_linux_header()
 			mv -v ${linux_org_src_dir} ${linux_src_dir_crs}) || return
 	make -C ${linux_src_dir_crs} -j ${jobs} V=1 mrproper || return
 	make -C ${linux_src_dir_crs} -j ${jobs} V=1 \
-		ARCH=${cross_linux_arch} INSTALL_HDR_PATH=${sysroot}/usr headers_install || return
+		ARCH=${cross_linux_arch} INSTALL_HDR_PATH=${DESTDIR}${sysroot}/usr headers_install || return
 }
 
 install_cross_glibc()
@@ -4052,13 +4052,13 @@ EOF
 	[ -f ${glibc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${glibc_bld_dir_crs_1st}
 		${glibc_src_dir_crs_1st}/configure --prefix=/usr --build=${build} --host=${target} \
-			--with-headers=${sysroot}/usr/include CFLAGS="${CFLAGS} -Wno-error=parentheses -O2" \
+			--with-headers=${DESTDIR}${sysroot}/usr/include CFLAGS="${CFLAGS} -Wno-error=parentheses -O2" \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return
-	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} install-headers || return
+	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${DESTDIR}${sysroot} install-headers || return
 	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} AR=${target}-ar || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${glibc_bld_dir_crs_1st} -j ${jobs} -k check || return
-	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${sysroot} install || return
+	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${DESTDIR}${sysroot} install || return
 }
 
 install_cross_newlib()
