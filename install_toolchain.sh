@@ -30,7 +30,7 @@
 : ${pkg_config_ver:=0.29.2}
 : ${texinfo_ver:=6.5}
 : ${coreutils_ver:=8.28}
-: ${busybox_ver:=1.26.2}
+: ${busybox_ver:=1.27.2}
 : ${bison_ver:=3.0.4}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
@@ -44,11 +44,11 @@
 : ${binutils_ver:=2.29.1}
 : ${elfutils_ver:=0.170}
 : ${linux_ver:=3.18.13}
-: ${qemu_ver:=2.8.1}
+: ${qemu_ver:=2.11.0}
 : ${gperf_ver:=3.1}
 : ${glibc_ver:=2.26}
 : ${newlib_ver:=2.5.0}
-: ${mingw_w64_ver:=5.0.2}
+: ${mingw_w64_ver:=5.0.3}
 : ${gmp_ver:=6.1.2}
 : ${mpfr_ver:=3.1.6}
 : ${mpc_ver:=1.0.3}
@@ -58,15 +58,15 @@
 : ${ncurses_ver:=6.0}
 : ${gdb_ver:=8.0.1}
 : ${lcov_ver:=1.13}
-: ${strace_ver:=4.19}
+: ${strace_ver:=4.20}
 : ${valgrind_ver:=3.13.0}
 : ${zlib_ver:=1.2.11}
-: ${libpng_ver:=1.6.30}
+: ${libpng_ver:=1.6.34}
 : ${tiff_ver:=4.0.6}
 : ${jpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
 : ${libXpm_ver:=3.5.11}
-: ${libwebp_ver:=0.6.0}
+: ${libwebp_ver:=0.6.1}
 : ${libffi_ver:=3.2.1}
 : ${emacs_ver:=25.3}
 : ${libiconv_ver:=1.15}
@@ -74,13 +74,13 @@
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.1}
-: ${global_ver:=6.5.7}
+: ${global_ver:=6.6}
 : ${pcre_ver:=8.41}
-: ${pcre2_ver:=10.23}
-: ${the_silver_searcher_ver:=2.0.0}
+: ${pcre2_ver:=10.30}
+: ${the_silver_searcher_ver:=2.1.0}
 : ${the_platinum_searcher_ver:=2.1.5}
 : ${highway_ver:=1.1.0}
-: ${graphviz_ver:=2.38.0}
+: ${graphviz_ver:=2.40.1}
 : ${doxygen_ver:=1.8.13}
 : ${plantuml_ver:=1.2017.16}
 : ${diffutils_ver:=3.6}
@@ -88,7 +88,7 @@
 : ${findutils_ver:=4.6.0}
 : ${screen_ver:=4.6.2}
 : ${libevent_ver:=2.1.8}
-: ${tmux_ver:=2.5}
+: ${tmux_ver:=2.6}
 : ${expect_ver:=5.45}
 : ${dejagnu_ver:=1.6}
 : ${zsh_ver:=5.4.2}
@@ -98,23 +98,23 @@
 : ${e2fsprogs_ver:=1.43.7}
 : ${squashfs_ver:=4.3}
 : ${openssl_ver:=1.0.2l}
-: ${openssh_ver:=7.3p1}
-: ${curl_ver:=7.54.1}
-: ${expat_ver:=2.2.3}
+: ${openssh_ver:=7.6p1}
+: ${curl_ver:=7.57.0}
+: ${expat_ver:=2.2.5}
 : ${asciidoc_ver:=8.6.9}
-: ${libxml2_ver:=2.9.4}
-: ${libxslt_ver:=1.1.29}
+: ${libxml2_ver:=2.9.7}
+: ${libxslt_ver:=1.1.32}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
-: ${git_ver:=2.14.1}
+: ${git_ver:=2.15.1}
 : ${git_manpages_ver:=${git_ver}}
-: ${mercurial_ver:=4.2.2}
-: ${sqlite_autoconf_ver:=3170000}
-: ${apr_ver:=1.6.2}
-: ${apr_util_ver:=1.6.0}
+: ${mercurial_ver:=4.4.1}
+: ${sqlite_autoconf_ver:=3210000}
+: ${apr_ver:=1.6.3}
+: ${apr_util_ver:=1.6.1}
 : ${subversion_ver:=1.9.7}
-: ${cmake_ver:=3.9.3}
-: ${libedit_ver:=20160903-3.1}
+: ${cmake_ver:=3.10.1}
+: ${libedit_ver:=20170329-3.1}
 : ${swig_ver:=3.0.12}
 : ${llvm_ver:=5.0.0}
 : ${libcxx_ver:=${llvm_ver}}
@@ -125,28 +125,28 @@
 : ${lld_ver:=${llvm_ver}}
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
-: ${boost_ver:=1_64_0}
+: ${boost_ver:=1_65_1}
 : ${Python_ver:=3.6.3}
 : ${Python2_ver:=2.7.14} # internal use only.
-: ${ruby_ver:=2.4.2}
-: ${go_ver:=1.9.1}
-: ${perl_ver:=5.26.0}
-: ${tcl_ver:=8.6.6}
-: ${tk_ver:=8.6.6}
-: ${libunistring_ver:=0.9.7}
+: ${ruby_ver:=2.4.3}
+: ${go_ver:=1.9.2}
+: ${perl_ver:=5.26.1}
+: ${tcl_ver:=8.6.7}
+: ${tk_ver:=8.6.7}
+: ${libunistring_ver:=0.9.8}
 : ${libatomic_ops_ver:=7.4.4}
 : ${gc_ver:=7.6.0}
-: ${guile_ver:=2.0.14}
+: ${guile_ver:=2.2.3}
 : ${lua_ver:=5.3.4}
-: ${nasm_ver:=2.13.01}
+: ${nasm_ver:=2.13.02}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
 : ${x265_ver:=2.0}
 : ${libav_ver:=11.9}
-: ${opencv_ver:=3.2.0}
-: ${opencv_contrib_ver:=3.2.0}
+: ${opencv_ver:=3.3.1}
+: ${opencv_contrib_ver:=3.3.1}
 : ${googletest_ver:=1.8.0}
-: ${fzf_ver:=0.17.1}
+: ${fzf_ver:=0.17.3}
 : ${jq_ver:=1.5}
 : ${libpcap_ver:=1.8.1}
 : ${tcpdump_ver:=4.9.2}
@@ -563,8 +563,8 @@ fetch()
 				https://www.kernel.org/pub/linux/kernel/${linux_major_ver}/${linux_name}.tar.xz || return;;
 	qemu)
 		check_archive ${qemu_org_src_dir} ||
-			wget -O ${qemu_org_src_dir}.tar.xz \
-				http://download.qemu-project.org/${qemu_name}.tar.xz || return;;
+			wget --no-check-certificate -O ${qemu_org_src_dir}.tar.xz \
+				https://download.qemu-project.org/${qemu_name}.tar.xz || return;;
 	newlib)
 		check_archive ${newlib_org_src_dir} ||
 			wget -O ${newlib_org_src_dir}.tar.gz \
@@ -654,8 +654,8 @@ fetch()
 				https://github.com/tkengo/highway/archive/v${highway_ver}.tar.gz || return;;
 	graphviz)
 		check_archive ${graphviz_org_src_dir} ||
-			wget -O ${graphviz_org_src_dir}.tar.gz \
-				http://www.graphviz.org/pub/graphviz/stable/SOURCES/${graphviz_name}.tar.gz || return;;
+			wget --no-check-certificate -O ${graphviz_org_src_dir}.tar.gz \
+				https://graphviz.gitlab.io/pub/graphviz/stable/SOURCES/graphviz.tar.gz || return;;
 	doxygen)
 		check_archive ${doxygen_org_src_dir} ||
 			wget -O ${doxygen_org_src_dir}.tar.gz \
