@@ -20,18 +20,28 @@ sed -e '
         aAC_CONFIG_AUX_DIR([config])
         aAM_INIT_AUTOMAKE
     }
-    /^# Checks for programs\.$/aAC_PROG_INSTALL
-    $iAC_CONFIG_FILES([Makefile include/Makefile src/Makefile])
+    /^# Checks for programs\.$/{
+        aAC_PROG_INSTALL
+        aAC_PROG_LIBTOOL
+    }
+    ${
+        iAC_CONFIG_MACRO_DIRS([m4])
+        iAC_CONFIG_FILES([Makefile include/Makefile src/Makefile])
+    }
 ' configure.scan > configure.ac || return
 rm ${verbose:+-v} configure.scan || return
 
-echo SUBDIRS = include src > Makefile.am || return
+cat << EOF > Makefile.am || return
+SUBDIRS = include src
+ACLOCAL_AMFLAGS = -I m4
+EOF
 touch include/Makefile.am || return
 cat << EOF > src/Makefile.am || return
 bin_PROGRAMS = ${package_name}
 ${package_name}_SOURCES = main.cpp
 EOF
 
+libtoolize -c || return
 aclocal ${verbose:+--verbose} || return
 autoheader ${verbose:+-v} || return
 
@@ -61,7 +71,7 @@ stamp-h1
 EOF
     git init . || return
     git add .gitignore || return
-    git add config/depcomp config/install-sh config/missing || return
+    git add config m4 || return
     git add AUTHORS COPYING ChangeLog INSTALL NEWS README || return
     git add configure.ac Makefile.am include/Makefile.am src/Makefile.am src/main.cpp || return
 }
