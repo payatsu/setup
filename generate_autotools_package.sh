@@ -41,7 +41,8 @@ automake -ac${verbose:+v} || return
 
 autoconf ${verbose:+-v} || return
 
-cat << EOF > .gitignore || return
+which git > /dev/null 2>&1 && {
+    cat << EOF > .gitignore || return
 *.o
 *.swp
 *~
@@ -58,12 +59,11 @@ config.status
 configure
 stamp-h1
 EOF
-
-# TODO 後で消す
-git init .
-git add .gitignore || return
-git add config/depcomp config/install-sh config/missing || return
-git add AUTHORS COPYING ChangeLog INSTALL NEWS README || return
-git add configure.ac Makefile.am src/Makefile.am src/main.cpp || return
+    git init . || return
+    git add .gitignore || return
+    git add config/depcomp config/install-sh config/missing || return
+    git add AUTHORS COPYING ChangeLog INSTALL NEWS README || return
+    git add configure.ac Makefile.am include/Makefile.am src/Makefile.am src/main.cpp || return
+}
 
 # vim: set expandtab shiftwidth=0 tabstop=4 :
