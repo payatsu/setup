@@ -3,7 +3,7 @@
 : ${package_name:=sample}
 
 mkdir -p${verbose:+v} include src || return
-cat << EOF > src/main.cpp || return
+[ -f src/main.cpp ] || cat << EOF > src/main.cpp || return
 #include "config.h"
 
 int main(void)
@@ -57,6 +57,7 @@ which git > /dev/null 2>&1 && {
 *.swp
 *~
 .deps
+.libs
 Makefile
 Makefile.in
 aclocal.m4
@@ -69,7 +70,7 @@ config.status
 configure
 stamp-h1
 EOF
-    git init . || return
+    git rev-parse > /dev/null 2>&1 || git init . || return
     git add .gitignore || return
     git add config m4 || return
     git add AUTHORS COPYING ChangeLog INSTALL NEWS README || return
