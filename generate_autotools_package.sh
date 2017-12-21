@@ -25,7 +25,7 @@ sed -e '
         aAC_PROG_LIBTOOL
     }
     ${
-        iAC_CONFIG_MACRO_DIRS([m4])
+        iAC_CONFIG_MACRO_DIR([m4])
         iAC_CONFIG_FILES([Makefile include/Makefile src/Makefile])
     }
 ' configure.scan > configure.ac || return
