@@ -92,7 +92,7 @@
 : ${expect_ver:=5.45}
 : ${dejagnu_ver:=1.6}
 : ${zsh_ver:=5.4.2}
-: ${bash_ver:=4.4}
+: ${bash_ver:=4.4.12}
 : ${inetutils_ver:=1.9.4}
 : ${util_linux_ver:=2.30.1}
 : ${e2fsprogs_ver:=1.43.7}
@@ -128,7 +128,7 @@
 : ${boost_ver:=1_65_1}
 : ${Python_ver:=3.6.3}
 : ${Python2_ver:=2.7.14} # internal use only.
-: ${ruby_ver:=2.4.3}
+: ${ruby_ver:=2.5.0}
 : ${go_ver:=1.9.2}
 : ${perl_ver:=5.26.1}
 : ${tcl_ver:=8.6.7}
