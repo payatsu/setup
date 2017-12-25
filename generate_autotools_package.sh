@@ -68,6 +68,7 @@ config.h.in
 config.log
 config.status
 configure
+libtool
 stamp-h1
 EOF
     git rev-parse > /dev/null 2>&1 || git init . || return
