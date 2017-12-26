@@ -2044,7 +2044,7 @@ EOF
 	[ -f ${ncurses_org_src_dir}/Makefile ] ||
 		(cd ${ncurses_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			--with-libtool --with-shared --with-cxx-shared --with-termlib \
+			--with-libtool --with-shared --with-cxx-shared \
 			--enable-termcap --enable-colors) || return
 	make -C ${ncurses_org_src_dir} -j 1 || return # XXX work around for parallel make
 	make -C ${ncurses_org_src_dir} -j ${jobs} install || return
@@ -2052,7 +2052,7 @@ EOF
 	[ -f ${ncurses_org_src_dir}/Makefile ] ||
 		(cd ${ncurses_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			--with-libtool --with-shared --with-cxx-shared --with-termlib \
+			--with-libtool --with-shared --with-cxx-shared \
 			--enable-termcap --enable-widec --enable-colors --with-pthread --enable-reentrant) || return
 	make -C ${ncurses_org_src_dir} -j 1 || return # XXX work around for parallel make
 	make -C ${ncurses_org_src_dir} -j ${jobs} install || return
