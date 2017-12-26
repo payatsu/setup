@@ -21,7 +21,7 @@
 # [TODO] Polly, MySQL, grub
 # [TODO] update-alternatives
 
-: ${tar_ver:=1.29}
+: ${tar_ver:=1.30}
 : ${cpio_ver:=2.12}
 : ${xz_ver:=5.2.3}
 : ${bzip2_ver:=1.0.6}
@@ -54,7 +54,7 @@
 : ${newlib_ver:=2.5.0}
 : ${mingw_w64_ver:=5.0.3}
 : ${gmp_ver:=6.1.2}
-: ${mpfr_ver:=3.1.6}
+: ${mpfr_ver:=4.0.0}
 : ${mpc_ver:=1.0.3}
 : ${isl_ver:=0.18}
 : ${gcc_ver:=7.2.0}
@@ -78,7 +78,7 @@
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.1}
-: ${global_ver:=6.6}
+: ${global_ver:=6.6.1}
 : ${pcre_ver:=8.41}
 : ${pcre2_ver:=10.30}
 : ${the_silver_searcher_ver:=2.1.0}
@@ -94,7 +94,7 @@
 : ${libevent_ver:=2.1.8}
 : ${tmux_ver:=2.6}
 : ${expect_ver:=5.45}
-: ${dejagnu_ver:=1.6}
+: ${dejagnu_ver:=1.6.1}
 : ${zsh_ver:=5.4.2}
 : ${bash_ver:=4.4.12}
 : ${inetutils_ver:=1.9.4}
