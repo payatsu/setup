@@ -26,6 +26,8 @@
 : ${xz_ver:=5.2.3}
 : ${bzip2_ver:=1.0.6}
 : ${gzip_ver:=1.8}
+: ${lzip_ver:=1.19}
+: ${lunzip_ver:=1.9}
 : ${wget_ver:=1.19.2}
 : ${pkg_config_ver:=0.29.2}
 : ${texinfo_ver:=6.5}
@@ -266,6 +268,10 @@ help()
 		Specify the version of bzip2 you want, currently '${bzip2_ver}'.
 	gzip_ver
 		Specify the version of GNU gzip you want, currently '${gzip_ver}'.
+	lzip_ver
+		Specify the version of lzip you want, currently '${lzip_ver}'.
+	lunzip_ver
+		Specify the version of lunzip you want, currently '${lunzip_ver}'.
 	wget_ver
 		Specify the version of GNU wget you want, currently '${wget_ver}'.
 	pkg_config_ver
@@ -539,6 +545,14 @@ fetch()
 		check_archive ${bzip2_org_src_dir} ||
 			wget -O ${bzip2_org_src_dir}.tar.gz \
 				http://www.bzip.org/${bzip2_ver}/${bzip2_name}.tar.gz || return;;
+	lzip)
+		check_archive ${lzip_org_src_dir} ||
+			wget -O ${lzip_org_src_dir}.tar.gz \
+				http://download.savannah.gnu.org/releases/lzip/${lzip_name}.tar.gz || return;;
+	lunzip)
+		check_archive ${lunzip_org_src_dir} ||
+			wget -O ${lunzip_org_src_dir}.tar.gz \
+				http://download.savannah.gnu.org/releases/lzip/lunzip/${lunzip_name}.tar.gz || return;;
 	busybox)
 		check_archive ${busybox_org_src_dir} ||
 			wget --no-check-certificate -O ${busybox_org_src_dir}.tar.bz2 \
@@ -1459,6 +1473,34 @@ install_native_gzip()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gzip_org_src_dir} -j ${jobs} -k check || return
 	make -C ${gzip_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_lzip()
+{
+	[ -x ${prefix}/bin/lzip -a "${force_install}" != yes ] && return
+	fetch lzip || return
+	unpack ${lzip_org_src_dir} || return
+	[ -f ${lzip_org_src_dir}/Makefile ] ||
+		(cd ${lzip_org_src_dir}
+		./configure --prefix=${prefix}) || return
+	make -C ${lzip_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${lzip_org_src_dir} -j ${jobs} -k check || return
+	make -C ${lzip_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_lunzip()
+{
+	[ -x ${prefix}/bin/lunzip -a "${force_install}" != yes ] && return
+	fetch lunzip || return
+	unpack ${lunzip_org_src_dir} || return
+	[ -f ${lunzip_org_src_dir}/Makefile ] ||
+		(cd ${lunzip_org_src_dir}
+		./configure --prefix=${prefix}) || return
+	make -C ${lunzip_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${lunzip_org_src_dir} -j ${jobs} -k check || return
+	make -C ${lunzip_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_wget()
