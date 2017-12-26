@@ -45,6 +45,8 @@
 : ${make_ver:=4.2}
 : ${binutils_ver:=2.29.1}
 : ${elfutils_ver:=0.170}
+: ${ed_ver:=1.14.2}
+: ${bc_ver:=1.07.1}
 : ${linux_ver:=3.18.13}
 : ${qemu_ver:=2.11.0}
 : ${gperf_ver:=3.1}
@@ -306,6 +308,10 @@ help()
 		Specify the version of GNU Binutils you want, currently '${binutils_ver}'.
 	elfutils_ver
 		Specify the version of Elfutils you want, currently '${elfutils_ver}'.
+	ed_ver
+		Specify the version of GNU ed you want, currently '${ed_ver}'.
+	bc_ver
+		Specify the version of GNU bc you want, currently '${bc_ver}'.
 	linux_ver
 		Specify the version of Linux kernel you want, currently '${linux_ver}'.
 	qemu_ver
@@ -524,12 +530,12 @@ fetch()
 			fetch ${pkg} || return
 		done;;
 	tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|automake|libtool|sed|gawk|\
-	make|binutils|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
+	make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
 	diffutils|patch|findutils|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
 		eval check_archive \${${_1}_org_src_dir} ||
-			for compress_format in xz bz2 gz; do
-				eval wget -O \${${_1}_org_src_dir}.tar.${compress_format} \
-					http://ftp.gnu.org/gnu/${_1}/\${${_1}_name}.tar.${compress_format} \
+			for compress_format in xz bz2 gz lz; do
+				eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.${compress_format} \
+					https://ftp.gnu.org/gnu/${_1}/\${${_1}_name}.tar.${compress_format} \
 					&& break \
 					|| eval rm -v \${${_1}_org_src_dir}.tar.${compress_format}
 			done || return;;
@@ -923,6 +929,7 @@ unpack()
 		[ -f ${1}.tar.gz  -a -s ${1}.tar.gz  ] && tar xzvf ${1}.tar.gz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${1}`} && return
 		[ -f ${1}.tar.bz2 -a -s ${1}.tar.bz2 ] && tar xjvf ${1}.tar.bz2 --no-same-owner --no-same-permissions -C ${2:-`dirname ${1}`} && return
 		[ -f ${1}.tar.xz  -a -s ${1}.tar.xz  ] && tar xJvf ${1}.tar.xz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${1}`} && return
+		[ -f ${1}.tar.lz  -a -s ${1}.tar.lz  ] && tar xvf  ${1}.tar.lz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${1}`} && return
 		[ -f ${1}.zip     -a -s ${1}.zip     ] && unzip -d ${2:-`dirname ${1}`} ${1}.zip && return
 		return 1;;
 	esac
@@ -1384,6 +1391,7 @@ check_archive()
 	[ -f ${1}.tar.gz  -a -s ${1}.tar.gz  ] && return
 	[ -f ${1}.tar.bz2 -a -s ${1}.tar.bz2 ] && return
 	[ -f ${1}.tar.xz  -a -s ${1}.tar.xz  ] && return
+	[ -f ${1}.tar.lz  -a -s ${1}.tar.lz  ] && return
 	[ -f ${1}.zip     -a -s ${1}.zip     ] && return
 	[ -f ${1}.jar     -a -s ${1}.jar     ] && return
 	return 1
@@ -1768,6 +1776,35 @@ install_native_elfutils()
 		make -C ${elfutils_org_src_dir} -j ${jobs} -k check || return
 	make -C ${elfutils_org_src_dir} -j 1 install${strip:+-${strip}} || return
 	update_library_search_path || return
+}
+
+install_native_ed()
+{
+	[ -x ${prefix}/bin/ed -a "${force_install}" != yes ] && return
+	fetch ed || return
+	unpack ${ed_org_src_dir} || return
+	[ -f ${ed_org_src_dir}/Makefile ] ||
+		(cd ${ed_org_src_dir}
+		./configure --prefix=${prefix}) || return
+	make -C ${ed_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${ed_org_src_dir} -j ${jobs} -k check || return
+	make -C ${ed_org_src_dir} -j 1 install${strip:+-${strip}} || return
+}
+
+install_native_bc()
+{
+	[ -x ${prefix}/bin/bc -a "${force_install}" != yes ] && return
+	which ed > /dev/null || install_native_ed || return
+	fetch bc || return
+	unpack ${bc_org_src_dir} || return
+	[ -f ${bc_org_src_dir}/Makefile ] ||
+		(cd ${bc_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules --with-readline) || return
+	make -C ${bc_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${bc_org_src_dir} -j ${jobs} -k check || return
+	make -C ${bc_org_src_dir} -j 1 install${strip:+-${strip}} || return
 }
 
 install_native_linux_header()
