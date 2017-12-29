@@ -4420,6 +4420,7 @@ install_native_googletest()
 	make -C ${googletest_bld_dir_ntv} -j ${jobs} || return
 	make -C ${googletest_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
 	update_pkg_config_path || return
+	update_library_search_path || return
 }
 
 install_native_fzf()
