@@ -59,6 +59,9 @@ which git > /dev/null 2>&1 && {
 	*~
 	.deps
 	.libs
+	GTAGS
+	GRTAGS
+	GPATH
 	Makefile
 	Makefile.in
 	aclocal.m4
@@ -71,6 +74,7 @@ which git > /dev/null 2>&1 && {
 	configure
 	libtool
 	stamp-h1
+	tags
 	EOF
 	git rev-parse > /dev/null 2>&1 || git init . || return
 	git add .gitignore || return
