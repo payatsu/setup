@@ -3,7 +3,7 @@
 : ${package_name:=sample}
 
 mkdir -p${verbose:+v} include src || return
-[ -f src/main.cpp ] || cat << EOF > src/main.cpp || return
+cat << EOF > src/main.cpp || return
 #include "config.h"
 
 int main(void)
@@ -50,35 +50,35 @@ automake -ac${verbose:+v} || return
 
 autoconf ${verbose:+-v} || return
 
-which git > /dev/null 2>&1 && {
-	cat <<- EOF > .gitignore || return
-	*.la
-	*.lo
-	*.o
-	*.swp
-	*~
-	.deps
-	.libs
-	GTAGS
-	GRTAGS
-	GPATH
-	Makefile
-	Makefile.in
-	aclocal.m4
-	autom4te.cache
-	autoscan.log
-	config.h
-	config.h.in
-	config.log
-	config.status
-	configure
-	libtool
-	stamp-h1
-	tags
-	EOF
-	git rev-parse > /dev/null 2>&1 || git init . || return
-	git add .gitignore || return
-	git add config m4 || return
-	git add AUTHORS COPYING ChangeLog INSTALL NEWS README || return
-	git add configure.ac Makefile.am include/Makefile.am src/Makefile.am src/main.cpp || return
-}
+! which git > /dev/null 2>&1 && return
+
+cat << EOF > .gitignore || return
+*.la
+*.lo
+*.o
+*.swp
+*~
+.deps
+.libs
+GTAGS
+GRTAGS
+GPATH
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache
+autoscan.log
+config.h
+config.h.in
+config.log
+config.status
+configure
+libtool
+stamp-h1
+tags
+EOF
+git rev-parse > /dev/null 2>&1 || git init . || return
+git add .gitignore || return
+git add config m4 || return
+git add AUTHORS COPYING ChangeLog INSTALL NEWS README || return
+git add configure.ac Makefile.am include/Makefile.am src/Makefile.am src/main.cpp || return
