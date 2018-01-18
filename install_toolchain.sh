@@ -25,13 +25,13 @@
 : ${cpio_ver:=2.12}
 : ${xz_ver:=5.2.3}
 : ${bzip2_ver:=1.0.6}
-: ${gzip_ver:=1.8}
+: ${gzip_ver:=1.9}
 : ${lzip_ver:=1.19}
 : ${lunzip_ver:=1.9}
 : ${wget_ver:=1.19.2}
 : ${pkg_config_ver:=0.29.2}
 : ${texinfo_ver:=6.5}
-: ${coreutils_ver:=8.28}
+: ${coreutils_ver:=8.29}
 : ${busybox_ver:=1.27.2}
 : ${bison_ver:=3.0.4}
 : ${flex_ver:=2.6.4}
@@ -55,7 +55,7 @@
 : ${mingw_w64_ver:=5.0.3}
 : ${gmp_ver:=6.1.2}
 : ${mpfr_ver:=4.0.0}
-: ${mpc_ver:=1.0.3}
+: ${mpc_ver:=1.1.0}
 : ${isl_ver:=0.18}
 : ${gcc_ver:=7.2.0}
 : ${readline_ver:=7.0}
