@@ -63,12 +63,13 @@ gtest/gtest.h gtest/gtest-all.cc: googletest-\$(gtest_ver)
 	\$^/googletest/scripts/fuse_gtest_files.py \$^/googletest .
 
 googletest-\$(gtest_ver):
-	wget --no-check-certificate -O - https://github.com/google/googletest/archive/\$(gtest_ver).tar.gz | tar xzvf -
+	wget --no-check-certificate -nv -O - https://github.com/google/googletest/archive/\$(gtest_ver).tar.gz | tar xzvf -
 
 check:
 	./testsuite
 	lcov -c -d . -o tracefile.info
-	genhtml -p \$(dir \$(CURDIR)) -o html -s tracefile.info
+	eval lcov -r tracefile.info \`LANG=C \$(CPP) \$(CPPFLAGS) -v -x c /dev/null -o /dev/null 2>&1 | sed -e '/^#include "/,/^End of search list\\.\$\$/p;d' | grep -e '^ ' | sed -e 's/\$\$/\\/\\\\\\*/'\` -o tracefile.info
+	genhtml -p \`pwd | xargs dirname\` -o html -s tracefile.info
 	\$(RM) tracefile.info *.gcda
 
 .PHONY: myclean
