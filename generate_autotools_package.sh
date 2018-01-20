@@ -54,7 +54,12 @@ noinst_PROGRAMS = testsuite
 testsuite_SOURCES = test.cpp
 nodist_testsuite_SOURCES  = gtest/gtest.h gtest/gtest-all.cc
 testsuite_CPPFLAGS = -I../src
-testsuite_CXXFLAGS = -std=c++11 -Wall -Wextra --coverage
+testsuite_CXXFLAGS = -std=c++11 --coverage -Wextra -Wcast-align -Wstrict-aliasing -Wshadow \`LANG=C \$(CXX) -fsyntax-only -Q --help=warnings,^joined,^separate,c++ | grep -v '\[enabled\]\|-Wc90-c99-compat\|-Wtraditional[^-]\|-Wsystem-headers' | grep -oe '-W[[:graph:]]\+' | xargs echo\`
+testsuite_CXXFLAGS += -Wno-abi-tag -Wno-ctor-dtor-privacy -Wno-duplicated-branches \
+-Wno-effc++ -Wno-missing-declarations -Wno-multiple-inheritance -Wno-namespaces \
+-Wno-sign-conversion -Wno-suggest-attribute=format -Wno-suggest-override \
+-Wno-switch-default -Wno-switch-enum -Wno-templates -Wno-undef -Wno-unused-const-variable \
+-Wno-unused-macros -Wno-useless-cast -Wno-zero-as-null-pointer-constant
 testsuite_LDFLAGS = -lpthread
 
 gtest_ver = release-1.8.0
@@ -89,33 +94,12 @@ autoconf ${verbose:+-v} || return
 
 ! which git > /dev/null 2>&1 && return
 
-cat << EOF > .gitignore || return
-*.gcda
-*.gcno
-*.la
-*.lo
-*.o
-*.swp
-*~
-.deps
-.libs
-GTAGS
-GRTAGS
-GPATH
-Makefile
-Makefile.in
-aclocal.m4
-autom4te.cache
-autoscan.log
-config.h
-config.h.in
-config.log
-config.status
-configure
-libtool
-stamp-h1
-tags
-EOF
+echo '*.gcda' '*.gcno' '*.la' '*.lo' '*.o' '*.swp' '*~' .deps .libs \
+	GTAGS GRTAGS GPATH \
+	Makefile Makefile.in aclocal.m4 autom4te.cache autoscan.log \
+	config.h config.h.in config.log config.status \
+	configure libtool stamp-h1 tags | tr ' ' '\n' > .gitignore || return
+
 git rev-parse > /dev/null 2>&1 || git init . || return
 git add .gitignore || return
 git add config m4 || return
