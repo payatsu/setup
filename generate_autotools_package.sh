@@ -67,13 +67,14 @@ googletest-\$(gtest_ver):
 
 check:
 	./testsuite
-	lcov -c -d . -o tracefile.info
-	eval lcov -r tracefile.info \`LANG=C \$(CPP) \$(CPPFLAGS) -v -x c /dev/null -o /dev/null 2>&1 | sed -e '/^#include "/,/^End of search list\\.\$\$/p;d' | grep -e '^ ' | sed -e 's/\$\$/\\/\\\\\\*/'\` -o tracefile.info
-	genhtml -p \`pwd | xargs dirname\` -o html -s tracefile.info
-	\$(RM) tracefile.info *.gcda
+	lcov -c -d . -o @PACKAGE_NAME@-@PACKAGE_VERSION@.info
+	eval lcov -r @PACKAGE_NAME@-@PACKAGE_VERSION@.info \`LANG=C \$(CPP) \$(CPPFLAGS) -v -x c /dev/null -o /dev/null 2>&1 | sed -e '/^#include "/,/^End of search list\\.\$\$/p;d' | grep -e '^ ' | sed -e 's/\$\$/\\/\\\\\\*/'\` -o @PACKAGE_NAME@-@PACKAGE_VERSION@.info
+	genhtml -p \`pwd | xargs dirname\` -o html -s @PACKAGE_NAME@-@PACKAGE_VERSION@.info
+	\$(RM) @PACKAGE_NAME@-@PACKAGE_VERSION@.info *.gcda
 
 .PHONY: myclean
-clean: myclean
+clean: clean-am myclean
+myclean:
 	\$(RM) -r html *.gcda *.gcno
 EOF
 
