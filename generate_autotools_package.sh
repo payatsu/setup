@@ -40,6 +40,8 @@ sed -e '
 		i`LANG=C ${CXX} -fsyntax-only -Q --help=warnings,^joined,^separate,c++ |
 		igrep -v '\''\\@<:@enabled\\@:>@\\|-Wc90-c99-compat\\|-Wtraditional@<:@^-@:>@\\|-Wsystem-headers'\'' | grep -oe '\''-W@<:@@<:@:graph:@:>@@:>@\\+'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
 		iAC_SUBST([warning_options])
+		i[system_include_dirs=`LANG=C ${CPP} ${CPPFLAGS} -v -x c /dev/null -o /dev/null 2>&1 | sed -e '\''/^#include "/,/^End of search list\\.$/p;d'\'' | sed -e '\''/^ /{s///;s/$/\\/\\\\\\\\*/;p};d'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
+		iAC_SUBST([system_include_dirs])
 		iAC_ARG_ENABLE([sanitizer], AC_HELP_STRING([--enable-sanitizer], [enable sanitizer]))
 		iAM_CONDITIONAL([ENABLE_SANITIZER], [test x"${enable_sanitizer}" = xyes])
 	}
@@ -54,11 +56,12 @@ touch include/Makefile.am || return
 cat << EOF > src/Makefile.am || return
 bin_PROGRAMS = ${package_name}
 ${package_name}_SOURCES = main.cpp
+${package_name}_CXXFLAGS = -std=c++11 @warning_options@
 EOF
 cat << EOF > test/Makefile.am || return
 noinst_PROGRAMS = testsuite
 testsuite_SOURCES = test.cpp
-nodist_testsuite_SOURCES  = gtest/gtest.h gtest/gtest-all.cc
+nodist_testsuite_SOURCES = gtest/gtest.h gtest/gtest-all.cc
 testsuite_CPPFLAGS = -I../src
 testsuite_CXXFLAGS = -std=c++11 --coverage @warning_options@
 ## XXX: Warning suppresions for Google Test headers(workaround).
@@ -71,6 +74,7 @@ testsuite_LDFLAGS = -lpthread
 if ENABLE_SANITIZER
 testsuite_CXXFLAGS += -fsanitize=address -fsanitize=leak -fsanitize=undefined
 endif
+system_include_dirs = @system_include_dirs@
 
 gtest_ver = release-1.8.0
 
@@ -85,7 +89,7 @@ googletest-\$(gtest_ver):
 check:
 	./testsuite
 	lcov -c -d . -o @PACKAGE_NAME@-@PACKAGE_VERSION@.info
-	eval lcov -r @PACKAGE_NAME@-@PACKAGE_VERSION@.info \`LANG=C \$(CPP) \$(CPPFLAGS) -v -x c /dev/null -o /dev/null 2>&1 | sed -e '/^#include "/,/^End of search list\\.\$\$/p;d' | grep -e '^ ' | sed -e 's/\$\$/\\/\\\\\\*/'\` \`pwd\`/gtest/'\\*' -o @PACKAGE_NAME@-@PACKAGE_VERSION@.info
+	lcov -r @PACKAGE_NAME@-@PACKAGE_VERSION@.info \$(system_include_dirs) \`pwd\`/gtest/\* -o @PACKAGE_NAME@-@PACKAGE_VERSION@.info
 	genhtml -p \`cd ..; pwd\` -o html -s @PACKAGE_NAME@-@PACKAGE_VERSION@.info
 	\$(RM) @PACKAGE_NAME@-@PACKAGE_VERSION@.info *.gcda
 
