@@ -36,6 +36,10 @@ sed -e '
 	${
 		iAC_CONFIG_MACRO_DIR([m4])
 		iAC_CONFIG_FILES([Makefile include/Makefile src/Makefile test/Makefile])
+		i[warning_options="-Wextra -Wcast-align -Wstrict-aliasing -Wshadow "\\
+		i`LANG=C ${CXX} -fsyntax-only -Q --help=warnings,^joined,^separate,c++ |
+		igrep -v '\''\\@<:@enabled\\@:>@\\|-Wc90-c99-compat\\|-Wtraditional@<:@^-@:>@\\|-Wsystem-headers'\'' | grep -oe '\''-W@<:@@<:@:graph:@:>@@:>@\\+'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
+		iAC_SUBST([warning_options])
 		iAC_ARG_ENABLE([sanitizer], AC_HELP_STRING([--enable-sanitizer], [enable sanitizer]))
 		iAM_CONDITIONAL([ENABLE_SANITIZER], [test x"${enable_sanitizer}" = xyes])
 	}
@@ -56,9 +60,8 @@ noinst_PROGRAMS = testsuite
 testsuite_SOURCES = test.cpp
 nodist_testsuite_SOURCES  = gtest/gtest.h gtest/gtest-all.cc
 testsuite_CPPFLAGS = -I../src
-testsuite_CXXFLAGS = -std=c++11 -Og -g3 --coverage -Wextra -Wcast-align -Wstrict-aliasing -Wshadow \\
-\`LANG=C \$(CXX) -fsyntax-only -Q --help=warnings,^joined,^separate,c++ | \\
-grep -v '\[enabled\]\|-Wc90-c99-compat\|-Wtraditional[^-]\|-Wsystem-headers' | grep -oe '-W[[:graph:]]\+'\`
+testsuite_CXXFLAGS = -std=c++11 --coverage @warning_options@
+## XXX: Warning suppresions for Google Test headers(workaround).
 testsuite_CXXFLAGS += -Wno-abi-tag -Wno-ctor-dtor-privacy -Wno-duplicated-branches \\
 -Wno-effc++ -Wno-missing-declarations -Wno-multiple-inheritance -Wno-namespaces \\
 -Wno-sign-conversion -Wno-suggest-attribute=format -Wno-suggest-override \\
