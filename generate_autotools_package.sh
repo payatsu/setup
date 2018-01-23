@@ -56,7 +56,7 @@ noinst_PROGRAMS = testsuite
 testsuite_SOURCES = test.cpp
 nodist_testsuite_SOURCES  = gtest/gtest.h gtest/gtest-all.cc
 testsuite_CPPFLAGS = -I../src
-testsuite_CXXFLAGS = -std=c++11 --coverage -Wextra -Wcast-align -Wstrict-aliasing -Wshadow \`LANG=C \$(CXX) -fsyntax-only -Q --help=warnings,^joined,^separate,c++ | grep -v '\[enabled\]\|-Wc90-c99-compat\|-Wtraditional[^-]\|-Wsystem-headers' | grep -oe '-W[[:graph:]]\+' | xargs echo\`
+testsuite_CXXFLAGS = -std=c++11 -Og -g3 --coverage -Wextra -Wcast-align -Wstrict-aliasing -Wshadow \`LANG=C \$(CXX) -fsyntax-only -Q --help=warnings,^joined,^separate,c++ | grep -v '\[enabled\]\|-Wc90-c99-compat\|-Wtraditional[^-]\|-Wsystem-headers' | grep -oe '-W[[:graph:]]\+'\`
 testsuite_CXXFLAGS += -Wno-abi-tag -Wno-ctor-dtor-privacy -Wno-duplicated-branches \
 -Wno-effc++ -Wno-missing-declarations -Wno-multiple-inheritance -Wno-namespaces \
 -Wno-sign-conversion -Wno-suggest-attribute=format -Wno-suggest-override \
@@ -69,6 +69,8 @@ endif
 
 gtest_ver = release-1.8.0
 
+\$(testsuite_SOURCES): gtest/gtest.h
+
 gtest/gtest.h gtest/gtest-all.cc: googletest-\$(gtest_ver)
 	\$^/googletest/scripts/fuse_gtest_files.py \$^/googletest .
 
@@ -78,8 +80,8 @@ googletest-\$(gtest_ver):
 check:
 	./testsuite
 	lcov -c -d . -o @PACKAGE_NAME@-@PACKAGE_VERSION@.info
-	eval lcov -r @PACKAGE_NAME@-@PACKAGE_VERSION@.info \`LANG=C \$(CPP) \$(CPPFLAGS) -v -x c /dev/null -o /dev/null 2>&1 | sed -e '/^#include "/,/^End of search list\\.\$\$/p;d' | grep -e '^ ' | sed -e 's/\$\$/\\/\\\\\\*/'\` -o @PACKAGE_NAME@-@PACKAGE_VERSION@.info
-	genhtml -p \`pwd | xargs dirname\` -o html -s @PACKAGE_NAME@-@PACKAGE_VERSION@.info
+	eval lcov -r @PACKAGE_NAME@-@PACKAGE_VERSION@.info \`LANG=C \$(CPP) \$(CPPFLAGS) -v -x c /dev/null -o /dev/null 2>&1 | sed -e '/^#include "/,/^End of search list\\.\$\$/p;d' | grep -e '^ ' | sed -e 's/\$\$/\\/\\\\\\*/'\` \`pwd\`/gtest/'\\*' -o @PACKAGE_NAME@-@PACKAGE_VERSION@.info
+	genhtml -p \`cd ..; pwd\` -o html -s @PACKAGE_NAME@-@PACKAGE_VERSION@.info
 	\$(RM) @PACKAGE_NAME@-@PACKAGE_VERSION@.info *.gcda
 
 .PHONY: myclean
