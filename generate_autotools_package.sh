@@ -64,7 +64,7 @@ testsuite_SOURCES = test.cpp
 nodist_testsuite_SOURCES = gtest/gtest.h gtest/gtest-all.cc
 testsuite_CPPFLAGS = -I../src
 testsuite_CXXFLAGS = -std=c++11 --coverage @warning_options@
-## XXX: Warning suppresions for Google Test headers(workaround).
+## XXX: Warning suppresions(workaround) for Google Test header("gtest/gtest.h").
 testsuite_CXXFLAGS += -Wno-abi-tag -Wno-ctor-dtor-privacy -Wno-duplicated-branches \\
 -Wno-effc++ -Wno-missing-declarations -Wno-multiple-inheritance -Wno-namespaces \\
 -Wno-sign-conversion -Wno-suggest-attribute=format -Wno-suggest-override \\
@@ -78,9 +78,8 @@ system_include_dirs = @system_include_dirs@
 
 gtest_ver = release-1.8.0
 
-\$(testsuite_SOURCES): gtest/gtest.h
-
-gtest/gtest.h gtest/gtest-all.cc: googletest-\$(gtest_ver)
+\$(testsuite_SOURCES) gtest/gtest-all.cc: gtest/gtest.h
+gtest/gtest.h: googletest-\$(gtest_ver)
 	\$^/googletest/scripts/fuse_gtest_files.py \$^/googletest .
 
 googletest-\$(gtest_ver):
