@@ -1035,13 +1035,6 @@ clean()
 		-name '*-git' | xargs -I \{\} find \{\} -type d -name .git -execdir git clean -dfx \; -execdir git checkout -- . \;
 }
 
-strip()
-# Strip binary files.
-{
-	find ${prefix} -type f \( -perm /111 -o -name '*.o' -o -name '*.a' -o -name '*.so' -o -name '*.gox' \) \
-		| xargs file | grep -e 'not stripped' | cut -d: -f1 | xargs -I "{}" sh -c "chmod u+w {}; strip {}" || true
-}
-
 archive()
 # Archive related files.
 {
@@ -2057,6 +2050,13 @@ EOF
 	make -C ${ncurses_org_src_dir} -j 1 || return # XXX work around for parallel make
 	make -C ${ncurses_org_src_dir} -j ${jobs} install || return
 	update_library_search_path || return
+	[ -z "${strip}" ] && return
+	for b in clear infocmp tabs tic toe tput tset; do
+		strip -v ${prefix}/bin/${b} || return
+	done
+	for l in libform libmenu libncurses++ libncurses libpanel libformtw libmenutw libncurses++tw libncursestw libpaneltw; do
+		strip -v ${prefix}/lib/${l}.so || return
+	done
 }
 
 install_native_gdb()
@@ -3066,6 +3066,7 @@ install_native_screen()
 	make -C ${screen_org_src_dir} -j ${jobs} || return
 	mkdir -pv ${prefix}/share/screen/utf8encodings || return
 	make -C ${screen_org_src_dir} -j ${jobs} install || return
+	[ -z "${strip}" ] || strip -v ${prefix}/bin/${screen_name} || return
 }
 
 install_native_libevent()
@@ -3218,6 +3219,7 @@ install_native_squashfs()
 	make -C ${squashfs_org_src_dir}/squashfs-tools -j ${jobs} XZ_SUPPORT=1 || return
 	mkdir -pv ${prefix}/bin || return
 	make -C ${squashfs_org_src_dir}/squashfs-tools -j ${jobs} INSTALL_DIR=${prefix}/bin install || return
+	[ -z "${strip}" ] || strip -v ${prefix}/bin/mksquashfs ${prefix}/bin/unsquashfs || return
 }
 
 install_native_openssl()
