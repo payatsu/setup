@@ -28,7 +28,7 @@
 : ${gzip_ver:=1.9}
 : ${lzip_ver:=1.19}
 : ${lunzip_ver:=1.9}
-: ${wget_ver:=1.19.2}
+: ${wget_ver:=1.19.4}
 : ${pkg_config_ver:=0.29.2}
 : ${texinfo_ver:=6.5}
 : ${coreutils_ver:=8.29}
@@ -57,7 +57,7 @@
 : ${mpfr_ver:=4.0.0}
 : ${mpc_ver:=1.1.0}
 : ${isl_ver:=0.18}
-: ${gcc_ver:=7.2.0}
+: ${gcc_ver:=7.3.0}
 : ${readline_ver:=7.0}
 : ${ncurses_ver:=6.0}
 : ${gdb_ver:=8.0.1}
@@ -600,8 +600,8 @@ fetch()
 	gcc)
 		check_archive ${gcc_org_src_dir} ||
 			for compress_format in xz bz2 gz; do
-				wget -O ${gcc_org_src_dir}.tar.${compress_format} \
-					http://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.${compress_format} \
+				wget --no-check-certificate -O ${gcc_org_src_dir}.tar.${compress_format} \
+					https://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.${compress_format} \
 					&& break \
 					|| rm -v ${gcc_org_src_dir}.tar.${compress_format}
 			done || return;;
