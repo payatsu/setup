@@ -541,8 +541,8 @@ fetch()
 			done || return;;
 	autogen)
 		check_archive ${autogen_org_src_dir} ||
-			wget -O ${autogen_org_src_dir}.tar.xz \
-				http://ftp.gnu.org/gnu/autogen/rel${autogen_ver}/${autogen_name}.tar.xz || return;;
+			wget --no-check-certificate -O ${autogen_org_src_dir}.tar.xz \
+				https://ftp.gnu.org/gnu/autogen/rel${autogen_ver}/${autogen_name}.tar.xz || return;;
 	xz)
 		check_archive ${xz_org_src_dir} ||
 			wget --no-check-certificate -O ${xz_org_src_dir}.tar.bz2 \
@@ -1460,6 +1460,10 @@ install_native_bzip2()
 	cp -fv ${bzip2_org_src_dir}/bzlib.h ${prefix}/include || return
 	cp -fv ${bzip2_org_src_dir}/bzlib_private.h ${prefix}/include || return
 	update_library_search_path || return
+	[ -z "${strip}" ] && return
+	for b in bunzip2 bzcat bzip2 bzip2recover; do
+		strip -v ${prefix}/bin/${b} || return
+	done
 }
 
 install_native_gzip()
@@ -1664,6 +1668,10 @@ install_native_autogen()
 	[ "${enable_check}" != yes ] ||
 		make -C ${autogen_org_src_dir} -j ${jobs} -k check || return
 	make -C ${autogen_org_src_dir} -j ${jobs} install || return
+	[ -z "${strip}" ] && return
+	for b in autogen columns getdefs xml2ag; do
+		strip -v ${prefix}/bin/${b} || return
+	done
 }
 
 install_native_libtool()
@@ -1845,6 +1853,7 @@ install_native_gperf()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gperf_org_src_dir} -j ${jobs} -k check || return
 	make -C ${gperf_org_src_dir} -j ${jobs} install || return
+	[ -z "${strip}" ] || strip -v ${prefix}/bin/gperf || return
 }
 
 install_native_glibc()
@@ -3100,6 +3109,7 @@ install_native_tmux()
 	[ "${enable_check}" != yes ] ||
 		make -C ${tmux_org_src_dir} -j ${jobs} -k check || return
 	make -C ${tmux_org_src_dir} -j ${jobs} install || return
+	[ -z "${strip}" ] || strip -v ${prefix}/bin/tmux || return
 }
 
 install_native_expect()
@@ -3489,6 +3499,10 @@ install_native_subversion()
 		make -C ${subversion_org_src_dir} -j ${jobs} -k check || return
 	make -C ${subversion_org_src_dir} -j ${jobs} install || return
 	update_pkg_config_path || return
+	[ -z "${strip}" ] && return
+	for b in svn svnadmin svnbench svndumpfilter svnfsfs svnlook svnmucc svnrdump svnserve svnsync svnversion; do
+		strip -v ${prefix}/bin/${b} || return
+	done
 }
 
 install_native_cmake()
@@ -4040,6 +4054,16 @@ install_native_python()
 		make -C ${Python_org_src_dir} -j ${jobs} -k test || return
 	make -C ${Python_org_src_dir} -j ${jobs} install || return
 	update_pkg_config_path || return
+	[ -z "${strip}" ] && return
+	for v in `echo ${Python_ver} | cut -d. -f-2` `echo ${Python_ver} | cut -d. -f-2`m; do
+		[ ! -f ${prefix}/bin/python${v} ] || strip -v ${prefix}/bin/python${v} || return
+	done
+	for soname_v in `echo ${Python_ver} | cut -d. -f1`.so `echo ${Python_ver} | cut -d. -f-2`.so.1.0 `echo ${Python_ver} | cut -d. -f-2`m.so.1.0; do
+		[ ! -f ${prefix}/lib/libpython${soname_v} ] ||
+			(chmod -v u+w ${prefix}/lib/libpython${soname_v} || return
+			strip -v ${prefix}/lib/libpython${soname_v} || return
+			chmod -v u-w ${prefix}/lib/libpython${soname_v} || return) || return
+	done
 }
 
 install_native_ruby()
@@ -4057,6 +4081,9 @@ install_native_ruby()
 		make -C ${ruby_org_src_dir} -j ${jobs} -k V=1 check || return
 	make -C ${ruby_org_src_dir} -j ${jobs} V=1 install || return
 	update_pkg_config_path || return
+	[ -z "${strip}" ] && return
+	strip -v ${prefix}/bin/ruby || return
+	strip -v ${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_org_src_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/libruby.so || return
 }
 
 install_native_go()
@@ -4107,6 +4134,7 @@ install_native_tcl()
 	make -C ${tcl_org_src_dir}/unix -j ${jobs} install-private-headers || return
 	update_pkg_config_path || return
 	ln -fsv tclsh`echo ${tcl_ver} | cut -d. -f-2` ${prefix}/bin/tclsh || return
+	[ -z "${strip}" ] || strip -v ${prefix}/bin/tclsh || return
 }
 
 install_native_tk()
@@ -4261,6 +4289,7 @@ EOF
 	mv -v ${prefix}/lib/liblua.so ${prefix}/lib/liblua.so.`echo ${lua_ver} | cut -d. -f-2` || return
 	ln -fsv liblua.so.`echo ${lua_ver} | cut -d. -f-2` ${prefix}/lib/liblua.so || return
 	update_library_search_path || return
+	[ -z "${strip}" ] || strip -v ${prefix}/bin/lua ${prefix}/bin/luac || return
 }
 
 install_native_nasm()
