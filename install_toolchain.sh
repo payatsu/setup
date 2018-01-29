@@ -43,7 +43,7 @@
 : ${sed_ver:=4.4}
 : ${gawk_ver:=4.2.0}
 : ${make_ver:=4.2}
-: ${binutils_ver:=2.29.1}
+: ${binutils_ver:=2.30}
 : ${elfutils_ver:=0.170}
 : ${ed_ver:=1.14.2}
 : ${bc_ver:=1.07.1}
@@ -74,7 +74,7 @@
 : ${libffi_ver:=3.2.1}
 : ${emacs_ver:=25.3}
 : ${libiconv_ver:=1.15}
-: ${vim_ver:=8.0.1238}
+: ${vim_ver:=8.0.1438}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.1}
@@ -110,7 +110,7 @@
 : ${libxslt_ver:=1.1.32}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
-: ${git_ver:=2.15.1}
+: ${git_ver:=2.16.1}
 : ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=4.4.1}
 : ${sqlite_autoconf_ver:=3210000}
