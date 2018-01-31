@@ -59,7 +59,7 @@
 : ${isl_ver:=0.18}
 : ${gcc_ver:=7.3.0}
 : ${readline_ver:=7.0}
-: ${ncurses_ver:=6.0}
+: ${ncurses_ver:=6.1}
 : ${gdb_ver:=8.0.1}
 : ${lcov_ver:=1.13}
 : ${strace_ver:=4.20}
@@ -2046,7 +2046,7 @@ EOF
 	[ -f ${ncurses_org_src_dir}/Makefile ] ||
 		(cd ${ncurses_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			--with-libtool --with-shared --with-cxx-shared \
+			--with-libtool --with-shared --with-cxx-shared --with-termlib \
 			--enable-termcap --enable-colors) || return
 	make -C ${ncurses_org_src_dir} -j 1 || return # XXX work around for parallel make
 	make -C ${ncurses_org_src_dir} -j ${jobs} install || return
@@ -2054,7 +2054,7 @@ EOF
 	[ -f ${ncurses_org_src_dir}/Makefile ] ||
 		(cd ${ncurses_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			--with-libtool --with-shared --with-cxx-shared \
+			--with-libtool --with-shared --with-cxx-shared --with-termlib \
 			--enable-termcap --enable-widec --enable-colors --with-pthread --enable-reentrant) || return
 	make -C ${ncurses_org_src_dir} -j 1 || return # XXX work around for parallel make
 	make -C ${ncurses_org_src_dir} -j ${jobs} install || return
