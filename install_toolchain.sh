@@ -4084,6 +4084,7 @@ install_native_ruby()
 	[ -z "${strip}" ] && return
 	strip -v ${prefix}/bin/ruby || return
 	strip -v ${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_org_src_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/libruby.so || return
+	find ${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_org_src_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/ruby/${ruby_ver} -type f -name '*.so' -exec strip -v {} + || return
 }
 
 install_native_go()
