@@ -50,7 +50,7 @@
 : ${linux_ver:=3.18.13}
 : ${qemu_ver:=2.11.0}
 : ${gperf_ver:=3.1}
-: ${glibc_ver:=2.26}
+: ${glibc_ver:=2.27}
 : ${newlib_ver:=2.5.0}
 : ${mingw_w64_ver:=5.0.3}
 : ${gmp_ver:=6.1.2}
@@ -60,7 +60,7 @@
 : ${gcc_ver:=7.3.0}
 : ${readline_ver:=7.0}
 : ${ncurses_ver:=6.1}
-: ${gdb_ver:=8.0.1}
+: ${gdb_ver:=8.1}
 : ${lcov_ver:=1.13}
 : ${strace_ver:=4.20}
 : ${valgrind_ver:=3.13.0}
