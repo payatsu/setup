@@ -90,6 +90,7 @@
 : ${diffutils_ver:=3.6}
 : ${patch_ver:=2.7.5}
 : ${findutils_ver:=4.6.0}
+: ${less_ver:=487}
 : ${screen_ver:=4.6.2}
 : ${libevent_ver:=2.1.8}
 : ${tmux_ver:=2.6}
@@ -396,6 +397,8 @@ help()
 		Specify the version of GNU Patch you want, currently '${patch_ver}'.
 	findutils_ver
 		Specify the version of GNU findutils you want, currently'${findutils_ver}'.
+	less_ver
+		Specify the version of GNU less you want, currently '${less_ver}'.
 	screen_ver
 		Specify the version of GNU Screen you want, currently '${screen_ver}'.
 	libevent_ver
@@ -531,7 +534,7 @@ fetch()
 		done;;
 	tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|automake|libtool|sed|gawk|\
 	make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
-	diffutils|patch|findutils|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
+	diffutils|patch|findutils|less|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
 		eval check_archive \${${_1}_org_src_dir} ||
 			for compress_format in xz bz2 gz lz; do
 				eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.${compress_format} \
@@ -3060,6 +3063,20 @@ install_native_findutils()
 	[ "${enable_check}" != yes ] ||
 		make -C ${findutils_org_src_dir} -j ${jobs} -k check || return
 	make -C ${findutils_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_less()
+{
+	[ -x ${prefix}/bin/less -a "${force_install}" != yes ] && return
+	fetch less || return
+	unpack ${less_org_src_dir} || return
+	[ -f ${less_org_src_dir}/Makefile ] ||
+		(cd ${less_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return
+	make -C ${less_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${less_org_src_dir} -j ${jobs} -k check || return
+	make -C ${less_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_screen()
