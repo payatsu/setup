@@ -54,7 +54,7 @@
 : ${newlib_ver:=2.5.0}
 : ${mingw_w64_ver:=5.0.3}
 : ${gmp_ver:=6.1.2}
-: ${mpfr_ver:=4.0.0}
+: ${mpfr_ver:=4.0.1}
 : ${mpc_ver:=1.1.0}
 : ${isl_ver:=0.18}
 : ${gcc_ver:=7.3.0}
@@ -131,10 +131,10 @@
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
 : ${boost_ver:=1_65_1}
-: ${Python_ver:=3.6.3}
+: ${Python_ver:=3.6.4}
 : ${Python2_ver:=2.7.14} # internal use only.
 : ${ruby_ver:=2.5.0}
-: ${go_ver:=1.9.3}
+: ${go_ver:=1.10}
 : ${perl_ver:=5.26.1}
 : ${tcl_ver:=8.6.7}
 : ${tk_ver:=8.6.7}
