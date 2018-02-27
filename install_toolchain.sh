@@ -37,7 +37,7 @@
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
-: ${automake_ver:=1.15.1}
+: ${automake_ver:=1.16}
 : ${autogen_ver:=5.18.12}
 : ${libtool_ver:=2.4.6}
 : ${sed_ver:=4.4}
