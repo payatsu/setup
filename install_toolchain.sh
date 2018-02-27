@@ -63,6 +63,7 @@
 : ${gdb_ver:=8.1}
 : ${lcov_ver:=1.13}
 : ${strace_ver:=4.20}
+: ${ltrace_ver:=0.7.3}
 : ${valgrind_ver:=3.13.0}
 : ${zlib_ver:=1.2.11}
 : ${libpng_ver:=1.6.34}
@@ -345,6 +346,8 @@ help()
 		Specify the version of lcov you want, currently '${lcov_ver}'.
 	strace_ver
 		Specify the version of strace you want, currently '${strace_ver}'.
+	ltrace_ver
+		Specify the version of ltrace you want, currently '${ltrace_ver}'.
 	valgrind_ver
 		Specify the version of Valgrind you want, currently '${valgrind_ver}'.
 	zlib_ver
@@ -616,6 +619,10 @@ fetch()
 		check_archive ${strace_org_src_dir} ||
 			wget --no-check-certificate -O ${strace_org_src_dir}.tar.xz \
 				https://sourceforge.net/projects/strace/files/strace/${strace_ver}/${strace_name}.tar.xz/download || return;;
+	ltrace)
+		check_archive ${ltrace_org_src_dir} ||
+			wget -O ${ltrace_org_src_dir}.tar.bz2 \
+				http://www.ltrace.org/ltrace_${ltrace_ver}.orig.tar.bz2 || return;;
 	valgrind)
 		check_archive ${valgrind_org_src_dir} ||
 			wget --no-check-certificate -O ${valgrind_org_src_dir}.tar.bz2 \
@@ -2115,6 +2122,21 @@ install_native_strace()
 	[ "${enable_check}" != yes ] ||
 		make -C ${strace_org_src_dir} -j ${jobs} -k check || return
 	make -C ${strace_org_src_dir} -j ${jobs} install || return
+}
+
+install_native_ltrace()
+{
+	[ -x ${prefix}/bin/ltrace -a "${force_install}" != yes ] && return
+	search_library libelf.so > /dev/null || install_native_elfutils || return
+	fetch ltrace || return
+	unpack ${ltrace_org_src_dir} || return
+	[ -f ${ltrace_org_src_dir}/Makefile ] ||
+		(cd ${ltrace_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return
+	make -C ${ltrace_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${ltrace_org_src_dir} -j ${jobs} -k check || return
+	make -C ${ltrace_org_src_dir} -j ${jobs} install || return
 }
 
 install_native_valgrind()
