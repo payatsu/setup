@@ -48,6 +48,7 @@
 : ${ed_ver:=1.14.2}
 : ${bc_ver:=1.07.1}
 : ${linux_ver:=3.18.13}
+: ${dtc_ver:=1.4.6}
 : ${qemu_ver:=2.11.0}
 : ${gperf_ver:=3.1}
 : ${glibc_ver:=2.27}
@@ -316,6 +317,8 @@ help()
 		Specify the version of GNU bc you want, currently '${bc_ver}'.
 	linux_ver
 		Specify the version of Linux kernel you want, currently '${linux_ver}'.
+	dtc_ver
+		Specify the version of Device Tree Compiler you want, currently '${dtc_ver}'.
 	qemu_ver
 		Specify the version of QEMU you want, currently '${qemu_ver}'.
 	gperf_ver
@@ -587,6 +590,10 @@ fetch()
 		check_archive ${linux_org_src_dir} ||
 			wget --no-check-certificate -O ${linux_org_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/kernel/${linux_major_ver}/${linux_name}.tar.xz || return;;
+	dtc)
+		check_archive ${dtc_org_src_dir} ||
+			wget --no-check-certificate -O ${dtc_org_src_dir}.tar.xz \
+				https://www.kernel.org/pub/software/utils/dtc/${dtc_name}.tar.xz || return;;
 	qemu)
 		check_archive ${qemu_org_src_dir} ||
 			wget --no-check-certificate -O ${qemu_org_src_dir}.tar.xz \
@@ -1834,6 +1841,15 @@ install_native_linux_header()
 	esac
 	make -C ${linux_src_dir_ntv} -j ${jobs} V=1 \
 		ARCH=${native_linux_arch} INSTALL_HDR_PATH=${prefix} headers_install || return
+}
+
+install_native_dtc()
+{
+	[ -x ${prefix}/bin/dtc -a "${force_install}" != yes ] && return
+	fetch dtc || return
+	unpack ${dtc_org_src_dir} || return
+	make -C ${dtc_org_src_dir} -j ${jobs} V=1 || return
+	make -C ${dtc_org_src_dir} -j ${jobs} V=1 PREFIX=${prefix} install || return
 }
 
 install_native_qemu()
