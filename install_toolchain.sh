@@ -123,7 +123,7 @@
 : ${cmake_ver:=3.10.1}
 : ${libedit_ver:=20170329-3.1}
 : ${swig_ver:=3.0.12}
-: ${llvm_ver:=5.0.0}
+: ${llvm_ver:=6.0.0}
 : ${libcxx_ver:=${llvm_ver}}
 : ${libcxxabi_ver:=${llvm_ver}}
 : ${compiler_rt_ver:=${llvm_ver}}
