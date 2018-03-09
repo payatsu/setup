@@ -1411,6 +1411,7 @@ install_native_tar()
 {
 	[ -x ${prefix}/bin/tar -a "${force_install}" != yes ] && return
 	which xz > /dev/null || install_native_xz || return
+	which lzip > /dev/null || install_native_lzip || return
 	fetch tar || return
 	unpack ${tar_org_src_dir} || return
 	[ -f ${tar_org_src_dir}/Makefile ] ||
