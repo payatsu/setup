@@ -49,6 +49,7 @@
 : ${bc_ver:=1.07.1}
 : ${linux_ver:=3.18.13}
 : ${dtc_ver:=1.4.6}
+: ${u_boot_ver:=2018.01}
 : ${qemu_ver:=2.11.0}
 : ${gperf_ver:=3.1}
 : ${glibc_ver:=2.27}
@@ -319,6 +320,8 @@ help()
 		Specify the version of Linux kernel you want, currently '${linux_ver}'.
 	dtc_ver
 		Specify the version of Device Tree Compiler you want, currently '${dtc_ver}'.
+	u_boot_ver
+		Specify the version of U-Boot you want, currently '${u_boot_ver}'.
 	qemu_ver
 		Specify the version of QEMU you want, currently '${qemu_ver}'.
 	gperf_ver
@@ -594,6 +597,10 @@ fetch()
 		check_archive ${dtc_org_src_dir} ||
 			wget --no-check-certificate -O ${dtc_org_src_dir}.tar.xz \
 				https://www.kernel.org/pub/software/utils/dtc/${dtc_name}.tar.xz || return;;
+	u-boot)
+		check_archive ${u_boot_org_src_dir} ||
+			wget -O ${u_boot_org_src_dir}.tar.bz2 \
+				ftp://ftp.denx.de/pub/u-boot/${u_boot_name}.tar.bz2 || return;;
 	qemu)
 		check_archive ${qemu_org_src_dir} ||
 			wget --no-check-certificate -O ${qemu_org_src_dir}.tar.xz \
@@ -1186,6 +1193,7 @@ set_variables()
 		/^: \${\(.\+\)_ver:=.\+}$/{
 			s//\1/
 			s/pkg_config/pkg-config/
+			s/u_boot/u-boot/
 			s/vimdoc_ja/vimdoc-ja/
 			s/util_linux/util-linux/
 			s/git_manpages/git-manpages/
@@ -1851,6 +1859,19 @@ install_native_dtc()
 	unpack ${dtc_org_src_dir} || return
 	make -C ${dtc_org_src_dir} -j ${jobs} V=1 || return
 	make -C ${dtc_org_src_dir} -j ${jobs} V=1 PREFIX=${prefix} install || return
+}
+
+install_native_u_boot()
+{
+	[ -x ${prefix}/bin/mkimage -a "${force_install}" != yes ] && return
+	search_header ssl.h openssl > /dev/null || install_native_openssl || return
+	fetch u-boot || return
+	unpack ${u_boot_org_src_dir} || return
+	[ -f ${u_boot_org_src_dir}/.config ] ||
+		make -C ${u_boot_org_src_dir} -j ${jobs} V=1 sandbox_defconfig || return
+	make -C ${u_boot_org_src_dir} -j ${jobs} V=1 NO_SDL=1 tools || return
+	mkdir -pv ${prefix}/bin || return
+	find ${u_boot_org_src_dir}/tools -maxdepth 1 -type f -perm /100 -exec cp -fvt ${prefix}/bin {} + || return
 }
 
 install_native_qemu()
