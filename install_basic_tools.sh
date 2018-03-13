@@ -6,7 +6,8 @@ case ${os} in
 Debian|Ubuntu|Raspbian)
 	sed -i -e 's/^# \(deb..*partner\)$/\1/' /etc/apt/sources.list
 	apt update -y
-	apt install -y emacs vim
+	apt install -y emacs vim-gtk3 exuberant-ctags
+	apt install -y fonts-ricty-diminished
 	apt install -y zsh
 	apt install -y screen tmux
 	apt install -y wget curl zip
