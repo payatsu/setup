@@ -1871,7 +1871,7 @@ install_native_u_boot()
 		make -C ${u_boot_org_src_dir} -j ${jobs} V=1 sandbox_defconfig || return
 	make -C ${u_boot_org_src_dir} -j ${jobs} V=1 NO_SDL=1 tools || return
 	mkdir -pv ${prefix}/bin || return
-	find ${u_boot_org_src_dir}/tools -maxdepth 1 -type f -perm /100 -exec cp -fvt ${prefix}/bin {} + || return
+	find ${u_boot_org_src_dir}/tools -maxdepth 1 -type f -perm /100 -exec install -vt ${prefix}/bin {} + || return
 }
 
 install_native_qemu()
