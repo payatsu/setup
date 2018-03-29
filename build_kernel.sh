@@ -9,9 +9,9 @@ init()
 	: ${jobs:=`grep -ce '^processor\>' /proc/cpuinfo`}
 	: ${ARCH:=arm}
 	: ${CROSS_COMPILE:=arm-none-linux-gnueabi-}
-	make_opts="-j ${jobs} V=1 W=1 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE}"
-	INSTALL_HDR_PATH=./usr
-	INSTALL_MOD_PATH=/
+	: ${INSTALL_HDR_PATH:=./usr}
+	: ${INSTALL_MOD_PATH:=/}
+	make_opts="-j ${jobs} V=1 W=1 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} INSTALL_HDR_PATH=${INSTALL_HDR_PATH} INSTALL_MOD_PATH=${INSTALL_MOD_PATH}"
 }
 
 fetch()
@@ -25,6 +25,7 @@ fetch()
 	[ -f Kbuild ] || {
 		[ -f linux-${linux_ver}.tar.xz ] || wget https://www.kernel.org/pub/linux/kernel/${linux_major_ver}/linux-${linux_ver}.tar.xz || return
 		[ -d linux-${linux_ver} ] || tar xJvf linux-${linux_ver}.tar.xz || return
+		cd linux-${linux_ver}
 	} || return
 }
 
@@ -32,8 +33,8 @@ build()
 {
 	[ -f .config ] || make ${make_opts} olddefconfig || return
 	make ${make_opts} || return
-	make ${make_opts} INSTALL_MOD_PATH=${INSTALL_MOD_PATH} modules_install || return
-	make ${make_opts} INSTALL_HDR_PATH=${INSTALL_HDR_PATH} headers_install || return
+	make ${make_opts} modules_install || return
+	make ${make_opts} headers_install || return
 	make ${make_opts} tags gtags || return
 }
 
@@ -41,7 +42,7 @@ main()
 {
 	init || return
 	fetch || return
-	(cd linux-${linux_ver}; build) || return
+	build || return
 }
 
 main
