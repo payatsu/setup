@@ -40,8 +40,8 @@
 : ${automake_ver:=1.16}
 : ${autogen_ver:=5.18.12}
 : ${libtool_ver:=2.4.6}
-: ${sed_ver:=4.4}
-: ${gawk_ver:=4.2.0}
+: ${sed_ver:=4.5}
+: ${gawk_ver:=4.2.1}
 : ${make_ver:=4.2}
 : ${binutils_ver:=2.30}
 : ${elfutils_ver:=0.170}
