@@ -36,6 +36,10 @@ build()
 	make ${make_opts} modules_install || return
 	make ${make_opts} headers_install || return
 	make ${make_opts} tags gtags || return
+	make ${make_opts} -C tools cgroup || return
+	make ${make_opts} -C tools gpio || return
+	make ${make_opts} -C tools perf || return
+	make ${make_opts} -C tools spi || return
 }
 
 main()
