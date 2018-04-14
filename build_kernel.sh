@@ -1,17 +1,17 @@
 #!/bin/sh
 
-# TODO: pdfdocs htmldocs
-
 help()
 {
 	cat <<EOF
 [NAME]
 	`basename ${0} - build kernel`
 [SYNOPSIS]
-	`basename ${0}` [-c] [-g] [-h] [-k] [-m] [-p] [-s] [-t]
+	`basename ${0}` [-c] [-d] [-g] [-h] [-k] [-m] [-p] [-s] [-t]
 [OPTIONS]
 	-c
 		install cgroup.
+	-d
+		build documents.
 	-g
 		install gpio.
 	-h
@@ -39,6 +39,21 @@ init()
 	: ${INSTALL_MOD_PATH:=/}
 	: ${prefix:=`pwd`}
 	make_opts="-j ${jobs} V=1 W=1 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} INSTALL_HDR_PATH=${INSTALL_HDR_PATH} INSTALL_MOD_PATH=${INSTALL_MOD_PATH}"
+}
+
+prepare()
+{
+	[ -z "${kernel_build}" ] || {
+		which ed > /dev/null 2>&1 || apt install -y ed || return
+		find `echo | LANG=C ${CC:-gcc} -x c -v -E - -o /dev/null 2>&1 |
+			sed -e '/^#include "\.\.\." search starts here:$/,/^End of search list\.$/p;d' |
+			grep -e '^ /' | xargs readlink -e` \( -type f -o -type l \) -name 'curses.h' > /dev/null 2>&1 ||
+				apt install -y libncurses5-dev || return
+	}
+	[ -z "${perf_install}" ] || which xmlto > /dev/null 2>&1 || apt install -y xmlto || return
+	[ -z "${documents_build}" ] || {
+		which virtualenv > /dev/null 2>&1 || apt install -y virtualenv || return
+	}
 }
 
 fetch()
@@ -79,11 +94,19 @@ build()
 	[ -z "${spi_install}" ] || {
 		make ${make_opts} -C tools spi || return
 	}
+	[ -z "${documents_build}" ] || {
+		virtualenv sphinx_1.4 || return
+		. sphinx_1.4/bin/activate || return
+		pip install -r Documentation/sphinx/requirements.txt || return
+		make ${make_opts} -k pdfdocs
+		deactivate || return
+	}
 }
 
 main()
 {
 	cgroup_install=
+	documents_build=
 	gpio_install=
 	headers_install=
 	kernel_build=
@@ -91,9 +114,10 @@ main()
 	perf_install=
 	spi_install=
 	tags_create=
-	while getopts cghkmpst arg; do
+	while getopts cdghkmpst arg; do
 		case ${arg} in
 		c) cgroup_install=yes;;
+		d) documents_build=yes;;
 		g) gpio_install=yes;;
 		h) headers_install=yes;;
 		k) kernel_build=yes;;
@@ -105,10 +129,17 @@ main()
 		esac
 	done
 	shift `expr ${OPTIND} - 1`
+	while [ $# -gt 0 ]; do
+		case ${1} in
+		*=*) eval "${1}";;
+		esac
+		shift
+	done
 
 	init || return
 	fetch || return
 	build || return
 }
 
+[ -n "$-" ] && return
 main "$@"
