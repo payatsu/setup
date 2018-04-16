@@ -6,7 +6,7 @@ help()
 [NAME]
 	`basename ${0} - build kernel`
 [SYNOPSIS]
-	`basename ${0}` [-c] [-d] [-g] [-h] [-k] [-m] [-p] [-s] [-t]
+	`basename ${0}` [-c] [-d] [-g] [-h] [-k] [-m] [-p] [-s] [-t] [-v]
 [OPTIONS]
 	-c
 		install cgroup.
@@ -26,6 +26,8 @@ help()
 		install spi.
 	-t
 		create tags.
+	-v
+		log verbosely.
 EOF
 }
 
@@ -68,10 +70,16 @@ fetch()
 	*)   echo unsupported linux version >&2; return 1;;
 	esac
 	[ -f Kbuild ] || {
-		[ -f linux-${linux_ver}.tar.xz ] || wget https://www.kernel.org/pub/linux/kernel/${linux_major_ver}/linux-${linux_ver}.tar.xz || return
-		[ -d linux-${linux_ver} ] || tar xJvf linux-${linux_ver}.tar.xz || return
+		[ -f linux-${linux_ver}.tar.xz ] || wget ${verbose:+-v} https://www.kernel.org/pub/linux/kernel/${linux_major_ver}/linux-${linux_ver}.tar.xz || return
+		[ -d linux-${linux_ver} ] || tar xJ${verbose:+v}f linux-${linux_ver}.tar.xz || return
 		cd linux-${linux_ver}
 	} || return
+}
+
+make()
+{
+	echo make "$@"
+	command make "$@"
 }
 
 build()
@@ -117,7 +125,8 @@ main()
 	perf_install=
 	spi_install=
 	tags_create=
-	while getopts cdghkmpst arg; do
+	verbose=
+	while getopts cdghkmpstv arg; do
 		case ${arg} in
 		c) cgroup_install=yes;;
 		d) documents_build=yes;;
@@ -128,6 +137,7 @@ main()
 		p) perf_install=yes;;
 		s) spi_install=yes;;
 		t) tags_create=yes;;
+		v) verbose=yes;;
 		\?) help 2>&1; exit 1;;
 		esac
 	done
