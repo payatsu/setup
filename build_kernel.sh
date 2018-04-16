@@ -50,7 +50,10 @@ prepare()
 			grep -e '^ /' | xargs readlink -e` \( -type f -o -type l \) -name 'curses.h' > /dev/null 2>&1 ||
 				apt install -y libncurses5-dev || return
 	}
-	[ -z "${perf_install}" ] || which xmlto > /dev/null 2>&1 || apt install -y xmlto || return
+	[ -z "${perf_install}" ] || {
+		which xmlto > /dev/null 2>&1 || apt install -y xmlto || return
+		which asciidoc > /dev/null 2>&1 || apt install -y asciidoc || return
+	}
 	[ -z "${documents_build}" ] || {
 		which virtualenv > /dev/null 2>&1 || apt install -y virtualenv || return
 	}
