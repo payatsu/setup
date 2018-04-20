@@ -6,7 +6,7 @@ help()
 [NAME]
 	`basename ${0} - build kernel`
 [SYNOPSIS]
-	`basename ${0}` [-c] [-d] [-g] [-h] [-k] [-m] [-p] [-s] [-t] [-v]
+	`basename ${0}` [-c] [-d] [-g] [-h] [-k] [-m] [-M] [-p] [-s] [-t] [-v]
 [OPTIONS]
 	-c
 		install cgroup.
@@ -20,6 +20,8 @@ help()
 		build kernel.
 	-m
 		install modules.
+	-M
+		create my module.
 	-p
 		install perf.
 	-s
@@ -33,7 +35,7 @@ EOF
 
 init()
 {
-	: ${linux_ver:=4.15.13}
+	: ${linux_ver:=4.16.3}
 	: ${jobs:=`grep -ce '^processor\>' /proc/cpuinfo`}
 	: ${ARCH:=arm}
 	: ${CROSS_COMPILE:=arm-none-linux-gnueabi-}
@@ -52,6 +54,7 @@ prepare()
 			grep -e '^ /' | xargs readlink -e` \( -type f -o -type l \) -name 'curses.h' > /dev/null 2>&1 ||
 				apt install -y libncurses5-dev || return
 	}
+	[ -z "${tags_create}" ] || which ctags > /dev/null 2>&1 || apt install -y exuberant-ctags || return
 	[ -z "${perf_install}" ] || {
 		which xmlto > /dev/null 2>&1 || apt install -y xmlto || return
 		which asciidoc > /dev/null 2>&1 || apt install -y asciidoc || return
@@ -112,6 +115,37 @@ build()
 		make ${make_opts} -k pdfdocs
 		deactivate || return
 	}
+	[ -z "${mymodule_create}" ] || create_my_module || return
+}
+
+create_my_module()
+{
+	mkdir -p${verbose:+v} mymodules || return
+	cat << EOF > mymodules/Makefile || return
+ifneq (\$(KERNELRELEASE),)
+	obj-m := mymodule.o
+else
+	KERNELDIR ?= /lib/modules/$(uname -r)/build
+default:
+	\$(MAKE) ${make_opts} -C \$(KERNELDIR) M=\`pwd\` modules
+endif
+EOF
+	cat << EOF > mymodules/mymodule.c || return
+#include <linux/init.h>
+#include <linux/module.h>
+
+static int __init mymodule_init(void)
+{
+	return 0;
+}
+
+static void __exit mymodule_exit(void)
+{
+}
+module_init(mymodule_init);
+module_exit(mymodule_exit);
+EOF
+	make -C mymodules KERNELDIR=`pwd` || return
 }
 
 main()
@@ -122,11 +156,12 @@ main()
 	headers_install=
 	kernel_build=
 	modules_install=
+	mymodule_create=
 	perf_install=
 	spi_install=
 	tags_create=
 	verbose=
-	while getopts cdghkmpstv arg; do
+	while getopts cdghkmMpstv arg; do
 		case ${arg} in
 		c) cgroup_install=yes;;
 		d) documents_build=yes;;
@@ -134,6 +169,7 @@ main()
 		h) headers_install=yes;;
 		k) kernel_build=yes;;
 		m) modules_install=yes;;
+		M) mymodule_create=yes;;
 		p) perf_install=yes;;
 		s) spi_install=yes;;
 		t) tags_create=yes;;
