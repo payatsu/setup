@@ -11,7 +11,6 @@
 # [TODO] Rtags
 # [TODO] ccache, distcc
 # [TODO] insight
-# [TODO] perf
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] X11, gtk周りのインストールが未完成＆不安定
 # [TODO] libav<-
@@ -49,7 +48,7 @@
 : ${bc_ver:=1.07.1}
 : ${linux_ver:=3.18.13}
 : ${dtc_ver:=1.4.6}
-: ${u_boot_ver:=2018.01}
+: ${u_boot_ver:=2018.03}
 : ${qemu_ver:=2.11.0}
 : ${gperf_ver:=3.1}
 : ${glibc_ver:=2.27}
@@ -81,47 +80,47 @@
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.1}
-: ${global_ver:=6.6.1}
+: ${global_ver:=6.6.2}
 : ${pcre_ver:=8.41}
 : ${pcre2_ver:=10.30}
 : ${the_silver_searcher_ver:=2.1.0}
 : ${the_platinum_searcher_ver:=2.1.5}
 : ${highway_ver:=1.1.0}
 : ${graphviz_ver:=2.40.1}
-: ${doxygen_ver:=1.8.13}
+: ${doxygen_ver:=1.8.14}
 : ${plantuml_ver:=1.2017.16}
 : ${diffutils_ver:=3.6}
-: ${patch_ver:=2.7.5}
+: ${patch_ver:=2.7.6}
 : ${findutils_ver:=4.6.0}
-: ${less_ver:=487}
+: ${less_ver:=530}
 : ${screen_ver:=4.6.2}
 : ${libevent_ver:=2.1.8}
-: ${tmux_ver:=2.6}
-: ${expect_ver:=5.45}
+: ${tmux_ver:=2.7}
+: ${expect_ver:=5.45.4}
 : ${dejagnu_ver:=1.6.1}
-: ${zsh_ver:=5.4.2}
-: ${bash_ver:=4.4.12}
+: ${zsh_ver:=5.5.1}
+: ${bash_ver:=4.4.18}
 : ${inetutils_ver:=1.9.4}
-: ${util_linux_ver:=2.30.1}
-: ${e2fsprogs_ver:=1.43.7}
+: ${util_linux_ver:=2.32}
+: ${e2fsprogs_ver:=1.44.1}
 : ${squashfs_ver:=4.3}
 : ${openssl_ver:=1.0.2l}
-: ${openssh_ver:=7.6p1}
-: ${curl_ver:=7.57.0}
+: ${openssh_ver:=7.7p1}
+: ${curl_ver:=7.59.0}
 : ${expat_ver:=2.2.5}
 : ${asciidoc_ver:=8.6.9}
 : ${libxml2_ver:=2.9.7}
 : ${libxslt_ver:=1.1.32}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
-: ${git_ver:=2.16.1}
+: ${git_ver:=2.17.0}
 : ${git_manpages_ver:=${git_ver}}
-: ${mercurial_ver:=4.4.1}
-: ${sqlite_autoconf_ver:=3210000}
+: ${mercurial_ver:=4.5.3}
+: ${sqlite_autoconf_ver:=3230100}
 : ${apr_ver:=1.6.3}
 : ${apr_util_ver:=1.6.1}
-: ${subversion_ver:=1.9.7}
-: ${cmake_ver:=3.10.1}
+: ${subversion_ver:=1.10.0}
+: ${cmake_ver:=3.11.1}
 : ${libedit_ver:=20170329-3.1}
 : ${swig_ver:=3.0.12}
 : ${llvm_ver:=6.0.0}
@@ -133,11 +132,11 @@
 : ${lld_ver:=${llvm_ver}}
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
-: ${boost_ver:=1_65_1}
-: ${Python_ver:=3.6.4}
+: ${boost_ver:=1_67_0}
+: ${Python_ver:=3.6.5}
 : ${Python2_ver:=2.7.14} # internal use only.
-: ${ruby_ver:=2.5.0}
-: ${go_ver:=1.10}
+: ${ruby_ver:=2.5.1}
+: ${go_ver:=1.10.1}
 : ${perl_ver:=5.26.1}
 : ${tcl_ver:=8.6.7}
 : ${tk_ver:=8.6.7}
@@ -146,13 +145,13 @@
 : ${gc_ver:=7.6.0}
 : ${guile_ver:=2.2.3}
 : ${lua_ver:=5.3.4}
-: ${nasm_ver:=2.13.02}
+: ${nasm_ver:=2.13.03}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
 : ${x265_ver:=2.0}
 : ${libav_ver:=11.9}
-: ${opencv_ver:=3.3.1}
-: ${opencv_contrib_ver:=3.3.1}
+: ${opencv_ver:=3.4.1}
+: ${opencv_contrib_ver:=3.4.1}
 : ${googletest_ver:=1.8.0}
 : ${fzf_ver:=0.17.3}
 : ${jq_ver:=1.5}
@@ -781,7 +780,7 @@ fetch()
 	sqlite-autoconf)
 		check_archive ${sqlite_autoconf_org_src_dir} ||
 			wget --no-check-certificate -O ${sqlite_autoconf_org_src_dir}.tar.gz \
-				https://www.sqlite.org/2017/${sqlite_autoconf_name}.tar.gz || return;;
+				https://www.sqlite.org/2018/${sqlite_autoconf_name}.tar.gz || return;;
 	apr|apr-util)
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget -O \${${_1}_org_src_dir}.tar.bz2 \
@@ -847,8 +846,8 @@ fetch()
 				http://www.lua.org/ftp/${lua_name}.tar.gz || return;;
 	nasm)
 		check_archive ${nasm_org_src_dir} ||
-			wget -O ${nasm_org_src_dir}.tar.xz \
-				http://www.nasm.us/pub/nasm/releasebuilds/${nasm_ver}/${nasm_name}.tar.xz || return;;
+			wget --no-check-certificate -O ${nasm_org_src_dir}.tar.xz \
+				https://www.nasm.us/pub/nasm/releasebuilds/${nasm_ver}/${nasm_name}.tar.xz || return;;
 	yasm)
 		check_archive ${yasm_org_src_dir} ||
 			wget -O ${yasm_org_src_dir}.tar.gz \
@@ -4161,7 +4160,7 @@ install_native_ruby()
 	[ -z "${strip}" ] && return
 	strip -v ${prefix}/bin/ruby || return
 	strip -v ${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_org_src_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/libruby.so || return
-	find ${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_org_src_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/ruby/${ruby_ver} -type f -name '*.so' -exec strip -v {} + || return
+	find ${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_org_src_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/ruby/`echo ${ruby_ver} | cut -d. -f-2`.0 -type f -name '*.so' -exec strip -v {} + || return
 }
 
 install_native_go()
