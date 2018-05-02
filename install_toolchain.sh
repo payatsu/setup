@@ -134,7 +134,7 @@
 : ${cling_ver:=git}
 : ${boost_ver:=1_67_0}
 : ${Python_ver:=3.6.5}
-: ${Python2_ver:=2.7.14} # internal use only.
+: ${Python2_ver:=2.7.15} # internal use only.
 : ${ruby_ver:=2.5.1}
 : ${go_ver:=1.10.1}
 : ${perl_ver:=5.26.1}
