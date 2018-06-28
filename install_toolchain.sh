@@ -133,7 +133,7 @@
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
 : ${boost_ver:=1_67_0}
-: ${Python_ver:=3.6.5}
+: ${Python_ver:=3.7.0}
 : ${Python2_ver:=2.7.15} # internal use only.
 : ${ruby_ver:=2.5.1}
 : ${go_ver:=1.10.3}
