@@ -30,19 +30,19 @@
 : ${wget_ver:=1.19.5}
 : ${pkg_config_ver:=0.29.2}
 : ${texinfo_ver:=6.5}
-: ${coreutils_ver:=8.29}
+: ${coreutils_ver:=8.30}
 : ${busybox_ver:=1.28.4}
 : ${bison_ver:=3.0.5}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
-: ${automake_ver:=1.16}
-: ${autogen_ver:=5.18.12}
+: ${automake_ver:=1.16.1}
+: ${autogen_ver:=5.18.14}
 : ${libtool_ver:=2.4.6}
 : ${sed_ver:=4.5}
 : ${gawk_ver:=4.2.1}
 : ${make_ver:=4.2}
-: ${binutils_ver:=2.30}
+: ${binutils_ver:=2.31.1}
 : ${elfutils_ver:=0.172}
 : ${ed_ver:=1.14.2}
 : ${bc_ver:=1.07.1}
@@ -143,7 +143,7 @@
 : ${libunistring_ver:=0.9.10}
 : ${libatomic_ops_ver:=7.6.4}
 : ${gc_ver:=7.6.6}
-: ${guile_ver:=2.2.3}
+: ${guile_ver:=2.2.4}
 : ${lua_ver:=5.3.4}
 : ${nasm_ver:=2.13.03}
 : ${yasm_ver:=1.3.0}
@@ -1688,7 +1688,8 @@ install_native_autogen()
 	unpack ${autogen_org_src_dir} || return
 	[ -f ${autogen_org_src_dir}/Makefile ] ||
 		(cd ${autogen_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			CFLAGS="${CFLAGS} -Wno-error=implicit-fallthrough=") || return
 	make -C ${autogen_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${autogen_org_src_dir} -j ${jobs} -k check || return
