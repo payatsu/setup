@@ -157,6 +157,12 @@
 : ${jq_ver:=1.5}
 : ${libpcap_ver:=1.8.1}
 : ${tcpdump_ver:=4.9.2}
+: ${npth_ver:=1.6}
+: ${libgpg_error_ver:=1.32}
+: ${libgcrypt_ver:=1.8.3}
+: ${libksba_ver:=1.3.5}
+: ${libassuan_ver:=2.5.1}
+: ${gnupg_ver:=2.2.9}
 
 # TODO X11周りのインストールは未着手。
 : ${xtrans_ver:=1.3.5}
@@ -515,6 +521,18 @@ help()
 		Specify the version of libpcap you want, currently '${libpcap_ver}'.
 	tcpdump_ver
 		Specify the version of tcpdump you want, currently '${tcpdump_ver}'.
+	npth_ver
+		Specify the version of nPth you want, currently '${npth_ver}'.
+	libgpg_error_ver
+		Specify the version of libgpg-error you want, currently '${libgpg_error_ver}'.
+	libgcrypt_ver
+		Specify the version of libgcrypt you want, currently '${libgcrypt_ver}'.
+	libksba_ver
+		Specify the version of libksba you want, currently '${libksba_ver}'.
+	libassuan_ver
+		Specify the version of libassuan you want, currently '${libassuan_ver}'.
+	gnupg_ver
+		Specify the version of GnuPG you want, currently '${gnupg_ver}'.
 	glib_ver
 		Specify the version of GLib you want, currently '${glib_ver}'.
 
@@ -884,6 +902,10 @@ fetch()
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget -O \${${_1}_org_src_dir}.tar.gz \
 				http://www.tcpdump.org/release/\${${_1}_name}.tar.gz || return;;
+	npth|libgpg-error|libgcrypt|libksba|libassuan|gnupg)
+		eval check_archive \${${_1}_org_src_dir} ||
+			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.bz2 \
+				https://www.gnupg.org/ftp/gcrypt/${1}/\${${_1}_name}.tar.bz2 || return;;
 	pkg-config)
 		check_archive ${pkg_config_org_src_dir} ||
 			wget --no-check-certificate -O ${pkg_config_org_src_dir}.tar.gz \
@@ -1193,6 +1215,7 @@ set_variables()
 			s//\1/
 			s/pkg_config/pkg-config/
 			s/u_boot/u-boot/
+			s/mingw_w64/mingw-w64/
 			s/vimdoc_ja/vimdoc-ja/
 			s/util_linux/util-linux/
 			s/git_manpages/git-manpages/
@@ -1200,7 +1223,7 @@ set_variables()
 			s/apr_util/apr-util/
 			s/compiler_rt/compiler-rt/
 			s/clang_tools_extra/clang-tools-extra/
-			s/mingw_w64/mingw-w64/
+			s/libgpg_error/libgpg-error/
 			s/xcb_proto/xcb-proto/
 			s/gdk_pixbuf/gdk-pixbuf/
 			s/gobject_introspection/gobject-introspection/
