@@ -4615,6 +4615,103 @@ install_native_tcpdump()
 	make -C ${tcpdump_org_src_dir} -j ${jobs} install || return
 }
 
+install_native_npth()
+{
+	[ -f ${prefix}/include/npth.h -a "${force_install}" != yes ] && return
+	fetch npth || return
+	unpack ${npth_org_src_dir} || return
+	[ -f ${npth_org_src_dir}/Makefile ] ||
+		(cd ${npth_org_src_dir}
+		./configure --prefix=${prefix}) || return
+	make -C ${npth_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${npth_org_src_dir} -j ${jobs} -k check || return
+	make -C ${npth_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_libgpg_error()
+{
+	[ -f ${prefix}/include/gpg-error.h -a "${force_install}" != yes ] && return
+	fetch libgpg-error || return
+	unpack ${libgpg_error_org_src_dir} || return
+	[ -f ${libgpg_error_org_src_dir}/Makefile ] ||
+		(cd ${libgpg_error_org_src_dir}
+		./configure --prefix=${prefix}) || return
+	make -C ${libgpg_error_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libgpg_error_org_src_dir} -j ${jobs} -k check || return
+	make -C ${libgpg_error_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_libgcrypt()
+{
+	[ -f ${prefix}/include/gcrypt.h -a "${force_install}" != yes ] && return
+	search_header gpg-error.h > /dev/null || install_native_libgpg_error || return
+	fetch libgcrypt || return
+	unpack ${libgcrypt_org_src_dir} || return
+	[ -f ${libgcrypt_org_src_dir}/Makefile ] ||
+		(cd ${libgcrypt_org_src_dir}
+		./configure --prefix=${prefix}) || return
+	make -C ${libgcrypt_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libgcrypt_org_src_dir} -j ${jobs} -k check || return
+	make -C ${libgcrypt_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_libksba()
+{
+	[ -f ${prefix}/include/ksba.h -a "${force_install}" != yes ] && return
+	search_header gpg-error.h > /dev/null || install_native_libgpg_error || return
+	fetch libksba || return
+	unpack ${libksba_org_src_dir} || return
+	[ -f ${libksba_org_src_dir}/Makefile ] ||
+		(cd ${libksba_org_src_dir}
+		./configure --prefix=${prefix}) || return
+	make -C ${libksba_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libksba_org_src_dir} -j ${jobs} -k check || return
+	make -C ${libksba_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_libassuan()
+{
+	[ -f ${prefix}/include/assuan.h -a "${force_install}" != yes ] && return
+	search_header gpg-error.h > /dev/null || install_native_libgpg_error || return
+	fetch libassuan || return
+	unpack ${libassuan_org_src_dir} || return
+	[ -f ${libassuan_org_src_dir}/Makefile ] ||
+		(cd ${libassuan_org_src_dir}
+		./configure --prefix=${prefix}) || return
+	make -C ${libassuan_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libassuan_org_src_dir} -j ${jobs} -k check || return
+	make -C ${libassuan_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_gnupg()
+{
+	[ -x ${prefix}/bin/gpg -a "${force_install}" != yes ] && return
+	search_header npth.h > /dev/null || install_native_npth || return
+	search_header gpg-error.h > /dev/null || install_native_libgpg_error || return
+	search_header gcrypt.h > /dev/null || install_native_libgcrypt || return
+	search_header ksba.h > /dev/null || install_native_libksba || return
+	search_header assuan.h > /dev/null || install_native_libassuan || return
+	search_header zlib.h > /dev/null || install_native_zlib || return
+	search_header bzlib.h > /dev/null || install_native_bzip2 || return
+	search_header curses.h > /dev/null || install_native_ncurses || return
+	search_header readline.h readline > /dev/null || install_native_readline || return
+	search_header sqlite3.h > /dev/null || install_native_sqlite || return
+	fetch gnupg || return
+	unpack ${gnupg_org_src_dir} || return
+	[ -f ${gnupg_org_src_dir}/Makefile ] ||
+		(cd ${gnupg_org_src_dir}
+		./configure --prefix=${prefix} --enable-symcryptrun --enable-all-tests) || return
+	make -C ${gnupg_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${gnupg_org_src_dir} -j ${jobs} -k check || return
+	make -C ${gnupg_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
 install_crossed_binutils()
 {
 	[ \( `check_platform ${build} ${host} ${target}` = crossed  -a -x ${sysroot}/usr/bin/as${exe} -o \
