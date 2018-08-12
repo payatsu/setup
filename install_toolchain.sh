@@ -76,7 +76,7 @@
 : ${libffi_ver:=3.2.1}
 : ${emacs_ver:=26.1}
 : ${libiconv_ver:=1.15}
-: ${vim_ver:=8.1.0053}
+: ${vim_ver:=8.1.0276}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.1}
@@ -2894,7 +2894,7 @@ install_native_vim()
 		--enable-python3interp=dynamic \
 		--enable-tclinterp=dynamic --with-tclsh=tclsh \
 		--enable-rubyinterp=dynamic \
-		--enable-cscope --enable-terminal --enable-multibyte \
+		--enable-cscope --enable-terminal --enable-autoservername --enable-multibyte \
 		--enable-xim --enable-fontset --enable-gui=gnome2 \
 	) || return
 	make -C ${vim_org_src_dir} -j ${jobs} || return
