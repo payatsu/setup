@@ -58,7 +58,7 @@
 : ${mpfr_ver:=4.0.1}
 : ${mpc_ver:=1.1.0}
 : ${isl_ver:=0.19}
-: ${gcc_ver:=8.1.0}
+: ${gcc_ver:=8.2.0}
 : ${readline_ver:=7.0}
 : ${ncurses_ver:=6.1}
 : ${gdb_ver:=8.1}
