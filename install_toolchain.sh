@@ -2897,6 +2897,26 @@ install_native_vim()
 		--enable-cscope --enable-terminal --enable-autoservername --enable-multibyte \
 		--enable-xim --enable-fontset --enable-gui=gnome2 \
 	) || return
+	patch -N -p0 -d ${vim_org_src_dir} <<'EOF' || [ $? = 1 ] || return
+--- src/Makefile
++++ src/Makefile
+@@ -1446,6 +1446,7 @@
+ .SUFFIXES: .c .o .pro
+ 
+ PRE_DEFS = -Iproto $(DEFS) $(GUI_DEFS) $(GUI_IPATH) $(CPPFLAGS) $(EXTRA_IPATHS)
++PRE_DEFS := $(sort $(PRE_DEFS))
+ POST_DEFS = $(X_CFLAGS) $(MZSCHEME_CFLAGS) $(EXTRA_DEFS)
+ 
+ ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(SANITIZER_CFLAGS) $(LEAK_CFLAGS) $(ABORT_CLFAGS) $(POST_DEFS)
+@@ -1482,6 +1483,7 @@
+ 	   $(PROFILE_LIBS) \
+ 	   $(SANITIZER_LIBS) \
+ 	   $(LEAK_LIBS)
++ALL_LIBS := $(sort $(filter-out $(LDFLAGS) $(ALL_LIB_DIRS),$(ALL_LIBS)))
+ 
+ # abbreviations
+ DEST_BIN = $(DESTDIR)$(BINDIR)
+EOF
 	make -C ${vim_org_src_dir} -j ${jobs} || return
 	make -C ${vim_org_src_dir} -j ${jobs} install || return
 	fetch vimdoc-ja || return
