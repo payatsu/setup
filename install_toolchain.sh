@@ -1750,7 +1750,7 @@ install_native_autogen()
 	make -C ${autogen_org_src_dir} -j ${jobs} install || return
 	[ -z "${strip}" ] && return
 	for b in autogen columns getdefs xml2ag; do
-		strip -v ${prefix}/bin/${b} || return
+		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 }
 
@@ -1912,7 +1912,7 @@ install_native_dtc()
 	fetch dtc || return
 	unpack ${dtc_org_src_dir} || return
 	make -C ${dtc_org_src_dir} -j ${jobs} V=1 || return
-	make -C ${dtc_org_src_dir} -j ${jobs} V=1 PREFIX=${prefix} install || return
+	make -C ${dtc_org_src_dir} -j ${jobs} V=1 PREFIX=${DESTDIR}${prefix} install || return
 }
 
 install_native_u_boot()
@@ -1924,8 +1924,8 @@ install_native_u_boot()
 	[ -f ${u_boot_org_src_dir}/.config ] ||
 		make -C ${u_boot_org_src_dir} -j ${jobs} V=1 sandbox_defconfig || return
 	make -C ${u_boot_org_src_dir} -j ${jobs} V=1 NO_SDL=1 tools || return
-	mkdir -pv ${prefix}/bin || return
-	find ${u_boot_org_src_dir}/tools -maxdepth 1 -type f -perm /100 -exec install -vt ${prefix}/bin {} + || return
+	mkdir -pv ${DESTDIR}${prefix}/bin || return
+	find ${u_boot_org_src_dir}/tools -maxdepth 1 -type f -perm /100 -exec install -vt ${DESTDIR}${prefix}/bin {} + || return
 }
 
 install_native_qemu()
@@ -1955,7 +1955,7 @@ install_native_gperf()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gperf_org_src_dir} -j ${jobs} -k check || return
 	make -C ${gperf_org_src_dir} -j ${jobs} install || return
-	[ -z "${strip}" ] || strip -v ${prefix}/bin/gperf || return
+	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/gperf || return
 }
 
 install_native_glibc()
@@ -2163,10 +2163,10 @@ EOF
 	update_library_search_path || return
 	[ -z "${strip}" ] && return
 	for b in clear infocmp tabs tic toe tput tset; do
-		strip -v ${prefix}/bin/${b} || return
+		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 	for l in libform libmenu libncurses++ libncurses libpanel libformtw libmenutw libncurses++tw libncursestw libpaneltw; do
-		strip -v ${prefix}/lib/${l}.so || return
+		strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
 	done
 }
 
@@ -2199,7 +2199,7 @@ install_native_lcov()
 	[ -x ${prefix}/bin/lcov -a "${force_install}" != yes ] && return
 	fetch lcov || return
 	unpack ${lcov_org_src_dir} || return
-	make -C ${lcov_org_src_dir} -j ${jobs} PREFIX=${prefix} install || return
+	make -C ${lcov_org_src_dir} -j ${jobs} PREFIX=${DESTDIR}${prefix} install || return
 }
 
 install_native_strace()
@@ -3261,7 +3261,7 @@ install_native_tmux()
 	[ "${enable_check}" != yes ] ||
 		make -C ${tmux_org_src_dir} -j ${jobs} -k check || return
 	make -C ${tmux_org_src_dir} -j ${jobs} install || return
-	[ -z "${strip}" ] || strip -v ${prefix}/bin/tmux || return
+	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/tmux || return
 }
 
 install_native_expect()
@@ -3278,7 +3278,7 @@ install_native_expect()
 	[ "${enable_check}" != yes ] ||
 		make -C ${expect_org_src_dir} -j ${jobs} -k check || return
 	make -C ${expect_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
-	ln -fsv ./${expect_name}/lib${expect_name}.so ${DESTDIR}${prefix}/lib || return
+	ln -fsv ${expect_name}/lib${expect_name}.so ${DESTDIR}${prefix}/lib || return
 }
 
 install_native_dejagnu()
@@ -3653,7 +3653,7 @@ install_native_subversion()
 	update_pkg_config_path || return
 	[ -z "${strip}" ] && return
 	for b in svn svnadmin svnbench svndumpfilter svnfsfs svnlook svnmucc svnrdump svnserve svnsync svnversion; do
-		strip -v ${prefix}/bin/${b} || return
+		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 }
 
