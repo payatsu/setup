@@ -4209,13 +4209,13 @@ install_native_python()
 	update_pkg_config_path || return
 	[ -z "${strip}" ] && return
 	for v in `echo ${Python_ver} | cut -d. -f-2` `echo ${Python_ver} | cut -d. -f-2`m; do
-		[ ! -f ${prefix}/bin/python${v} ] || strip -v ${prefix}/bin/python${v} || return
+		[ ! -f ${DESTDIR}${prefix}/bin/python${v} ] || strip -v ${DESTDIR}${prefix}/bin/python${v} || return
 	done
 	for soname_v in `echo ${Python_ver} | cut -d. -f1`.so `echo ${Python_ver} | cut -d. -f-2`.so.1.0 `echo ${Python_ver} | cut -d. -f-2`m.so.1.0; do
-		[ ! -f ${prefix}/lib/libpython${soname_v} ] ||
-			(chmod -v u+w ${prefix}/lib/libpython${soname_v} || return
-			strip -v ${prefix}/lib/libpython${soname_v} || return
-			chmod -v u-w ${prefix}/lib/libpython${soname_v} || return) || return
+		[ ! -f ${DESTDIR}${prefix}/lib/libpython${soname_v} ] ||
+			(chmod -v u+w ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
+			strip -v ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
+			chmod -v u-w ${DESTDIR}${prefix}/lib/libpython${soname_v} || return) || return
 	done
 }
 
