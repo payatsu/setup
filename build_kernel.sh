@@ -4,7 +4,7 @@ help()
 {
 	cat <<EOF
 [NAME]
-	`basename ${0} - build kernel`
+	`basename ${0}` - build kernel
 [SYNOPSIS]
 	`basename ${0}` [-c] [-d] [-g] [-h] [-k] [-m] [-M] [-p] [-s] [-t] [-v]
 [OPTIONS]
@@ -35,7 +35,7 @@ EOF
 
 init()
 {
-	: ${linux_ver:=4.16.3}
+	: ${linux_ver:=4.18.5}
 	: ${jobs:=`grep -ce '^processor\>' /proc/cpuinfo`}
 	: ${ARCH:=arm}
 	: ${CROSS_COMPILE:=arm-none-linux-gnueabi-}
