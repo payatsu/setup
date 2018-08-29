@@ -41,7 +41,7 @@ init()
 	: ${CROSS_COMPILE:=arm-none-linux-gnueabi-}
 	: ${INSTALL_HDR_PATH:=./usr}
 	: ${INSTALL_MOD_PATH:=/}
-	: ${prefix:=`pwd`}
+	: ${prefix:=`pwd`/`basename ${CROSS_COMPILE} -`}
 	make_opts="-j ${jobs} V=1 W=1 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} INSTALL_HDR_PATH=${INSTALL_HDR_PATH} INSTALL_MOD_PATH=${INSTALL_MOD_PATH}"
 }
 
