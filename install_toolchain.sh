@@ -2087,7 +2087,9 @@ install_native_gcc()
 	ln -fsv gcc ${DESTDIR}${prefix}/bin/cc || return
 	[ ! -f ${DESTDIR}${prefix}/bin/${build}-gcc-tmp ] || rm -v ${DESTDIR}${prefix}/bin/${build}-gcc-tmp || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
-		[ ! -f ${DESTDIR}${prefix}/bin/${b}-${gcc_ver} ] || ln -fsv ${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${b} || return
+		[ -f ${DESTDIR}${prefix}/bin/${b}-${gcc_ver} ] || continue
+		ln -fsv ${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${b} || return
+		ln -fsv ${build}-${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${build}-${b} || return
 	done
 	 [ -f ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_ver}/libgcc_s.so ] || ln -fsv ../lib64/libgcc_s.so ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_ver} || return # XXX work around for --enable-version-specific-runtime-libs
 }
