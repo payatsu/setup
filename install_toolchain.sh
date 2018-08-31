@@ -33,7 +33,7 @@
 : ${texinfo_ver:=6.5}
 : ${coreutils_ver:=8.30}
 : ${busybox_ver:=1.28.4}
-: ${bison_ver:=3.0.5}
+: ${bison_ver:=3.1}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
@@ -44,7 +44,7 @@
 : ${gawk_ver:=4.2.1}
 : ${make_ver:=4.2}
 : ${binutils_ver:=2.31.1}
-: ${elfutils_ver:=0.172}
+: ${elfutils_ver:=0.173}
 : ${ed_ver:=1.14.2}
 : ${bc_ver:=1.07.1}
 : ${linux_ver:=3.18.13}
@@ -58,7 +58,7 @@
 : ${gmp_ver:=6.1.2}
 : ${mpfr_ver:=4.0.1}
 : ${mpc_ver:=1.1.0}
-: ${isl_ver:=0.19}
+: ${isl_ver:=0.20}
 : ${gcc_ver:=8.2.0}
 : ${readline_ver:=7.0}
 : ${ncurses_ver:=6.1}
@@ -133,7 +133,7 @@
 : ${lld_ver:=${llvm_ver}}
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
-: ${boost_ver:=1_67_0}
+: ${boost_ver:=1_68_0}
 : ${Python_ver:=3.7.0}
 : ${Python2_ver:=2.7.15} # internal use only.
 : ${ruby_ver:=2.5.1}
