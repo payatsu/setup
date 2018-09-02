@@ -38,7 +38,7 @@
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
 : ${automake_ver:=1.16.1}
-: ${autogen_ver:=5.18.14}
+: ${autogen_ver:=5.18.16}
 : ${libtool_ver:=2.4.6}
 : ${sed_ver:=4.5}
 : ${gawk_ver:=4.2.1}
