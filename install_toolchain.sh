@@ -2089,6 +2089,7 @@ install_native_gcc()
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
 		[ -f ${DESTDIR}${prefix}/bin/${b}-${gcc_ver} ] || continue
 		ln -fsv ${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${b} || return
+		ln -fsv ${b}-${gcc_ver}.1 ${DESTDIR}${prefix}/share/man/man1/${b}.1 || return
 		ln -fsv ${build}-${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${build}-${b} || return
 	done
 	 [ -f ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_ver}/libgcc_s.so ] || ln -fsv ../lib64/libgcc_s.so ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_ver} || return # XXX work around for --enable-version-specific-runtime-libs
@@ -4142,7 +4143,9 @@ install_cross_functional_gcc()
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k install${strip:+-${strip}} ${strip:+STRIP=${target}-strip} || true # [XXX] install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
 	generate_shell_run_command ${set_path_sh} && . ${set_path_sh} || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool; do
-		[ ! -f ${DESTDIR}${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${target}-${b} || return
+		[ -f ${DESTDIR}${prefix}/bin/${target}-${b}-${gcc_ver} ] || continue
+		ln -fsv ${target}-${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${target}-${b} || return
+		ln -fsv ${target}-${b}-${gcc_ver}.1 ${DESTDIR}${prefix}/share/man/man1/${target}-${b}.1 || return
 	done
 	! echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' ||
 		ln -fsv ../lib/libgcc_s.a ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_ver} || return # XXX work around for --enable-version-specific-runtime-libs
