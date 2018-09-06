@@ -62,7 +62,7 @@
 : ${gcc_ver:=8.2.0}
 : ${readline_ver:=7.0}
 : ${ncurses_ver:=6.1}
-: ${gdb_ver:=8.1.1}
+: ${gdb_ver:=8.2}
 : ${lcov_ver:=1.13}
 : ${strace_ver:=4.21}
 : ${ltrace_ver:=0.7.3}
