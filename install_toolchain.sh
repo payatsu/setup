@@ -1304,6 +1304,11 @@ archive_sources()
 	tar cJvf ${src}.tar.xz -C `dirname ${src}` `basename ${src}`
 }
 
+list_duplication()
+{
+	find ${src} -mindepth 2 -maxdepth 2 \( -name '*.tar.gz' -o -name '*.tar.bz2' -o -name '*.tar.xz' -o -name '*.tar.lz' -o -name '*.zip' \) -exec dirname {} \; | sort | uniq -d | xargs -I @ find @ -mindepth 1 -maxdepth 1 -type f
+}
+
 list_major_commands()
 {
 	echo '[Available commands]'
