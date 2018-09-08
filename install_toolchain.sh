@@ -969,8 +969,8 @@ unpack()
 	case ${1} in
 	'')
 		clean || return
-		for f in `find ${src} -name '*.tar.gz' -o -name '*.tar.bz2' -o -name '*.tar.xz' -o -name '*.zip'`; do
-			unpack `echo $f | sed -e 's/\.tar\.gz$//;s/\.tar\.bz2$//;s/\.tar\.xz$//;s/\.zip$//'` `dirname $f`
+		for f in `find ${src} -name '*.tar.gz' -o -name '*.tar.bz2' -o -name '*.tar.xz' -o -name '*.tar.lz' -o -name '*.zip'`; do
+			unpack `echo $f | sed -e 's/\.tar\.gz$//;s/\.tar\.bz2$//;s/\.tar\.xz$//;s/\.tar\.lz$//;s/\.zip$//'` `dirname $f`
 		done;;
 	*)
 		[ -z "${2}" -a -d ${1} -o -d ${2}/`basename ${1}` ] && return
@@ -1080,7 +1080,7 @@ clean()
 	[ "${enable_ccache}" != yes ] || ccache -C > /dev/null || return
 	[ ! -d ${src} ] && return
 	find ${src} -mindepth 2 -maxdepth 2 \
-		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.zip' ! -name '*-git' -exec rm -fvr {} +
+		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.tar.lz' ! -name '*.zip' ! -name '*-git' -exec rm -fvr {} +
 	find ${src} -mindepth 2 -maxdepth 2 \
 		-name '*-git' | xargs -I \{\} find \{\} -type d -name .git -execdir git clean -dfx \; -execdir git checkout -- . \;
 }
@@ -1292,6 +1292,7 @@ convert_archives()
 {
 	find ${src} -mindepth 2 -maxdepth 2 -name '*.tar.gz'  -exec sh -c 'xzfile=`echo {} | sed -e "s/\\.gz\$/.xz/"`;  [ -f ${xzfile} ] && exit 0; echo converting {} into ${xzfile} ...; gzip  -cd {} | xz -T '${jobs}' -cv > ${xzfile}' \; -delete || return
 	find ${src} -mindepth 2 -maxdepth 2 -name '*.tar.bz2' -exec sh -c 'xzfile=`echo {} | sed -e "s/\\.bz2\$/.xz/"`; [ -f ${xzfile} ] && exit 0; echo converting {} into ${xzfile} ...; bzip2 -cd {} | xz -T '${jobs}' -cv > ${xzfile}' \; -delete || return
+	find ${src} -mindepth 2 -maxdepth 2 -name '*.tar.lz'  -exec sh -c 'xzfile=`echo {} | sed -e "s/\\.lz\$/.xz/"`;  [ -f ${xzfile} ] && exit 0; echo converting {} into ${xzfile} ...; lzip  -cd {} | xz -T '${jobs}' -cv > ${xzfile}' \; -delete || return
 	find ${src} -mindepth 2 -maxdepth 2 -name '*.zip'  -execdir sh -c '[ -f `basename {} .zip`.tar.xz ] && exit 0; unzip {} && tar cJvf `basename {} .zip`.tar.xz `basename {} .zip`' \; -delete || return
 }
 
