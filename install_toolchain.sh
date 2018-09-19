@@ -2193,7 +2193,8 @@ install_native_gdb()
 		(cd ${gdb_bld_dir_ntv}
 		CFLAGS="${CFLAGS} -I`get_include_path zlib.h` -I`get_include_path curses.h ncurses`" \
 			${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} \
-			--enable-targets=all --enable-64-bit-bfd --enable-tui --without-guile --with-python=python3 \
+			--enable-targets=all --enable-64-bit-bfd --enable-tui \
+			--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${native} --without-guile --with-python=python3 \
 			--with-system-zlib --with-system-readline \
 			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so` -L`get_library_path libncurses.so`") || return # XXX gdb/configure にCFLAGSが伝播しないことへの work around として、CFLAGSだけ環境変数として設定する。
 	make -C ${gdb_bld_dir_ntv} -j ${jobs} || return
@@ -4188,7 +4189,8 @@ install_cross_gdb()
 		(cd ${gdb_bld_dir_crs}
 		CFLAGS="${CFLAGS} -I`get_include_path zlib.h` -I`get_include_path curses.h ncurses`" \
 			${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
-			--enable-targets=all --enable-64-bit-bfd --enable-tui --without-guile --with-python=python3 \
+			--enable-targets=all --enable-64-bit-bfd --enable-tui \
+			--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${target} --without-guile --with-python=python3 \
 			--with-system-zlib --with-system-readline --with-sysroot=${sysroot} \
 			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so` -L`get_library_path libncurses.so`") || return # XXX gdb/configure にCFLAGSが伝播しないことへの work around として、CFLAGSだけ環境変数として設定する。
 	make -C ${gdb_bld_dir_crs} -j ${jobs} || return
