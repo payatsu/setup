@@ -2183,7 +2183,7 @@ install_native_gdb()
 {
 	[ -x ${prefix}/bin/gdb -a "${force_install}" != yes ] && return
 	search_header readline.h readline > /dev/null || install_native_readline || return
-	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
+	search_header curses.h > /dev/null || install_native_ncurses || return
 	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m.so > /dev/null || install_native_python || return
 	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gdb || return
@@ -2191,7 +2191,7 @@ install_native_gdb()
 	mkdir -pv ${gdb_bld_dir_ntv} || return
 	[ -f ${gdb_bld_dir_ntv}/Makefile ] ||
 		(cd ${gdb_bld_dir_ntv}
-		CFLAGS="${CFLAGS} -I`get_include_path zlib.h` -I`get_include_path curses.h ncurses`" \
+		CFLAGS="${CFLAGS} -I`get_include_path zlib.h` -I`get_include_path curses.h`" \
 			${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--enable-targets=all --enable-64-bit-bfd --enable-tui \
 			--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${native} --without-guile --with-python=python3 \
@@ -2878,7 +2878,7 @@ install_native_glib()
 install_native_emacs()
 {
 	[ -x ${prefix}/bin/emacs -a "${force_install}" != yes ] && return
-	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
+	search_header curses.h > /dev/null || install_native_ncurses || return
 	search_header zlib.h > /dev/null || install_native_zlib || return
 	search_header png.h > /dev/null || install_native_libpng || return
 	search_header tiff.h > /dev/null || install_native_libtiff || return
@@ -2916,7 +2916,7 @@ install_native_libiconv()
 install_native_vim()
 {
 	[ -x ${prefix}/bin/vim -a "${force_install}" != yes ] && return
-	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
+	search_header curses.h > /dev/null || install_native_ncurses || return
 	which gettext > /dev/null || install_native_gettext || return
 	search_header lua.h > /dev/null || install_native_lua || return
 	search_library libperl.so > /dev/null || install_native_perl || return
@@ -3014,7 +3014,7 @@ install_native_grep()
 install_native_global()
 {
 	[ -x ${prefix}/bin/global -a "${force_install}" != yes ] && return
-	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
+	search_header curses.h > /dev/null || install_native_ncurses || return
 	fetch global || return
 	unpack ${global_org_src_dir} || return
 	[ -f ${global_org_src_dir}/Makefile ] ||
@@ -3227,7 +3227,7 @@ install_native_less()
 install_native_screen()
 {
 	[ -x ${prefix}/bin/screen -a "${force_install}" != yes ] && return
-	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
+	search_header curses.h > /dev/null || install_native_ncurses || return
 	fetch screen || return
 	unpack ${screen_org_src_dir} || return
 	[ -f ${screen_org_src_dir}/Makefile ] ||
@@ -3259,7 +3259,7 @@ install_native_libevent()
 install_native_tmux()
 {
 	[ -x ${prefix}/bin/tmux -a "${force_install}" != yes ] && return
-	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
+	search_header curses.h > /dev/null || install_native_ncurses || return
 	search_header event.h event2 > /dev/null || install_native_libevent || return
 	fetch tmux || return
 	unpack ${tmux_org_src_dir} || return
@@ -3309,7 +3309,7 @@ install_native_dejagnu()
 install_native_zsh()
 {
 	[ -x ${prefix}/bin/zsh -a "${force_install}" != yes ] && return
-	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
+	search_header curses.h > /dev/null || install_native_ncurses || return
 	fetch zsh || return
 	unpack ${zsh_org_src_dir} || return
 	[ -f ${zsh_org_src_dir}/Makefile ] ||
@@ -3692,7 +3692,7 @@ install_native_cmake()
 install_native_libedit()
 {
 	[ -f ${prefix}/include/histedit.h -a "${force_install}" != yes ] && return
-	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
+	search_header curses.h > /dev/null || install_native_ncurses || return
 	fetch libedit || return
 	unpack ${libedit_org_src_dir} || return
 	[ -f ${libedit_org_src_dir}/Makefile ] ||
@@ -4179,7 +4179,7 @@ install_cross_gdb()
 	[ -x ${prefix}/bin/${target}-gdb -a "${force_install}" != yes ] && return
 	[ `check_platform ${build} ${host} ${target}` = cross ] || return
 	search_header readline.h readline > /dev/null || install_native_readline || return
-	search_header curses.h ncurses > /dev/null || install_native_ncurses || return
+	search_header curses.h > /dev/null || install_native_ncurses || return
 	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m.so > /dev/null || install_native_python || return
 	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gdb || return
@@ -4187,7 +4187,7 @@ install_cross_gdb()
 	mkdir -pv ${gdb_bld_dir_crs} || return
 	[ -f ${gdb_bld_dir_crs}/Makefile ] ||
 		(cd ${gdb_bld_dir_crs}
-		CFLAGS="${CFLAGS} -I`get_include_path zlib.h` -I`get_include_path curses.h ncurses`" \
+		CFLAGS="${CFLAGS} -I`get_include_path zlib.h` -I`get_include_path curses.h`" \
 			${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--enable-targets=all --enable-64-bit-bfd --enable-tui \
 			--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${target} --without-guile --with-python=python3 \
