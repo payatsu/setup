@@ -826,7 +826,7 @@ fetch()
 	llvm|libcxx|libcxxabi|compiler-rt|cfe|clang-tools-extra|lld|lldb)
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget -O \${${_1}_org_src_dir}.tar.xz \
-				http://llvm.org/releases/${llvm_ver}/\${${_1}_name}.tar.xz || return;;
+				http://llvm.org/releases/\${${_1}_ver}/\${${_1}_name}.tar.xz || return;;
 	cling)
 		[ -d ${cling_org_src_dir} ] ||
 			git clone --depth 1 http://root.cern.ch/git/llvm.git ${cling_org_src_dir} -b cling-patches || return
