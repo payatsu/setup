@@ -1102,7 +1102,7 @@ deb()
 	for pkg in $@; do
 		${pkg} || return
 	done
-	generate_shell_run_command ${DESTDIR}/${set_path_sh}
+	generate_shell_run_command ${DESTDIR}${set_path_sh}
 	unset DESTDIR
 	mkdir -pv ${deb_prefix}/DEBIAN || return
 	cat <<EOF > ${deb_prefix}/DEBIAN/control || return
@@ -1423,7 +1423,7 @@ search_header()
 		`LANG=C ${CC:-gcc} -x c -E -v /dev/null -o /dev/null 2>&1 |
 			sed -e '/^#include /,/^End of search list.$/p;d' | xargs realpath -eq`; do
 		[ -d ${dir}${2:+/${2}} ] || continue
-		candidates=`find ${dir}${2:+/${2}} -type f -name ${1}`
+		candidates=`find ${dir}${2:+/${2}} \( -type f -o -type l \) -name ${1} | sort`
 		[ -n "${candidates}" ] && echo "${candidates}" | head -n 1 && return
 	done
 	return 1
@@ -2174,8 +2174,11 @@ EOF
 	for b in clear infocmp tabs tic toe tput tset; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
-	for l in libform libmenu libncurses++ libncurses libpanel libformtw libmenutw libncurses++tw libncursestw libpaneltw; do
+	for l in libform libmenu libncurses++ libncurses libpanel libtinfo libformtw libmenutw libncurses++tw libncursestw libpaneltw libtinfotw; do
 		strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
+	done
+	for h in `find ${DESTDIR}${prefix}/include/ncurses -type f -name '*.h'`; do
+		ln -fsv `echo ${h} | sed -e "s%${DESTDIR}${prefix}/include/%%"` ${DESTDIR}${prefix}/include || return
 	done
 }
 
