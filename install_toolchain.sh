@@ -3698,7 +3698,7 @@ install_native_libedit()
 	[ -f ${libedit_org_src_dir}/Makefile ] ||
 		(cd ${libedit_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			--disable-silent-rules CFLAGS="${CFLAGS} -I`get_include_path curses.h` -I`get_include_path ncurses_dll.h ncurses`") || return
+			--disable-silent-rules CFLAGS="${CFLAGS} -I`get_include_path curses.h`") || return
 	make -C ${libedit_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libedit_org_src_dir} -j ${jobs} -k check || return
@@ -3745,8 +3745,7 @@ install_native_llvm()
 			[ -x ${prefix}/bin/clang ] || echo \
 				-DGCC_INSTALL_PREFIX=\`get_prefix iostream c++\`
 			[ -x ${prefix}/bin/lldb ] || echo \
-				-DCMAKE_C_FLAGS=\'${CFLAGS} -I\`get_include_path Version.h clang/Basic\`\' \
-				-DCMAKE_CXX_FLAGS=\'${CXXFLAGS} -I\`get_include_path curses.h\` -I\`get_include_path ncurses_dll.h ncurses\` -I\`get_include_path histedit.h\`\'
+				-DCMAKE_CXX_FLAGS=\'${CXXFLAGS} -I\`get_include_path curses.h\` -I\`get_include_path histedit.h\`\'
 			` ${llvm_org_src_dir}) || return
 	make -C ${llvm_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -3906,7 +3905,7 @@ install_native_lldb()
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 			-DLLVM_LINK_LLVM_DYLIB=ON \
 			-DCMAKE_C_FLAGS="${CFLAGS} -I`get_include_path Version.h clang/Basic`" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`get_include_path curses.h` -I`get_include_path ncurses_dll.h ncurses` -I`get_include_path histedit.h`" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`get_include_path curses.h` -I`get_include_path histedit.h`" \
 			${llvm_org_src_dir}) || return
 	make -C ${lldb_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
