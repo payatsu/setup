@@ -2173,6 +2173,9 @@ EOF
 	for h in `find ${DESTDIR}${prefix}/include/ncurses -type f -name '*.h'`; do
 		ln -fsv `echo ${h} | sed -e "s%${DESTDIR}${prefix}/include/%%"` ${DESTDIR}${prefix}/include || return
 	done
+	for ext in a la so; do
+		ln -fsv libncurses.${ext} ${DESTDIR}${prefix}/lib/libcurses.${ext} || return
+	done
 	[ -z "${strip}" ] && return
 	for b in clear infocmp tabs tic toe tput tset; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
