@@ -215,10 +215,10 @@
 : ${enable_ccache:=no}
 : ${enable_check:=no}
 : ${languages:=c,c++,go}
-: ${host:=`uname -m`-linux-gnu}
-: ${target:=`uname -m`-linux-gnu}
+: ${host:=`gcc -dumpmachine`}
+: ${target:=${host}}
 
-: ${build:=`uname -m`-linux-gnu}
+: ${build:=${host}}
 : ${strip:=strip}
 : ${cmake_build_type:=Release}
 
@@ -1418,7 +1418,7 @@ generate_shell_run_command()
 {
 	mkdir -pv `dirname ${1}`
 	func_name=`basename ${1} | tr . _ | tr -cd '[:alpha:]_'`
-	cat <<\EOF | sed -e '1,/^{$/{s%prefix_place_holder%'${prefix}'%;s%native_place_holder%'${build}'%;s%func_place_holder%'${func_name}'%}' > ${1} || return
+	cat <<\EOF | sed -e '1,/^{$/{s%prefix_place_holder%'${prefix}'%;s%native_place_holder%'${host}'%;s%func_place_holder%'${func_name}'%}' > ${1} || return
 prefix=prefix_place_holder
 native=native_place_holder
 func_place_holder()
@@ -1538,7 +1538,7 @@ install_native_tar()
 	[ -f ${tar_org_src_dir}/Makefile ] ||
 		(cd ${tar_org_src_dir}
 		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} \
-			--build=${build} --disable-silent-rules) || return
+			--build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${tar_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${tar_org_src_dir} -j ${jobs} -k check || return
@@ -1552,7 +1552,7 @@ install_native_cpio()
 	unpack ${cpio_org_src_dir} || return
 	[ -f ${cpio_org_src_dir}/Makefile ] ||
 		(cd ${cpio_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${cpio_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${cpio_org_src_dir} -j ${jobs} -k check || return
@@ -1566,7 +1566,7 @@ install_native_xz()
 	unpack ${xz_org_src_dir} || return
 	[ -f ${xz_org_src_dir}/Makefile ] ||
 		(cd ${xz_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${xz_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${xz_org_src_dir} -j ${jobs} -k check || return
@@ -1584,12 +1584,13 @@ install_native_bzip2()
 			s/$/ -fPIC/
 		}
 		s/ln -s -f \$(PREFIX)\/bin\//ln -s -f /' ${bzip2_org_src_dir}/Makefile || return
-	make -C ${bzip2_org_src_dir} -j ${jobs} || return
+	make -C ${bzip2_org_src_dir} -j ${jobs} \
+		CC=${host}-gcc AR=${host}-ar RANLIB=${host}-ranlib bzip2 bzip2recover || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${bzip2_org_src_dir} -j ${jobs} -k check || return
 	make -C ${bzip2_org_src_dir} -j ${jobs} PREFIX=${DESTDIR}${prefix} install || return
 	make -C ${bzip2_org_src_dir} -j ${jobs} clean || return
-	make -C ${bzip2_org_src_dir} -j ${jobs} -f Makefile-libbz2_so || return
+	make -C ${bzip2_org_src_dir} -j ${jobs} -f Makefile-libbz2_so CC=${host}-gcc || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${bzip2_org_src_dir} -j ${jobs} -k check || return
 	cp -fv ${bzip2_org_src_dir}/libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib || return
@@ -1601,7 +1602,7 @@ install_native_bzip2()
 	update_path || return
 	[ -z "${strip}" ] && return
 	for b in bunzip2 bzcat bzip2 bzip2recover; do
-		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		${host}-strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 }
 
@@ -1626,7 +1627,7 @@ install_native_lzip()
 	unpack ${lzip_org_src_dir} || return
 	[ -f ${lzip_org_src_dir}/Makefile ] ||
 		(cd ${lzip_org_src_dir}
-		./configure --prefix=${prefix}) || return
+		./configure --prefix=${prefix} CXX=${host}-g++) || return
 	make -C ${lzip_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${lzip_org_src_dir} -j ${jobs} -k check || return
@@ -1640,7 +1641,7 @@ install_native_lunzip()
 	unpack ${lunzip_org_src_dir} || return
 	[ -f ${lunzip_org_src_dir}/Makefile ] ||
 		(cd ${lunzip_org_src_dir}
-		./configure --prefix=${prefix}) || return
+		./configure --prefix=${prefix} CC=${host}-gcc) || return
 	make -C ${lunzip_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${lunzip_org_src_dir} -j ${jobs} -k check || return
@@ -1693,7 +1694,7 @@ install_native_wget()
 	[ -f ${wget_org_src_dir}/Makefile ] ||
 		(cd ${wget_org_src_dir}
 		OPENSSL_CFLAGS="-I${prefix}/include -L${prefix}/lib" OPENSSL_LIBS='-lssl -lcrypto' \
-			./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			--enable-threads --with-ssl=openssl) || return
 	make -C ${wget_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -1741,7 +1742,7 @@ install_native_coreutils()
 	[ -f ${coreutils_org_src_dir}/Makefile ] ||
 		(cd ${coreutils_org_src_dir}
 		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} \
-			--build=${build} --disable-silent-rules --enable-threads) || return
+			--build=${build} --host=${host} --disable-silent-rules --enable-threads) || return
 	make -C ${coreutils_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${coreutils_org_src_dir} -j ${jobs} -k check || return
@@ -1765,7 +1766,7 @@ install_native_bison()
 	unpack ${bison_org_src_dir} || return
 	[ -f ${bison_org_src_dir}/Makefile ] ||
 		(cd ${bison_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${bison_org_src_dir} -j ${jobs} || return
 	make -C ${bison_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
@@ -1873,7 +1874,7 @@ install_native_libtool()
 	unpack ${libtool_org_src_dir} || return
 	[ -f ${libtool_org_src_dir}/Makefile ] ||
 		(cd ${libtool_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libtool_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libtool_org_src_dir} -j ${jobs} -k check || return
@@ -1887,7 +1888,7 @@ install_native_sed()
 	unpack ${sed_org_src_dir} || return
 	[ -f ${sed_org_src_dir}/Makefile ] ||
 		(cd ${sed_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${sed_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${sed_org_src_dir} -j ${jobs} -k check || return
@@ -1920,7 +1921,7 @@ install_native_make()
 	unpack ${make_org_src_dir} || return
 	[ -f ${make_org_src_dir}/Makefile ] ||
 		(cd ${make_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${build} \
+		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			--with-guile) || return
 	make -C ${make_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -1938,7 +1939,7 @@ install_native_binutils()
 			mv -v ${binutils_org_src_dir} ${binutils_src_dir_ntv}) || return
 	[ -f ${binutils_src_dir_ntv}/Makefile ] ||
 		(cd ${binutils_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} \
+		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			--enable-shared --enable-gold --enable-threads --enable-plugins \
 			--enable-compressed-debug-sections=all --enable-targets=all --enable-64-bit-bfd \
 			--with-sysroot=/ --with-system-zlib \
@@ -1962,8 +1963,8 @@ install_native_elfutils()
 	unpack ${elfutils_org_src_dir} || return
 	[ -f ${elfutils_org_src_dir}/Makefile ] ||
 		(cd ${elfutils_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
-			CFLAGS="${CFLAGS} -I`get_include_path zlib.h`" LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+			CFLAGS="${CFLAGS} -I`get_include_path zlib.h`" LDFLAGS="${LDFLAGS} -L`get_library_path libz.so` -lbz2") || return
 	make -C ${elfutils_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${elfutils_org_src_dir} -j ${jobs} -k check || return
@@ -1994,7 +1995,7 @@ install_native_ed()
 	unpack ${ed_org_src_dir} || return
 	[ -f ${ed_org_src_dir}/Makefile ] ||
 		(cd ${ed_org_src_dir}
-		./configure --prefix=${prefix}) || return
+		./configure --prefix=${prefix} CC=${host}-gcc) || return
 	make -C ${ed_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${ed_org_src_dir} -j ${jobs} -k check || return
@@ -2023,12 +2024,12 @@ install_native_linux_header()
 		(unpack ${linux_org_src_dir} &&
 			mv -v ${linux_org_src_dir} ${linux_src_dir_ntv}) || return
 	make -C ${linux_src_dir_ntv} -j ${jobs} V=1 mrproper || return
-	case ${build} in
+	case ${host} in
 	arm*)        native_linux_arch=arm;;
 	i?86*)       native_linux_arch=x86;;
 	microblaze*) native_linux_arch=microblaze;;
 	x86_64*)     native_linux_arch=x86;;
-	*) echo Unknown build architecture: ${build} >&2; return 1;;
+	*) echo Unknown build architecture: ${host} >&2; return 1;;
 	esac
 	make -C ${linux_src_dir_ntv} -j ${jobs} V=1 \
 		ARCH=${native_linux_arch} INSTALL_HDR_PATH=${DESTDIR}${prefix} headers_install || return
@@ -2083,12 +2084,12 @@ install_native_gperf()
 	unpack ${gperf_org_src_dir} || return
 	[ -f ${gperf_org_src_dir}/Makefile ] ||
 		(cd ${gperf_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${gperf_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gperf_org_src_dir} -j ${jobs} -k check || return
 	make -C ${gperf_org_src_dir} -j ${jobs} install || return
-	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/gperf || return
+	[ -z "${strip}" ] || ${host}-strip -v ${DESTDIR}${prefix}/bin/gperf || return
 }
 
 install_native_glibc()
@@ -2127,7 +2128,7 @@ install_native_gmp()
 			mv -v ${gmp_org_src_dir} ${gmp_src_dir_ntv}) || return
 	[ -f ${gmp_src_dir_ntv}/Makefile ] ||
 		(cd ${gmp_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --enable-cxx) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --enable-cxx) || return
 	make -C ${gmp_src_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gmp_src_dir_ntv} -j ${jobs} -k check || return
@@ -2237,7 +2238,7 @@ install_native_readline()
 	unpack ${readline_org_src_dir} || return
 	[ -f ${readline_org_src_dir}/Makefile ] ||
 		(cd ${readline_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} \
+		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			--enable-multibyte --with-curses) || return
 	make -C ${readline_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -2285,7 +2286,7 @@ EOF
 
 	[ -f ${ncurses_org_src_dir}/Makefile ] ||
 		(cd ${ncurses_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} \
+		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			--with-libtool --with-shared --with-cxx-shared --with-termlib \
 			--enable-termcap --enable-colors) || return
 	make -C ${ncurses_org_src_dir} -j 1 || return # XXX work around for parallel make
@@ -2293,7 +2294,7 @@ EOF
 	make -C ${ncurses_org_src_dir} -j ${jobs} distclean || return
 	[ -f ${ncurses_org_src_dir}/Makefile ] ||
 		(cd ${ncurses_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} \
+		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			--with-libtool --with-shared --with-cxx-shared --with-termlib \
 			--enable-termcap --enable-widec --enable-colors --with-pthread --enable-reentrant) || return
 	make -C ${ncurses_org_src_dir} -j 1 || return # XXX work around for parallel make
@@ -2310,10 +2311,10 @@ EOF
 	done
 	[ -z "${strip}" ] && return
 	for b in clear infocmp tabs tic toe tput tset; do
-		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		${host}-strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 	for l in libform libmenu libncurses++ libpanel libtinfo libformtw libmenutw libncurses++tw libncursestw libpaneltw libtinfotw; do
-		strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
+		${host}-strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
 	done
 }
 
@@ -2422,7 +2423,7 @@ install_native_zlib()
 		(unpack ${zlib_org_src_dir} &&
 			mv -v ${zlib_org_src_dir} ${zlib_src_dir_ntv}) || return
 	(cd ${zlib_src_dir_ntv}
-	./configure --prefix=${prefix}) || return
+	eval `[ ${build} != ${host} ] && echo CHOST=${host}` ./configure --prefix=${prefix}) || return
 	make -C ${zlib_src_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${zlib_src_dir_ntv} -j ${jobs} -k check || return
@@ -2545,7 +2546,7 @@ install_native_libffi()
 	unpack ${libffi_org_src_dir} || return
 	[ -f ${libffi_org_src_dir}/Makefile ] ||
 		(cd ${libffi_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${libffi_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libffi_org_src_dir} -j ${jobs} -k check || return
@@ -3063,7 +3064,7 @@ install_native_libiconv()
 	unpack ${libiconv_org_src_dir} || return
 	[ -f ${libiconv_org_src_dir}/Makefile ] ||
 		(cd ${libiconv_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --enable-static) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --enable-static) || return
 	make -C ${libiconv_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libiconv_org_src_dir} -j ${jobs} -k check || return
@@ -3196,7 +3197,7 @@ install_native_pcre()
 	unpack ${pcre_org_src_dir} || return
 	[ -f ${pcre_org_src_dir}/Makefile ] ||
 		(cd ${pcre_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			--enable-pcre16 --enable-pcre32 --enable-jit --enable-utf --enable-unicode-properties \
 			--enable-newline-is-any --enable-pcregrep-libz --enable-pcregrep-libbz2 \
 			--enable-pcretest-libreadline CPPFLAGS="${CPPFLAGS} -I`get_include_path zlib.h`" \
