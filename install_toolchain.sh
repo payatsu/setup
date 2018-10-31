@@ -33,7 +33,7 @@
 : ${texinfo_ver:=6.5}
 : ${coreutils_ver:=8.30}
 : ${busybox_ver:=1.28.4}
-: ${bison_ver:=3.1}
+: ${bison_ver:=3.2}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
