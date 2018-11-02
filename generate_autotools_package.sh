@@ -33,6 +33,9 @@ sed -e '
 		aAC_PROG_INSTALL
 		aAC_PROG_LIBTOOL
 	}
+	/^# Checks for libraries\.$/{
+		aAC_CHECK_LIB([pthread], [main]) # Google Test requires pthread on POSIX system.
+	}
 	${
 		iAC_CONFIG_MACRO_DIR([m4])
 		iAC_CONFIG_FILES([Makefile include/Makefile src/Makefile test/Makefile])
@@ -70,7 +73,7 @@ testsuite_CXXFLAGS += -Wno-abi-tag -Wno-ctor-dtor-privacy -Wno-duplicated-branch
 -Wno-sign-conversion -Wno-suggest-attribute=format -Wno-suggest-override \\
 -Wno-switch-default -Wno-switch-enum -Wno-templates -Wno-undef -Wno-unused-const-variable \\
 -Wno-unused-macros -Wno-useless-cast -Wno-zero-as-null-pointer-constant
-testsuite_LDFLAGS = -lpthread
+testsuite_LDFLAGS = @LIBS@
 if ENABLE_SANITIZER
 testsuite_CXXFLAGS += -fsanitize=address -fsanitize=leak -fsanitize=undefined
 endif
