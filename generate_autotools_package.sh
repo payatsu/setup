@@ -89,7 +89,7 @@ googletest-\$(gtest_ver):
 	wget --no-check-certificate -nv -O - https://github.com/google/googletest/archive/\$(gtest_ver).tar.gz | tar xzvf -
 
 check:
-	./testsuite
+	./testsuite\$(EXEEXT)
 	lcov -c -d . -o @PACKAGE_NAME@-@PACKAGE_VERSION@.info
 	lcov -r @PACKAGE_NAME@-@PACKAGE_VERSION@.info \$(system_include_dirs) \`pwd\`/gtest/\* -o @PACKAGE_NAME@-@PACKAGE_VERSION@.info
 	genhtml -p \`cd ..; pwd\` -o html -s @PACKAGE_NAME@-@PACKAGE_VERSION@.info
