@@ -27,7 +27,7 @@ sed -e '
 		s/FULL-PACKAGE-NAME/'${package_name}'/
 		s/VERSION/0.0.1/
 		aAC_CONFIG_AUX_DIR([config])
-		aAM_INIT_AUTOMAKE
+		aAM_INIT_AUTOMAKE(subdir-objects)
 	}
 	/^# Checks for programs\.$/{
 		aAC_PROG_INSTALL
