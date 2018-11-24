@@ -96,7 +96,7 @@
 : ${less_ver:=530}
 : ${screen_ver:=4.6.2}
 : ${libevent_ver:=2.1.8}
-: ${tmux_ver:=2.7}
+: ${tmux_ver:=2.8}
 : ${expect_ver:=5.45.4}
 : ${dejagnu_ver:=1.6.1}
 : ${zsh_ver:=5.6.2}
@@ -3272,7 +3272,7 @@ install_native_tmux()
 	[ -f ${tmux_org_src_dir}/Makefile ] ||
 		(cd ${tmux_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			CPPFLAGS="${CPPFLAGS} -I`get_include_path curses.h`" LIBTINFO_LIBS=-ltinfotw) || return
+			CPPFLAGS="${CPPFLAGS} -I`get_include_path curses.h`" LIBTINFO_LIBS=-ltinfo) || return
 	make -C ${tmux_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${tmux_org_src_dir} -j ${jobs} -k check || return
