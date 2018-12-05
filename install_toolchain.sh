@@ -28,7 +28,7 @@
 : ${gzip_ver:=1.9}
 : ${lzip_ver:=1.20}
 : ${lunzip_ver:=1.9}
-: ${wget_ver:=1.19.5}
+: ${wget_ver:=1.20}
 : ${pkg_config_ver:=0.29.2}
 : ${texinfo_ver:=6.5}
 : ${coreutils_ver:=8.30}
