@@ -79,7 +79,7 @@ testsuite_CXXFLAGS += -fsanitize=address -fsanitize=leak -fsanitize=undefined
 endif
 system_include_dirs = @system_include_dirs@
 
-gtest_ver = release-1.8.0
+gtest_ver = release-1.8.1
 
 \$(testsuite_SOURCES) gtest/gtest-all.cc: gtest/gtest.h
 gtest/gtest.h: googletest-\$(gtest_ver)
