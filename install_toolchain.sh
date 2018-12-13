@@ -121,7 +121,7 @@
 : ${apr_ver:=1.6.5}
 : ${apr_util_ver:=1.6.1}
 : ${subversion_ver:=1.10.0}
-: ${cmake_ver:=3.12.1}
+: ${cmake_ver:=3.13.1}
 : ${libedit_ver:=20180525-3.1}
 : ${swig_ver:=3.0.12}
 : ${llvm_ver:=6.0.1}
@@ -151,10 +151,10 @@
 : ${x264_ver:=last-stable}
 : ${x265_ver:=2.9}
 : ${libav_ver:=11.9}
-: ${opencv_ver:=3.4.1}
-: ${opencv_contrib_ver:=3.4.1}
+: ${opencv_ver:=4.0.0}
+: ${opencv_contrib_ver:=4.0.0}
 : ${googletest_ver:=1.8.1}
-: ${fzf_ver:=0.17.4}
+: ${fzf_ver:=0.17.5}
 : ${jq_ver:=1.5}
 : ${libpcap_ver:=1.9.0}
 : ${tcpdump_ver:=4.9.2}
