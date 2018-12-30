@@ -28,6 +28,7 @@ sed -e '
 		s/VERSION/0.0.1/
 		aAC_CONFIG_AUX_DIR([config])
 		aAM_INIT_AUTOMAKE(subdir-objects)
+		aAM_SILENT_RULES([yes])
 	}
 	/^# Checks for programs\.$/{
 		aAC_PROG_INSTALL
@@ -41,7 +42,7 @@ sed -e '
 		iAC_CONFIG_FILES([Makefile include/Makefile src/Makefile test/Makefile])
 		i[warning_options="-Wextra -Wcast-align -Wstrict-aliasing -Wshadow "\\
 		i`LANG=C ${CXX} -fsyntax-only -Q --help=warnings,^joined,^separate,c++ |
-		igrep -v '\''\\@<:@enabled\\@:>@\\|-Wc90-c99-compat\\|-Wtemplates\\|-Wtraditional@<:@^-@:>@\\|-Wsystem-headers'\'' | grep -oe '\''-W@<:@@<:@:graph:@:>@@:>@\\+'\'' | sed -e '\''s/<@<:@0-9,@:>@\\+>//'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
+		igrep -v '\''\\@<:@enabled\\@:>@\\|-Wabi@<:@^-@:>@\\|-Wc90-c99-compat\\|-Wsystem-headers\\|-Wtemplates\\|-Wtraditional@<:@^-@:>@'\'' | grep -oe '\''-W@<:@@<:@:graph:@:>@@:>@\\+'\'' | sed -e '\''s/<@<:@0-9,@:>@\\+>//'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
 		iAC_SUBST([warning_options])
 		i[system_include_dirs=`LANG=C ${CPP} ${CPPFLAGS} -v -x c /dev/null -o /dev/null 2>&1 | sed -e '\''/^#include "/,/^End of search list\\.$/p;d'\'' | sed -e '\''/^ /{s///;s/$/\\/\\\\\\\\*/;p};d'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
 		iAC_SUBST([system_include_dirs])
