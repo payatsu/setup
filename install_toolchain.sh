@@ -137,7 +137,7 @@
 : ${boost_ver:=1_69_0}
 : ${Python_ver:=3.7.1}
 : ${Python2_ver:=2.7.15} # internal use only.
-: ${ruby_ver:=2.5.1}
+: ${ruby_ver:=2.6.0}
 : ${go_ver:=1.11.2}
 : ${perl_ver:=5.28.1}
 : ${tcl_ver:=8.6.9}
@@ -852,7 +852,7 @@ fetch()
 	ruby)
 		check_archive ${ruby_org_src_dir} ||
 			wget -O ${ruby_org_src_dir}.tar.xz \
-				http://cache.ruby-lang.org/pub/ruby/${ruby_name}.tar.xz || return;;
+				http://cache.ruby-lang.org/pub/ruby/`echo ${ruby_ver} | cut -d. -f-2`/${ruby_name}.tar.xz || return;;
 	go)
 		check_archive ${go_src_base}/go${go_ver}.src ||
 			wget --no-check-certificate -O ${go_src_base}/go${go_ver}.src.tar.gz \
