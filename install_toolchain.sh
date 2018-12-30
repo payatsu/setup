@@ -28,7 +28,7 @@
 : ${gzip_ver:=1.9}
 : ${lzip_ver:=1.20}
 : ${lunzip_ver:=1.9}
-: ${wget_ver:=1.20}
+: ${wget_ver:=1.20.1}
 : ${pkg_config_ver:=0.29.2}
 : ${texinfo_ver:=6.5}
 : ${coreutils_ver:=8.30}
@@ -40,7 +40,7 @@
 : ${automake_ver:=1.16.1}
 : ${autogen_ver:=5.18.16}
 : ${libtool_ver:=2.4.6}
-: ${sed_ver:=4.5}
+: ${sed_ver:=4.7}
 : ${gawk_ver:=4.2.1}
 : ${make_ver:=4.2}
 : ${binutils_ver:=2.31.1}
@@ -62,7 +62,7 @@
 : ${gcc_ver:=8.2.0}
 : ${readline_ver:=7.0}
 : ${ncurses_ver:=6.1}
-: ${gdb_ver:=8.2}
+: ${gdb_ver:=8.2.1}
 : ${lcov_ver:=1.13}
 : ${strace_ver:=4.21}
 : ${ltrace_ver:=0.7.3}
@@ -80,7 +80,7 @@
 : ${vim_ver:=8.1.0547}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
-: ${grep_ver:=3.1}
+: ${grep_ver:=3.3}
 : ${global_ver:=6.6.2}
 : ${pcre_ver:=8.42}
 : ${pcre2_ver:=10.32}
