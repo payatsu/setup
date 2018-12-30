@@ -120,7 +120,8 @@
 : ${sqlite_autoconf_ver:=3260000}
 : ${apr_ver:=1.6.5}
 : ${apr_util_ver:=1.6.1}
-: ${subversion_ver:=1.10.0}
+: ${utf8proc_ver:=2.2.0}
+: ${subversion_ver:=1.11.0}
 : ${cmake_ver:=3.13.1}
 : ${libedit_ver:=20180525-3.1}
 : ${swig_ver:=3.0.12}
@@ -467,6 +468,8 @@ help()
 		Specify the version of apr you want, currently '${apr_ver}'.
 	apr_util_ver
 		Specify the version of apr-util you want, currently '${apr_util_ver}'.
+	utf8proc_ver
+		Specify the version of utf8proc you want, currently '${utf8proc_ver}'.
 	subversion_ver
 		Specify the version of Subversion you want, currently '${subversion_ver}'.
 	cmake_ver
@@ -807,6 +810,10 @@ fetch()
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget -O \${${_1}_org_src_dir}.tar.bz2 \
 				http://ftp.tsukuba.wide.ad.jp/software/apache/apr/\${${_1}_name}.tar.bz2 || return;;
+	utf8proc)
+		check_archive ${utf8proc_org_src_dir} ||
+			wget --no-check-certificate -O ${utf8proc_org_src_dir}.tar.gz \
+				https://github.com/JuliaStrings/utf8proc/archive/v${utf8proc_ver}.tar.gz || return;;
 	subversion)
 		check_archive ${subversion_org_src_dir} ||
 			wget -O ${subversion_org_src_dir}.tar.bz2 \
@@ -3645,6 +3652,17 @@ install_native_apr_util()
 	update_pkg_config_path || return
 }
 
+install_native_utf8proc()
+{
+	[ -f ${prefix}/include/utf8proc.h -a "${force_install}" != yes ] && return
+	fetch utf8proc || return
+	unpack ${utf8proc_org_src_dir} || return
+	make -C ${utf8proc_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${utf8proc_org_src_dir} -j ${jobs} -k check || return
+	make -C ${utf8proc_org_src_dir} -j ${jobs} prefix=${prefix} install || return
+}
+
 install_native_subversion()
 {
 	[ -x ${prefix}/bin/svn -a "${force_install}" != yes ] && return
@@ -3652,6 +3670,7 @@ install_native_subversion()
 	search_header apu.h apr-1 > /dev/null || install_native_apr_util || return
 	search_header zlib.h > /dev/null || install_native_zlib || return
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return
+	search_header utf8proc.h > /dev/null || install_native_utf8proc || return
 	which python3 > /dev/null || install_native_python || return
 	which perl > /dev/null || install_native_perl || return
 	which ruby > /dev/null || install_native_ruby || return
@@ -3660,7 +3679,7 @@ install_native_subversion()
 	[ -f ${subversion_org_src_dir}/Makefile ] ||
 		(cd ${subversion_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --with-zlib=`get_prefix zlib.h` \
-			--with-sqlite=`get_prefix sqlite3.h` ${strip:+--enable-optimize} \
+			--with-sqlite=`get_prefix sqlite3.h` --with-lz4=internal ${strip:+--enable-optimize} \
 			LDFLAGS="${LDFLAGS} -L`get_library_path libiconv.so`" LIBS=-liconv) || return
 	make -C ${subversion_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
