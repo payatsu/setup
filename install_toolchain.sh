@@ -156,7 +156,7 @@
 : ${opencv_contrib_ver:=4.0.0}
 : ${googletest_ver:=1.8.1}
 : ${fzf_ver:=0.17.5}
-: ${jq_ver:=1.5}
+: ${jq_ver:=1.6}
 : ${libpcap_ver:=1.9.0}
 : ${tcpdump_ver:=4.9.2}
 : ${npth_ver:=1.6}
@@ -4667,8 +4667,9 @@ install_native_jq()
 	unpack ${jq_org_src_dir} || return
 	[ -f ${jq_org_src_dir}/Makefile ] ||
 		(cd ${jq_org_src_dir}
+		 autoreconf -fiv || return
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
-			--disable-maintainer-mode) || return
+			--disable-maintainer-mode --with-oniguruma=builtin) || return
 	make -C ${jq_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${jq_org_src_dir} -j ${jobs} -k check || return
