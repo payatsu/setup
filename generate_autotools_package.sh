@@ -27,7 +27,7 @@ sed -e '
 		s/FULL-PACKAGE-NAME/'${package_name}'/
 		s/VERSION/0.0.1/
 		aAC_CONFIG_AUX_DIR([config])
-		aAM_INIT_AUTOMAKE(subdir-objects)
+		aAM_INIT_AUTOMAKE([subdir-objects])
 		aAM_SILENT_RULES([yes])
 	}
 	/^# Checks for programs\.$/{
@@ -46,7 +46,7 @@ sed -e '
 		iAC_SUBST([warning_options])
 		i[system_include_dirs=`LANG=C ${CPP} ${CPPFLAGS} -v -x c /dev/null -o /dev/null 2>&1 | sed -e '\''/^#include "/,/^End of search list\\.$/p;d'\'' | sed -e '\''/^ /{s///;s/$/\\/\\\\\\\\*/;p};d'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
 		iAC_SUBST([system_include_dirs])
-		iAC_ARG_ENABLE([sanitizer], AC_HELP_STRING([--enable-sanitizer], [enable sanitizer]))
+		iAC_ARG_ENABLE([sanitizer], [AC_HELP_STRING([--enable-sanitizer], [enable sanitizer])])
 		iAM_CONDITIONAL([ENABLE_SANITIZER], [test x"${enable_sanitizer}" = xyes])
 	}
 ' configure.scan > configure.ac || return
@@ -60,14 +60,14 @@ touch include/Makefile.am || return
 cat << EOF > src/Makefile.am || return
 bin_PROGRAMS = ${package_name}
 ${package_name}_SOURCES = main.cpp
-${package_name}_CXXFLAGS = -std=c++11 @warning_options@
+${package_name}_CXXFLAGS = -std=c++11 \$(warning_options)
 EOF
 cat << EOF > test/Makefile.am || return
 noinst_PROGRAMS = testsuite
 testsuite_SOURCES = test.cpp
 nodist_testsuite_SOURCES = gtest/gtest.h gtest/gtest-all.cc
 testsuite_CPPFLAGS = -I../src
-testsuite_CXXFLAGS = -std=c++11 --coverage @warning_options@
+testsuite_CXXFLAGS = -std=c++11 --coverage \$(warning_options)
 ## XXX: Warning suppresions(workaround) for Google Test header("gtest/gtest.h").
 testsuite_CXXFLAGS += -Wno-abi-tag -Wno-ctor-dtor-privacy -Wno-duplicated-branches \\
 -Wno-effc++ -Wno-missing-declarations -Wno-multiple-inheritance -Wno-namespaces \\
@@ -78,7 +78,6 @@ testsuite_LDFLAGS = @LIBS@
 if ENABLE_SANITIZER
 testsuite_CXXFLAGS += -fsanitize=address -fsanitize=leak -fsanitize=undefined
 endif
-system_include_dirs = @system_include_dirs@
 
 gtest_ver = release-1.8.1
 
