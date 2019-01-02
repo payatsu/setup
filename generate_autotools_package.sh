@@ -46,8 +46,7 @@ sed -e '
 		iAC_SUBST([warning_options])
 		i[system_include_dirs=`LANG=C ${CPP} ${CPPFLAGS} -v -x c /dev/null -o /dev/null 2>&1 | sed -e '\''/^#include "/,/^End of search list\\.$/p;d'\'' | sed -e '\''/^ /{s///;s/$/\\/\\\\\\\\*/;p};d'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
 		iAC_SUBST([system_include_dirs])
-		iAC_ARG_ENABLE([sanitizer], [AC_HELP_STRING([--enable-sanitizer], [enable sanitizer])])
-		iAM_CONDITIONAL([ENABLE_SANITIZER], [test x"${enable_sanitizer}" = xyes])
+		iAC_ARG_ENABLE([sanitizer], [AC_HELP_STRING([--enable-sanitizer], [enable sanitizer])], [AS_VAR_IF([enable_sanitizer], [yes], [sanitizer_flags='\''-static-libasan -static-liblsan -static-libubsan'\'']) AC_SUBST([sanitizer_flags])])
 	}
 ' configure.scan > configure.ac || return
 rm ${verbose:+-v} configure.scan || return
@@ -67,7 +66,7 @@ noinst_PROGRAMS = testsuite
 testsuite_SOURCES = test.cpp
 nodist_testsuite_SOURCES = gtest/gtest.h gtest/gtest-all.cc
 testsuite_CPPFLAGS = -I../src
-testsuite_CXXFLAGS = -std=c++11 --coverage \$(warning_options)
+testsuite_CXXFLAGS = -std=c++11 --coverage \$(warning_options) \$(sanitizer_flags)
 ## XXX: Warning suppresions(workaround) for Google Test header("gtest/gtest.h").
 testsuite_CXXFLAGS += -Wno-abi-tag -Wno-ctor-dtor-privacy -Wno-duplicated-branches \\
 -Wno-effc++ -Wno-missing-declarations -Wno-multiple-inheritance -Wno-namespaces \\
@@ -75,9 +74,6 @@ testsuite_CXXFLAGS += -Wno-abi-tag -Wno-ctor-dtor-privacy -Wno-duplicated-branch
 -Wno-switch-default -Wno-switch-enum -Wno-templates -Wno-undef -Wno-unused-const-variable \\
 -Wno-unused-macros -Wno-useless-cast -Wno-zero-as-null-pointer-constant
 testsuite_LDFLAGS = @LIBS@
-if ENABLE_SANITIZER
-testsuite_CXXFLAGS += -fsanitize=address -fsanitize=leak -fsanitize=undefined
-endif
 
 gtest_ver = release-1.8.1
 
@@ -97,6 +93,7 @@ check:
 
 .PHONY: myclean
 clean: clean-am myclean
+distclean: distclean-am myclean
 myclean:
 	\$(RM) -r html *.gcda *.gcno
 EOF
