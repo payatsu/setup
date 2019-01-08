@@ -29,6 +29,7 @@ sed -e '
 		aAC_CONFIG_AUX_DIR([config])
 		aAM_INIT_AUTOMAKE([subdir-objects])
 		aAM_SILENT_RULES([yes])
+		aAC_LANG([C++])
 	}
 	/^# Checks for programs\.$/{
 		aAC_PROG_INSTALL
