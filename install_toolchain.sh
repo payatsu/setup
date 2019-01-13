@@ -21,11 +21,11 @@
 # [TODO] Polly, MySQL, grub
 # [TODO] update-alternatives
 
-: ${tar_ver:=1.30}
+: ${tar_ver:=1.31}
 : ${cpio_ver:=2.12}
 : ${xz_ver:=5.2.4}
 : ${bzip2_ver:=1.0.6}
-: ${gzip_ver:=1.9}
+: ${gzip_ver:=1.10}
 : ${lzip_ver:=1.20}
 : ${lunzip_ver:=1.9}
 : ${wget_ver:=1.20.1}
@@ -45,7 +45,7 @@
 : ${make_ver:=4.2}
 : ${binutils_ver:=2.31.1}
 : ${elfutils_ver:=0.175}
-: ${ed_ver:=1.14.2}
+: ${ed_ver:=1.15}
 : ${bc_ver:=1.07.1}
 : ${linux_ver:=3.18.13}
 : ${dtc_ver:=1.4.6}
@@ -60,7 +60,7 @@
 : ${mpc_ver:=1.1.0}
 : ${isl_ver:=0.20}
 : ${gcc_ver:=8.2.0}
-: ${readline_ver:=7.0}
+: ${readline_ver:=8.0}
 : ${ncurses_ver:=6.1}
 : ${gdb_ver:=8.2.1}
 : ${lcov_ver:=1.13}
@@ -90,7 +90,7 @@
 : ${graphviz_ver:=2.40.1}
 : ${doxygen_ver:=1.8.14}
 : ${plantuml_ver:=1.2018.7}
-: ${diffutils_ver:=3.6}
+: ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
 : ${findutils_ver:=4.6.0}
 : ${less_ver:=530}
@@ -100,7 +100,7 @@
 : ${expect_ver:=5.45.4}
 : ${dejagnu_ver:=1.6.2}
 : ${zsh_ver:=5.6.2}
-: ${bash_ver:=4.4.18}
+: ${bash_ver:=5.0}
 : ${inetutils_ver:=1.9.4}
 : ${util_linux_ver:=2.33}
 : ${e2fsprogs_ver:=1.44.4}
@@ -164,7 +164,7 @@
 : ${libgcrypt_ver:=1.8.4}
 : ${libksba_ver:=1.3.5}
 : ${libassuan_ver:=2.5.1}
-: ${gnupg_ver:=2.2.11}
+: ${gnupg_ver:=2.2.12}
 
 # TODO X11周りのインストールは未着手。
 : ${xtrans_ver:=1.3.5}
