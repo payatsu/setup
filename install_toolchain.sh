@@ -30,10 +30,10 @@
 : ${lunzip_ver:=1.9}
 : ${wget_ver:=1.20.1}
 : ${pkg_config_ver:=0.29.2}
-: ${texinfo_ver:=6.5}
+: ${texinfo_ver:=6.6}
 : ${coreutils_ver:=8.30}
 : ${busybox_ver:=1.28.4}
-: ${bison_ver:=3.2}
+: ${bison_ver:=3.3.1}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
@@ -43,7 +43,7 @@
 : ${sed_ver:=4.7}
 : ${gawk_ver:=4.2.1}
 : ${make_ver:=4.2}
-: ${binutils_ver:=2.31.1}
+: ${binutils_ver:=2.32}
 : ${elfutils_ver:=0.175}
 : ${ed_ver:=1.15}
 : ${bc_ver:=1.07.1}
@@ -56,7 +56,7 @@
 : ${newlib_ver:=3.0.0}
 : ${mingw_w64_ver:=6.0.0}
 : ${gmp_ver:=6.1.2}
-: ${mpfr_ver:=4.0.1}
+: ${mpfr_ver:=4.0.2}
 : ${mpc_ver:=1.1.0}
 : ${isl_ver:=0.20}
 : ${gcc_ver:=8.2.0}
@@ -164,7 +164,7 @@
 : ${libgcrypt_ver:=1.8.4}
 : ${libksba_ver:=1.3.5}
 : ${libassuan_ver:=2.5.1}
-: ${gnupg_ver:=2.2.12}
+: ${gnupg_ver:=2.2.13}
 
 # TODO X11周りのインストールは未着手。
 : ${xtrans_ver:=1.3.5}
