@@ -99,7 +99,7 @@
 : ${tmux_ver:=2.8}
 : ${expect_ver:=5.45.4}
 : ${dejagnu_ver:=1.6.2}
-: ${zsh_ver:=5.6.2}
+: ${zsh_ver:=5.7.1}
 : ${bash_ver:=5.0}
 : ${inetutils_ver:=1.9.4}
 : ${util_linux_ver:=2.33}
