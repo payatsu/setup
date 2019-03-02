@@ -21,7 +21,7 @@
 # [TODO] Polly, MySQL, grub
 # [TODO] update-alternatives
 
-: ${tar_ver:=1.31}
+: ${tar_ver:=1.32}
 : ${cpio_ver:=2.12}
 : ${xz_ver:=5.2.4}
 : ${bzip2_ver:=1.0.6}
@@ -59,7 +59,7 @@
 : ${mpfr_ver:=4.0.2}
 : ${mpc_ver:=1.1.0}
 : ${isl_ver:=0.20}
-: ${gcc_ver:=8.2.0}
+: ${gcc_ver:=8.3.0}
 : ${readline_ver:=8.0}
 : ${ncurses_ver:=6.1}
 : ${gdb_ver:=8.2.1}
@@ -137,7 +137,7 @@
 : ${boost_ver:=1_69_0}
 : ${Python_ver:=3.7.1}
 : ${Python2_ver:=2.7.15} # internal use only.
-: ${ruby_ver:=2.6.0}
+: ${ruby_ver:=2.6.1}
 : ${go_ver:=1.11.4}
 : ${perl_ver:=5.28.1}
 : ${tcl_ver:=8.6.9}
