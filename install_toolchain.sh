@@ -31,7 +31,7 @@
 : ${wget_ver:=1.20.1}
 : ${pkg_config_ver:=0.29.2}
 : ${texinfo_ver:=6.6}
-: ${coreutils_ver:=8.30}
+: ${coreutils_ver:=8.31}
 : ${busybox_ver:=1.28.4}
 : ${bison_ver:=3.3.1}
 : ${flex_ver:=2.6.4}
@@ -138,7 +138,7 @@
 : ${Python_ver:=3.7.1}
 : ${Python2_ver:=2.7.15} # internal use only.
 : ${ruby_ver:=2.6.1}
-: ${go_ver:=1.11.4}
+: ${go_ver:=1.12.1}
 : ${perl_ver:=5.28.1}
 : ${tcl_ver:=8.6.9}
 : ${tk_ver:=8.6.9}
