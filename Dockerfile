@@ -46,6 +46,6 @@ for p in lua vim libiconv ctags; do\
 	./install_toolchain.sh -p ${prefix} -j 4 install_native_${p} || exit;\
 done && ./install_toolchain.sh -p ${prefix} clean
 
-RUN for p in global the_silver_searcher the_platinum_searcher highway; do\
+RUN for p in global the_silver_searcher the_platinum_searcher gperf highway; do\
 	./install_toolchain.sh -p ${prefix} -j 4 install_native_${p} || exit;\
 done && ./install_toolchain.sh -p ${prefix} clean
