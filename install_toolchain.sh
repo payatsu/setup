@@ -77,7 +77,7 @@
 : ${libffi_ver:=3.2.1}
 : ${emacs_ver:=26.1}
 : ${libiconv_ver:=1.15}
-: ${vim_ver:=8.1.0735}
+: ${vim_ver:=8.1.1027}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.3}
@@ -89,7 +89,7 @@
 : ${highway_ver:=1.1.0}
 : ${graphviz_ver:=2.40.1}
 : ${doxygen_ver:=1.8.14}
-: ${plantuml_ver:=1.2018.7}
+: ${plantuml_ver:=1.2019.3}
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
 : ${findutils_ver:=4.6.0}
@@ -164,7 +164,7 @@
 : ${libgcrypt_ver:=1.8.4}
 : ${libksba_ver:=1.3.5}
 : ${libassuan_ver:=2.5.1}
-: ${gnupg_ver:=2.2.13}
+: ${gnupg_ver:=2.2.14}
 
 # TODO X11周りのインストールは未着手。
 : ${xtrans_ver:=1.3.5}
@@ -733,7 +733,7 @@ fetch()
 			wget --trust-server-names --no-check-certificate -O ${plantuml_org_src_dir}.jar \
 				https://sourceforge.net/projects/plantuml/files/${plantuml_name}.jar/download || return
 		[ -f ${plantuml_org_src_dir}.pdf ] ||
-			wget -O ${plantuml_org_src_dir}.pdf http://translate.plantuml.com/ja/PlantUML_Language_Reference_Guide_JA.pdf || return;;
+			wget -O ${plantuml_org_src_dir}.pdf http://pdf.plantuml.net/PlantUML_Language_Reference_Guide_ja.pdf || return;;
 	libevent)
 		check_archive ${libevent_org_src_dir}-stable ||
 			wget --no-check-certificate -O ${libevent_org_src_dir}-stable.tar.gz \
@@ -2986,6 +2986,7 @@ install_native_ctags()
 {
 	[ -x ${prefix}/bin/ctags -a "${force_install}" != yes ] && return
 	which pkg-config > /dev/null || install_native_pkg_config || return
+	search_library libiconv.so > /dev/null || install_native_libiconv || return
 	fetch ctags || return
 	unpack ${ctags_org_src_dir} || return
 	[ -f ${ctags_org_src_dir}/configure ] ||
@@ -3033,8 +3034,7 @@ install_native_global()
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			--with-ncurses=`get_prefix curses.h` CPPFLAGS="${CPPFLAGS} -I`get_include_path curses.h`" \
-			LDFLAGS="${LDFLAGS} -ltinfotw") || return
+			--with-ncurses=`get_prefix curses.h` CPPFLAGS="${CPPFLAGS} -I`get_include_path curses.h`") || return
 	make -C ${global_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${global_org_src_dir} -j ${jobs} -k check || return
@@ -3328,7 +3328,7 @@ install_native_zsh()
 	[ -f ${zsh_org_src_dir}/Makefile ] ||
 		(cd ${zsh_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			--enable-multibyte --enable-unicode9) || return
+			--enable-multibyte --enable-unicode9 --with-tcsetpgrp) || return
 	make -C ${zsh_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${zsh_org_src_dir} -j ${jobs} -k check || return
