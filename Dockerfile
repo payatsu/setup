@@ -24,7 +24,7 @@ for p in python ruby go; do\
 	./install_toolchain.sh -p ${prefix} -j 4 go_ver=1.11.6 install_native_${p} || exit;\
 done && ./install_toolchain.sh -p ${prefix} clean
 
-RUN apt-get install -y --no-install-recommends libncurses5-dev libreadline7 &&\
+RUN apt-get install -y --no-install-recommends libncurses5-dev libreadline-dev &&\
 ./install_toolchain.sh -p ${prefix} -j 4 install_native_gdb clean
 
 RUN for p in zsh bash; do\
@@ -35,13 +35,14 @@ RUN for p in screen libevent tmux; do\
 	./install_toolchain.sh -p ${prefix} -j 4 install_native_${p} || exit;\
 done && ./install_toolchain.sh -p ${prefix} clean
 
-RUN for p in plantuml patch; do\
+RUN apt-get install -y --no-install-recommends graphviz &&\
+for p in plantuml patch; do\
 	./install_toolchain.sh -p ${prefix} -j 4 install_native_${p} || exit;\
 done && ./install_toolchain.sh -p ${prefix} clean
 
 # FIXME: 'webkit2gtk-4.0' may be required for emacs.
-RUN apt-get install -y --no-install-recommends libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev &&\
-for p in vim ctags; do\
+RUN apt-get install -y --no-install-recommends libperl-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev &&\
+for p in lua vim libiconv ctags; do\
 	./install_toolchain.sh -p ${prefix} -j 4 install_native_${p} || exit;\
 done && ./install_toolchain.sh -p ${prefix} clean
 
