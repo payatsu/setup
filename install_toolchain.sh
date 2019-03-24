@@ -26,13 +26,13 @@
 : ${xz_ver:=5.2.4}
 : ${bzip2_ver:=1.0.6}
 : ${gzip_ver:=1.10}
-: ${lzip_ver:=1.20}
+: ${lzip_ver:=1.21}
 : ${lunzip_ver:=1.9}
 : ${wget_ver:=1.20.1}
 : ${pkg_config_ver:=0.29.2}
 : ${texinfo_ver:=6.6}
 : ${coreutils_ver:=8.31}
-: ${busybox_ver:=1.28.4}
+: ${busybox_ver:=1.30.1}
 : ${bison_ver:=3.3.1}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
@@ -44,16 +44,16 @@
 : ${gawk_ver:=4.2.1}
 : ${make_ver:=4.2}
 : ${binutils_ver:=2.32}
-: ${elfutils_ver:=0.175}
+: ${elfutils_ver:=0.176}
 : ${ed_ver:=1.15}
 : ${bc_ver:=1.07.1}
 : ${linux_ver:=3.18.13}
 : ${dtc_ver:=1.4.6}
-: ${u_boot_ver:=2018.03}
+: ${u_boot_ver:=2019.01}
 : ${qemu_ver:=2.12.0}
 : ${gperf_ver:=3.1}
-: ${glibc_ver:=2.27}
-: ${newlib_ver:=3.0.0}
+: ${glibc_ver:=2.29}
+: ${newlib_ver:=3.1.0}
 : ${mingw_w64_ver:=6.0.0}
 : ${gmp_ver:=6.1.2}
 : ${mpfr_ver:=4.0.2}
@@ -63,12 +63,12 @@
 : ${readline_ver:=8.0}
 : ${ncurses_ver:=6.1}
 : ${gdb_ver:=8.2.1}
-: ${lcov_ver:=1.13}
-: ${strace_ver:=4.21}
+: ${lcov_ver:=1.14}
+: ${strace_ver:=5.0}
 : ${ltrace_ver:=0.7.3}
 : ${valgrind_ver:=3.14.0}
 : ${zlib_ver:=1.2.11}
-: ${libpng_ver:=1.6.34}
+: ${libpng_ver:=1.6.36}
 : ${tiff_ver:=4.0.6}
 : ${jpeg_ver:=v9b}
 : ${giflib_ver:=5.1.4}
@@ -81,8 +81,8 @@
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.3}
-: ${global_ver:=6.6.2}
-: ${pcre_ver:=8.42}
+: ${global_ver:=6.6.3}
+: ${pcre_ver:=8.43}
 : ${pcre2_ver:=10.32}
 : ${the_silver_searcher_ver:=2.2.0}
 : ${the_platinum_searcher_ver:=2.2.0}
@@ -103,11 +103,11 @@
 : ${bash_ver:=5.0}
 : ${inetutils_ver:=1.9.4}
 : ${util_linux_ver:=2.33}
-: ${e2fsprogs_ver:=1.44.4}
+: ${e2fsprogs_ver:=1.44.5}
 : ${squashfs_ver:=4.3}
 : ${openssl_ver:=1.0.2p}
 : ${openssh_ver:=7.9p1}
-: ${curl_ver:=7.63.0}
+: ${curl_ver:=7.64.0}
 : ${expat_ver:=2.2.6}
 : ${asciidoc_ver:=8.6.9}
 : ${libxml2_ver:=2.9.8}
@@ -122,8 +122,8 @@
 : ${apr_util_ver:=1.6.1}
 : ${utf8proc_ver:=2.2.0}
 : ${subversion_ver:=1.11.0}
-: ${cmake_ver:=3.13.1}
-: ${libedit_ver:=20180525-3.1}
+: ${cmake_ver:=3.14.0}
+: ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=3.0.12}
 : ${llvm_ver:=6.0.1}
 : ${libcxx_ver:=${llvm_ver}}
@@ -135,9 +135,9 @@
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
 : ${boost_ver:=1_69_0}
-: ${Python_ver:=3.7.1}
+: ${Python_ver:=3.7.2}
 : ${Python2_ver:=2.7.15} # internal use only.
-: ${ruby_ver:=2.6.1}
+: ${ruby_ver:=2.6.2}
 : ${go_ver:=1.12.1}
 : ${perl_ver:=5.28.1}
 : ${tcl_ver:=8.6.9}
@@ -586,7 +586,7 @@ fetch()
 	bzip2)
 		check_archive ${bzip2_org_src_dir} ||
 			wget -O ${bzip2_org_src_dir}.tar.gz \
-				http://www.bzip.org/${bzip2_ver}/${bzip2_name}.tar.gz || return;;
+				https://sourceforge.net/projects/bzip2/files/${bzip2_name}.tar.gz/download || return;;
 	lzip)
 		check_archive ${lzip_org_src_dir} ||
 			wget -O ${lzip_org_src_dir}.tar.gz \
@@ -656,7 +656,7 @@ fetch()
 	strace)
 		check_archive ${strace_org_src_dir} ||
 			wget --no-check-certificate -O ${strace_org_src_dir}.tar.xz \
-				https://sourceforge.net/projects/strace/files/strace/${strace_ver}/${strace_name}.tar.xz/download || return;;
+				https://strace.io/files/${strace_ver}/${strace_name}.tar.xz || return;;
 	ltrace)
 		check_archive ${ltrace_org_src_dir} ||
 			wget -O ${ltrace_org_src_dir}.tar.bz2 \
@@ -726,8 +726,8 @@ fetch()
 				https://graphviz.gitlab.io/pub/graphviz/stable/SOURCES/graphviz.tar.gz || return;;
 	doxygen)
 		check_archive ${doxygen_org_src_dir} ||
-			wget -O ${doxygen_org_src_dir}.tar.gz \
-				http://ftp.stack.nl/pub/users/dimitri/${doxygen_name}.src.tar.gz || return;;
+			wget --no-check-certificate -O ${doxygen_org_src_dir}.tar.gz \
+				https://github.com/doxygen/doxygen/archive/Release_`echo ${doxygen_ver} | tr . _`.tar.gz || return;;
 	plantuml)
 		check_archive ${plantuml_org_src_dir} ||
 			wget --trust-server-names --no-check-certificate -O ${plantuml_org_src_dir}.jar \
@@ -2103,9 +2103,12 @@ install_native_gcc()
 		[ -f ${DESTDIR}${prefix}/bin/${b}-${gcc_ver} ] || continue
 		ln -fsv ${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${b} || return
 		ln -fsv ${b}-${gcc_ver}.1 ${DESTDIR}${prefix}/share/man/man1/${b}.1 || return
+		[ ${b} = go -o ${b} = gofmt ] || continue
+		[ -f ${DESTDIR}${prefix}/bin/${build}-${b}-${gcc_ver} ] ||
+			ln -fv ${DESTDIR}${prefix}/bin/${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${build}-${b}-${gcc_ver} || return
 		ln -fsv ${build}-${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${build}-${b} || return
 	done
-	 [ -f ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_ver}/libgcc_s.so ] || ln -fsv ../lib64/libgcc_s.so ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_ver} || return # XXX work around for --enable-version-specific-runtime-libs
+	[ -f ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_ver}/libgcc_s.so ] || ln -fsv ../lib64/libgcc_s.so ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_ver} || return # XXX work around for --enable-version-specific-runtime-libs
 }
 
 install_native_readline()
@@ -3045,6 +3048,8 @@ install_native_pcre()
 {
 	[ -f ${prefix}/include/pcre.h -a "${force_install}" != yes ] && return
 	search_header zlib.h > /dev/null || install_native_zlib || return
+	search_header bzlib.h > /dev/null || install_native_bzip2 || return
+	search_header readline.h readline > /dev/null || install_native_readline || return
 	fetch pcre || return
 	unpack ${pcre_org_src_dir} || return
 	[ -f ${pcre_org_src_dir}/Makefile ] ||
@@ -3152,7 +3157,8 @@ install_native_doxygen()
 	which cmake > /dev/null || install_native_cmake || return
 	which clang > /dev/null || install_native_cfe || return
 	fetch doxygen || return
-	unpack ${doxygen_org_src_dir} || return
+	unpack ${doxygen_org_src_dir} &&
+		mv -v ${src}/doxygen/doxygen-Release_`echo ${doxygen_ver} | tr . _` ${doxygen_org_src_dir} || return
 	mkdir -pv ${doxygen_bld_dir_ntv} || return
 	[ -f ${doxygen_bld_dir_ntv}/Makefile ] ||
 		(cd ${doxygen_bld_dir_ntv}
@@ -3414,10 +3420,10 @@ install_native_openssl()
 	unpack ${openssl_org_src_dir} || return
 	(cd ${openssl_org_src_dir}
 	./config --prefix=${prefix} shared) || return
-	make -C ${openssl_org_src_dir} -j ${jobs} || return
+	make -C ${openssl_org_src_dir} -j 1 || return # XXX work around for parallel make
 	[ "${enable_check}" != yes ] ||
-		make -C ${openssl_org_src_dir} -j ${jobs} -k test || return
-	make -C ${openssl_org_src_dir} -j ${jobs} INSTALL_PREFIX=${DESTDIR} install || return
+		make -C ${openssl_org_src_dir} -j 1 -k test || return # XXX work around for parallel make
+	make -C ${openssl_org_src_dir} -j 1 INSTALL_PREFIX=${DESTDIR} install || return # XXX work around for parallel make
 	update_library_search_path || return
 	update_pkg_config_path || return
 }

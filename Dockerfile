@@ -50,8 +50,10 @@ RUN rm -v /etc/skel/install.sh /etc/skel/seq.puml &&\
 echo `which zsh` >> /etc/shells && groupadd ${user} &&\
 useradd -g ${user} -m -s `which zsh` ${user} &&\
 echo root:password | chpasswd &&\
+echo ${user}:password | chpasswd &&\
 apt-get install -y --no-install-recommends language-pack-ja
 USER ${user}
 WORKDIR /home/${user}
 ENV LANG=ja_JP.utf8
 SHELL ["/usr/local/bin/zsh"]
+ENV SHELL=${SHELL}
