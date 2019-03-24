@@ -56,4 +56,3 @@ USER ${user}
 WORKDIR /home/${user}
 ENV LANG=ja_JP.utf8
 SHELL ["/usr/local/bin/zsh"]
-ENV SHELL=${SHELL}
