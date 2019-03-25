@@ -55,4 +55,4 @@ apt-get install -y --no-install-recommends language-pack-ja
 USER ${user}
 WORKDIR /home/${user}
 ENV LANG=ja_JP.utf8
-SHELL ["/usr/local/bin/zsh"]
+CMD ["/usr/local/bin/zsh"]
