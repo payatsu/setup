@@ -116,7 +116,7 @@
 : ${gettext_ver:=0.19.8}
 : ${git_ver:=2.20.1}
 : ${git_manpages_ver:=${git_ver}}
-: ${mercurial_ver:=4.8.1}
+: ${mercurial_ver:=4.9}
 : ${sqlite_autoconf_ver:=3260000}
 : ${apr_ver:=1.6.5}
 : ${apr_util_ver:=1.6.1}
@@ -3156,8 +3156,11 @@ install_native_doxygen()
 	[ -x ${prefix}/bin/doxygen -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	which clang > /dev/null || install_native_cfe || return
+	which flex > /dev/null || install_native_flex || return
+	which yacc > /dev/null || install_native_bison || return
 	fetch doxygen || return
-	unpack ${doxygen_org_src_dir} &&
+	unpack ${doxygen_org_src_dir} || return
+	[ -d ${doxygen_org_src_dir} ] ||
 		mv -v ${src}/doxygen/doxygen-Release_`echo ${doxygen_ver} | tr . _` ${doxygen_org_src_dir} || return
 	mkdir -pv ${doxygen_bld_dir_ntv} || return
 	[ -f ${doxygen_bld_dir_ntv}/Makefile ] ||
