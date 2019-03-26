@@ -1382,6 +1382,12 @@ update_pkg_config_path()
 	export PKG_CONFIG_PATH
 }
 
+update_shell_run_command()
+{
+	generate_shell_run_command ${set_path_sh} || return
+	. ${set_path_sh} || return
+}
+
 generate_shell_run_command()
 {
 	mkdir -pv `dirname ${1}`
@@ -2096,7 +2102,7 @@ install_native_gcc()
 	[ -f ${gcc_bld_dir_ntv}/gcc/xg++ -a "${force_install}" = yes ] &&
 		which doxygen > /dev/null && make -C ${gcc_bld_dir_ntv}/${build}/libstdc++-v3 -j ${jobs} install-man
 	update_library_search_path || return
-	generate_shell_run_command ${set_path_sh} && . ${set_path_sh} || return
+	update_shell_run_command || return
 	ln -fsv gcc ${DESTDIR}${prefix}/bin/cc || return
 	[ ! -f ${DESTDIR}${prefix}/bin/${build}-gcc-tmp ] || rm -v ${DESTDIR}${prefix}/bin/${build}-gcc-tmp || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
@@ -4039,7 +4045,7 @@ install_cross_gcc_without_headers()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_1st} -j ${jobs} -k check-target-libgcc || return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-target-libgcc || return
-	generate_shell_run_command ${set_path_sh} && . ${set_path_sh} || return
+	update_shell_run_command || return
 }
 
 install_cross_linux_header()
@@ -4181,7 +4187,7 @@ install_cross_functional_gcc()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k install${strip:+-${strip}} ${strip:+STRIP=${target}-strip} || true # [XXX] install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
-	generate_shell_run_command ${set_path_sh} && . ${set_path_sh} || return
+	update_shell_run_command || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool; do
 		[ -f ${DESTDIR}${prefix}/bin/${target}-${b}-${gcc_ver} ] || continue
 		ln -fsv ${target}-${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${target}-${b} || return
@@ -4300,7 +4306,7 @@ install_native_go()
 	[ ! -d ${DESTDIR}${prefix}/go ] || rm -fvr ${DESTDIR}${prefix}/go || return
 	mkdir -pv ${DESTDIR}${prefix} || return
 	mv -v ${go_org_src_dir} ${DESTDIR}${prefix}/go || return
-	generate_shell_run_command ${set_path_sh} && . ${set_path_sh} || return
+	update_shell_run_command || return
 	GOPATH=${DESTDIR}${prefix}/.go go get golang.org/x/tools/cmd/... || return
 }
 
