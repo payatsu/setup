@@ -55,7 +55,8 @@ echo `which zsh` >> /etc/shells && groupadd ${user} &&\
 useradd -g ${user} -m -s `which zsh` ${user} &&\
 echo root:password | chpasswd &&\
 echo ${user}:password | chpasswd &&\
-apt-get install -y --no-install-recommends language-pack-ja
+apt-get install -y --no-install-recommends language-pack-ja &&\
+apt-get autoremove -y && apt-get autoclean -y
 USER ${user}
 WORKDIR /home/${user}
 ENV LANG=ja_JP.utf8 SHELL=/usr/local/bin/zsh
