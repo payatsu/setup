@@ -3778,6 +3778,7 @@ install_native_llvm()
 	[ "${enable_check}" != yes ] ||
 		make -C ${llvm_bld_dir} -j ${jobs} -k check || return
 	make -C ${llvm_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	update_path || return
 }
 
 install_native_libcxx()
@@ -3796,6 +3797,7 @@ install_native_libcxx()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libcxx_bld_dir} -j ${jobs} -k check-libcxx || return
 	make -C ${libcxx_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	update_path || return
 }
 
 install_native_libcxxabi()
@@ -3814,6 +3816,7 @@ install_native_libcxxabi()
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxxabi_org_src_dir}) || return
 	make -C ${libcxxabi_bld_dir} -j ${jobs} || return
 	make -C ${libcxxabi_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	update_path || return
 }
 
 install_native_compiler_rt()
@@ -3830,6 +3833,7 @@ install_native_compiler_rt()
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${compiler_rt_org_src_dir}) || return
 	make -C ${compiler_rt_bld_dir} -j ${jobs} || return
 	make -C ${compiler_rt_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	update_path || return
 }
 
 install_native_cfe()
@@ -3854,6 +3858,7 @@ install_native_cfe()
 	[ "${enable_check}" != yes ] ||
 		make -C ${cfe_bld_dir} -j ${jobs} -k check-all || return
 	make -C ${cfe_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	update_path || return
 }
 
 install_native_clang_tools_extra()
@@ -3877,6 +3882,7 @@ install_native_clang_tools_extra()
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return
 	make -C ${clang_tools_extra_bld_dir} -j ${jobs} || return
 	make -C ${clang_tools_extra_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	update_path || return
 }
 
 get_llvm_tools_name()
