@@ -42,6 +42,10 @@ for p in lua vim libiconv ctags; do\
 done && ./install_toolchain.sh -p ${prefix} clean &&\
 for p in global the_silver_searcher the_platinum_searcher gperf highway; do\
 	./install_toolchain.sh -p ${prefix} -j 4 install_native_${p} || exit;\
+done && ./install_toolchain.sh -p ${prefix} clean &&\
+apt-get install -y --no-install-recommends libbz2-dev libedit-dev swig &&\
+for p in cmake llvm libcxx libcxxabi compiler_rt cfe; do\
+	./install_toolchain.sh -p ${prefix} -j 4 force_install=yes install_native_${p} || exit;\
 done && ./install_toolchain.sh -p ${prefix} clean
 
 ARG user=user01
