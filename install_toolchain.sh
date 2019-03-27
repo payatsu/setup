@@ -1382,8 +1382,10 @@ update_pkg_config_path()
 	export PKG_CONFIG_PATH
 }
 
-update_shell_run_command()
+update_path()
 {
+	update_library_search_path || return
+	update_pkg_config_path || return
 	generate_shell_run_command ${set_path_sh} || return
 	. ${set_path_sh} || return
 }
@@ -1557,7 +1559,7 @@ install_native_bzip2()
 	ln -fsv libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/lib/libbz2.so || return
 	cp -fv ${bzip2_org_src_dir}/bzlib.h ${DESTDIR}${prefix}/include || return
 	cp -fv ${bzip2_org_src_dir}/bzlib_private.h ${DESTDIR}${prefix}/include || return
-	update_library_search_path || return
+	update_path || return
 	[ -z "${strip}" ] && return
 	for b in bunzip2 bzcat bzip2 bzip2recover; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
@@ -1705,7 +1707,7 @@ install_native_flex()
 	[ "${enable_check}" != yes ] ||
 		make -C ${flex_org_src_dir} -j ${jobs} -k check || return
 	make -C ${flex_org_src_dir} -j ${jobs} install${strip:+-${strip}} install-man || return
-	update_library_search_path || return
+	update_path || return
 }
 
 install_native_m4()
@@ -1875,7 +1877,7 @@ install_native_elfutils()
 	[ "${enable_check}" != yes ] ||
 		make -C ${elfutils_org_src_dir} -j ${jobs} -k check || return
 	make -C ${elfutils_org_src_dir} -j 1 install${strip:+-${strip}} || return
-	update_library_search_path || return
+	update_path || return
 }
 
 install_native_ed()
@@ -2000,7 +2002,7 @@ install_native_glibc()
 		make -C ${glibc_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${glibc_bld_dir_ntv} -j ${jobs} install || return
 	make -C ${glibc_bld_dir_ntv} -j ${jobs} localedata/install-locales || return
-	update_library_search_path || return
+	update_path || return
 }
 
 install_native_gmp()
@@ -2017,7 +2019,7 @@ install_native_gmp()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gmp_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${gmp_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
+	update_path || return
 }
 
 install_native_mpfr()
@@ -2035,7 +2037,7 @@ install_native_mpfr()
 	[ "${enable_check}" != yes ] ||
 		make -C ${mpfr_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${mpfr_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
+	update_path || return
 }
 
 install_native_mpc()
@@ -2054,7 +2056,7 @@ install_native_mpc()
 	[ "${enable_check}" != yes ] ||
 		make -C ${mpc_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${mpc_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
+	update_path || return
 }
 
 install_native_isl()
@@ -2070,7 +2072,7 @@ install_native_isl()
 	[ "${enable_check}" != yes ] ||
 		make -C ${isl_org_src_dir} -j ${jobs} -k check || return
 	make -C ${isl_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
+	update_path || return
 }
 
 install_native_gcc()
@@ -2101,8 +2103,7 @@ install_native_gcc()
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
 	[ -f ${gcc_bld_dir_ntv}/gcc/xg++ -a "${force_install}" = yes ] &&
 		which doxygen > /dev/null && make -C ${gcc_bld_dir_ntv}/${build}/libstdc++-v3 -j ${jobs} install-man
-	update_library_search_path || return
-	update_shell_run_command || return
+	update_path || return
 	ln -fsv gcc ${DESTDIR}${prefix}/bin/cc || return
 	[ ! -f ${DESTDIR}${prefix}/bin/${build}-gcc-tmp ] || rm -v ${DESTDIR}${prefix}/bin/${build}-gcc-tmp || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
@@ -2130,7 +2131,7 @@ install_native_readline()
 	[ "${enable_check}" != yes ] ||
 		make -C ${readline_org_src_dir} -j ${jobs} -k check || return
 	make -C ${readline_org_src_dir} -j ${jobs} install || return
-	update_library_search_path || return
+	update_path || return
 }
 
 install_native_ncurses()
@@ -2185,7 +2186,7 @@ EOF
 			--enable-termcap --enable-widec --enable-colors --with-pthread --enable-reentrant) || return
 	make -C ${ncurses_org_src_dir} -j 1 || return # XXX work around for parallel make
 	make -C ${ncurses_org_src_dir} -j ${jobs} install || return
-	update_library_search_path || return
+	update_path || return
 	for h in `find ${DESTDIR}${prefix}/include/ncurses -type f -name '*.h'`; do
 		ln -fsv `echo ${h} | sed -e "s%${DESTDIR}${prefix}/include/%%"` ${DESTDIR}${prefix}/include || return
 	done
@@ -2290,8 +2291,7 @@ install_native_zlib()
 	[ "${enable_check}" != yes ] ||
 		make -C ${zlib_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${zlib_src_dir_ntv} -j ${jobs} install || return
-	update_library_search_path || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_libpng()
@@ -2311,8 +2311,7 @@ install_native_libpng()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libpng_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${libpng_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_libtiff()
@@ -2329,8 +2328,7 @@ install_native_libtiff()
 	[ "${enable_check}" != yes ] ||
 		make -C ${tiff_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${tiff_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_libjpeg()
@@ -2347,7 +2345,7 @@ install_native_libjpeg()
 	[ "${enable_check}" != yes ] ||
 		make -C ${jpeg_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${jpeg_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
+	update_path || return
 }
 
 install_native_giflib()
@@ -2364,7 +2362,7 @@ install_native_giflib()
 	[ "${enable_check}" != yes ] ||
 		make -C ${giflib_src_dir_ntv} -j ${jobs} -k check || return
 	make -C ${giflib_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
+	update_path || return
 }
 
 install_native_libXpm()
@@ -2382,8 +2380,7 @@ install_native_libXpm()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libXpm_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libXpm_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_libwebp()
@@ -2402,8 +2399,7 @@ install_native_libwebp()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libwebp_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libwebp_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_libffi()
@@ -2418,8 +2414,7 @@ install_native_libffi()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libffi_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libffi_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_glib()
@@ -2439,8 +2434,7 @@ install_native_glib()
 			PCRE_CFLAGS=-I`get_include_path pcre.h` PCRE_LIBS="-L`get_library_path libpcre.so` -lpcre") || return
 	make -C ${glib_org_src_dir} -j ${jobs} || return
 	make -C ${glib_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 #install_native_cairo()
@@ -2453,7 +2447,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${cairo_org_src_dir} -j ${jobs} || return
 #	make -C ${cairo_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_pixman()
@@ -2466,7 +2460,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${pixman_org_src_dir} -j ${jobs} || return
 #	make -C ${pixman_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_pango()
@@ -2482,7 +2476,7 @@ install_native_glib()
 #			--disable-silent-rules) || return
 #	make -C ${pango_org_src_dir} -j ${jobs} || return
 #	make -C ${pango_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_gdk_pixbuf()
@@ -2498,7 +2492,7 @@ install_native_glib()
 #			--disable-silent-rules) || return
 #	make -C ${gdk_pixbuf_org_src_dir} -j ${jobs} || return
 #	make -C ${gdk_pixbuf_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_atk()
@@ -2514,7 +2508,7 @@ install_native_glib()
 #			--disable-silent-rules) || return
 #	make -C ${atk_org_src_dir} -j ${jobs} || return
 #	make -C ${atk_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_gobject_introspection()
@@ -2530,7 +2524,7 @@ install_native_glib()
 #			--disable-silent-rules) || return
 #	make -C ${gobject_introspection_org_src_dir} -j ${jobs} || return
 #	make -C ${gobject_introspection_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_inputproto()
@@ -2543,7 +2537,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${inputproto_org_src_dir} -j ${jobs} || return
 #	make -C ${inputproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_xtrans()
@@ -2556,7 +2550,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${xtrans_org_src_dir} -j ${jobs} || return
 #	make -C ${xtrans_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_libX11()
@@ -2573,7 +2567,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libX11_org_src_dir} -j ${jobs} || return
 #	make -C ${libX11_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_libxcb()
@@ -2587,7 +2581,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libxcb_org_src_dir} -j ${jobs} || return
 #	make -C ${libxcb_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_xcb_proto()
@@ -2600,7 +2594,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${xcb_proto_org_src_dir} -j ${jobs} || return
 #	make -C ${xcb_proto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_xextproto()
@@ -2613,7 +2607,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${xextproto_org_src_dir} -j ${jobs} || return
 #	make -C ${xextproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_libXext()
@@ -2627,7 +2621,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libXext_org_src_dir} -j ${jobs} || return
 #	make -C ${libXext_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_fixesproto()
@@ -2640,7 +2634,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${fixesproto_org_src_dir} -j ${jobs} || return
 #	make -C ${fixesproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_libXfixes()
@@ -2654,7 +2648,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libXfixes_org_src_dir} -j ${jobs} || return
 #	make -C ${libXfixes_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_damageproto()
@@ -2667,7 +2661,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${damageproto_org_src_dir} -j ${jobs} || return
 #	make -C ${damageproto_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_libXdamage()
@@ -2682,7 +2676,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libXdamage_org_src_dir} -j ${jobs} || return
 #	make -C ${libXdamage_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_libXt()
@@ -2695,7 +2689,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libXt_org_src_dir} -j ${jobs} || return
 #	make -C ${libXt_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_xproto()
@@ -2744,7 +2738,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libpciaccess_org_src_dir} -j ${jobs} || return
 #	make -C ${libpciaccess_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_libdrm()
@@ -2759,7 +2753,7 @@ install_native_glib()
 #			--enable-static) || return
 #	make -C ${libdrm_org_src_dir} -j ${jobs} || return
 #	make -C ${libdrm_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_dri2proto()
@@ -2808,7 +2802,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libxshmfence_org_src_dir} -j ${jobs} || return
 #	make -C ${libxshmfence_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_mesa()
@@ -2832,7 +2826,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${mesa_org_src_dir} -j ${jobs} || return
 #	make -C ${mesa_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_libepoxy()
@@ -2846,7 +2840,7 @@ install_native_glib()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libepoxy_org_src_dir} -j ${jobs} || return
 #	make -C ${libepoxy_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_gtk()
@@ -2867,7 +2861,7 @@ install_native_glib()
 #			--disable-silent-rules) || return
 #	make -C ${gtk_org_src_dir} -j ${jobs} || return
 #	make -C ${gtk_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_library_search_path || return
+#	update_path || return
 #}
 #
 #install_native_webkitgtk()
@@ -2932,7 +2926,7 @@ install_native_libiconv()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libiconv_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libiconv_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
+	update_path || return
 }
 
 install_native_vim()
@@ -3069,8 +3063,7 @@ install_native_pcre()
 	[ "${enable_check}" != yes ] ||
 		make -C ${pcre_org_src_dir} -j ${jobs} -k check || return
 	make -C ${pcre_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_pcre2()
@@ -3090,8 +3083,7 @@ install_native_pcre2()
 	[ "${enable_check}" != yes ] ||
 		make -C ${pcre2_org_src_dir} -j ${jobs} -k check || return
 	make -C ${pcre2_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_the_silver_searcher()
@@ -3113,7 +3105,7 @@ install_native_the_silver_searcher()
 	[ "${enable_check}" != yes ] ||
 		make -C ${the_silver_searcher_org_src_dir} -j ${jobs} -k check || return
 	make -C ${the_silver_searcher_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_the_platinum_searcher()
@@ -3154,7 +3146,7 @@ install_native_graphviz()
 	[ "${enable_check}" != yes ] ||
 		make -C ${graphviz_org_src_dir} -j ${jobs} -k check || return
 	make -C ${graphviz_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_doxygen()
@@ -3280,8 +3272,7 @@ install_native_libevent()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libevent_org_src_dir}-stable -j ${jobs} -k check || return
 	make -C ${libevent_org_src_dir}-stable -j ${jobs} install || return
-	update_library_search_path || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_tmux()
@@ -3362,7 +3353,7 @@ install_native_bash()
 	[ "${enable_check}" != yes ] ||
 		make -C ${bash_org_src_dir} -j ${jobs} -k check || return
 	make -C ${bash_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_pkg_config_path || return
+	update_path || return
 	ln -fsv bash ${DESTDIR}${prefix}/bin/sh || return
 }
 
@@ -3433,8 +3424,7 @@ install_native_openssl()
 	[ "${enable_check}" != yes ] ||
 		make -C ${openssl_org_src_dir} -j 1 -k test || return # XXX work around for parallel make
 	make -C ${openssl_org_src_dir} -j 1 INSTALL_PREFIX=${DESTDIR} install || return # XXX work around for parallel make
-	update_library_search_path || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_openssh()
@@ -3469,8 +3459,7 @@ install_native_curl()
 		--enable-manual --enable-ipv6 --with-ssl) || return
 	make -C ${curl_org_src_dir} -j ${jobs} || return
 	make -C ${curl_org_src_dir} -j ${jobs} install || return
-	update_library_search_path || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_expat()
@@ -3485,8 +3474,7 @@ install_native_expat()
 	[ "${enable_check}" != yes ] ||
 		make -C ${expat_org_src_dir} -j ${jobs} -k check || return
 	make -C ${expat_org_src_dir} -j ${jobs} INSTALL_ROOT=${DESTDIR} install || return
-	update_library_search_path || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_asciidoc()
@@ -3517,8 +3505,7 @@ install_native_libxml2()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libxml2_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libxml2_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_libxslt()
@@ -3534,7 +3521,7 @@ install_native_libxslt()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libxslt_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libxslt_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_xmlto()
@@ -3565,7 +3552,7 @@ install_native_gettext()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gettext_org_src_dir} -j ${jobs} -k check || return
 	make -C ${gettext_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_library_search_path || return
+	update_path || return
 }
 
 install_native_git()
@@ -3630,7 +3617,7 @@ install_native_sqlite()
 	[ "${enable_check}" != yes ] ||
 		make -C ${sqlite_autoconf_org_src_dir} -j ${jobs} -k check || return
 	make -C ${sqlite_autoconf_org_src_dir} -j ${jobs} install || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_apr()
@@ -3646,7 +3633,7 @@ install_native_apr()
 	[ "${enable_check}" != yes ] ||
 		make -C ${apr_org_src_dir} -j ${jobs} -k check || return
 	make -C ${apr_org_src_dir} -j ${jobs} install || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_apr_util()
@@ -3664,7 +3651,7 @@ install_native_apr_util()
 	[ "${enable_check}" != yes ] ||
 		make -C ${apr_util_org_src_dir} -j ${jobs} -k check || return
 	make -C ${apr_util_org_src_dir} -j ${jobs} install || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_utf8proc()
@@ -3700,7 +3687,7 @@ install_native_subversion()
 	[ "${enable_check}" != yes ] ||
 		make -C ${subversion_org_src_dir} -j ${jobs} -k check || return
 	make -C ${subversion_org_src_dir} -j ${jobs} install || return
-	update_pkg_config_path || return
+	update_path || return
 	[ -z "${strip}" ] && return
 	for b in svn svnadmin svnbench svndumpfilter svnfsfs svnlook svnmucc svnrdump svnserve svnsync svnversion; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
@@ -3743,7 +3730,7 @@ install_native_libedit()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libedit_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libedit_org_src_dir} -j ${jobs} install || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_swig()
@@ -4045,7 +4032,7 @@ install_cross_gcc_without_headers()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_1st} -j ${jobs} -k check-target-libgcc || return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-target-libgcc || return
-	update_shell_run_command || return
+	update_path || return
 }
 
 install_cross_linux_header()
@@ -4187,7 +4174,7 @@ install_cross_functional_gcc()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k install${strip:+-${strip}} ${strip:+STRIP=${target}-strip} || true # [XXX] install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
-	update_shell_run_command || return
+	update_path || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool; do
 		[ -f ${DESTDIR}${prefix}/bin/${target}-${b}-${gcc_ver} ] || continue
 		ln -fsv ${target}-${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${target}-${b} || return
@@ -4258,7 +4245,7 @@ install_native_python()
 	[ "${enable_check}" != yes ] ||
 		make -C ${Python_org_src_dir} -j ${jobs} -k test || return
 	make -C ${Python_org_src_dir} -j ${jobs} install || return
-	update_pkg_config_path || return
+	update_path || return
 	[ -z "${strip}" ] && return
 	for v in `echo ${Python_ver} | cut -d. -f-2` `echo ${Python_ver} | cut -d. -f-2`m; do
 		[ ! -f ${DESTDIR}${prefix}/bin/python${v} ] || strip -v ${DESTDIR}${prefix}/bin/python${v} || return
@@ -4285,7 +4272,7 @@ install_native_ruby()
 	[ "${enable_check}" != yes ] ||
 		make -C ${ruby_org_src_dir} -j ${jobs} -k V=1 check || return
 	make -C ${ruby_org_src_dir} -j ${jobs} V=1 install || return
-	update_pkg_config_path || return
+	update_path || return
 	[ -z "${strip}" ] && return
 	strip -v ${prefix}/bin/ruby || return
 	strip -v ${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_org_src_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/libruby.so || return
@@ -4306,7 +4293,7 @@ install_native_go()
 	[ ! -d ${DESTDIR}${prefix}/go ] || rm -fvr ${DESTDIR}${prefix}/go || return
 	mkdir -pv ${DESTDIR}${prefix} || return
 	mv -v ${go_org_src_dir} ${DESTDIR}${prefix}/go || return
-	update_shell_run_command || return
+	update_path || return
 	GOPATH=${DESTDIR}${prefix}/.go go get golang.org/x/tools/cmd/... || return
 }
 
@@ -4339,7 +4326,7 @@ install_native_tcl()
 		make -C ${tcl_org_src_dir}/unix -j ${jobs} -k test || return
 	make -C ${tcl_org_src_dir}/unix -j ${jobs} install || return
 	make -C ${tcl_org_src_dir}/unix -j ${jobs} install-private-headers || return
-	update_pkg_config_path || return
+	update_path || return
 	ln -fsv tclsh`echo ${tcl_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/bin/tclsh || return
 	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/tclsh || return
 }
@@ -4388,7 +4375,7 @@ install_native_libatomic_ops()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libatomic_ops_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libatomic_ops_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_gc()
@@ -4405,7 +4392,7 @@ install_native_gc()
 	make -C ${gc_org_src_dir} -j ${jobs} || return
 	make -C ${gc_org_src_dir} -j ${jobs} check || return
 	make -C ${gc_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_guile()
@@ -4495,7 +4482,7 @@ EOF
 	make -C ${lua_org_src_dir} -j ${jobs} INSTALL_TOP=${DESTDIR}${prefix} install || return
 	mv -v ${DESTDIR}${prefix}/lib/liblua.so ${DESTDIR}${prefix}/lib/liblua.so.`echo ${lua_ver} | cut -d. -f-2` || return
 	ln -fsv liblua.so.`echo ${lua_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/lib/liblua.so || return
-	update_library_search_path || return
+	update_path || return
 	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/lua ${DESTDIR}${prefix}/bin/luac || return
 }
 
@@ -4542,7 +4529,7 @@ install_native_x264()
 		${strip:+--enable-strip}) || return
 	make -C ${x264_org_src_dir} -j ${jobs} || return
 	make -C ${x264_org_src_dir} -j ${jobs} install || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_x265()
@@ -4561,7 +4548,7 @@ install_native_x265()
 		-DNATIVE_BUILD=ON) || return
 	make -C ${x265_org_src_dir}/source -j ${jobs} || return
 	make -C ${x265_org_src_dir}/source -j ${jobs} install || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_libav()
@@ -4641,7 +4628,7 @@ install_native_opencv()
 	[ "${enable_check}" != yes ] ||
 		make -C ${opencv_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${opencv_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
-	update_pkg_config_path || return
+	update_path || return
 }
 
 install_native_googletest()
@@ -4657,8 +4644,7 @@ install_native_googletest()
 		-DBUILD_SHARED_LIBS=ON ${googletest_org_src_dir}/googletest) || return
 	make -C ${googletest_bld_dir_ntv} -j ${jobs} || return
 	make -C ${googletest_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
-	update_pkg_config_path || return
-	update_library_search_path || return
+	update_path || return
 }
 
 install_native_fzf()
