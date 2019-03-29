@@ -62,4 +62,5 @@ USER ${username}
 WORKDIR /home/${username}
 ENV LANG=ja_JP.utf8 SHELL=/usr/local/bin/zsh
 CMD ["/usr/local/bin/zsh", "-l"]
-RUN echo 'colorscheme molokai' > .vim/vimrc.local.vim
+RUN echo 'colorscheme molokai' > .vim/vimrc.local.vim && \
+{ echo | vim --not-a-term -c qall > /dev/null || true;}
