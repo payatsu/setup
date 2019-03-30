@@ -49,6 +49,8 @@ for p in cmake llvm libcxx libcxxabi compiler_rt cfe; do \
 	./install_toolchain.sh -p ${prefix} -j 4 force_install=yes install_native_${p} || exit; \
 done && ./install_toolchain.sh -p ${prefix} clean
 
+# TODO: add 'fzf'
+
 ARG username=dev
 COPY dotfiles /etc/skel
 RUN rm -v /etc/skel/install.sh /etc/skel/seq.puml && \
@@ -63,4 +65,4 @@ WORKDIR /home/${username}
 ENV LANG=ja_JP.utf8 SHELL=/usr/local/bin/zsh
 CMD ["/usr/local/bin/zsh", "-l"]
 RUN echo 'colorscheme molokai' > .vim/vimrc.local.vim && \
-{ echo | vim --not-a-term -c qall > /dev/null || true;}
+vim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .vim/vimrc -U NONE -i NONE -V1 -e -s
