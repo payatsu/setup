@@ -585,7 +585,7 @@ fetch()
 				http://tukaani.org/xz/${xz_name}.tar.bz2 || return;;
 	bzip2)
 		check_archive ${bzip2_org_src_dir} ||
-			wget -O ${bzip2_org_src_dir}.tar.gz \
+			wget --no-check-certificate -O ${bzip2_org_src_dir}.tar.gz \
 				https://sourceforge.net/projects/bzip2/files/${bzip2_name}.tar.gz/download || return;;
 	lzip)
 		check_archive ${lzip_org_src_dir} ||

@@ -5,51 +5,33 @@ RUN apt-get update && apt-get upgrade -y
 COPY install_toolchain.sh .
 ARG prefix=/usr/local
 
-RUN apt-get install -y --no-install-recommends wget xz-utils && \
-./install_toolchain.sh -p ${prefix} -j 4 install_prerequisites
-
+RUN echo Asia/Tokyo > /etc/timezone && \
+DEBIAN_FRONTEND=noninteractive \
+apt-get install -y --no-install-recommends tzdata && \
+apt-get install -y --no-install-recommends \
+wget xz-utils \
+make gcc g++ autoconf automake \
+libz-dev libbz2-dev bison texinfo \
+libncurses5-dev libreadline-dev \
+openssh-client libssl-dev libcurl4-openssl-dev ca-certificates \
+libexpat1-dev libpcre2-dev asciidoc xmlto gettext tcl-dev tk-dev \
+libffi-dev \
+graphviz openjdk-11-jre \
+libperl-dev libpython-dev libgnomeui-dev libxt-dev \
+gperf \
+libedit-dev swig
 #======================================================================
 # FIXME: build error for go 1.12.1 with go 1.10.3(GCC8.3.0)
+# FIXME: can't build Emacs26 in Dockerfile. webkit2gtk-4.0-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev
 #======================================================================
-RUN apt-get install -y --no-install-recommends libz-dev bison texinfo && \
-for p in binutils elfutils gmp mpfr mpc isl gcc; do\
-	./install_toolchain.sh -p ${prefix} -j 4 install_native_${p} || exit; \
-done && \
-DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-openssh-client libssl-dev libcurl4-openssl-dev libexpat1-dev libpcre2-dev asciidoc xmlto gettext tcl-dev tk-dev && \
-./install_toolchain.sh -p ${prefix} -j 4 install_native_git && \
-apt-get install -y --no-install-recommends libffi-dev ca-certificates && \
-for p in python ruby go; do \
+RUN for p in binutils elfutils gmp mpfr mpc isl gcc git python ruby go gdb \
+zsh bash screen libevent tmux plantuml patch lua vim libiconv ctags \
+global the_silver_searcher the_platinum_searcher highway fzf; do \
 	./install_toolchain.sh -p ${prefix} -j 4 go_ver=1.11.6 install_native_${p} || exit; \
 done && \
-apt-get install -y --no-install-recommends libncurses5-dev libreadline-dev && \
-./install_toolchain.sh -p ${prefix} -j 4 install_native_gdb && \
-for p in zsh bash; do \
-	./install_toolchain.sh -p ${prefix} -j 4 install_native_${p} || exit; \
-done && \
-for p in screen libevent tmux; do \
-	./install_toolchain.sh -p ${prefix} -j 4 install_native_${p} || exit; \
-done && \
-apt-get install -y --no-install-recommends graphviz openjdk-11-jre && \
-for p in plantuml patch; do \
-	./install_toolchain.sh -p ${prefix} -j 4 install_native_${p} || exit; \
-done && ./install_toolchain.sh -p ${prefix} clean
-
-# FIXME: 'webkit2gtk-4.0' may be required for emacs. disable 'exec-shield' also may be required.
-RUN apt-get install -y --no-install-recommends libperl-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev && \
-for p in lua vim libiconv ctags; do \
-	./install_toolchain.sh -p ${prefix} -j 4 install_native_${p} || exit; \
-done && \
-apt-get install -y --no-install-recommends gperf && \
-for p in global the_silver_searcher the_platinum_searcher highway; do \
-	./install_toolchain.sh -p ${prefix} -j 4 install_native_${p} || exit; \
-done && \
-apt-get install -y --no-install-recommends libbz2-dev libedit-dev swig && \
 for p in cmake llvm libcxx libcxxabi compiler_rt cfe; do \
 	./install_toolchain.sh -p ${prefix} -j 4 force_install=yes install_native_${p} || exit; \
 done && ./install_toolchain.sh -p ${prefix} clean
-
-# TODO: add 'fzf'
 
 ARG username=dev
 COPY dotfiles /etc/skel
