@@ -45,6 +45,7 @@ echo `which zsh` >> /etc/shells && groupadd ${username} && \
 useradd -g ${username} -m -s `which zsh` ${username} && \
 echo root:root | chpasswd && \
 echo ${username}:${username} | chpasswd && \
+apt-get update && \
 apt-get install -y --no-install-recommends language-pack-ja && \
 apt-get autoremove -y && apt-get autoclean -y
 USER ${username}
