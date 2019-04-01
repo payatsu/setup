@@ -164,7 +164,7 @@
 : ${libgcrypt_ver:=1.8.4}
 : ${libksba_ver:=1.3.5}
 : ${libassuan_ver:=2.5.1}
-: ${gnupg_ver:=2.2.14}
+: ${gnupg_ver:=2.2.15}
 
 # TODO X11周りのインストールは未着手。
 : ${xtrans_ver:=1.3.5}
