@@ -1,5 +1,6 @@
 ARG baseimage=ubuntu
 ARG prefix=/usr/local
+ARG prefixbase=local
 
 FROM ${baseimage} AS builder
 ARG prefix
@@ -32,13 +33,27 @@ for p in cmake llvm libcxx libcxxabi compiler_rt cfe; do \
 	./install_toolchain.sh -p ${prefix} -j 4 force_install=yes install_native_${p} || exit; \
 done && ./install_toolchain.sh -p ${prefix} clean
 
-FROM ${baseimage}
+FROM ${baseimage} AS dev
 ARG prefix
+ARG prefixbase
 ARG username=dev
 
 COPY --from=builder ${prefix} ${prefix}
+COPY --from=builder /etc/ld.so.conf.d/${prefixbase}.conf /etc/ld.so.conf.d/${prefixbase}.conf
 COPY dotfiles /etc/skel
 RUN \
+apt-get update && apt-get upgrade -y && \
+echo Asia/Tokyo > /etc/timezone && \
+DEBIAN_FRONTEND=noninteractive \
+apt-get install -y --no-install-recommends tzdata && \
+apt-get install -y --no-install-recommends \
+libc6-dev \
+libreadline7 \
+libssl1.1 libcurl4-openssl-dev ca-certificates \
+libexpat1 libpcre2-8-0 libxml2 \
+libpython2.7 libgnomeui-0 libxt6 \
+libedit2 \
+&& \
 ldconfig && \
 rm -v /etc/skel/install.sh /etc/skel/seq.puml && \
 echo `which zsh` >> /etc/shells && groupadd ${username} && \
