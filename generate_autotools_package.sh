@@ -67,7 +67,7 @@ noinst_PROGRAMS = testsuite
 testsuite_SOURCES = test.cpp
 nodist_testsuite_SOURCES = gtest/gtest.h gtest/gtest-all.cc
 testsuite_CPPFLAGS = -I../src
-testsuite_CXXFLAGS = -std=c++11 --coverage \$(warning_options) \$(sanitizer_flags)
+testsuite_CXXFLAGS = -std=c++17 --coverage \$(warning_options) \$(sanitizer_flags)
 ## XXX: Warning suppresions(workaround) for Google Test header("gtest/gtest.h").
 testsuite_CXXFLAGS += -Wno-abi-tag -Wno-ctor-dtor-privacy -Wno-duplicated-branches \\
 -Wno-effc++ -Wno-missing-declarations -Wno-multiple-inheritance -Wno-namespaces \\
