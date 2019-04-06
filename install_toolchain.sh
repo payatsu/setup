@@ -28,7 +28,7 @@
 : ${gzip_ver:=1.10}
 : ${lzip_ver:=1.21}
 : ${lunzip_ver:=1.9}
-: ${wget_ver:=1.20.1}
+: ${wget_ver:=1.20.3}
 : ${pkg_config_ver:=0.29.2}
 : ${texinfo_ver:=6.6}
 : ${coreutils_ver:=8.31}
@@ -114,7 +114,7 @@
 : ${libxslt_ver:=1.1.32}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.19.8}
-: ${git_ver:=2.20.1}
+: ${git_ver:=2.21.0}
 : ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=4.9}
 : ${sqlite_autoconf_ver:=3260000}
@@ -138,7 +138,7 @@
 : ${Python_ver:=3.7.3}
 : ${Python2_ver:=2.7.15} # internal use only.
 : ${ruby_ver:=2.6.2}
-: ${go_ver:=1.12.1}
+: ${go_ver:=1.12.2}
 : ${perl_ver:=5.28.1}
 : ${tcl_ver:=8.6.9}
 : ${tk_ver:=8.6.9}
