@@ -4313,7 +4313,8 @@ install_native_perl()
 		./Configure -de -Dprefix=${prefix} -Dcc=${CC:-gcc} \
 			-Dusethreads -Duse64bitint -Duse64bitall -Dusemorebits -Duseshrplib) || return
 	make -C ${perl_org_src_dir} -j 1 || return
-	make -C ${perl_org_src_dir} -j ${jobs} test || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${perl_org_src_dir} -j ${jobs} -k test || return
 	make -C ${perl_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 	ln -fsv `find ${DESTDIR}${prefix}/lib -type f -name libperl.so | sed -e s%^${DESTDIR}${prefix}/lib/%%` ${DESTDIR}${prefix}/lib || return
 }
