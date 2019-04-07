@@ -12,24 +12,29 @@ DEBIAN_FRONTEND=noninteractive \
 apt-get install -y --no-install-recommends tzdata && \
 apt-get install -y --no-install-recommends \
 wget xz-utils \
-make gcc g++ autoconf automake \
-libz-dev libbz2-dev bison texinfo \
+make gcc g++ \
+libz-dev libbz2-dev liblzma-dev bison texinfo \
 libncurses5-dev libreadline-dev \
 openssh-client libssl-dev libcurl4-openssl-dev ca-certificates \
 libexpat1-dev libpcre2-dev asciidoc xmlto gettext tcl-dev tk-dev \
 libffi-dev \
 graphviz openjdk-11-jre \
-libperl-dev libpython-dev libgnomeui-dev libxt-dev \
+libpython-dev libgnomeui-dev libxt-dev \
 gperf \
 libedit-dev swig && \
 : "FIXME: build error for go 1.12.1 with go 1.10.3(GCC8.3.0)" && \
 : "FIXME: can't build Emacs26 in Dockerfile. webkit2gtk-4.0-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev" && \
-for p in binutils elfutils gmp mpfr mpc isl gcc git python ruby go gdb \
-zsh bash screen libevent tmux plantuml patch lua vim libiconv ctags \
-global the_silver_searcher the_platinum_searcher highway fzf; do \
+for p in \
+binutils gmp mpfr mpc isl gcc \
+elfutils cmake git \
+perl python ruby go \
+bison flex m4 autoconf automake libtool \
+libunistring libatomic_ops gc guile gdb \
+zsh bash screen libevent tmux plantuml patch lua vim libiconv ctags global \
+the_silver_searcher the_platinum_searcher highway fzf; do \
 	./install_toolchain.sh -p ${prefix} -j 4 go_ver=1.11.6 install_native_${p} || exit; \
 done && \
-for p in cmake llvm libcxx libcxxabi compiler_rt cfe; do \
+for p in llvm libcxx libcxxabi compiler_rt cfe; do \
 	./install_toolchain.sh -p ${prefix} -j 4 force_install=yes install_native_${p} || exit; \
 done && ./install_toolchain.sh -p ${prefix} clean
 
@@ -48,10 +53,12 @@ DEBIAN_FRONTEND=noninteractive \
 apt-get install -y --no-install-recommends tzdata && \
 apt-get install -y --no-install-recommends \
 libc6-dev \
+liblzma5 \
 libreadline7 \
 libssl1.1 libcurl4-openssl-dev ca-certificates \
 libexpat1 libpcre2-8-0 libxml2 \
 libpython2.7 libgnomeui-0 libxt6 \
+graphviz openjdk-11-jre \
 libedit2 \
 && \
 ldconfig && \
