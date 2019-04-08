@@ -26,10 +26,8 @@ libedit-dev swig && \
 : "FIXME: can't build Emacs26 in Dockerfile. webkit2gtk-4.0-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev" && \
 for p in \
 binutils gmp mpfr mpc isl gcc \
-elfutils cmake git \
-perl python ruby go \
-bison flex m4 autoconf automake libtool \
-libunistring libatomic_ops gc guile gdb \
+elfutils bison flex m4 perl autoconf automake libtool cmake git \
+python ruby go libunistring libatomic_ops gc guile gdb \
 zsh bash screen libevent tmux plantuml patch lua vim libiconv ctags global \
 the_silver_searcher the_platinum_searcher highway fzf; do \
 	./install_toolchain.sh -p ${prefix} -j 4 go_ver=1.11.6 install_native_${p} || exit; \
