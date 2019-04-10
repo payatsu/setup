@@ -16,8 +16,7 @@ make gcc g++ \
 libz-dev libbz2-dev liblzma-dev bison texinfo \
 libncurses5-dev libreadline-dev \
 openssh-client libssl-dev libcurl4-openssl-dev ca-certificates \
-libexpat1-dev libpcre2-dev asciidoc xmlto gettext tcl-dev tk-dev \
-libffi-dev \
+libexpat1-dev libpcre2-dev asciidoc xmlto gettext \
 graphviz openjdk-11-jre \
 libpython-dev libgnomeui-dev libxt-dev \
 gperf \
@@ -26,9 +25,10 @@ libedit-dev swig && \
 : "FIXME: can't build Emacs26 in Dockerfile. webkit2gtk-4.0-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev" && \
 for p in \
 binutils gmp mpfr mpc isl gcc \
-elfutils bison flex m4 perl autoconf automake libtool cmake git \
-python ruby go libunistring libatomic_ops gc guile gdb \
-zsh bash screen libevent tmux plantuml patch lua vim libiconv ctags global \
+elfutils bison flex m4 perl autoconf automake libtool cmake \
+libffi libiconv glib pkg_config \
+python ruby tcl tk libunistring libatomic_ops gc guile gdb git go \
+zsh bash screen libevent tmux plantuml patch lua vim ctags global \
 the_silver_searcher the_platinum_searcher highway fzf; do \
 	./install_toolchain.sh -p ${prefix} -j 4 go_ver=1.11.6 install_native_${p} || exit; \
 done && \
@@ -55,8 +55,8 @@ liblzma5 \
 libreadline7 \
 libssl1.1 libcurl4-openssl-dev ca-certificates \
 libexpat1 libpcre2-8-0 libxml2 \
-libpython2.7 libgnomeui-0 libxt6 \
 graphviz openjdk-11-jre \
+libpython2.7 libgnomeui-0 libxt6 \
 libedit2 \
 && \
 ldconfig && \
