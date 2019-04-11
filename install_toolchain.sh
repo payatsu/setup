@@ -1434,7 +1434,7 @@ get_library_path()
 
 search_header()
 {
-	for dir in ${DESTDIR}${prefix}/include ${DESTDIR}${prefix}/lib/libffi-*/include \
+	for dir in ${DESTDIR}${prefix}/include \
 		`LANG=C ${CC:-gcc} -x c -E -v /dev/null -o /dev/null 2>&1 |
 			sed -e '/^#include /,/^End of search list.$/p;d' | xargs realpath -eq`; do
 		[ -d ${dir}${2:+/${2}} ] || continue
@@ -2414,6 +2414,10 @@ install_native_libffi()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libffi_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libffi_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	[ -d ${DESTDIR}${prefix}/include ] || mkdir -pv ${DESTDIR}${prefix}/include || return
+	for f in `find ${DESTDIR}${prefix}/lib/${libffi_name}/include -type f -name '*.h'`; do
+		ln -fsv ../lib/${libffi_name}/include/`basename ${f}` ${DESTDIR}${prefix}/include/`basename ${f}` || return
+	done
 	update_path || return
 }
 
