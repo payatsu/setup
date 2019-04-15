@@ -2418,6 +2418,9 @@ install_native_libffi()
 	for f in `find ${DESTDIR}${prefix}/lib/${libffi_name}/include -type f -name '*.h'`; do
 		ln -fsv ../lib/${libffi_name}/include/`basename ${f}` ${DESTDIR}${prefix}/include/`basename ${f}` || return
 	done
+	for f in `find ${DESTDIR}${prefix}/lib64 -name 'libffi.a' -o -name 'libffi.la' -o -name 'libffi.so' -o -name 'libffi.so.?'`; do
+		ln -fsv ../lib64/`basename ${f}` ${DESTDIR}${prefix}/lib || return
+	done
 	update_path || return
 }
 
