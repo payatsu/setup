@@ -122,6 +122,7 @@
 : ${apr_util_ver:=1.6.1}
 : ${utf8proc_ver:=2.2.0}
 : ${subversion_ver:=1.11.0}
+: ${ninja_ver:=1.9.0}
 : ${cmake_ver:=3.14.0}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=3.0.12}
@@ -472,6 +473,8 @@ help()
 		Specify the version of utf8proc you want, currently '${utf8proc_ver}'.
 	subversion_ver
 		Specify the version of Subversion you want, currently '${subversion_ver}'.
+	ninja_ver
+		Specify the version of Ninja you want, currently '${ninja_ver}'.
 	cmake_ver
 		Specify the version of Cmake you want, currently '${cmake_ver}'.
 	libedit_ver
@@ -818,6 +821,10 @@ fetch()
 		check_archive ${subversion_org_src_dir} ||
 			wget -O ${subversion_org_src_dir}.tar.bz2 \
 				http://ftp.tsukuba.wide.ad.jp/software/apache/subversion/${subversion_name}.tar.bz2 || return;;
+	ninja)
+		check_archive ${ninja_org_src_dir} ||
+			wget --no-check-certificate -O ${ninja_org_src_dir}.tar.gz \
+				https://github.com/ninja-build/ninja/archive/v${ninja_ver}.tar.gz || return;;
 	cmake)
 		check_archive ${cmake_org_src_dir} ||
 			wget --no-check-certificate -O ${cmake_org_src_dir}.tar.gz \
@@ -3699,6 +3706,17 @@ install_native_subversion()
 	for b in svn svnadmin svnbench svndumpfilter svnfsfs svnlook svnmucc svnrdump svnserve svnsync svnversion; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
+}
+
+install_native_ninja()
+{
+	[ -x ${prefix}/bin/ninja -a "${force_install}" != yes ] && return
+	fetch ninja || return
+	unpack ${ninja_org_src_dir} || return
+	[ -f ${ninja_org_src_dir}/ninja ] ||
+		(cd ${ninja_org_src_dir}
+		./configure.py --bootstrap --verbose) || return
+	command install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${ninja_org_src_dir}/ninja || return
 }
 
 install_native_cmake()

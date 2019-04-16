@@ -18,7 +18,7 @@ libncurses5-dev libreadline-dev \
 openssh-client libssl-dev libcurl4-openssl-dev ca-certificates \
 libexpat1-dev libpcre2-dev asciidoc xmlto gettext \
 graphviz openjdk-11-jre \
-libpython-dev libgnomeui-dev libxt-dev \
+libpython-dev libmount-dev libgnomeui-dev libxt-dev \
 gperf \
 libedit-dev swig && \
 : "FIXME: build error for go 1.12.1 with go 1.10.3(GCC8.3.0)" && \
