@@ -41,7 +41,7 @@
 : ${autogen_ver:=5.18.16}
 : ${libtool_ver:=2.4.6}
 : ${sed_ver:=4.7}
-: ${gawk_ver:=4.2.1}
+: ${gawk_ver:=5.0.0}
 : ${make_ver:=4.2}
 : ${binutils_ver:=2.32}
 : ${elfutils_ver:=0.176}
