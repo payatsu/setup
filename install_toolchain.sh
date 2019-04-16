@@ -123,6 +123,7 @@
 : ${utf8proc_ver:=2.2.0}
 : ${subversion_ver:=1.11.0}
 : ${ninja_ver:=1.9.0}
+: ${meson_ver:=0.50.0}
 : ${cmake_ver:=3.14.0}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=3.0.12}
@@ -475,6 +476,8 @@ help()
 		Specify the version of Subversion you want, currently '${subversion_ver}'.
 	ninja_ver
 		Specify the version of Ninja you want, currently '${ninja_ver}'.
+	meson_ver
+		Specify the version of Meson you want, currently '${meson_ver}'.
 	cmake_ver
 		Specify the version of Cmake you want, currently '${cmake_ver}'.
 	libedit_ver
@@ -825,6 +828,10 @@ fetch()
 		check_archive ${ninja_org_src_dir} ||
 			wget --no-check-certificate -O ${ninja_org_src_dir}.tar.gz \
 				https://github.com/ninja-build/ninja/archive/v${ninja_ver}.tar.gz || return;;
+	meson)
+		check_archive ${meson_org_src_dir} ||
+			wget --no-check-certificate -O ${meson_org_src_dir}.tar.gz \
+				https://github.com/mesonbuild/meson/archive/${meson_ver}.tar.gz || return;;
 	cmake)
 		check_archive ${cmake_org_src_dir} ||
 			wget --no-check-certificate -O ${cmake_org_src_dir}.tar.gz \
@@ -3717,6 +3724,17 @@ install_native_ninja()
 		(cd ${ninja_org_src_dir}
 		./configure.py --bootstrap --verbose) || return
 	command install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${ninja_org_src_dir}/ninja || return
+}
+
+install_native_meson()
+{
+	[ -x ${prefix}/bin/meson -a "${force_install}" != yes ] && return
+	which python3 > /dev/null 2>&1 || install_native_python || return
+	which ninja > /dev/null 2>&1 || install_native_ninja || return
+	fetch meson || return
+	unpack ${meson_org_src_dir} || return
+	command install -D -v -t ${DESTDIR}${prefix}/bin ${meson_org_src_dir}/meson.py || return
+	ln -fsv meson.py ${DESTDIR}${prefix}/bin/meson || return
 }
 
 install_native_cmake()
