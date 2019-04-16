@@ -26,8 +26,8 @@ libedit-dev swig && \
 for p in \
 binutils gmp mpfr mpc isl gcc \
 elfutils bison flex m4 perl autoconf automake libtool cmake \
-libffi libiconv glib pkg_config \
-python ruby tcl tk libunistring libatomic_ops gc guile gdb git go \
+libffi python ninja meson libiconv glib pkg_config \
+ruby tcl tk libunistring libatomic_ops gc guile gdb git go \
 zsh bash screen libevent tmux plantuml patch lua vim ctags global \
 the_silver_searcher the_platinum_searcher highway fzf; do \
 	./install_toolchain.sh -p ${prefix} -j 4 go_ver=1.11.6 install_native_${p} || exit; \

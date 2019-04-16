@@ -192,7 +192,7 @@
 : ${libxshmfence_ver:=1.2}
 : ${mesa_ver:=12.0.3}
 : ${libepoxy_ver:=1.3.1}
-: ${glib_ver:=2.52.3}
+: ${glib_ver:=2.60.1}
 : ${cairo_ver:=1.14.6}
 : ${pixman_ver:=0.34.0}
 : ${pango_ver:=1.40.3}
@@ -3733,8 +3733,9 @@ install_native_meson()
 	which ninja > /dev/null 2>&1 || install_native_ninja || return
 	fetch meson || return
 	unpack ${meson_org_src_dir} || return
-	command install -D -v -t ${DESTDIR}${prefix}/bin ${meson_org_src_dir}/meson.py || return
-	ln -fsv meson.py ${DESTDIR}${prefix}/bin/meson || return
+	(export PYTHONPATH=${DESTDIR}${prefix}/lib/python`python3 -V | grep -oe '.\..'`/site-packages
+	mkdir -pv ${PYTHONPATH}
+	python3 ${meson_org_src_dir}/setup.py install --prefix ${DESTDIR}${prefix}) || return
 }
 
 install_native_cmake()
