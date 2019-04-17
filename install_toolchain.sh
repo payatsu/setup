@@ -1429,6 +1429,14 @@ echo ${GOPATH} | tr : '\n' | grep -qe ^${prefix}/.go\$ \
 	&& export GOPATH=${prefix}/.go`echo ${GOPATH} | sed -e 's%\(^\|:\)'${prefix}'/.go\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//;s/^./:&/'` \
 	|| export GOPATH=${prefix}/.go${GOPATH:+:${GOPATH}}
 EOF
+	! which python3 > /dev/null 2>&1 && return
+	python_site_packages=`python3 -c 'import sys; print("lib/python{}.{}/site-packages".format(*sys.version_info[:2]))'`
+	[ -d ${prefix}/${python_site_packages} ] || mkdir -pv ${prefix}/${python_site_packages} || return
+	cat <<\EOF | sed -e 's%py_place_holder%'${python_site_packages}'%g' >> ${1} || return
+echo ${PYTHONPATH} | tr : '\n' | grep -qe ^${prefix}/py_place_holder\$ \
+	&& export PYTHONPATH=${prefix}/py_place_holder`echo ${PYTHONPATH} | sed -e 's%\(^\|:\)'${prefix}'/py_place_holder\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//;s/^./:&/'` \
+	|| export PYTHONPATH=${prefix}/py_place_holder${PYTHONPATH:+:${PYTHONPATH}}
+EOF
 }
 
 search_library()
@@ -3733,8 +3741,8 @@ install_native_meson()
 	which ninja > /dev/null 2>&1 || install_native_ninja || return
 	fetch meson || return
 	unpack ${meson_org_src_dir} || return
-	(export PYTHONPATH=${DESTDIR}${prefix}/lib/python`python3 -V | grep -oe '.\..'`/site-packages
-	mkdir -pv ${PYTHONPATH}
+	python3 -c "import sys; sys.exit(int(not '${prefix}/lib/python{}.{}/site-packages'.format(*sys.version_info[:2]) in sys.path))" || update_path || return
+	(cd ${meson_org_src_dir}
 	python3 ${meson_org_src_dir}/setup.py install --prefix ${DESTDIR}${prefix}) || return
 }
 
