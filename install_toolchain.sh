@@ -2452,17 +2452,12 @@ install_native_glib()
 	search_header iconv.h > /dev/null || install_native_libiconv || return
 	search_header ffi.h > /dev/null || install_native_libffi || return
 	search_header pcre.h > /dev/null || install_native_pcre || return
+	which meson > /dev/null 2>&1 || install_native_meson || return
 	fetch glib || return
 	unpack ${glib_org_src_dir} || return
-	[ -f ${glib_org_src_dir}/Makefile ] ||
-		(cd ${glib_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --enable-static \
-			--disable-silent-rules --disable-libmount --disable-dtrace --enable-systemtap --with-libiconv \
-			CPPFLAGS="${CPPFLAGS} -I`get_include_path zlib.h`" LDFLAGS="${LDFLAGS} -L`get_library_path libiconv.so`" \
-			LIBFFI_CFLAGS=-I`get_include_path ffi.h` LIBFFI_LIBS="-L`get_library_path libffi.so` -lffi" \
-			PCRE_CFLAGS=-I`get_include_path pcre.h` PCRE_LIBS="-L`get_library_path libpcre.so` -lpcre") || return
-	make -C ${glib_org_src_dir} -j ${jobs} || return
-	make -C ${glib_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	meson ${glib_org_src_dir} ${glib_org_src_dir}/_build --prefix ${prefix} -Diconv=gnu -Dlibmount=false || return
+	ninja -v -C ${glib_org_src_dir}/_build || return
+	ninja -v -C ${glib_org_src_dir}/_build install || return
 	update_path || return
 }
 
