@@ -3600,7 +3600,8 @@ install_native_git()
 	(cd ${git_org_src_dir}
 	./configure --prefix=${prefix} --build=${build} \
 		--with-openssl=`get_prefix ssl.h openssl` --with-libpcre=`get_prefix pcre.h` \
-		--with-iconv=`get_prefix iconv.h`) || return
+		--with-iconv=`get_prefix iconv.h` --with-perl=`which perl` --with-python=`which python3` \
+		--with-zlib=`get_prefix zlib.h`) || return
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return
 	make -C ${git_org_src_dir} -j 1       V=1 LDFLAGS="${LDFLAGS} -ldl" all || return
 	make -C ${git_org_src_dir} -j ${jobs} V=1 doc || install_native_git_manpages || return
