@@ -3588,7 +3588,7 @@ install_native_git()
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return
 	search_header curl.h curl > /dev/null || install_native_curl || return
 	search_header expat.h > /dev/null || install_native_expat || return
-	search_header pcre.h > /dev/null || install_native_pcre || return
+	search_header pcre2.h > /dev/null || install_native_pcre2 || return
 	which asciidoc > /dev/null || install_native_asciidoc || return
 	which xmlto > /dev/null || install_native_xmlto || install_native_git_manpages || return
 	which msgfmt > /dev/null || install_native_gettext || return
@@ -3599,11 +3599,11 @@ install_native_git()
 	make -C ${git_org_src_dir} -j ${jobs} V=1 configure || return
 	(cd ${git_org_src_dir}
 	./configure --prefix=${prefix} --build=${build} \
-		--with-openssl=`get_prefix ssl.h openssl` --with-libpcre=`get_prefix pcre.h` \
+		--with-openssl=`get_prefix ssl.h openssl` --with-libpcre=`get_prefix pcre2.h` \
 		--with-iconv=`get_prefix iconv.h` --with-perl=`which perl` --with-python=`which python3` \
 		--with-zlib=`get_prefix zlib.h`) || return
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return
-	make -C ${git_org_src_dir} -j 1       V=1 LDFLAGS="${LDFLAGS} -ldl" all || return
+	make -C ${git_org_src_dir} -j 1       V=1 PROFILE=BUILD LDFLAGS="${LDFLAGS} -ldl" all || return
 	make -C ${git_org_src_dir} -j ${jobs} V=1 doc || install_native_git_manpages || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${git_org_src_dir} -j ${jobs} -k V=1 test || return
