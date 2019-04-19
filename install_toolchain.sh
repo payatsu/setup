@@ -2453,7 +2453,7 @@ install_native_glib()
 	search_header iconv.h > /dev/null || install_native_libiconv || return
 	search_header ffi.h > /dev/null || install_native_libffi || return
 	search_header pcre.h > /dev/null || install_native_pcre || return
-	which meson > /dev/null 2>&1 || install_native_meson || return
+	which meson > /dev/null || install_native_meson || return
 	fetch glib || return
 	unpack ${glib_org_src_dir} || return
 	meson ${glib_org_src_dir} ${glib_org_src_dir}/_build --prefix ${prefix} -Diconv=gnu -Dlibmount=false || return
@@ -3733,8 +3733,8 @@ install_native_ninja()
 install_native_meson()
 {
 	[ -x ${prefix}/bin/meson -a "${force_install}" != yes ] && return
-	which python3 > /dev/null 2>&1 || install_native_python || return
-	which ninja > /dev/null 2>&1 || install_native_ninja || return
+	which python3 > /dev/null || install_native_python || return
+	which ninja > /dev/null || install_native_ninja || return
 	fetch meson || return
 	unpack ${meson_org_src_dir} || return
 	python3 -c "import sys; sys.exit(int(not '${prefix}/lib/python{}.{}/site-packages'.format(*sys.version_info[:2]) in sys.path))" || update_path || return
@@ -4705,7 +4705,7 @@ install_native_googletest()
 install_native_fzf()
 {
 	[ -x ${prefix}/bin/fzf -a "${force_install}" != yes ] && return
-	which go > /dev/null 2>&1 || install_native_go || return
+	which go > /dev/null || install_native_go || return
 	fetch fzf || return
 	unpack ${fzf_org_src_dir} || return
 	make -C ${fzf_org_src_dir} -j ${jobs} || return
