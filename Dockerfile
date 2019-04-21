@@ -66,8 +66,10 @@ useradd -g ${username} -m -s `which zsh` ${username} && \
 echo root:root | chpasswd && \
 echo ${username}:${username} | chpasswd && \
 apt-get update && \
-apt-get install -y --no-install-recommends language-pack-ja && \
-apt-get autoremove -y && apt-get autoclean -y
+apt-get install -y --no-install-recommends locales && \
+apt-get autoremove -y && apt-get autoclean -y && \
+sed -i -e 's/^# \(ja_JP\.UTF-8 UTF-8\)$/\1/' /etc/locale.gen && \
+locale-gen
 USER ${username}
 WORKDIR /home/${username}
 ENV LANG=ja_JP.utf8 SHELL=${prefix}/bin/zsh
