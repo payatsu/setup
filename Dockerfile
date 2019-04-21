@@ -50,7 +50,7 @@ echo Asia/Tokyo > /etc/timezone && \
 DEBIAN_FRONTEND=noninteractive \
 apt-get install -y --no-install-recommends tzdata && \
 apt-get install -y --no-install-recommends \
-libc6-dev \
+libc6-dev make \
 liblzma5 \
 libreadline7 \
 libssl1.1 libcurl4-openssl-dev ca-certificates \
