@@ -75,7 +75,7 @@
 : ${libXpm_ver:=3.5.11}
 : ${libwebp_ver:=1.0.0}
 : ${libffi_ver:=3.2.1}
-: ${emacs_ver:=26.1}
+: ${emacs_ver:=26.2}
 : ${libiconv_ver:=1.15}
 : ${vim_ver:=8.1.1027}
 : ${vimdoc_ja_ver:=dummy}
@@ -1488,7 +1488,7 @@ install_prerequisites()
 		apt install -y unifdef || return # for linux kernel(microblaze)
 		apt install -y libgtk-3-dev libgnomeui-dev || return # for emacs
 		apt install -y libudev-dev || return # for webkitgtk
-		apt install -y libwebkitgtk-3.0-dev python-dev # libicu-dev # for emacs(xwidgets)
+		apt install -y libwebkit2gtk-4.0-dev python-dev # libicu-dev # for emacs(xwidgets)
 		apt install -y libgnomeui-dev libxt-dev || return # for vim
 		;;
 	Red|CentOS|\\S)
