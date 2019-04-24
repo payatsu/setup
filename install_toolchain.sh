@@ -3927,7 +3927,7 @@ install_native_clang_tools_extra()
 	mkdir -pv ${clang_tools_extra_bld_dir} || return
 	[ -f ${clang_tools_extra_bld_dir}/Makefile ] ||
 		(cd ${clang_tools_extra_bld_dir}
-		cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return
 	make -C ${clang_tools_extra_bld_dir} -j ${jobs} || return
 	make -C ${clang_tools_extra_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
