@@ -32,7 +32,7 @@ zsh bash screen libevent tmux plantuml patch lua vim ctags global \
 the_silver_searcher the_platinum_searcher highway fzf; do \
 	./install_toolchain.sh -p ${prefix} -j 4 go_ver=1.11.6 install_native_${p} || exit; \
 done && \
-for p in llvm libcxx libcxxabi compiler_rt cfe; do \
+for p in llvm libcxx libcxxabi compiler_rt cfe clang_tools_extra; do \
 	./install_toolchain.sh -p ${prefix} -j 4 force_install=yes install_native_${p} || exit; \
 done && ./install_toolchain.sh -p ${prefix} clean
 
