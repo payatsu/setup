@@ -21,7 +21,6 @@ graphviz openjdk-11-jre \
 libpython-dev libgnomeui-dev libxt-dev \
 gperf \
 libedit-dev swig && \
-: "FIXME: build error for go 1.12.1 with go 1.10.3(GCC8.3.0)" && \
 : "FIXME: can't build Emacs26 in Dockerfile. webkit2gtk-4.0-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev" && \
 for p in \
 binutils gmp mpfr mpc isl gcc \
@@ -30,7 +29,7 @@ libffi python ninja meson libiconv glib pkg_config \
 ruby tcl tk libunistring libatomic_ops gc guile gdb git go \
 zsh bash screen libevent tmux plantuml patch lua vim ctags global \
 the_silver_searcher the_platinum_searcher highway fzf; do \
-	./install_toolchain.sh -p ${prefix} -j 4 go_ver=1.11.6 install_native_${p} || exit; \
+	./install_toolchain.sh -p ${prefix} -j 4 install_native_${p} || exit; \
 done && \
 for p in llvm libcxx libcxxabi compiler_rt cfe clang_tools_extra; do \
 	./install_toolchain.sh -p ${prefix} -j 4 force_install=yes install_native_${p} || exit; \
