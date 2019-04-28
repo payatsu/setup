@@ -2265,7 +2265,7 @@ install_native_strace()
 	unpack ${strace_org_src_dir} || return
 	[ -f ${strace_org_src_dir}/Makefile ] ||
 		(cd ${strace_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --enable-mpers=check) || return
 	make -C ${strace_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${strace_org_src_dir} -j ${jobs} -k check || return
