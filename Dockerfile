@@ -19,7 +19,7 @@ libncurses5-dev libreadline-dev \
 openssh-client libssl-dev libcurl4-openssl-dev ca-certificates \
 libexpat1-dev libpcre2-dev asciidoc xmlto gettext \
 graphviz openjdk-11-jre \
-libpython-dev libgnomeui-dev libxt-dev \
+libgnomeui-dev libxt-dev \
 gperf \
 libedit-dev swig && \
 : "FIXME: can't build Emacs26 in Dockerfile. webkit2gtk-4.0-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev" && \
@@ -27,7 +27,7 @@ libedit-dev swig && \
 for p in \
 binutils gmp mpfr mpc isl gcc \
 elfutils bison flex m4 perl autoconf automake libtool xz lzip ed bc cmake \
-libffi python ninja meson libiconv glib pkg_config \
+libffi old_python python ninja meson libiconv glib pkg_config \
 ruby tcl tk libunistring libatomic_ops gc guile gdb git go \
 zsh bash screen libevent tmux plantuml patch lua vim ctags global \
 the_silver_searcher the_platinum_searcher highway fzf; do \
@@ -56,7 +56,7 @@ libreadline7 \
 libssl1.1 libcurl4-openssl-dev ca-certificates \
 libexpat1 libpcre2-8-0 libxml2 \
 graphviz openjdk-11-jre \
-libpython2.7 libgnomeui-0 libxt6 \
+libgnomeui-0 libxt6 \
 libedit2 \
 && \
 ldconfig && \

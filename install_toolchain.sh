@@ -4282,6 +4282,13 @@ install_cross_gdb()
 	make -C ${gdb_bld_dir_crs}/sim -j ${jobs} install${strip:+-${strip}} || return
 }
 
+install_native_old_python()
+{
+	Python_ver=${Python2_ver} || return
+	set_variables || return
+	install_native_python || return
+}
+
 install_native_python()
 {
 	[ -x ${prefix}/bin/python3 -a "${force_install}" != yes ] && return
