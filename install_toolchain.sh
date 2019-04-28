@@ -4715,6 +4715,8 @@ install_native_fzf()
 	cp -fv ${fzf_org_src_dir}/bin/fzf ${DESTDIR}${prefix}/bin/fzf || return
 	cp -fv ${fzf_org_src_dir}/bin/fzf-tmux ${DESTDIR}${prefix}/bin/fzf-tmux || return
 	mkdir -pv ${DESTDIR}${prefix}/share/man && cp -fvr ${fzf_org_src_dir}/man/man1 ${DESTDIR}${prefix}/share/man || return
+	mkdir -pv ${DESTDIR}${prefix}/share/vim/vim`echo ${vim_ver} | cut -d. -f-2 | tr -d .`/plugin || return
+	cp -fv ${fzf_org_src_dir}/plugin/fzf.vim ${DESTDIR}${prefix}/share/vim/vim`echo ${vim_ver} | cut -d. -f-2 | tr -d .`/plugin || return
 }
 
 install_native_jq()
