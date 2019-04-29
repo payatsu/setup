@@ -3448,6 +3448,9 @@ install_native_openssl()
 	make -C ${openssl_org_src_dir} -j 1 || return # XXX work around for parallel make
 	[ "${enable_check}" != yes ] ||
 		make -C ${openssl_org_src_dir} -j 1 -k test || return # XXX work around for parallel make
+	mkdir -pv ${DESTDIR}${prefix}/ssl || return
+	rm -fv ${DESTDIR}${prefix}/ssl/certs || return
+	ln -fsv /etc/ssl/certs ${DESTDIR}${prefix}/ssl/certs || return
 	make -C ${openssl_org_src_dir} -j 1 INSTALL_PREFIX=${DESTDIR} install || return # XXX work around for parallel make
 	update_path || return
 }
