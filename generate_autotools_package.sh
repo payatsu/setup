@@ -60,7 +60,7 @@ touch include/Makefile.am || return
 cat << EOF > src/Makefile.am || return
 bin_PROGRAMS = ${package_name}
 ${package_name}_SOURCES = main.cpp
-${package_name}_CXXFLAGS = -std=c++11 \$(warning_options)
+${package_name}_CXXFLAGS = -std=c++17 \$(warning_options)
 EOF
 cat << EOF > test/Makefile.am || return
 noinst_PROGRAMS = testsuite
