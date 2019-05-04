@@ -4199,8 +4199,10 @@ install_mingw_w64_crt()
 	mkdir -pv ${mingw_w64_bld_dir_crs_1st} || return
 	[ -f ${mingw_w64_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_crs_1st}
-		CFLAGS="${CFLAGS} -I${sysroot}/mingw/include" ${mingw_w64_src_dir_crs_1st}/configure --prefix=${sysroot}/mingw --build=${build} --host=${target} \
-			--disable-multilib --without-headers --with-sysroot=${sysroot} --with-libraries=pseh,winpthreads) || return
+		CFLAGS="${CFLAGS} -I${sysroot}/mingw/include -Wno-error=expansion-to-defined" \
+			${mingw_w64_src_dir_crs_1st}/configure --prefix=${sysroot}/mingw --build=${build} --host=${target} \
+			--disable-multilib --without-headers --with-sysroot=${sysroot} \
+			`${target}-gcc -print-file-name=libmsvcrt.a | grep -qe ^/ && echo --with-libraries=all --with-tools=all`) || return
 	make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} -k check || return
@@ -4256,6 +4258,11 @@ install_cross_gcc()
            install_cross_glibc || return;;
 	esac
 	install_cross_functional_gcc || return
+	case ${target} in
+	x86_64-w64-mingw32|i686-w64-mingw32)
+		rm -fv ${mingw_w64_bld_dir_crs_1st}/Makefile || return
+		install_mingw_w64_crt || return;; # XXX: for --with-libraries, --with-tools to MinGW-w64
+	esac
 }
 
 install_cross_gdb()
