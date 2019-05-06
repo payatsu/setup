@@ -2113,14 +2113,13 @@ install_native_gcc()
 	mkdir -pv ${gcc_bld_dir_ntv} || return
 	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_ntv}
-		with_libiconv_prefix(){ [ -n "`search_library libiconv.so`" ] && echo --with-libiconv-prefix=`get_prefix iconv.h`;}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
-			--with-isl=`get_prefix version.h isl` --with-system-zlib `with_libiconv_prefix` \
+			--with-isl=`get_prefix version.h isl` --with-system-zlib \
 			--enable-languages=${languages} --disable-multilib --enable-linker-build-id --enable-libstdcxx-debug \
 			--program-suffix=-${gcc_ver} --enable-version-specific-runtime-libs \
 		) || return
-	make -C ${gcc_bld_dir_ntv} -j ${jobs} || return
+	make -C ${gcc_bld_dir_ntv} -j ${jobs} CPPFLAGS_FOR_TARGET="${CPPFLAGS} -DLIBICONV_PLUG" || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
