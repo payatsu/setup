@@ -140,7 +140,7 @@
 : ${Python_ver:=3.7.3}
 : ${Python2_ver:=2.7.15} # internal use only.
 : ${ruby_ver:=2.6.2}
-: ${go_ver:=1.12.4}
+: ${go_ver:=1.12.5}
 : ${perl_ver:=5.28.1}
 : ${tcl_ver:=8.6.9}
 : ${tk_ver:=8.6.9}
@@ -4359,8 +4359,8 @@ install_native_go()
 	[ -d ${go_org_src_dir} ] || unpack ${go_src_base}/go${go_ver}.src || return
 	[ -d ${go_src_base}/go ] && mv -v ${go_src_base}/go ${go_org_src_dir}
 	(cd ${go_org_src_dir}/src
-	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=`which go | sed -e 's/\/bin\/go//'` \
-		GOROOT=${go_org_src_dir} GOROOT_FINAL=${DESTDIR}${prefix}/go ${go_org_src_dir}/src/make.bash) || return
+	CGO_CPPFLAGS=-I${prefix}/include \
+		GOROOT=${go_org_src_dir} GOROOT_FINAL=${DESTDIR}${prefix}/go bash -vx ${go_org_src_dir}/src/make.bash -v) || return
 	[ ! -d ${DESTDIR}${prefix}/go ] || rm -fvr ${DESTDIR}${prefix}/go || return
 	mkdir -pv ${DESTDIR}${prefix} || return
 	mv -v ${go_org_src_dir} ${DESTDIR}${prefix}/go || return
