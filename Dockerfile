@@ -8,7 +8,8 @@ ARG njobs=4
 
 RUN apt-get update && apt-get upgrade -y
 COPY install_toolchain.sh .
-RUN echo Asia/Tokyo > /etc/timezone && \
+RUN \
+echo Asia/Tokyo > /etc/timezone && \
 DEBIAN_FRONTEND=noninteractive \
 apt-get install -y --no-install-recommends tzdata && \
 apt-get install -y --no-install-recommends \
@@ -23,7 +24,6 @@ libgnomeui-dev libxt-dev \
 gperf \
 libedit-dev swig && \
 : "FIXME: can't build Emacs26 in Dockerfile. webkit2gtk-4.0-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev" && \
-: "go 1.12 can't be built withgo 1.10(GCC 8.3.0)" && \
 for p in \
 binutils gmp mpfr mpc isl gcc \
 elfutils bison flex m4 perl autoconf automake libtool xz lzip ed bc cmake \
@@ -33,6 +33,7 @@ zsh bash screen libevent tmux plantuml patch lua vim ctags global \
 the_silver_searcher the_platinum_searcher highway fzf; do \
 	./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.9 install_native_${p} || exit; \
 done && \
+./install_toolchain.sh -p ${prefix} -j ${njobs} force_install=yes install_native_go && \
 for p in llvm libcxx libcxxabi compiler_rt cfe clang_tools_extra; do \
 	./install_toolchain.sh -p ${prefix} -j ${njobs} force_install=yes install_native_${p} || exit; \
 done && ./install_toolchain.sh -p ${prefix} clean
@@ -74,5 +75,6 @@ USER ${username}
 WORKDIR /home/${username}
 ENV LANG=ja_JP.utf8 SHELL=${prefix}/bin/zsh
 CMD ${SHELL} -l
-RUN echo 'colorscheme molokai' > .vim/vimrc.local.vim && \
+RUN \
+echo 'colorscheme molokai' > .vim/vimrc.local.vim && \
 vim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .vim/vimrc -U NONE -i NONE -V1 -e -s
