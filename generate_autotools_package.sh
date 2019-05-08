@@ -42,8 +42,8 @@ sed -e '
 		iAC_CONFIG_MACRO_DIR([m4])
 		iAC_CONFIG_FILES([Makefile include/Makefile src/Makefile test/Makefile])
 		i[warning_options="-Wextra -Wcast-align -Wstrict-aliasing -Wshadow "\\
-		i`LANG=C ${CXX} -fsyntax-only -Q --help=warnings,^joined,^separate,c++ |
-		igrep -v '\''\\@<:@enabled\\@:>@\\|-Wabi@<:@^-@:>@\\|-Wc90-c99-compat\\|-Wsystem-headers\\|-Wtemplates\\|-Wtraditional@<:@^-@:>@'\'' | grep -oe '\''-W@<:@@<:@:graph:@:>@@:>@\\+'\'' | sed -e '\''s/<@<:@0-9,@:>@\\+>//'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
+		i`LANG=C ${CXX} -fsyntax-only -Q --help=warnings,^joined,^separate,common --help=warnings,^joined,^separate,c++ |
+		igrep -v '\''\\@<:@enabled\\@:>@\\|-Wabi\\|-Waggregate-return\\|-Wchkp\\|-Wc90-c99-compat\\|-Wsuggest-attribute=const\\|-Wsystem-headers\\|-Wtemplates\\|-Wtraditional@<:@^-@:>@'\'' | grep -oe '\''-W@<:@@<:@:graph:@:>@@:>@\\+'\'' | sed -e '\''s/<@<:@0-9,@:>@\\+>//'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
 		iAC_SUBST([warning_options])
 		i[system_include_dirs=`LANG=C ${CPP} ${CPPFLAGS} -v -x c /dev/null -o /dev/null 2>&1 | sed -e '\''/^#include "/,/^End of search list\\.$/p;d'\'' | sed -e '\''/^ /{s///;s/$/\\/\\\\\\\\*/;p};d'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
 		iAC_SUBST([system_include_dirs])
@@ -69,10 +69,12 @@ nodist_testsuite_SOURCES = gtest/gtest.h gtest/gtest-all.cc
 testsuite_CPPFLAGS = -I../src
 testsuite_CXXFLAGS = -std=c++17 --coverage \$(warning_options) \$(sanitizer_flags)
 ## XXX: Warning suppresions(workaround) for Google Test header("gtest/gtest.h").
-testsuite_CXXFLAGS += -Wno-abi-tag -Wno-ctor-dtor-privacy -Wno-duplicated-branches \\
--Wno-effc++ -Wno-missing-declarations -Wno-multiple-inheritance -Wno-namespaces \\
--Wno-sign-conversion -Wno-suggest-attribute=format -Wno-suggest-override \\
--Wno-switch-default -Wno-switch-enum -Wno-templates -Wno-undef -Wno-unused-const-variable \\
+testsuite_CXXFLAGS += -Wno-ctor-dtor-privacy -Wno-duplicated-branches \\
+-Wno-effc++ -Wno-inline -Wno-missing-declarations -Wno-multiple-inheritance \\
+-Wno-namespaces -Wno-null-dereference -Wno-sign-conversion -Wno-suggest-attribute=format \\
+-Wno-suggest-attribute=noreturn -Wno-suggest-attribute=pure -Wno-suggest-final-methods \\
+-Wno-suggest-final-types -Wno-suggest-override -Wno-padded -Wno-switch-default \\
+-Wno-switch-enum -Wno-templates -Wno-undef -Wno-unused-const-variable \\
 -Wno-unused-macros -Wno-useless-cast -Wno-zero-as-null-pointer-constant
 testsuite_LDFLAGS = @LIBS@
 
@@ -83,7 +85,7 @@ gtest/gtest.h: googletest-\$(gtest_ver)
 	\$^/googletest/scripts/fuse_gtest_files.py \$^/googletest .
 
 googletest-\$(gtest_ver):
-	wget --no-check-certificate -nv -O - https://github.com/google/googletest/archive/\$(gtest_ver).tar.gz | tar xzvf -
+	wget -nv -O - https://github.com/google/googletest/archive/\$(gtest_ver).tar.gz | tar xzvf -
 
 check:
 	./testsuite\$(EXEEXT)
