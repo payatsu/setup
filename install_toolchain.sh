@@ -4360,7 +4360,7 @@ install_native_go()
 	[ -d ${go_src_base}/go ] && mv -v ${go_src_base}/go ${go_org_src_dir}
 	(cd ${go_org_src_dir}/src
 	CGO_CPPFLAGS=-I${prefix}/include \
-		GOROOT=${go_org_src_dir} GOROOT_FINAL=${DESTDIR}${prefix}/go bash -vx ${go_org_src_dir}/src/make.bash -v) || return
+		GOROOT=${go_org_src_dir} GOROOT_FINAL=${DESTDIR}${prefix}/go bash ${go_org_src_dir}/src/make.bash -v) || return
 	[ ! -d ${DESTDIR}${prefix}/go ] || rm -fvr ${DESTDIR}${prefix}/go || return
 	mkdir -pv ${DESTDIR}${prefix} || return
 	mv -v ${go_org_src_dir} ${DESTDIR}${prefix}/go || return
