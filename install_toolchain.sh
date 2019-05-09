@@ -4,9 +4,7 @@
 # [TODO] pigz
 # [TODO] ulibc
 # [TODO] qemu-kvm
-# [TODO] clangで使う標準C++ライブラリをlibstdc++とlibc++で切り替えてビルドできるようにする。
 # [TODO] debかrpm化に対応する。
-# [TODO] global, tmuxでlibtinfo, libtinfotwの選択を自動化する。
 # [TODO] lib/に配置されるlibstdc++.so.*gdb.pyをなんとかする。
 # [TODO] peco
 # [TODO] Rtags
