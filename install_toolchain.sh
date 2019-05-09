@@ -1408,35 +1408,41 @@ update_path()
 generate_shell_run_command()
 {
 	mkdir -pv `dirname ${1}`
-	cat <<\EOF | sed -e '1,2{s%prefix_place_holder%'${prefix}'%;s%native_place_holder%'${build}'%}' > ${1} || return
+	func_name=`basename ${1} | tr . _ | tr -cd '[:alpha:]_'`
+	cat <<\EOF | sed -e '1,/^{$/{s%prefix_place_holder%'${prefix}'%;s%native_place_holder%'${build}'%;s%func_place_holder%'${func_name}'%}' > ${1} || return
 prefix=prefix_place_holder
 native=native_place_holder
-for p in ${prefix}/cling/bin ${prefix}/sbin ${prefix}/bin ${prefix}/go/bin; do
-	[ -d ${p} ] || continue
-	echo ${PATH} | tr : '\n' | grep -qe ^${p}\$ \
-		&& PATH=${p}`echo ${PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//;s/^./:&/"` \
-		|| PATH=${p}${PATH:+:${PATH}}
-done
-for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${native} ] && find ${prefix}/lib/gcc/${native} -mindepth 1 -maxdepth 1 -name '*.?.?' | sort -rV | head -n 1`; do
-	[ -d ${p} ] || continue
-	echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ \
-		&& export LD_LIBRARY_PATH=${p}`echo ${LD_LIBRARY_PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//;s/^./:&/"` \
-		|| export LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-done
-echo ${MANPATH} | tr : '\n' | grep -qe ^${prefix}/share/man\$ \
-	&& export MANPATH=${prefix}/share/man:`echo ${MANPATH} | sed -e 's%\(^\|:\)'${prefix}'/share/man\($\|:\)%\1\2%g;s/::/:/g;s/^://'` \
-	|| export MANPATH=${prefix}/share/man:${MANPATH}
-echo ${GOPATH} | tr : '\n' | grep -qe ^${prefix}/.go\$ \
-	&& export GOPATH=${prefix}/.go`echo ${GOPATH} | sed -e 's%\(^\|:\)'${prefix}'/.go\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//;s/^./:&/'` \
-	|| export GOPATH=${prefix}/.go${GOPATH:+:${GOPATH}}
+func_place_holder()
+{
+	for p in ${prefix}/cling/bin ${prefix}/bin ${prefix}/sbin ${prefix}/go/bin; do
+		[ -d ${p} ] || continue
+		echo ${PATH} | tr : '\n' | grep -qe ^${p}\$ \
+			&& PATH=${p}`echo ${PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//;s/^./:&/"` \
+			|| PATH=${p}${PATH:+:${PATH}}
+	done
+	echo ${GOPATH} | tr : '\n' | grep -qe ^${prefix}/.go\$ \
+		&& export GOPATH=${prefix}/.go`echo ${GOPATH} | sed -e 's%\(^\|:\)'${prefix}'/.go\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//;s/^./:&/'` \
+		|| export GOPATH=${prefix}/.go${GOPATH:+:${GOPATH}}
+	[ ${prefix} = /usr/local ] && return
+	for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${native} ] && find ${prefix}/lib/gcc/${native} -mindepth 1 -maxdepth 1 -name '*.?.?' | sort -rV | head -n 1`; do
+		[ -d ${p} ] || continue
+		echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ \
+			&& export LD_LIBRARY_PATH=${p}`echo ${LD_LIBRARY_PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//;s/^./:&/"` \
+			|| export LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+	done
+	echo ${MANPATH} | tr : '\n' | grep -qe ^${prefix}/share/man\$ \
+		&& export MANPATH=${prefix}/share/man:`echo ${MANPATH} | sed -e 's%\(^\|:\)'${prefix}'/share/man\($\|:\)%\1\2%g;s/::/:/g;s/^://'` \
+		|| export MANPATH=${prefix}/share/man:${MANPATH}
 EOF
-	! which python3 > /dev/null 2>&1 && return
+	! which python3 > /dev/null 2>&1 && echo '}\n'${func_name} >> ${1} && return
 	python_site_packages=`python3 -c 'import sys; print("lib/python{}.{}/site-packages".format(*sys.version_info[:2]))'`
 	[ -d ${prefix}/${python_site_packages} ] || mkdir -pv ${prefix}/${python_site_packages} || return
-	cat <<\EOF | sed -e 's%py_place_holder%'${python_site_packages}'%g' >> ${1} || return
-echo ${PYTHONPATH} | tr : '\n' | grep -qe ^${prefix}/py_place_holder\$ \
-	&& export PYTHONPATH=${prefix}/py_place_holder`echo ${PYTHONPATH} | sed -e 's%\(^\|:\)'${prefix}'/py_place_holder\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//;s/^./:&/'` \
-	|| export PYTHONPATH=${prefix}/py_place_holder${PYTHONPATH:+:${PYTHONPATH}}
+	cat <<\EOF | sed -e 's%py_place_holder%'${python_site_packages}'%g;$s%func_place_holder%'${func_name}'%' >> ${1} || return
+	echo ${PYTHONPATH} | tr : '\n' | grep -qe ^${prefix}/py_place_holder\$ \
+		&& export PYTHONPATH=${prefix}/py_place_holder`echo ${PYTHONPATH} | sed -e 's%\(^\|:\)'${prefix}'/py_place_holder\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//;s/^./:&/'` \
+		|| export PYTHONPATH=${prefix}/py_place_holder${PYTHONPATH:+:${PYTHONPATH}}
+}
+func_place_holder
 EOF
 }
 
