@@ -52,7 +52,7 @@ echo Asia/Tokyo > /etc/timezone && \
 DEBIAN_FRONTEND=noninteractive \
 apt-get install -y --no-install-recommends tzdata && \
 apt-get install -y --no-install-recommends \
-libc6-dev wget less make man-db \
+libc6-dev wget less make file man-db \
 libreadline7 \
 libssl1.1 libcurl4-openssl-dev ca-certificates \
 libexpat1 libpcre2-8-0 libxml2 \
