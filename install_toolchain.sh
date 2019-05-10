@@ -1285,7 +1285,7 @@ set_variables()
 	done
 
 	[ -f ${set_path_sh} ] || generate_shell_run_command ${set_path_sh} || return
-	. ${set_path_sh}
+	source_path || return
 	echo ${PATH} | tr : '\n' | grep -qe ^/sbin\$ || PATH=/sbin:${PATH}
 	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${src}/.ccache CCACHE_BASEDIR=${src} && ! mkdir -pv ${src} && return 1
 	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-gcc}" CXX="ccache ${CXX:-g++}"
@@ -1395,12 +1395,24 @@ update_pkg_config_path()
 	export PKG_CONFIG_PATH
 }
 
+source_path()
+{
+	while getopts -f arg; do
+		case ${arg} in
+		f) force_set=yes;;
+		esac
+	done
+	shift `expr ${OPTIND} - 1`
+	. ${set_path_sh} || return
+	unset force_set
+}
+
 update_path()
 {
 	update_library_search_path || return
 	update_pkg_config_path || return
 	generate_shell_run_command ${set_path_sh} || return
-	. ${set_path_sh} || return
+	source_path || return
 }
 
 generate_shell_run_command()
@@ -1421,7 +1433,7 @@ func_place_holder()
 	echo ${GOPATH} | tr : '\n' | grep -qe ^${prefix}/.go\$ \
 		&& export GOPATH=${prefix}/.go`echo ${GOPATH} | sed -e 's%\(^\|:\)'${prefix}'/.go\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//;s/^./:&/'` \
 		|| export GOPATH=${prefix}/.go${GOPATH:+:${GOPATH}}
-	[ ${prefix} = /usr/local ] && return
+	[ ${prefix} = /usr/local -a "${force_set}" != yes ] && return
 	for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${native} ] && find ${prefix}/lib/gcc/${native} -mindepth 1 -maxdepth 1 -name '*.?.?' | sort -rV | head -n 1`; do
 		[ -d ${p} ] || continue
 		echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ \
@@ -1888,7 +1900,9 @@ install_native_binutils()
 	make -C ${binutils_src_dir_ntv} -j 1 || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${binutils_src_dir_ntv} -j 1 -k check || return
+	source_path -f || return
 	make -C ${binutils_src_dir_ntv} -j 1 install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_elfutils()
