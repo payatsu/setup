@@ -82,5 +82,4 @@ ENV LANG=ja_JP.utf8 SHELL=${prefix}/bin/zsh
 CMD exec ${SHELL} -l
 RUN \
 echo colorscheme molokai > .vim/vimrc.local.vim && \
-vim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .vim/vimrc -U NONE -i NONE -V1 -e -s && \
-rm -v .vim/vimrc.swp
+vim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .vim/vimrc -U NONE -i NONE -V1 -e -s
