@@ -62,11 +62,16 @@ libedit2 \
 && \
 ldconfig && \
 rm -v /etc/skel/install.sh /etc/skel/seq.puml && \
-echo `which zsh` >> /etc/shells && groupadd ${username} && \
+echo . ${prefix}/set_path.sh > /etc/skel/.sh/.local.pre && \
+echo . '${HOME}'/.sh/.local.pre > /etc/skel/.zsh/.zshrc.local.pre && \
+echo . '${HOME}'/.sh/.local.pre > /etc/skel/.bash/.bashrc.local.pre && \
+echo `which zsh` >> /etc/shells && \
+groupadd ${username} && \
 useradd -g ${username} -m -s `which zsh` ${username} && \
 echo root:root | chpasswd && \
 echo ${username}:${username} | chpasswd && \
-apt-get update && \
+apt-get install -y --no-install-recommends sudo && \
+sed -i -e '/^root\>/a'${username}'	ALL=(ALL:ALL) NOPASSWD: ALL' /etc/sudoers && \
 apt-get install -y --no-install-recommends locales && \
 apt-get autoremove -y && apt-get autoclean -y && \
 sed -i -e 's/^# \(ja_JP\.UTF-8 UTF-8\)$/\1/' /etc/locale.gen && \
@@ -74,7 +79,8 @@ locale-gen
 USER ${username}
 WORKDIR /home/${username}
 ENV LANG=ja_JP.utf8 SHELL=${prefix}/bin/zsh
-CMD ${SHELL} -l
+CMD exec ${SHELL} -l
 RUN \
-echo 'colorscheme molokai' > .vim/vimrc.local.vim && \
-vim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .vim/vimrc -U NONE -i NONE -V1 -e -s
+echo colorscheme molokai > .vim/vimrc.local.vim && \
+vim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .vim/vimrc -U NONE -i NONE -V1 -e -s && \
+rm -v .vim/vimrc.swp
