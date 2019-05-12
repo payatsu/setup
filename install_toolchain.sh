@@ -3861,7 +3861,7 @@ install_native_libcxx()
 		(cd ${libcxx_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-			-DLLVM_LINK_LLVM_DYLIB=ON ${libcxx_org_src_dir}) || return
+			${libcxx_org_src_dir}) || return
 	make -C ${libcxx_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libcxx_bld_dir} -j ${jobs} -k check-libcxx || return
@@ -3921,6 +3921,7 @@ install_native_cfe()
 		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 			-DENABLE_LINKER_BUILD_ID=ON \
+			-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
 			-DGCC_INSTALL_PREFIX=`get_prefix iostream c++` \
 			${cfe_org_src_dir}) || return
 	make -C ${cfe_bld_dir} -j ${jobs} || return
@@ -3936,10 +3937,7 @@ install_native_clang_tools_extra()
 	which cmake > /dev/null || install_native_cmake || return
 	fetch llvm || return
 	unpack ${llvm_org_src_dir} || return
-	fetch cfe || return
-	[ -d ${llvm_org_src_dir}/tools/clang ] ||
-		(unpack ${cfe_org_src_dir} &&
-		mv -v ${cfe_org_src_dir} ${llvm_org_src_dir}/tools/clang) || return
+	place_llvm_tools cfe || return
 	fetch clang-tools-extra || return
 	[ -d ${llvm_org_src_dir}/tools/clang/tools/extra ] ||
 		(unpack ${clang_tools_extra_org_src_dir} &&
