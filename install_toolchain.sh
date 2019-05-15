@@ -3877,12 +3877,12 @@ install_native_libcxxabi()
 	search_header iostream c++/v1 > /dev/null || install_native_libcxx || return
 	fetch libcxxabi || return
 	unpack ${libcxxabi_org_src_dir} || return
-	sed -ie '/set(LLVM_CMAKE_PATH /s%share/llvm/cmake%lib/cmake/llvm%' ${libcxxabi_org_src_dir}/CMakeLists.txt || return # [XXX] workaround for LLVM 3.9.0
 	mkdir -pv ${libcxxabi_bld_dir} || return
 	[ -f ${libcxxabi_bld_dir}/Makefile ] ||
 		(cd ${libcxxabi_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${libcxxabi_org_src_dir}) || return
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+			${libcxxabi_org_src_dir}) || return
 	make -C ${libcxxabi_bld_dir} -j ${jobs} || return
 	make -C ${libcxxabi_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 	update_path || return
