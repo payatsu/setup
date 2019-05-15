@@ -3874,7 +3874,8 @@ install_native_libcxxabi()
 	[ -e ${prefix}/lib/libc++abi.so -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
-	search_header iostream c++/v1 > /dev/null || install_native_libcxx || return
+	fetch libcxx || return
+	unpack ${libcxx_org_src_dir} || return
 	fetch libcxxabi || return
 	unpack ${libcxxabi_org_src_dir} || return
 	mkdir -pv ${libcxxabi_bld_dir} || return
@@ -3882,6 +3883,7 @@ install_native_libcxxabi()
 		(cd ${libcxxabi_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+			-DLIBCXXABI_LIBCXX_PATH=${libcxx_org_src_dir} \
 			${libcxxabi_org_src_dir}) || return
 	make -C ${libcxxabi_bld_dir} -j ${jobs} || return
 	make -C ${libcxxabi_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
