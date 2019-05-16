@@ -34,7 +34,7 @@ the_silver_searcher the_platinum_searcher highway fzf; do \
 	./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.9 install_native_${p} || exit; \
 done && \
 ./install_toolchain.sh -p ${prefix} -j ${njobs} force_install=yes install_native_go && \
-for p in llvm libcxx libcxxabi compiler_rt cfe clang_tools_extra; do \
+for p in llvm libcxxabi libcxx compiler_rt cfe clang_tools_extra; do \
 	./install_toolchain.sh -p ${prefix} -j ${njobs} force_install=yes install_native_${p} || exit; \
 done && ./install_toolchain.sh -p ${prefix} clean
 

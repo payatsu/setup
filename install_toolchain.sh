@@ -1397,7 +1397,7 @@ update_pkg_config_path()
 
 source_path()
 {
-	while getopts -f arg; do
+	while getopts f arg; do
 		case ${arg} in
 		f) force_set=yes;;
 		esac
@@ -3854,7 +3854,7 @@ install_native_libcxx()
 {
 	[ -e ${prefix}/lib/libc++.so -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
-	search_header ABI.h clang/Basic > /dev/null || install_native_libcxxabi || return
+	search_library libc++abi.so > /dev/null || install_native_libcxxabi || return
 	fetch libcxxabi || return
 	unpack ${libcxxabi_org_src_dir} || return
 	fetch libcxx || return
@@ -3917,7 +3917,7 @@ install_native_cfe()
 	which cmake > /dev/null || install_native_cmake || return
 	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	search_header iostream c++/v1 > /dev/null || install_native_libcxx || return
-	search_header ABI.h clang/Basic > /dev/null || install_native_libcxxabi || return
+	search_library libc++abi.so > /dev/null || install_native_libcxxabi || return
 	search_header allocator_interface.h sanitizer > /dev/null || install_native_compiler_rt || return
 	fetch cfe || return
 	unpack ${cfe_org_src_dir} || return
