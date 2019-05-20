@@ -1155,6 +1155,12 @@ deploy()
 	echo Please add ${prefix}/bin to PATH
 }
 
+docker()
+# Build Docker container.
+{
+	command docker build -t dev --build-arg username=${USER} --build-arg njobs=${jobs} .
+}
+
 list()
 # List all commands, which include the ones not listed here.
 {
