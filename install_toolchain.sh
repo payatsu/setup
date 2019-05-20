@@ -165,6 +165,7 @@
 : ${libksba_ver:=1.3.5}
 : ${libassuan_ver:=2.5.1}
 : ${gnupg_ver:=2.2.15}
+: ${protobuf_ver:=3.7.1}
 
 # TODO X11周りのインストールは未着手。
 : ${xtrans_ver:=1.3.5}
@@ -544,6 +545,8 @@ help()
 		Specify the version of libassuan you want, currently '${libassuan_ver}'.
 	gnupg_ver
 		Specify the version of GnuPG you want, currently '${gnupg_ver}'.
+	protobuf_ver
+		Specify the version of protobuf you want, currently '${protobuf_ver}'.
 	glib_ver
 		Specify the version of GLib you want, currently '${glib_ver}'.
 
@@ -929,6 +932,10 @@ fetch()
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.bz2 \
 				https://www.gnupg.org/ftp/gcrypt/${1}/\${${_1}_name}.tar.bz2 || return;;
+	protobuf)
+		check_archive ${protobuf_org_src_dir} ||
+			wget --no-check-certificate -O ${protobuf_org_src_dir}.tar.gz \
+				https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_ver}/protobuf-all-${protobuf_ver}.tar.gz;;
 	pkg-config)
 		check_archive ${pkg_config_org_src_dir} ||
 			wget --no-check-certificate -O ${pkg_config_org_src_dir}.tar.gz \
@@ -4902,6 +4909,25 @@ install_native_gnupg()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gnupg_org_src_dir} -j ${jobs} -k check || return
 	make -C ${gnupg_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_protobuf()
+{
+	[ -x ${prefix}/bin/protoc -a "${force_install}" != yes ] && return
+	which autoconf > /dev/null || install_native_autoconf || return
+	which automake > /dev/null || install_native_automake || return
+	which libtoolize > /dev/null || install_native_libtool || return
+	which make > /dev/null || install_native_make || return
+	fetch protobuf || return
+	unpack ${protobuf_org_src_dir} || return
+	[ -f ${protobuf_org_src_dir}/Makefile ] ||
+		(cd ${protobuf_org_src_dir}
+		./configure --prefix=${prefix}) || return
+	make -C ${protobuf_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${protobuf_org_src_dir} -j ${jobs} -k check || return
+	make -C ${protobuf_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_crossed_binutils()
