@@ -3875,7 +3875,10 @@ install_native_compiler_rt()
 	[ -f ${compiler_rt_bld_dir}/Makefile ] ||
 		(cd ${compiler_rt_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${compiler_rt_org_src_dir}) || return
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+			-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
+			-DSANITIZER_CXX_ABI=libc++ \
+			${compiler_rt_org_src_dir}) || return
 	make -C ${compiler_rt_bld_dir} -j ${jobs} || return
 	make -C ${compiler_rt_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 	update_path || return
