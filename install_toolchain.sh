@@ -126,10 +126,10 @@
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=3.0.12}
 : ${llvm_ver:=8.0.0}
+: ${compiler_rt_ver:=${llvm_ver}}
 : ${libunwind_ver:=${llvm_ver}}
 : ${libcxx_ver:=${llvm_ver}}
 : ${libcxxabi_ver:=${llvm_ver}}
-: ${compiler_rt_ver:=${llvm_ver}}
 : ${cfe_ver:=${llvm_ver}}
 : ${clang_tools_extra_ver:=${llvm_ver}}
 : ${lld_ver:=${llvm_ver}}
@@ -846,7 +846,7 @@ fetch()
 		check_archive ${swig_org_src_dir} ||
 			wget --no-check-certificate --trust-server-names -O ${swig_org_src_dir}.tar.gz \
 				https://sourceforge.net/projects/swig/files/swig/${swig_name}/${swig_name}.tar.gz/download || return;;
-	llvm|libunwind|libcxx|libcxxabi|compiler-rt|cfe|clang-tools-extra|lld|lldb)
+	llvm|compiler-rt|libunwind|libcxx|libcxxabi|cfe|clang-tools-extra|lld|lldb)
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget -O \${${_1}_org_src_dir}.tar.xz \
 				http://llvm.org/releases/\${${_1}_ver}/\${${_1}_name}.tar.xz || return;;
@@ -1190,7 +1190,7 @@ set_src_directory()
 	_1=`echo ${1} | tr - _`
 
 	case ${1} in
-	llvm|libunwind|libcxx|libcxxabi|compiler-rt|cfe|clang-tools-extra|lld|lldb)
+	llvm|compiler-rt|libunwind|libcxx|libcxxabi|cfe|clang-tools-extra|lld|lldb)
 		eval ${_1}_name=${1}-\${${_1}_ver}.src
 		eval ${_1}_src_base=${src}/${1}
 		eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
@@ -3864,6 +3864,23 @@ install_native_llvm()
 	update_path || return
 }
 
+install_native_compiler_rt()
+{
+	[ -d ${prefix}/include/sanitizer -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
+	fetch compiler-rt || return
+	unpack ${compiler_rt_org_src_dir} || return
+	mkdir -pv ${compiler_rt_bld_dir} || return
+	[ -f ${compiler_rt_bld_dir}/Makefile ] ||
+		(cd ${compiler_rt_bld_dir}
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${compiler_rt_org_src_dir}) || return
+	make -C ${compiler_rt_bld_dir} -j ${jobs} || return
+	make -C ${compiler_rt_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	update_path || return
+}
+
 install_native_libunwind()
 {
 	[ -e ${prefix}/lib/libunwind.so -a "${force_install}" != yes ] && return
@@ -3928,31 +3945,14 @@ install_native_libcxxabi()
 	update_path || return
 }
 
-install_native_compiler_rt()
-{
-	[ -d ${prefix}/include/sanitizer -a "${force_install}" != yes ] && return
-	which cmake > /dev/null || install_native_cmake || return
-	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
-	fetch compiler-rt || return
-	unpack ${compiler_rt_org_src_dir} || return
-	mkdir -pv ${compiler_rt_bld_dir} || return
-	[ -f ${compiler_rt_bld_dir}/Makefile ] ||
-		(cd ${compiler_rt_bld_dir}
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${compiler_rt_org_src_dir}) || return
-	make -C ${compiler_rt_bld_dir} -j ${jobs} || return
-	make -C ${compiler_rt_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
-	update_path || return
-}
-
 install_native_cfe()
 {
 	[ -x ${prefix}/bin/clang -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
+	search_header allocator_interface.h sanitizer > /dev/null || install_native_compiler_rt || return
 	search_header iostream c++/v1 > /dev/null || install_native_libcxx || return
 	search_library libc++abi.so > /dev/null || install_native_libcxxabi || return
-	search_header allocator_interface.h sanitizer > /dev/null || install_native_compiler_rt || return
 	fetch cfe || return
 	unpack ${cfe_org_src_dir} || return
 	mkdir -pv ${cfe_bld_dir} || return
