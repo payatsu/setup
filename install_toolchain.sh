@@ -126,6 +126,7 @@
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=3.0.12}
 : ${llvm_ver:=8.0.0}
+: ${libunwind_ver:=${llvm_ver}}
 : ${libcxx_ver:=${llvm_ver}}
 : ${libcxxabi_ver:=${llvm_ver}}
 : ${compiler_rt_ver:=${llvm_ver}}
@@ -845,7 +846,7 @@ fetch()
 		check_archive ${swig_org_src_dir} ||
 			wget --no-check-certificate --trust-server-names -O ${swig_org_src_dir}.tar.gz \
 				https://sourceforge.net/projects/swig/files/swig/${swig_name}/${swig_name}.tar.gz/download || return;;
-	llvm|libcxx|libcxxabi|compiler-rt|cfe|clang-tools-extra|lld|lldb)
+	llvm|libunwind|libcxx|libcxxabi|compiler-rt|cfe|clang-tools-extra|lld|lldb)
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget -O \${${_1}_org_src_dir}.tar.xz \
 				http://llvm.org/releases/\${${_1}_ver}/\${${_1}_name}.tar.xz || return;;
@@ -1189,7 +1190,7 @@ set_src_directory()
 	_1=`echo ${1} | tr - _`
 
 	case ${1} in
-	llvm|libcxx|libcxxabi|compiler-rt|cfe|clang-tools-extra|lld|lldb)
+	llvm|libunwind|libcxx|libcxxabi|compiler-rt|cfe|clang-tools-extra|lld|lldb)
 		eval ${_1}_name=${1}-\${${_1}_ver}.src
 		eval ${_1}_src_base=${src}/${1}
 		eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
@@ -3860,6 +3861,26 @@ install_native_llvm()
 	[ "${enable_check}" != yes ] ||
 		make -C ${llvm_bld_dir} -j ${jobs} -k check || return
 	make -C ${llvm_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	update_path || return
+}
+
+install_native_libunwind()
+{
+	[ -e ${prefix}/lib/libunwind.so -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	fetch libunwind || return
+	unpack ${libunwind_org_src_dir} || return
+	mkdir -pv ${libunwind_bld_dir} || return
+	[ -f ${libunwind_bld_dir}/Makefile ] ||
+		(cd ${libunwind_bld_dir}
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+			-DLIBUNWIND_USE_COMPILER_RT=ON \
+			${libunwind_org_src_dir}) || return
+	make -C ${libunwind_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libunwind_bld_dir} -j ${jobs} -k check-unwind || return
+	make -C ${libunwind_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 	update_path || return
 }
 
