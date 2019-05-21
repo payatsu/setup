@@ -128,8 +128,8 @@
 : ${llvm_ver:=8.0.0}
 : ${compiler_rt_ver:=${llvm_ver}}
 : ${libunwind_ver:=${llvm_ver}}
-: ${libcxx_ver:=${llvm_ver}}
 : ${libcxxabi_ver:=${llvm_ver}}
+: ${libcxx_ver:=${llvm_ver}}
 : ${cfe_ver:=${llvm_ver}}
 : ${clang_tools_extra_ver:=${llvm_ver}}
 : ${lld_ver:=${llvm_ver}}
@@ -846,7 +846,7 @@ fetch()
 		check_archive ${swig_org_src_dir} ||
 			wget --no-check-certificate --trust-server-names -O ${swig_org_src_dir}.tar.gz \
 				https://sourceforge.net/projects/swig/files/swig/${swig_name}/${swig_name}.tar.gz/download || return;;
-	llvm|compiler-rt|libunwind|libcxx|libcxxabi|cfe|clang-tools-extra|lld|lldb)
+	llvm|compiler-rt|libunwind|libcxxabi|libcxx|cfe|clang-tools-extra|lld|lldb)
 		eval check_archive \${${_1}_org_src_dir} ||
 			eval wget -O \${${_1}_org_src_dir}.tar.xz \
 				http://llvm.org/releases/\${${_1}_ver}/\${${_1}_name}.tar.xz || return;;
@@ -1190,7 +1190,7 @@ set_src_directory()
 	_1=`echo ${1} | tr - _`
 
 	case ${1} in
-	llvm|compiler-rt|libunwind|libcxx|libcxxabi|cfe|clang-tools-extra|lld|lldb)
+	llvm|compiler-rt|libunwind|libcxxabi|libcxx|cfe|clang-tools-extra|lld|lldb)
 		eval ${_1}_name=${1}-\${${_1}_ver}.src
 		eval ${_1}_src_base=${src}/${1}
 		eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
@@ -3901,6 +3901,28 @@ install_native_libunwind()
 	update_path || return
 }
 
+install_native_libcxxabi()
+{
+	[ -e ${prefix}/lib/libc++abi.so -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
+	fetch libcxx || return
+	unpack ${libcxx_org_src_dir} || return
+	fetch libcxxabi || return
+	unpack ${libcxxabi_org_src_dir} || return
+	mkdir -pv ${libcxxabi_bld_dir} || return
+	[ -f ${libcxxabi_bld_dir}/Makefile ] ||
+		(cd ${libcxxabi_bld_dir}
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+			-DLIBCXXABI_LIBCXX_PATH=${libcxx_org_src_dir} \
+			-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+			${libcxxabi_org_src_dir}) || return
+	make -C ${libcxxabi_bld_dir} -j ${jobs} || return
+	make -C ${libcxxabi_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	update_path || return
+}
+
 install_native_libcxx()
 {
 	[ -e ${prefix}/lib/libc++.so -a "${force_install}" != yes ] && return
@@ -3924,35 +3946,14 @@ install_native_libcxx()
 	update_path || return
 }
 
-install_native_libcxxabi()
-{
-	[ -e ${prefix}/lib/libc++abi.so -a "${force_install}" != yes ] && return
-	which cmake > /dev/null || install_native_cmake || return
-	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
-	fetch libcxx || return
-	unpack ${libcxx_org_src_dir} || return
-	fetch libcxxabi || return
-	unpack ${libcxxabi_org_src_dir} || return
-	mkdir -pv ${libcxxabi_bld_dir} || return
-	[ -f ${libcxxabi_bld_dir}/Makefile ] ||
-		(cd ${libcxxabi_bld_dir}
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-			-DLIBCXXABI_LIBCXX_PATH=${libcxx_org_src_dir} \
-			${libcxxabi_org_src_dir}) || return
-	make -C ${libcxxabi_bld_dir} -j ${jobs} || return
-	make -C ${libcxxabi_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
-	update_path || return
-}
-
 install_native_cfe()
 {
 	[ -x ${prefix}/bin/clang -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	search_header allocator_interface.h sanitizer > /dev/null || install_native_compiler_rt || return
-	search_header iostream c++/v1 > /dev/null || install_native_libcxx || return
 	search_library libc++abi.so > /dev/null || install_native_libcxxabi || return
+	search_header iostream c++/v1 > /dev/null || install_native_libcxx || return
 	fetch cfe || return
 	unpack ${cfe_org_src_dir} || return
 	mkdir -pv ${cfe_bld_dir} || return
