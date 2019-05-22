@@ -3881,6 +3881,8 @@ install_native_compiler_rt()
 			${compiler_rt_org_src_dir}) || return
 	make -C ${compiler_rt_bld_dir} -j ${jobs} || return
 	make -C ${compiler_rt_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	mkdir -pv ${DESTDIR}${prefix}/lib/clang/${cfe_ver}/lib || return
+	mv -Tv ${DESTDIR}${prefix}/lib/linux ${DESTDIR}${prefix}/lib/clang/${cfe_ver}/lib/linux || return # XXX: workaround for mismatch between clang search path and compiler-rt installation path.
 	update_path || return
 }
 
