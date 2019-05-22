@@ -3955,6 +3955,7 @@ install_native_cfe()
 	which cmake > /dev/null || install_native_cmake || return
 	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	search_header allocator_interface.h sanitizer > /dev/null || install_native_compiler_rt || return
+	search_library libunwind.so > /dev/null || install_native_libunwind || return
 	search_library libc++abi.so > /dev/null || install_native_libcxxabi || return
 	search_header iostream c++/v1 > /dev/null || install_native_libcxx || return
 	fetch cfe || return
@@ -3966,6 +3967,7 @@ install_native_cfe()
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 			-DENABLE_LINKER_BUILD_ID=ON \
 			-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+			-DCLANG_DEFAULT_RTLIB=compiler-rt \
 			-DGCC_INSTALL_PREFIX=`get_prefix iostream c++` \
 			${cfe_org_src_dir}) || return
 	make -C ${cfe_bld_dir} -j ${jobs} || return
