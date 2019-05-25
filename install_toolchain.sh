@@ -31,7 +31,7 @@
 : ${texinfo_ver:=6.6}
 : ${coreutils_ver:=8.31}
 : ${busybox_ver:=1.30.1}
-: ${bison_ver:=3.3.1}
+: ${bison_ver:=3.4.1}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
@@ -111,7 +111,7 @@
 : ${libxml2_ver:=2.9.8}
 : ${libxslt_ver:=1.1.32}
 : ${xmlto_ver:=0.0.28}
-: ${gettext_ver:=0.19.8}
+: ${gettext_ver:=0.20.1}
 : ${git_ver:=2.21.0}
 : ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=4.9}
