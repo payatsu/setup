@@ -3965,6 +3965,10 @@ install_native_cfe()
 	search_header iostream c++/v1 > /dev/null || install_native_libcxx || return
 	fetch cfe || return
 	unpack ${cfe_org_src_dir} || return
+	fetch clang-tools-extra || return
+	[ -d ${cfe_org_src_dir}/tools/extra ] ||
+		(unpack ${clang_tools_extra_org_src_dir} &&
+		mv -v ${clang_tools_extra_org_src_dir} ${cfe_org_src_dir}/tools/extra) || return
 	mkdir -pv ${cfe_bld_dir} || return
 	[ -f ${cfe_bld_dir}/Makefile ] ||
 		(cd ${cfe_bld_dir}
@@ -3979,27 +3983,6 @@ install_native_cfe()
 	[ "${enable_check}" != yes ] ||
 		make -C ${cfe_bld_dir} -j ${jobs} -k check-all || return
 	make -C ${cfe_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
-	update_path || return
-}
-
-install_native_clang_tools_extra()
-{
-	[ -x ${prefix}/bin/clang-tidy -a "${force_install}" != yes ] && return
-	which cmake > /dev/null || install_native_cmake || return
-	fetch llvm || return
-	unpack ${llvm_org_src_dir} || return
-	place_llvm_tools cfe || return
-	fetch clang-tools-extra || return
-	[ -d ${llvm_org_src_dir}/tools/clang/tools/extra ] ||
-		(unpack ${clang_tools_extra_org_src_dir} &&
-		mv -v ${clang_tools_extra_org_src_dir} ${llvm_org_src_dir}/tools/clang/tools/extra) || return
-	mkdir -pv ${clang_tools_extra_bld_dir} || return
-	[ -f ${clang_tools_extra_bld_dir}/Makefile ] ||
-		(cd ${clang_tools_extra_bld_dir}
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} ${llvm_org_src_dir}) || return
-	make -C ${clang_tools_extra_bld_dir} -j ${jobs} || return
-	make -C ${clang_tools_extra_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 	update_path || return
 }
 
