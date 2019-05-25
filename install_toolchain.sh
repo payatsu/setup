@@ -3911,6 +3911,7 @@ install_native_libcxxabi()
 {
 	[ -e ${prefix}/lib/libc++abi.so -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
+	search_library libunwind.so > /dev/null || install_native_libunwind || return
 	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	fetch libcxx || return
 	unpack ${libcxx_org_src_dir} || return
