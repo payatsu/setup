@@ -4012,7 +4012,7 @@ install_native_lld()
 	mkdir -pv ${lld_bld_dir} || return
 	[ -f ${lld_bld_dir}/Makefile ] ||
 		(cd ${lld_bld_dir}
-		cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 			-DLLVM_LINK_LLVM_DYLIB=ON ${llvm_org_src_dir}) || return
 	make -C ${lld_bld_dir} -j ${jobs} || return
@@ -4035,7 +4035,7 @@ install_native_lldb()
 	mkdir -pv ${lldb_bld_dir} || return
 	[ -f ${lldb_bld_dir}/Makefile ] ||
 		(cd ${lldb_bld_dir}
-		cmake -DCMAKE_C_COMPILER=${CC:-clang} -DCMAKE_CXX_COMPILER=${CXX:-clang++} \
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 			-DLLVM_LINK_LLVM_DYLIB=ON \
 			-DCMAKE_C_FLAGS="${CFLAGS} -I`get_include_path Version.h clang/Basic`" \

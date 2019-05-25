@@ -22,7 +22,7 @@ libexpat1-dev libpcre2-dev asciidoc xmlto gettext \
 graphviz openjdk-11-jre \
 libgnomeui-dev libxt-dev \
 gperf \
-libedit-dev swig && \
+libedit-dev && \
 : "FIXME: can't build Emacs26 in Dockerfile. webkit2gtk-4.0-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev" && \
 for p in \
 binutils gmp mpfr mpc isl gcc \
@@ -34,7 +34,7 @@ the_silver_searcher the_platinum_searcher highway fzf; do \
 	./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.9 install_native_${p} || exit; \
 done && \
 ./install_toolchain.sh -p ${prefix} -j ${njobs} force_install=yes install_native_go && \
-for p in llvm compiler_rt libunwind libcxxabi libcxx cfe; do \
+for p in swig llvm compiler_rt libunwind libcxxabi libcxx cfe; do \
 	./install_toolchain.sh -p ${prefix} -j ${njobs} force_install=yes install_native_${p} || exit; \
 done && ./install_toolchain.sh -p ${prefix} clean
 
