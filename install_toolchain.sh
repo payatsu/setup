@@ -3835,28 +3835,14 @@ install_native_llvm()
 {
 	[ -d ${prefix}/include/llvm -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
-	[ -x ${prefix}/bin/lldb ] || {
-		search_header curses.h > /dev/null || install_native_ncurses || return
-		search_header histedit.h > /dev/null || install_native_libedit || return
-		search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
-		which swig > /dev/null || install_native_swig || return
-	}
 	fetch llvm || return
 	unpack ${llvm_org_src_dir} || return
-	[ -x ${prefix}/bin/clang ] || place_llvm_tools cfe || return
-	[ -x ${prefix}/bin/lld ] || place_llvm_tools lld || return
-	[ -x ${prefix}/bin/lldb ] || place_llvm_tools lldb || return
 	mkdir -pv ${llvm_bld_dir} || return
 	[ -f ${llvm_bld_dir}/Makefile ] ||
 		(cd ${llvm_bld_dir}
-		eval cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-			-DLLVM_LINK_LLVM_DYLIB=ON `
-			[ -x ${prefix}/bin/clang ] || echo \
-				-DGCC_INSTALL_PREFIX=\`get_prefix iostream c++\`
-			[ -x ${prefix}/bin/lldb ] || echo \
-				-DCMAKE_CXX_FLAGS=\'${CXXFLAGS} -I\`get_include_path curses.h\` -I\`get_include_path histedit.h\`\'
-			` ${llvm_org_src_dir}) || return
+			-DLLVM_LINK_LLVM_DYLIB=ON ${llvm_org_src_dir}) || return
 	make -C ${llvm_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${llvm_bld_dir} -j ${jobs} -k check || return
