@@ -167,6 +167,7 @@
 : ${libassuan_ver:=2.5.1}
 : ${gnupg_ver:=2.2.15}
 : ${protobuf_ver:=3.7.1}
+: ${libbacktrace_ver:=git}
 
 # TODO X11周りのインストールは未着手。
 : ${xtrans_ver:=1.3.5}
@@ -937,6 +938,9 @@ fetch()
 		check_archive ${protobuf_org_src_dir} ||
 			wget --no-check-certificate -O ${protobuf_org_src_dir}.tar.gz \
 				https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_ver}/protobuf-all-${protobuf_ver}.tar.gz;;
+	libbacktrace)
+		[ -d ${libbacktrace_org_src_dir} ] ||
+			git clone --depth 1 https://github.com/ianlancetaylor/libbacktrace ${libbacktrace_org_src_dir} || return;;
 	pkg-config)
 		check_archive ${pkg_config_org_src_dir} ||
 			wget --no-check-certificate -O ${pkg_config_org_src_dir}.tar.gz \
@@ -4935,6 +4939,20 @@ install_native_protobuf()
 	[ "${enable_check}" != yes ] ||
 		make -C ${protobuf_org_src_dir} -j ${jobs} -k check || return
 	make -C ${protobuf_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libbacktrace()
+{
+	[ -f ${prefix}/include/backtrace.h -a "${force_install}" != yes ] && return
+	fetch libbacktrace || return
+	[ -f ${libbacktrace_org_src_dir}/Makefile ] ||
+		(cd ${libbacktrace_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${libbacktrace_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libbacktrace_org_src_dir} -j ${jobs} -k check || return
+	make -C ${libbacktrace_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
