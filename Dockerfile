@@ -30,13 +30,12 @@ elfutils bison flex m4 perl autoconf automake libtool xz lzip ed bc cmake \
 libffi old_python python ninja meson libiconv glib pkg_config \
 ruby tcl tk libunistring libatomic_ops gc guile gdb git go \
 zsh bash screen libevent tmux plantuml patch lua vim ctags global \
-the_silver_searcher the_platinum_searcher highway fzf; do \
+the_silver_searcher the_platinum_searcher highway fzf jq \
+swig lld compiler_rt libunwind libcxxabi libcxx cfe; do \
 	./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.9 install_native_${p} || exit; \
 done && \
 ./install_toolchain.sh -p ${prefix} -j ${njobs} force_install=yes install_native_go && \
-for p in swig llvm compiler_rt libunwind libcxxabi libcxx cfe; do \
-	./install_toolchain.sh -p ${prefix} -j ${njobs} force_install=yes install_native_${p} || exit; \
-done && ./install_toolchain.sh -p ${prefix} clean
+./install_toolchain.sh -p ${prefix} clean
 
 FROM ${baseimage} AS dev
 ARG prefix
