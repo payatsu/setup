@@ -3964,6 +3964,7 @@ install_native_cfe()
 			-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
 			-DCLANG_DEFAULT_RTLIB=compiler-rt \
 			-DGCC_INSTALL_PREFIX=`get_prefix iostream c++` \
+			`which lld > /dev/null && echo -DCLANG_DEFAULT_LINKER=lld` \
 			${cfe_org_src_dir}) || return
 	make -C ${cfe_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
