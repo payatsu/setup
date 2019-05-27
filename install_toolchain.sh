@@ -123,6 +123,7 @@
 : ${ninja_ver:=1.9.0}
 : ${meson_ver:=0.50.0}
 : ${cmake_ver:=3.14.0}
+: ${Bear_ver:=2.4.0}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=3.0.12}
 : ${llvm_ver:=8.0.0}
@@ -480,7 +481,9 @@ help()
 	meson_ver
 		Specify the version of Meson you want, currently '${meson_ver}'.
 	cmake_ver
-		Specify the version of Cmake you want, currently '${cmake_ver}'.
+		Specify the version of CMake you want, currently '${cmake_ver}'.
+	Bear_ver
+		Specify the version of Build EAR you want, currently '${Bear_ver}'.
 	libedit_ver
 		Specify the version of libedit you want, currently '${libedit_ver}'.
 	swig_ver
@@ -839,6 +842,10 @@ fetch()
 		check_archive ${cmake_org_src_dir} ||
 			wget --no-check-certificate -O ${cmake_org_src_dir}.tar.gz \
 				https://cmake.org/files/v`echo ${cmake_ver} | cut -d. -f1,2`/${cmake_name}.tar.gz || return;;
+	Bear)
+		check_archive ${Bear_org_src_dir} ||
+			wget --no-check-certificate -O ${Bear_org_src_dir}.tar.gz \
+				https://github.com/rizsotto/Bear/archive/${Bear_ver}.tar.gz || return;;
 	libedit)
 		check_archive ${libedit_org_src_dir} ||
 			wget -O ${libedit_org_src_dir}.tar.gz \
@@ -3801,6 +3808,23 @@ install_native_cmake()
 	[ "${enable_check}" != yes ] ||
 		make -C ${cmake_org_src_dir} -j ${jobs} -k test || return
 	make -C ${cmake_org_src_dir} -j ${jobs} install${strip:+/${strip}} || return
+}
+
+install_native_Bear()
+{
+	[ -x ${prefix}/bin/bear -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	which make > /dev/null || install_native_make || return
+	which python > /dev/null || which python3 > /dev/null || install_native_python || return
+	fetch Bear || return
+	unpack ${Bear_org_src_dir} || return
+	mkdir -pv ${Bear_bld_dir_ntv} || return
+	[ -f ${Bear_bld_dir_ntv}/Makefile ] ||
+		(cd ${Bear_bld_dir_ntv}
+		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_BUILD_TYPE=${cmake_build_type} \
+			-DCMAKE_INSTALL_PREFIX=${prefix} ${Bear_org_src_dir}) || return
+	make -C ${Bear_bld_dir_ntv} -j ${jobs} || return
+	make -C ${Bear_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
 }
 
 install_native_libedit()
