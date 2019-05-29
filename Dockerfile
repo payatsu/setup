@@ -30,7 +30,7 @@ elfutils bison flex m4 perl autoconf automake libtool xz lzip ed bc cmake \
 libffi old_python python ninja meson Bear libiconv glib pkg_config \
 ruby tcl tk libunistring libatomic_ops gc guile gdb git go \
 zsh bash screen libevent tmux plantuml patch lua vim ctags global \
-the_silver_searcher the_platinum_searcher highway fzf jq \
+the_silver_searcher the_platinum_searcher highway fzf jq protobuf dtc \
 swig lld compiler_rt libunwind libcxxabi libcxx cfe; do \
 	./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.9 install_native_${p} || exit; \
 done && \
