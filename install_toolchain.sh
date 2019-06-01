@@ -896,7 +896,7 @@ fetch()
 			wget --no-check-certificate -O ${webkitgtk_org_src_dir}.tar.xz \
 				https://webkitgtk.org/releases/${webkitgtk_name}.tar.xz || return;;
 		*)
-			echo fetch: no match: ${p} >&2; return 1;;
+			echo fetch: no match: ${p} 2>&1; return 1;;
 		esac
 	done
 }
@@ -2172,7 +2172,7 @@ install_native_gdb()
 	[ -x ${prefix}/bin/gdb -a "${force_install}" != yes ] && return
 	search_header readline.h readline > /dev/null || install_native_readline || return
 	search_header curses.h > /dev/null || install_native_ncurses || return
-	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m.so > /dev/null || install_native_python || return
+	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m.so > /dev/null || install_native_Python || return
 	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gdb || return
 	unpack ${gdb_org_src_dir} || return
@@ -2904,7 +2904,7 @@ install_native_vim()
 	search_header lua.h > /dev/null || install_native_lua || return
 	search_library libperl.so > /dev/null || install_native_perl || return
 	search_header Python.h python`python --version 2>&1 | grep -oe '[[:digit:]]\.[[:digit:]]'` > /dev/null || (install_native_old_python) || return
-	search_header Python.h python`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m > /dev/null || install_native_python || return
+	search_header Python.h python`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m > /dev/null || install_native_Python || return
 	search_library tclConfig.sh > /dev/null || install_native_tcl || return
 	search_header ruby.h > /dev/null || install_native_ruby || return
 	fetch vim || return
@@ -3464,7 +3464,7 @@ install_native_asciidoc()
 install_native_libxml2()
 {
 	[ -d ${prefix}/include/libxml2 -a "${force_install}" != yes ] && return
-	search_header Python.h > /dev/null || install_native_python || return
+	search_header Python.h > /dev/null || install_native_Python || return
 	fetch libxml2 || return
 	unpack ${libxml2_org_src_dir} || return
 	[ -f ${libxml2_org_src_dir}/Makefile ] ||
@@ -3644,7 +3644,7 @@ install_native_subversion()
 	search_header zlib.h > /dev/null || install_native_zlib || return
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return
 	search_header utf8proc.h > /dev/null || install_native_utf8proc || return
-	which python3 > /dev/null || install_native_python || return
+	which python3 > /dev/null || install_native_Python || return
 	which perl > /dev/null || install_native_perl || return
 	which ruby > /dev/null || install_native_ruby || return
 	fetch subversion || return
@@ -3679,7 +3679,7 @@ install_native_ninja()
 install_native_meson()
 {
 	[ -x ${prefix}/bin/meson -a "${force_install}" != yes ] && return
-	which python3 > /dev/null || install_native_python || return
+	which python3 > /dev/null || install_native_Python || return
 	which ninja > /dev/null || install_native_ninja || return
 	fetch meson || return
 	unpack ${meson_org_src_dir} || return
@@ -3715,7 +3715,7 @@ install_native_Bear()
 	[ -x ${prefix}/bin/bear -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	which make > /dev/null || install_native_make || return
-	which python > /dev/null || which python3 > /dev/null || install_native_python || return
+	which python > /dev/null || which python3 > /dev/null || install_native_Python || return
 	fetch Bear || return
 	unpack ${Bear_org_src_dir} || return
 	mkdir -pv ${Bear_bld_dir_ntv} || return
@@ -4235,7 +4235,7 @@ install_cross_gdb()
 	[ `check_platform ${build} ${host} ${target}` = cross ] || return
 	search_header readline.h readline > /dev/null || install_native_readline || return
 	search_header curses.h > /dev/null || install_native_ncurses || return
-	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m.so > /dev/null || install_native_python || return
+	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m.so > /dev/null || install_native_Python || return
 	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gdb || return
 	unpack ${gdb_org_src_dir} || return
@@ -4260,10 +4260,10 @@ install_native_old_python()
 {
 	Python_ver=${Python2_ver} || return
 	set_variables || return
-	install_native_python || return
+	install_native_Python || return
 }
 
-install_native_python()
+install_native_Python()
 {
 	[ -x ${prefix}/bin/python3 -a "${force_install}" != yes ] && return
 	search_header expat.h > /dev/null || install_native_expat || return
