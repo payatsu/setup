@@ -192,7 +192,7 @@
 : ${libpciaccess_ver:=0.13.4}
 : ${libdrm_ver:=2.4.70}
 : ${libxshmfence_ver:=1.2}
-: ${mesa_ver:=12.0.3}
+: ${mesa_ver:=19.0.5}
 : ${libepoxy_ver:=1.3.1}
 : ${glib_ver:=2.60.1}
 : ${cairo_ver:=1.14.6}
@@ -570,16 +570,12 @@ auto()
 fetch()
 # Fetch source files.
 {
+	[ $# -ne 0 ] || fetch `sed -e '/^fetch()$/,/^}$/p;d' ${0} | sed -e '/\([-_[:alnum:]]\+|\?\)\+\(\\\\\|)\)$/{y/|)\\\/   /;p};d'` || return
 	for p in "$@"; do
 		_p=`echo ${p} | tr - _`
-		[ -z "${_p}" ] ||
-			{ eval [ -n \"\${${_p}_src_base}\" ] && eval mkdir -pv \${${_p}_src_base} || return
-			eval check_archive \${${_p}_org_src_dir} || eval [ -d \${${_p}_org_src_dir} ] && continue;}
+		eval [ -n \"\${${_p}_src_base}\" ] && eval mkdir -pv \${${_p}_src_base} || return
+		eval check_archive \${${_p}_org_src_dir} || eval [ -d \${${_p}_org_src_dir} ] && continue
 		case ${p} in
-		'')
-			for pkg in `sed -e '/^fetch()$/,/^}$/p;d' ${0} | sed -e '/\([-_[:alnum:]]\+|\?\)\+\(\\\\\|)\)$/{y/|)\\\/   /;p};d'`; do
-				fetch ${pkg} || return
-			done;;
 		tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|automake|libtool|sed|gawk|\
 		make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
 		diffutils|patch|findutils|less|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
@@ -712,7 +708,7 @@ fetch()
 			[ -f ${plantuml_org_src_dir}.pdf ] ||
 				wget -O ${plantuml_org_src_dir}.pdf http://pdf.plantuml.net/PlantUML_Language_Reference_Guide_ja.pdf || return;;
 		libevent)
-			wget --no-check-certificate -O ${libevent_org_src_dir}-stable.tar.gz \
+			wget --no-check-certificate -O ${libevent_org_src_dir}.tar.gz \
 				https://github.com/libevent/libevent/releases/download/release-${libevent_ver}-stable/${libevent_name}-stable.tar.gz || return;;
 		tmux)
 			wget --no-check-certificate -O ${tmux_org_src_dir}.tar.gz \
@@ -811,7 +807,7 @@ fetch()
 			wget -O ${ruby_org_src_dir}.tar.xz \
 				http://cache.ruby-lang.org/pub/ruby/`echo ${ruby_ver} | cut -d. -f-2`/${ruby_name}.tar.xz || return;;
 		go)
-			wget --no-check-certificate -O ${go_src_base}/go${go_ver}.src.tar.gz \
+			wget --no-check-certificate -O ${go_org_src_dir}.tar.gz \
 				https://storage.googleapis.com/golang/go${go_ver}.src.tar.gz || return;;
 		perl)
 			wget -O ${perl_org_src_dir}.tar.gz \
@@ -883,7 +879,7 @@ fetch()
 				https://github.com/anholt/libepoxy/releases/download/v${libepoxy_ver}/${libepoxy_name}.tar.bz2 || return;;
 		mesa)
 			wget -O ${mesa_org_src_dir}.tar.xz \
-				ftp://ftp.freedesktop.org/pub/mesa/${mesa_ver}/${mesa_name}.tar.xz || return;;
+				https://mesa.freedesktop.org/archive/${mesa_name}.tar.xz || return;;
 		cairo)
 			eval wget --no-check-certificate -O \${${_p}_org_src_dir}.tar.xz \
 				https://www.cairographics.org/releases/\${${_p}_name}.tar.xz || return;;
@@ -3235,7 +3231,7 @@ install_native_libevent()
 {
 	[ -f ${prefix}/include/event2/event.h -a "${force_install}" != yes ] && return
 	fetch libevent || return
-	unpack ${libevent_org_src_dir}-stable || return
+	unpack ${libevent_org_src_dir} || return
 	[ -f ${libevent_org_src_dir}-stable/Makefile ] ||
 		(cd ${libevent_org_src_dir}-stable
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
@@ -4326,7 +4322,7 @@ install_native_go()
 	which go > /dev/null || return
 	which git > /dev/null || install_native_git || return
 	fetch go || return
-	[ -d ${go_org_src_dir} ] || unpack ${go_src_base}/go${go_ver}.src || return
+	[ -d ${go_org_src_dir} ] || unpack ${go_org_src_dir} || return
 	[ -d ${go_src_base}/go ] && mv -v ${go_src_base}/go ${go_org_src_dir}
 	mkdir -pv ${DESTDIR}${prefix}/go/bin || return
 	[ -f ${DESTDIR}${prefix}/go/bin/go ] || ln -sv `which go` ${DESTDIR}${prefix}/go/bin/go || return
