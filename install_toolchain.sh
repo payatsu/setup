@@ -570,12 +570,12 @@ auto()
 fetch()
 # Fetch source files.
 {
-	while [ $# -gt 0 ]; do
-		_1=`echo ${1} | tr - _`
-		[ -z "${_1}" ] ||
-			{ eval [ -n \"\${${_1}_src_base}\" ] && eval mkdir -pv \${${_1}_src_base} || return
-			eval check_archive \${${_1}_org_src_dir} || eval [ -d \${${_1}_org_src_dir} ] && return;}
-		case ${1} in
+	for p in "$@"; do
+		_p=`echo ${p} | tr - _`
+		[ -z "${_p}" ] ||
+			{ eval [ -n \"\${${_p}_src_base}\" ] && eval mkdir -pv \${${_p}_src_base} || return
+			eval check_archive \${${_p}_org_src_dir} || eval [ -d \${${_p}_org_src_dir} ] && continue;}
+		case ${p} in
 		'')
 			for pkg in `sed -e '/^fetch()$/,/^}$/p;d' ${0} | sed -e '/\([-_[:alnum:]]\+|\?\)\+\(\\\\\|)\)$/{y/|)\\\/   /;p};d'`; do
 				fetch ${pkg} || return
@@ -584,10 +584,10 @@ fetch()
 		make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
 		diffutils|patch|findutils|less|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
 			for compress_format in xz bz2 gz lz; do
-				eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.${compress_format} \
-					https://ftp.gnu.org/gnu/${_1}/\${${_1}_name}.tar.${compress_format} \
+				eval wget --no-check-certificate -O \${${_p}_org_src_dir}.tar.${compress_format} \
+					https://ftp.gnu.org/gnu/${_p}/\${${_p}_name}.tar.${compress_format} \
 					&& break \
-					|| eval rm -v \${${_1}_org_src_dir}.tar.${compress_format}
+					|| eval rm -v \${${_p}_org_src_dir}.tar.${compress_format}
 			done || return;;
 		autogen)
 			wget --no-check-certificate -O ${autogen_org_src_dir}.tar.xz \
@@ -689,8 +689,8 @@ fetch()
 		ctags)
 			git clone --depth 1 http://github.com/universal-ctags/ctags.git ${ctags_org_src_dir} || return;;
 		pcre|pcre2)
-			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.bz2 \
-				https://ftp.pcre.org/pub/pcre/\${${_1}_name}.tar.bz2 || return;;
+			eval wget --no-check-certificate -O \${${_p}_org_src_dir}.tar.bz2 \
+				https://ftp.pcre.org/pub/pcre/\${${_p}_name}.tar.bz2 || return;;
 		the_silver_searcher)
 			wget --no-check-certificate -O ${the_silver_searcher_org_src_dir}.tar.gz \
 				https://geoff.greer.fm/ag/releases/${the_silver_searcher_name}.tar.gz || return;;
@@ -748,8 +748,8 @@ fetch()
 			wget --no-check-certificate -O ${asciidoc_org_src_dir}.tar.gz \
 				https://sourceforge.net/projects/asciidoc/files/asciidoc/${asciidoc_ver}/${asciidoc_name}.tar.gz/download || return;;
 		libxml2|libxslt)
-			eval wget -O \${${_1}_org_src_dir}.tar.gz \
-				ftp://xmlsoft.org/${_1}/\${${_1}_name}.tar.gz || return;;
+			eval wget -O \${${_p}_org_src_dir}.tar.gz \
+				ftp://xmlsoft.org/${_p}/\${${_p}_name}.tar.gz || return;;
 		xmlto)
 			wget --no-check-certificate -O ${xmlto_org_src_dir}.tar.bz2 \
 				https://fedorahosted.org/releases/x/m/xmlto/${xmlto_name}.tar.bz2 || return;;
@@ -766,8 +766,8 @@ fetch()
 			wget --no-check-certificate -O ${sqlite_autoconf_org_src_dir}.tar.gz \
 				https://www.sqlite.org/2018/${sqlite_autoconf_name}.tar.gz || return;;
 		apr|apr-util)
-			eval wget -O \${${_1}_org_src_dir}.tar.bz2 \
-				http://ftp.tsukuba.wide.ad.jp/software/apache/apr/\${${_1}_name}.tar.bz2 || return;;
+			eval wget -O \${${_p}_org_src_dir}.tar.bz2 \
+				http://ftp.tsukuba.wide.ad.jp/software/apache/apr/\${${_p}_name}.tar.bz2 || return;;
 		utf8proc)
 			wget --no-check-certificate -O ${utf8proc_org_src_dir}.tar.gz \
 				https://github.com/JuliaStrings/utf8proc/archive/v${utf8proc_ver}.tar.gz || return;;
@@ -793,8 +793,8 @@ fetch()
 			wget --no-check-certificate --trust-server-names -O ${swig_org_src_dir}.tar.gz \
 				https://sourceforge.net/projects/swig/files/swig/${swig_name}/${swig_name}.tar.gz/download || return;;
 		llvm|compiler-rt|libunwind|libcxxabi|libcxx|cfe|clang-tools-extra|lld|lldb)
-			eval wget -O \${${_1}_org_src_dir}.tar.xz \
-				http://llvm.org/releases/\${${_1}_ver}/\${${_1}_name}.tar.xz || return;;
+			eval wget -O \${${_p}_org_src_dir}.tar.xz \
+				http://llvm.org/releases/\${${_p}_ver}/\${${_p}_name}.tar.xz || return;;
 		cling)
 			git clone --depth 1 http://root.cern.ch/git/llvm.git ${cling_org_src_dir} -b cling-patches || return
 			[ -d ${cling_org_src_dir}/tools/clang ] ||
@@ -817,11 +817,11 @@ fetch()
 			wget -O ${perl_org_src_dir}.tar.gz \
 				http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return;;
 		tcl|tk)
-			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.gz \
-				http://prdownloads.sourceforge.net/tcl/\${${_1}_name}-src.tar.gz || return;;
+			eval wget --no-check-certificate -O \${${_p}_org_src_dir}.tar.gz \
+				http://prdownloads.sourceforge.net/tcl/\${${_p}_name}-src.tar.gz || return;;
 		libatomic_ops|gc)
-			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.gz \
-				https://www.hboehm.info/gc/gc_source/\${${_1}_name}.tar.gz || return;;
+			eval wget --no-check-certificate -O \${${_p}_org_src_dir}.tar.gz \
+				https://www.hboehm.info/gc/gc_source/\${${_p}_name}.tar.gz || return;;
 		lua)
 			wget -O ${lua_org_src_dir}.tar.gz \
 				http://www.lua.org/ftp/${lua_name}.tar.gz || return;;
@@ -841,8 +841,8 @@ fetch()
 			wget --no-check-certificate -O ${libav_org_src_dir}.tar.xz \
 				https://libav.org/releases/${libav_name}.tar.xz || return;;
 		opencv|opencv_contrib)
-			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.gz \
-				https://github.com/opencv/${_1}/archive/\${${_1}_ver}.tar.gz || return;;
+			eval wget --no-check-certificate -O \${${_p}_org_src_dir}.tar.gz \
+				https://github.com/opencv/${_p}/archive/\${${_p}_ver}.tar.gz || return;;
 		googletest)
 			wget --no-check-certificate -O ${googletest_org_src_dir}.tar.gz \
 				https://github.com/google/googletest/archive/release-${googletest_ver}.tar.gz || return;;
@@ -853,11 +853,11 @@ fetch()
 			wget --no-check-certificate -O ${jq_org_src_dir}.tar.gz \
 				https://github.com/stedolan/jq/releases/download/${jq_name}/${jq_name}.tar.gz || return;;
 		libpcap|tcpdump)
-			eval wget -O \${${_1}_org_src_dir}.tar.gz \
-				http://www.tcpdump.org/release/\${${_1}_name}.tar.gz || return;;
+			eval wget -O \${${_p}_org_src_dir}.tar.gz \
+				http://www.tcpdump.org/release/\${${_p}_name}.tar.gz || return;;
 		npth|libgpg-error|libgcrypt|libksba|libassuan|gnupg)
-			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.bz2 \
-				https://www.gnupg.org/ftp/gcrypt/${1}/\${${_1}_name}.tar.bz2 || return;;
+			eval wget --no-check-certificate -O \${${_p}_org_src_dir}.tar.bz2 \
+				https://www.gnupg.org/ftp/gcrypt/${p}/\${${_p}_name}.tar.bz2 || return;;
 		protobuf)
 			wget --no-check-certificate -O ${protobuf_org_src_dir}.tar.gz \
 				https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_ver}/protobuf-all-${protobuf_ver}.tar.gz;;
@@ -867,17 +867,17 @@ fetch()
 			wget --no-check-certificate -O ${pkg_config_org_src_dir}.tar.gz \
 				https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
 		xextproto|fixesproto|damageproto|presentproto|inputproto|kbproto|xproto|glproto|dri2proto|dri3proto)
-			eval wget -O \${${_1}_org_src_dir}.tar.bz2 \
-				ftp://ftp.freedesktop.org/pub/individual/proto/\${${_1}_name}.tar.bz2 || return;;
+			eval wget -O \${${_p}_org_src_dir}.tar.bz2 \
+				ftp://ftp.freedesktop.org/pub/individual/proto/\${${_p}_name}.tar.bz2 || return;;
 		libXext|libXfixes|libXdamage|xtrans|libX11|libxshmfence|libpciaccess|libXpm|libXt)
-			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.bz2 \
-				https://www.x.org/releases/individual/lib/\${${_1}_name}.tar.bz2 || return;;
+			eval wget --no-check-certificate -O \${${_p}_org_src_dir}.tar.bz2 \
+				https://www.x.org/releases/individual/lib/\${${_p}_name}.tar.bz2 || return;;
 		libdrm)
 			wget --no-check-certificate -O ${libdrm_org_src_dir}.tar.bz2 \
 				https://dri.freedesktop.org/libdrm/${libdrm_name}.tar.bz2 || return;;
 		xcb-proto|libxcb)
-			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.bz2 \
-				https://www.x.org/releases/individual/xcb/\${${_1}_name}.tar.bz2 || return;;
+			eval wget --no-check-certificate -O \${${_p}_org_src_dir}.tar.bz2 \
+				https://www.x.org/releases/individual/xcb/\${${_p}_name}.tar.bz2 || return;;
 		libepoxy)
 			wget --no-check-certificate -O ${libepoxy_org_src_dir}.tar.bz2 \
 				https://github.com/anholt/libepoxy/releases/download/v${libepoxy_ver}/${libepoxy_name}.tar.bz2 || return;;
@@ -885,24 +885,23 @@ fetch()
 			wget -O ${mesa_org_src_dir}.tar.xz \
 				ftp://ftp.freedesktop.org/pub/mesa/${mesa_ver}/${mesa_name}.tar.xz || return;;
 		cairo)
-			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.xz \
-				https://www.cairographics.org/releases/\${${_1}_name}.tar.xz || return;;
+			eval wget --no-check-certificate -O \${${_p}_org_src_dir}.tar.xz \
+				https://www.cairographics.org/releases/\${${_p}_name}.tar.xz || return;;
 		pixman)
-			eval wget --no-check-certificate -O \${${_1}_org_src_dir}.tar.gz \
-				https://www.cairographics.org/releases/\${${_1}_name}.tar.gz || return;;
+			eval wget --no-check-certificate -O \${${_p}_org_src_dir}.tar.gz \
+				https://www.cairographics.org/releases/\${${_p}_name}.tar.gz || return;;
 		glib|pango|gdk-pixbuf|atk|gobject-introspection)
-			eval wget -O \${${_1}_org_src_dir}.tar.xz \
-				http://ftp.gnome.org/pub/gnome/sources/${1}/\`echo \${${_1}_ver} \| cut -d. -f-2\`/\${${_1}_name}.tar.xz || return;;
+			eval wget -O \${${_p}_org_src_dir}.tar.xz \
+				http://ftp.gnome.org/pub/gnome/sources/${p}/\`echo \${${_p}_ver} \| cut -d. -f-2\`/\${${_p}_name}.tar.xz || return;;
 		gtk)
-			eval wget -O \${${_1}_org_src_dir}.tar.xz \
-				http://ftp.gnome.org/pub/gnome/sources/gtk+/\`echo \${${_1}_ver} \| cut -d. -f-2\`/\${${_1}_name}.tar.xz || return;;
+			eval wget -O \${${_p}_org_src_dir}.tar.xz \
+				http://ftp.gnome.org/pub/gnome/sources/gtk+/\`echo \${${_p}_ver} \| cut -d. -f-2\`/\${${_p}_name}.tar.xz || return;;
 		webkitgtk)
 			wget --no-check-certificate -O ${webkitgtk_org_src_dir}.tar.xz \
 				https://webkitgtk.org/releases/${webkitgtk_name}.tar.xz || return;;
 		*)
-			echo fetch: no match: ${1} >&2; return 1;;
+			echo fetch: no match: ${p} >&2; return 1;;
 		esac
-		shift
 	done
 }
 
