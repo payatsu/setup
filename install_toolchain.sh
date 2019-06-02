@@ -138,7 +138,7 @@
 : ${cling_ver:=git}
 : ${boost_ver:=1_69_0}
 : ${Python_ver:=3.7.3}
-: ${Python2_ver:=2.7.15} # internal use only.
+: ${Python2_ver:=2.7.15}
 : ${ruby_ver:=2.6.2}
 : ${go_ver:=1.12.5}
 : ${perl_ver:=5.28.2}
@@ -800,9 +800,9 @@ fetch()
 		boost)
 			wget --trust-server-names --no-check-certificate -O ${boost_org_src_dir}.tar.bz2 \
 				https://sourceforge.net/projects/boost/files/boost/`echo ${boost_ver} | tr _ .`/${boost_name}.tar.bz2/download || return;;
-		Python)
-			wget --no-check-certificate -O ${Python_org_src_dir}.tar.xz \
-				https://www.python.org/ftp/python/${Python_ver}/${Python_name}.tar.xz || return;;
+		Python2|Python)
+			eval wget --no-check-certificate -O ${Python_src_base}/Python-\${${_p}_ver}.tar.xz \
+				https://www.python.org/ftp/python/\${${_p}_ver}/Python-\${${_p}_ver}.tar.xz || return;;
 		ruby)
 			wget -O ${ruby_org_src_dir}.tar.xz \
 				http://cache.ruby-lang.org/pub/ruby/`echo ${ruby_ver} | cut -d. -f-2`/${ruby_name}.tar.xz || return;;
@@ -1132,6 +1132,7 @@ set_src_directory()
 	esac
 
 	eval ${_1}_src_base=${src}/${1}
+	[ ${_1} = Python2 ] && Python2_src_base=${src}/Python
 	eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
 
 	case ${1} in
@@ -2903,7 +2904,7 @@ install_native_vim()
 	which gettext > /dev/null || install_native_gettext || return
 	search_header lua.h > /dev/null || install_native_lua || return
 	search_library libperl.so > /dev/null || install_native_perl || return
-	search_header Python.h python`python --version 2>&1 | grep -oe '[[:digit:]]\.[[:digit:]]'` > /dev/null || (install_native_old_python) || return
+	search_header Python.h python`python --version 2>&1 | grep -oe '[[:digit:]]\.[[:digit:]]'` > /dev/null || (install_native_Python2) || return
 	search_header Python.h python`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m > /dev/null || install_native_Python || return
 	search_library tclConfig.sh > /dev/null || install_native_tcl || return
 	search_header ruby.h > /dev/null || install_native_ruby || return
@@ -3566,7 +3567,7 @@ install_native_git_manpages()
 install_native_mercurial()
 {
 	[ -x ${prefix}/bin/hg -a "${force_install}" != yes ] && return
-	which python > /dev/null || (install_native_old_python) || return
+	which python > /dev/null || (install_native_Python2) || return
 	fetch mercurial || return
 	unpack ${mercurial_org_src_dir} || return
 	pip install docutils || return
@@ -4256,7 +4257,7 @@ install_cross_gdb()
 	make -C ${gdb_bld_dir_crs}/sim -j ${jobs} install${strip:+-${strip}} || return
 }
 
-install_native_old_python()
+install_native_Python2()
 {
 	Python_ver=${Python2_ver} || return
 	set_variables || return

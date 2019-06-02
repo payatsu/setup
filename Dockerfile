@@ -5,6 +5,13 @@ ARG prefixbase=local
 FROM ${baseimage} AS builder
 ARG prefix
 ARG njobs=4
+ARG pkgs="binutils gmp mpfr mpc isl gcc \
+elfutils bison flex m4 perl autoconf automake libtool xz lzip ed bc cmake \
+libffi Python2 Python ninja meson Bear libiconv glib pkg-config \
+ruby tcl tk libunistring libatomic_ops gc guile gdb git go \
+zsh bash screen libevent tmux plantuml patch lua vim ctags global \
+the_silver_searcher the_platinum_searcher highway fzf jq protobuf dtc \
+swig lld llvm compiler-rt libunwind libcxxabi libcxx cfe"
 
 RUN apt-get update && apt-get upgrade -y
 COPY install_toolchain.sh .
@@ -23,15 +30,10 @@ graphviz openjdk-11-jre \
 libgnomeui-dev libxt-dev \
 gperf \
 libedit-dev && \
+./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.9 "fetch `echo ${pkgs} | sed -e 's/\<ctags\>//'` clang-tools-extra vimdoc-ja"
+RUN \
 : "FIXME: can't build Emacs26 in Dockerfile. webkit2gtk-4.0-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev" && \
-for p in \
-binutils gmp mpfr mpc isl gcc \
-elfutils bison flex m4 perl autoconf automake libtool xz lzip ed bc cmake \
-libffi old_python python ninja meson Bear libiconv glib pkg_config \
-ruby tcl tk libunistring libatomic_ops gc guile gdb git go \
-zsh bash screen libevent tmux plantuml patch lua vim ctags global \
-the_silver_searcher the_platinum_searcher highway fzf jq protobuf dtc \
-swig lld compiler_rt libunwind libcxxabi libcxx cfe; do \
+for p in `echo ${pkgs} | tr - _`; do \
 	./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.9 install_native_${p} || exit; \
 done && \
 ./install_toolchain.sh -p ${prefix} -j ${njobs} force_install=yes install_native_go && \
