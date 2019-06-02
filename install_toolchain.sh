@@ -1897,6 +1897,7 @@ install_native_linux_header()
 install_native_dtc()
 {
 	[ -x ${prefix}/bin/dtc -a "${force_install}" != yes ] && return
+	which swig > /dev/null || install_native_swig || return
 	fetch dtc || return
 	unpack ${dtc_org_src_dir} || return
 	make -C ${dtc_org_src_dir} -j ${jobs} V=1 || return
