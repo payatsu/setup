@@ -4051,6 +4051,7 @@ install_cross_gcc_without_headers()
 	for b in cpp gcc gcc-ar gcc-nm gcc-ranlib gcov gcov-dump gcov-tool; do
 		[ ! -f ${DESTDIR}${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${target}-${b} || return
 	done
+	update_path || return
 	echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} all-target-libgcc || return
 	[ "${enable_check}" != yes ] ||
