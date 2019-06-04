@@ -75,7 +75,7 @@
 : ${libffi_ver:=3.2.1}
 : ${emacs_ver:=26.2}
 : ${libiconv_ver:=1.15}
-: ${vim_ver:=8.1.1027}
+: ${vim_ver:=8.1.1462}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.3}
