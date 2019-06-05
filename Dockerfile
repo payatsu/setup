@@ -5,8 +5,8 @@ ARG prefixbase=local
 FROM ${baseimage} AS builder
 ARG prefix
 ARG njobs=4
-ARG pkgs="binutils gmp mpfr mpc isl gcc \
-elfutils bison flex m4 perl autoconf automake libtool xz lzip ed bc cmake \
+ARG pkgs="zlib binutils gmp mpfr mpc isl gcc \
+bzip2 elfutils bison flex m4 perl autoconf automake libtool xz lzip ed bc cmake \
 libffi Python2 Python ninja meson Bear libiconv glib pkg-config \
 ruby tcl tk libunistring libatomic_ops gc guile gdb gettext git go \
 zsh bash screen libevent tmux plantuml patch lua vim ctags global \
@@ -22,7 +22,7 @@ apt-get install -y --no-install-recommends tzdata && \
 apt-get install -y --no-install-recommends \
 wget xz-utils \
 make gcc g++ \
-libz-dev libbz2-dev bison texinfo \
+bison texinfo \
 libncurses5-dev libreadline-dev \
 openssh-client libssl-dev libcurl4-openssl-dev ca-certificates \
 libexpat1-dev libpcre2-dev asciidoc xmlto \
