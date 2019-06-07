@@ -4019,6 +4019,7 @@ install_cross_binutils()
 	[ "${enable_check}" != yes ] ||
 		make -C ${binutils_src_dir_crs} -j 1 -k check || return
 	make -C ${binutils_src_dir_crs} -j 1 install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_cross_gcc_without_headers()
