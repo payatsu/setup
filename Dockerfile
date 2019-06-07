@@ -60,6 +60,8 @@ libexpat1 libpcre2-8-0 libxml2 \
 graphviz openjdk-11-jre \
 libgnomeui-0 libxt6 \
 libedit2 \
+openssh-client \
+sudo locales \
 && \
 ldconfig && \
 rm -v /etc/skel/install.sh /etc/skel/seq.puml && \
@@ -71,9 +73,7 @@ groupadd ${username} && \
 useradd -g ${username} -m -s `which zsh` ${username} && \
 echo root:root | chpasswd && \
 echo ${username}:${username} | chpasswd && \
-apt-get install -y --no-install-recommends sudo && \
 sed -i -e '/^root\>/a'${username}'	ALL=(ALL:ALL) NOPASSWD: ALL' /etc/sudoers && \
-apt-get install -y --no-install-recommends locales && \
 apt-get autoremove -y && apt-get autoclean -y && \
 sed -i -e 's/^# \(ja_JP\.UTF-8 UTF-8\)$/\1/' /etc/locale.gen && \
 locale-gen
