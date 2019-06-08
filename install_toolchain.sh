@@ -52,7 +52,7 @@
 : ${gperf_ver:=3.1}
 : ${glibc_ver:=2.29}
 : ${newlib_ver:=3.1.0}
-: ${mingw_w64_ver:=6.0.0}
+: ${mingw_w64_ver:=5.0.4}
 : ${gmp_ver:=6.1.2}
 : ${mpfr_ver:=4.0.2}
 : ${mpc_ver:=1.1.0}
