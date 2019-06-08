@@ -4167,7 +4167,7 @@ install_mingw_w64_crt()
 	mkdir -pv ${mingw_w64_bld_dir_crs_1st} || return
 	[ -f ${mingw_w64_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_crs_1st}
-		CFLAGS="${CFLAGS} -I${sysroot}/mingw/include -Wno-error=expansion-to-defined" \
+		CFLAGS="${CFLAGS} -I${sysroot}/mingw/include -Wno-error=expansion-to-defined -Wno-error=cast-function-type" \
 			${mingw_w64_src_dir_crs_1st}/configure --prefix=${sysroot}/mingw --build=${build} --host=${target} \
 			--disable-multilib --without-headers --with-sysroot=${sysroot} \
 			`${target}-gcc -print-file-name=libmsvcrt.a | grep -qe ^/ && echo --with-libraries=all --with-tools=all`) || return
