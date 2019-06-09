@@ -30,13 +30,14 @@ graphviz openjdk-11-jre \
 libgnomeui-dev libxt-dev \
 gperf \
 libedit-dev && \
-./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.9 "fetch `echo ${pkgs} | sed -e 's/\<ctags\>//'` clang-tools-extra vimdoc-ja"
+./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.9 "fetch `echo ${pkgs} | sed -e 's/\<ctags\>//'` clang-tools-extra vimdoc-ja mingw-w64"
 RUN \
 : "FIXME: can't build Emacs26 in Dockerfile. webkit2gtk-4.0-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev" && \
 for p in `echo ${pkgs} | tr - _`; do \
 	./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.9 install_native_${p} || exit; \
 done && \
 ./install_toolchain.sh -p ${prefix} -j ${njobs} force_install=yes install_native_go && \
+./install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_cross_binutils install_cross_gcc && \
 ./install_toolchain.sh -p ${prefix} clean
 
 FROM ${baseimage} AS dev
