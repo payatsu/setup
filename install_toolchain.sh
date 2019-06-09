@@ -2064,7 +2064,7 @@ install_native_gcc()
 			--enable-languages=${languages} --disable-multilib --enable-linker-build-id --enable-libstdcxx-debug \
 			--program-suffix=-${gcc_ver} --enable-version-specific-runtime-libs \
 		) || return
-	make -C ${gcc_bld_dir_ntv} -j ${jobs} CPPFLAGS_FOR_TARGET="${CPPFLAGS} -DLIBICONV_PLUG" || return
+	make -C ${gcc_bld_dir_ntv} -j ${jobs} CPPFLAGS="${CPPFLAGS} -DLIBICONV_PLUG" CPPFLAGS_FOR_TARGET="${CPPFLAGS} -DLIBICONV_PLUG" || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
