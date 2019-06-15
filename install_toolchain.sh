@@ -3894,6 +3894,19 @@ install_native_cfe()
 	[ -d ${cfe_org_src_dir}/tools/extra ] ||
 		(unpack ${clang_tools_extra_org_src_dir} &&
 		mv -v ${clang_tools_extra_org_src_dir} ${cfe_org_src_dir}/tools/extra) || return
+	patch -N -p0 -d ${cfe_org_src_dir} <<EOF || [ $? = 1 ] || return
+--- tools/extra/clangd/CodeComplete.h
++++ tools/extra/clangd/CodeComplete.h
+@@ -71,7 +71,7 @@
+   /// A visual indicator to prepend to the completion label to indicate whether
+   /// completion result would trigger an #include insertion or not.
+   struct IncludeInsertionIndicator {
+-    std::string Insert = "•";
++    std::string Insert = "*";
+     std::string NoInsert = " ";
+   } IncludeIndicator;
+ 
+EOF
 	mkdir -pv ${cfe_bld_dir} || return
 	[ -f ${cfe_bld_dir}/Makefile ] ||
 		(cd ${cfe_bld_dir}
