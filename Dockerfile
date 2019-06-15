@@ -11,7 +11,7 @@ libffi Python2 Python ninja meson Bear libiconv glib pkg-config \
 ruby tcl tk libunistring libatomic_ops gc guile gdb gettext git go \
 zsh bash screen libevent tmux plantuml patch lua vim ctags global \
 the_silver_searcher the_platinum_searcher highway fzf jq protobuf swig dtc \
-lld llvm compiler-rt libunwind libcxxabi libcxx cfe"
+lld llvm compiler-rt libunwind libcxxabi libcxx cfe ccls"
 
 RUN apt-get update && apt-get upgrade -y
 COPY install_toolchain.sh .
