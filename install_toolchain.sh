@@ -136,6 +136,7 @@
 : ${lld_ver:=${llvm_ver}}
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
+: ${ccls_ver:=git}
 : ${boost_ver:=1_69_0}
 : ${Python_ver:=3.7.3}
 : ${Python2_ver:=2.7.15}
@@ -490,6 +491,10 @@ help()
 		Specify the version of SWIG you want, currently '${swig_ver}'.
 	llvm_ver
 		Specify the version of llvm you want, currently '${llvm_ver}'.
+	cling_ver
+		Specify the version of cling you want, currently 'i${cling_ver}'.
+	ccls_ver
+		Specify the version of ccls you want, currently '${ccls_ver}'.
 	boost_ver
 		Specify the version of boost you want, currently '${boost_ver}'.
 	Python_ver
@@ -552,6 +557,8 @@ help()
 		Specify the version of GnuPG you want, currently '${gnupg_ver}'.
 	protobuf_ver
 		Specify the version of protobuf you want, currently '${protobuf_ver}'.
+	libbacktrace_ver
+		Specify the version of libbacktrace you want, currently '${libbacktrace_ver}'.
 	glib_ver
 		Specify the version of GLib you want, currently '${glib_ver}'.
 
@@ -797,6 +804,8 @@ fetch()
 				git clone --depth 1 http://root.cern.ch/git/clang.git ${cling_org_src_dir}/tools/clang -b cling-patches || return
 			[ -d ${cling_org_src_dir}/tools/cling ] ||
 				git clone --depth 1 http://root.cern.ch/git/cling.git ${cling_org_src_dir}/tools/cling || return;;
+		ccls)
+			git clone --depth 1 --recursive https://github.com/MaskRay/ccls ${ccls_org_src_dir} || return;;
 		boost)
 			wget --trust-server-names -O ${boost_org_src_dir}.tar.bz2 \
 				https://sourceforge.net/projects/boost/files/boost/`echo ${boost_ver} | tr _ .`/${boost_name}.tar.bz2/download || return;;
@@ -3980,6 +3989,19 @@ install_native_cling()
 	[ "${enable_check}" != yes ] ||
 		make -C ${cling_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${cling_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
+}
+
+install_native_ccls()
+{
+	[ -x ${prefix}/bin/ccls -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	search_library libclang.so || install_native_cfe || return
+	fetch ccls || return
+	[ -f ${ccls_bld_dir_ntv}/Makefile ] ||
+		cmake -S ${ccls_org_src_dir} -B ${ccls_bld_dir_ntv} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} || return
+	make -C ${ccls_bld_dir_ntv} -j ${jobs} || return
+	make -C ${ccls_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
 }
 
 install_native_boost()
