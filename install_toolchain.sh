@@ -618,10 +618,10 @@ fetch()
 				https://sourceware.org/elfutils/ftp/${elfutils_ver}/${elfutils_name}.tar.bz2 || return;;
 		linux)
 			case `echo ${linux_ver} | cut -d. -f1,2` in
-			2.6) linux_major_ver=v2.6;;
-			3.*) linux_major_ver=v3.x;;
-			4.*) linux_major_ver=v4.x;;
-			*)   echo unsupported linux version >&2; return 1;;
+			2.6)     linux_major_ver=v2.6;;
+			3.*)     linux_major_ver=v3.x;;
+			[456].*) linux_major_ver=v`echo ${linux_ver} | cut -d. -f1`.x;;
+			*)       echo unsupported linux version >&2; return 1;;
 			esac
 			wget -O ${linux_org_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/kernel/${linux_major_ver}/${linux_name}.tar.xz || return;;
@@ -1960,7 +1960,7 @@ install_native_glibc()
 {
 	[ -e ${prefix}/lib/libc.so -a "${force_install}" != yes ] && return
 	install_native_linux_header || return
-	which awk > /dev/null || install_native_gawk || return
+	which gawk > /dev/null || install_native_gawk || return
 	which gperf > /dev/null || install_native_gperf || return
 	fetch glibc || return
 	[ -d ${glibc_src_dir_ntv} ] ||
@@ -4113,7 +4113,7 @@ install_cross_glibc()
 {
 	[ -f ${sysroot}/usr/include/stdio.h -a "${force_install}" != yes ] && return
 	which ${target}-gcc > /dev/null || install_cross_gcc_without_headers || return
-	which awk > /dev/null || install_native_gawk || return
+	which gawk > /dev/null || install_native_gawk || return
 	which gperf > /dev/null || install_native_gperf || return
 	fetch glibc || return
 	[ -d ${glibc_src_dir_crs_1st} ] ||

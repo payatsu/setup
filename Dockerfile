@@ -6,8 +6,8 @@ FROM ${baseimage} AS builder
 ARG prefix
 ARG njobs=4
 ARG pkgs="zlib binutils gmp mpfr mpc isl gcc \
-bzip2 elfutils bison flex m4 perl autoconf automake libtool xz lzip ed bc cmake \
-libffi Python2 Python ninja meson Bear libiconv glib pkg-config \
+bzip2 elfutils m4 bison flex perl autoconf automake libtool gawk xz lzip ed bc \
+cmake libffi Python2 Python ninja meson Bear libiconv glib pkg-config \
 ruby tcl tk libunistring libatomic_ops gc guile gdb gettext git go \
 zsh bash screen libevent tmux plantuml patch lua vim ctags global \
 the_silver_searcher the_platinum_searcher highway fzf jq protobuf swig dtc \
