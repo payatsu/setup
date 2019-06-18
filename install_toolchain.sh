@@ -600,7 +600,7 @@ fetch()
 				http://tukaani.org/xz/${xz_name}.tar.bz2 || return;;
 		bzip2)
 			wget -O ${bzip2_org_src_dir}.tar.gz \
-				https://sourceforge.net/projects/bzip2/files/${bzip2_name}.tar.gz/download || return;;
+				https://www.sourceware.org/pub/bzip2/${bzip2_name}.tar.gz || return;;
 		lzip)
 			wget -O ${lzip_org_src_dir}.tar.gz \
 				http://download.savannah.gnu.org/releases/lzip/${lzip_name}.tar.gz || return;;
