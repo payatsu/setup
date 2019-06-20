@@ -27,7 +27,7 @@ libncurses5-dev libreadline-dev \
 openssh-client libssl-dev libcurl4-openssl-dev ca-certificates \
 libexpat1-dev libpcre2-dev asciidoc xmlto \
 graphviz openjdk-11-jre \
-libgnomeui-dev libxt-dev \
+libgnomeui-dev libxft-dev libxt-dev \
 gperf \
 libedit-dev && \
 ./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.9 "fetch `echo ${pkgs} | sed -e 's/\<ctags\>//'` clang-tools-extra vimdoc-ja mingw-w64"
@@ -59,7 +59,7 @@ libreadline7 \
 libssl1.1 libcurl4-openssl-dev ca-certificates \
 libexpat1 libpcre2-8-0 libxml2 \
 graphviz openjdk-11-jre \
-libgnomeui-0 libxt6 \
+libgnomeui-0 libxft2 libxt6 \
 libedit2 \
 openssh-client \
 sudo locales \
