@@ -148,7 +148,7 @@
 : ${libunistring_ver:=0.9.10}
 : ${libatomic_ops_ver:=7.6.4}
 : ${gc_ver:=7.6.6}
-: ${guile_ver:=2.2.5}
+: ${guile_ver:=2.2.6}
 : ${lua_ver:=5.3.5}
 : ${nasm_ver:=2.14}
 : ${yasm_ver:=1.3.0}
