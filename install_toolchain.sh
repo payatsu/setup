@@ -140,7 +140,7 @@
 : ${boost_ver:=1_69_0}
 : ${Python_ver:=3.7.3}
 : ${Python2_ver:=2.7.15}
-: ${ruby_ver:=2.6.2}
+: ${ruby_ver:=2.6.3}
 : ${go_ver:=1.12.6}
 : ${perl_ver:=5.28.2}
 : ${tcl_ver:=8.6.9}
