@@ -141,7 +141,7 @@
 : ${Python_ver:=3.7.3}
 : ${Python2_ver:=2.7.15}
 : ${ruby_ver:=2.6.3}
-: ${go_ver:=1.12.6}
+: ${go_ver:=1.12.7}
 : ${perl_ver:=5.28.2}
 : ${tcl_ver:=8.6.9}
 : ${tk_ver:=8.6.9}
@@ -167,7 +167,7 @@
 : ${libgcrypt_ver:=1.8.4}
 : ${libksba_ver:=1.3.5}
 : ${libassuan_ver:=2.5.1}
-: ${gnupg_ver:=2.2.15}
+: ${gnupg_ver:=2.2.17}
 : ${protobuf_ver:=3.7.1}
 : ${libbacktrace_ver:=git}
 
