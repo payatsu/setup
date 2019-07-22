@@ -1440,7 +1440,7 @@ install_prerequisites()
 		apt install -y libgtk-3-dev libgnomeui-dev || return # for emacs
 		apt install -y libudev-dev || return # for webkitgtk
 		apt install -y libwebkit2gtk-4.0-dev python-dev # libicu-dev # for emacs(xwidgets)
-		apt install -y libgnomeui-dev libxt-dev || return # for vim
+		apt install -y libgtk-3-dev libgnomeui-dev libxt-dev || return # for vim
 		;;
 	Red|CentOS|\\S)
 		yum install -y make gcc gcc-c++ || return
@@ -2930,7 +2930,7 @@ install_native_vim()
 		--enable-tclinterp=dynamic --with-tclsh=tclsh \
 		--enable-rubyinterp=dynamic \
 		--enable-cscope --enable-terminal --enable-autoservername --enable-multibyte \
-		--enable-xim --enable-fontset --enable-gui=gnome2 \
+		--enable-xim --enable-fontset --enable-gui=auto \
 	) || return
 	patch -N -p0 -d ${vim_org_src_dir} <<'EOF' || [ $? = 1 ] || return
 --- src/Makefile
