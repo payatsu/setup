@@ -46,8 +46,8 @@
 : ${ed_ver:=1.15}
 : ${bc_ver:=1.07.1}
 : ${linux_ver:=3.18.13}
-: ${dtc_ver:=1.4.6}
-: ${u_boot_ver:=2019.01}
+: ${dtc_ver:=1.5.0}
+: ${u_boot_ver:=2019.07}
 : ${qemu_ver:=4.0.0}
 : ${gperf_ver:=3.1}
 : ${glibc_ver:=2.29}
@@ -64,7 +64,7 @@
 : ${lcov_ver:=1.14}
 : ${strace_ver:=5.0}
 : ${ltrace_ver:=0.7.3}
-: ${valgrind_ver:=3.14.0}
+: ${valgrind_ver:=3.15.0}
 : ${zlib_ver:=1.2.11}
 : ${libpng_ver:=1.6.36}
 : ${tiff_ver:=4.0.6}
@@ -121,8 +121,8 @@
 : ${utf8proc_ver:=2.2.0}
 : ${subversion_ver:=1.11.0}
 : ${ninja_ver:=1.9.0}
-: ${meson_ver:=0.50.0}
-: ${cmake_ver:=3.14.0}
+: ${meson_ver:=0.51.1}
+: ${cmake_ver:=3.15.0}
 : ${Bear_ver:=2.4.0}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=3.0.12}
@@ -137,12 +137,12 @@
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
-: ${boost_ver:=1_69_0}
-: ${Python_ver:=3.7.3}
+: ${boost_ver:=1_70_0}
+: ${Python_ver:=3.7.4}
 : ${Python2_ver:=2.7.15}
 : ${ruby_ver:=2.6.3}
 : ${go_ver:=1.12.7}
-: ${perl_ver:=5.28.2}
+: ${perl_ver:=5.30.0}
 : ${tcl_ver:=8.6.9}
 : ${tk_ver:=8.6.9}
 : ${libunistring_ver:=0.9.10}
@@ -158,7 +158,7 @@
 : ${opencv_ver:=4.0.0}
 : ${opencv_contrib_ver:=4.0.0}
 : ${googletest_ver:=1.8.1}
-: ${fzf_ver:=0.17.5}
+: ${fzf_ver:=0.18.0}
 : ${jq_ver:=1.6}
 : ${libpcap_ver:=1.9.0}
 : ${tcpdump_ver:=4.9.2}
@@ -168,7 +168,7 @@
 : ${libksba_ver:=1.3.5}
 : ${libassuan_ver:=2.5.1}
 : ${gnupg_ver:=2.2.17}
-: ${protobuf_ver:=3.7.1}
+: ${protobuf_ver:=3.9.0}
 : ${libbacktrace_ver:=git}
 
 # TODO X11周りのインストールは未着手。
