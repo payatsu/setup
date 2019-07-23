@@ -6,7 +6,7 @@ FROM ${baseimage} AS builder
 ARG prefix
 ARG njobs=4
 ARG pkgs="zlib binutils gmp mpfr mpc isl gcc \
-bzip2 elfutils m4 bison flex perl autoconf automake libtool gawk xz lzip ed bc \
+bzip2 elfutils m4 bison flex perl autoconf automake libtool texinfo gawk xz lzip ed bc \
 cmake libffi Python2 Python ninja meson Bear libiconv glib pkg-config \
 ruby tcl tk libunistring libatomic_ops gc guile gdb gettext git go \
 zsh bash screen libevent tmux plantuml patch lua vim ctags global \
@@ -30,11 +30,11 @@ graphviz openjdk-11-jre \
 libgtk-3-dev libxft-dev libxt-dev \
 gperf \
 libedit-dev && \
-./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.9 "fetch `echo ${pkgs} | sed -e 's/\<ctags\>//'` clang-tools-extra vimdoc-ja mingw-w64"
+./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.12 "fetch `echo ${pkgs} | sed -e 's/\<ctags\>//'` clang-tools-extra vimdoc-ja mingw-w64"
 RUN \
 : "FIXME: can't build Emacs26 in Dockerfile. webkit2gtk-4.0-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev" && \
 for p in `echo ${pkgs} | tr - _`; do \
-	./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.9 install_native_${p} || exit; \
+	./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.12 install_native_${p} || exit; \
 done && \
 ./install_toolchain.sh -p ${prefix} -j ${njobs} force_install=yes install_native_go && \
 ./install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_cross_binutils install_cross_gcc && \
