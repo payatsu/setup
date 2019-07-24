@@ -35,6 +35,7 @@
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
+: ${autoconf_archive_ver:=2019.01.06}
 : ${automake_ver:=1.16.1}
 : ${autogen_ver:=5.18.16}
 : ${libtool_ver:=2.4.6}
@@ -311,6 +312,8 @@ help()
 		Specify the version of GNU M4 you want, currently '${m4_ver}'.
 	autoconf_ver
 		Specify the version of GNU Autoconf you want, currently '${autoconf_ver}'.
+	autoconf_archive_ver
+		Specify the version of GNU Autoconf Archive you want, currently '${autoconf_archive_ver}'.
 	automake_ver
 		Specify the version of GNU Automake you want, currently '${automake_ver}'.
 	autogen_ver
@@ -583,12 +586,12 @@ fetch()
 		eval [ -n \"\${${_p}_src_base}\" ] && eval mkdir -pv \${${_p}_src_base} || return
 		eval check_archive \${${_p}_org_src_dir} || eval [ -d \${${_p}_org_src_dir} ] && continue
 		case ${p} in
-		tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|automake|libtool|sed|gawk|\
+		tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|autoconf-archive|automake|libtool|sed|gawk|\
 		make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
 		diffutils|patch|findutils|less|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
 			for compress_format in xz bz2 gz lz; do
 				eval wget -O \${${_p}_org_src_dir}.tar.${compress_format} \
-					https://ftp.gnu.org/gnu/${_p}/\${${_p}_name}.tar.${compress_format} \
+					https://ftp.gnu.org/gnu/${p}/\${${_p}_name}.tar.${compress_format} \
 					&& break \
 					|| eval rm -v \${${_p}_org_src_dir}.tar.${compress_format}
 			done || return;;
@@ -1200,6 +1203,7 @@ set_variables()
 		/^: \${\(.\+\)_ver:=.\+}$/{
 			s//\1/
 			s/pkg_config/pkg-config/
+			s/autoconf_archive/autoconf-archive/
 			s/u_boot/u-boot/
 			s/mingw_w64/mingw-w64/
 			s/vimdoc_ja/vimdoc-ja/
@@ -1711,6 +1715,20 @@ install_native_autoconf()
 	[ "${enable_check}" != yes ] ||
 		make -C ${autoconf_org_src_dir} -j ${jobs} -k check || return
 	make -C ${autoconf_org_src_dir} -j ${jobs} install || return
+}
+
+install_native_autoconf_archive()
+{
+#	[ -x ${prefix}/bin/autoconf -a "${force_install}" != yes ] && return
+	fetch autoconf-archive || return
+	unpack ${autoconf_archive_org_src_dir} || return
+	[ -f ${autoconf_archive_org_src_dir}/Makefile ] ||
+		(cd ${autoconf_archive_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return
+	make -C ${autoconf_archive_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${autoconf_archive_org_src_dir} -j ${jobs} -k check || return
+	make -C ${autoconf_archive_org_src_dir} -j ${jobs} install || return
 }
 
 install_native_automake()
