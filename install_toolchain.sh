@@ -141,6 +141,7 @@
 : ${boost_ver:=1_70_0}
 : ${Python_ver:=3.7.4}
 : ${Python2_ver:=2.7.15}
+: ${rustc_ver:=1.36.0}
 : ${ruby_ver:=2.6.3}
 : ${go_ver:=1.12.7}
 : ${perl_ver:=5.30.0}
@@ -502,6 +503,8 @@ help()
 		Specify the version of boost you want, currently '${boost_ver}'.
 	Python_ver
 		Specify the version of python you want, currently '${Python_ver}'.
+	rustc_ver
+		Specify the version of Rust you want, currently '${rustc_ver}'.
 	ruby_ver
 		Specify the version of ruby you want, currently '${ruby_ver}'.
 	go_ver
@@ -815,6 +818,9 @@ fetch()
 		Python2|Python)
 			eval wget -O ${Python_src_base}/Python-\${${_p}_ver}.tar.xz \
 				https://www.python.org/ftp/python/\${${_p}_ver}/Python-\${${_p}_ver}.tar.xz || return;;
+		rustc)
+			wget -O ${rustc_org_src_dir}.tar.gz \
+				https://static.rust-lang.org/dist/${rustc_name}.tar.gz || return;;
 		ruby)
 			wget -O ${ruby_org_src_dir}.tar.xz \
 				http://cache.ruby-lang.org/pub/ruby/`echo ${ruby_ver} | cut -d. -f-2`/${ruby_name}.tar.xz || return;;
@@ -1133,6 +1139,8 @@ set_src_directory()
 		eval ${_1}_name=${1}+-\${${_1}_ver};;
 	boost)
 		eval ${_1}_name=${1}_\${${_1}_ver};;
+	rustc)
+		eval ${_1}_name=${1}-\${${_1}_ver}-src;;
 	mingw-w64)
 		eval ${_1}_name=${1}-v\${${_1}_ver};;
 	squashfs|expect|tcl|tk)
@@ -4349,6 +4357,31 @@ install_native_Python()
 			strip -v ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
 			chmod -v u-w ${DESTDIR}${prefix}/lib/libpython${soname_v} || return) || return
 	done
+}
+
+install_native_rustc()
+{
+	[ -x ${prefix}/bin/rustc -a "${force_install}" != yes ] && return
+	which python2 > /dev/null || install_native_Python2 || return
+	which cmake > /dev/null || install_native_cmake || return
+	which curl > /dev/null || install_native_curl || return
+	which git > /dev/null || install_native_git || return
+	which pkg-config > /dev/null || install_native_pkg_config || return
+	search_header ssl.h openssl > /dev/null || install_native_openssl || return
+	fetch rustc || return
+	unpack ${rustc_org_src_dir} || return
+	(cd ${rustc_org_src_dir}
+	 sed -e '
+		/^#extended = .\+/s//extended = true/
+		/^#prefix = .\+/s%%prefix = "'${prefix}'"%
+		/^#sysconfdir = .\+/s//sysconfdir = "etc"/
+		/^#codegen-units = .\+/s//codegen-units = '${jobs}'/
+		/^#codegen-units-std = .\+/s//codegen-units-std = '${jobs}'/
+		/^#rpath = .\+/s//rpath = false/' \
+			config.toml.example > config.toml || return
+	./x.py build || return
+	./x.py doc || return
+	./x.py install || return)
 }
 
 install_native_ruby()
