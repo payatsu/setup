@@ -7,8 +7,8 @@ ARG prefix
 ARG njobs=4
 ARG pkgs="zlib binutils gmp mpfr mpc isl gcc \
 bzip2 elfutils m4 bison flex perl autoconf autoconf-archive automake libtool texinfo \
-gawk xz lzip ed bc cmake libffi Python2 Python ninja meson Bear libiconv glib pkg-config \
-ruby tcl tk libunistring libatomic_ops gc guile gdb gettext git go \
+gawk xz lzip ed bc curl cmake libffi Python2 Python ninja meson Bear libiconv glib pkg-config \
+ruby tcl tk libunistring libatomic_ops gc guile gdb gettext git go rustc \
 zsh bash screen libevent tmux plantuml patch lua vim ctags global \
 the_silver_searcher the_platinum_searcher highway fzf jq protobuf swig dtc \
 lld llvm compiler-rt libunwind libcxxabi libcxx cfe"
@@ -24,7 +24,7 @@ wget xz-utils \
 make gcc g++ \
 bison texinfo \
 libncurses5-dev libreadline-dev \
-openssh-client libssl-dev libcurl4-openssl-dev ca-certificates \
+openssh-client libssl-dev ca-certificates \
 libexpat1-dev libpcre2-dev asciidoc xmlto \
 graphviz openjdk-11-jre \
 libgtk-3-dev libxft-dev libxt-dev \
@@ -56,7 +56,7 @@ apt-get install -y --no-install-recommends tzdata && \
 apt-get install -y --no-install-recommends \
 libc6-dev wget less make file man-db \
 libreadline7 \
-libssl1.1 libcurl4-openssl-dev ca-certificates \
+libssl1.1 ca-certificates \
 libexpat1 libpcre2-8-0 libxml2 \
 graphviz openjdk-11-jre \
 libgtk-3-0 libxft2 libxt6 \
