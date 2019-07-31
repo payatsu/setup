@@ -80,7 +80,7 @@ sed -i -e 's/^# \(ja_JP\.UTF-8 UTF-8\)$/\1/' /etc/locale.gen && \
 locale-gen
 USER ${username}
 WORKDIR /home/${username}
-ENV LANG=ja_JP.utf8 SHELL=${prefix}/bin/zsh
+ENV LANG=ja_JP.utf8 SHELL=${prefix}/bin/zsh USER=${username}
 CMD exec ${SHELL} -l
 RUN \
 echo colorscheme molokai > .vim/vimrc.local.vim && \
