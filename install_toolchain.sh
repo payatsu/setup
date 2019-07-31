@@ -142,6 +142,7 @@
 : ${Python_ver:=3.7.4}
 : ${Python2_ver:=2.7.15}
 : ${rustc_ver:=1.36.0}
+: ${rustup_ver:=1.18.3}
 : ${ruby_ver:=2.6.3}
 : ${go_ver:=1.12.7}
 : ${perl_ver:=5.30.0}
@@ -505,6 +506,8 @@ help()
 		Specify the version of python you want, currently '${Python_ver}'.
 	rustc_ver
 		Specify the version of Rust you want, currently '${rustc_ver}'.
+	rustup_ver
+		Specify the version of rustup you want, currently '${rustup_ver}'.
 	ruby_ver
 		Specify the version of ruby you want, currently '${ruby_ver}'.
 	go_ver
@@ -821,6 +824,9 @@ fetch()
 		rustc)
 			wget -O ${rustc_org_src_dir}.tar.gz \
 				https://static.rust-lang.org/dist/${rustc_name}.tar.gz || return;;
+		rustup)
+			wget -O ${rustup_org_src_dir}.tar.gz \
+				https://github.com/rust-lang/rustup.rs/archive/${rustup_ver}.tar.gz || return;;
 		ruby)
 			wget -O ${ruby_org_src_dir}.tar.xz \
 				http://cache.ruby-lang.org/pub/ruby/`echo ${ruby_ver} | cut -d. -f-2`/${ruby_name}.tar.xz || return;;
@@ -1141,6 +1147,8 @@ set_src_directory()
 		eval ${_1}_name=${1}_\${${_1}_ver};;
 	rustc)
 		eval ${_1}_name=${1}-\${${_1}_ver}-src;;
+	rustup)
+		eval ${_1}_name=${1}.rs-\${${_1}_ver};;
 	mingw-w64)
 		eval ${_1}_name=${1}-v\${${_1}_ver};;
 	squashfs|expect|tcl|tk)
@@ -4388,6 +4396,16 @@ install_native_rustc()
 	./x.py build || return
 	./x.py doc || return
 	./x.py install || return)
+}
+
+install_native_rustup()
+{
+	which rustup > /dev/null && [ "${force_install}" != yes ] && return
+	which cargo > /dev/null || install_native_rustc || return
+	fetch rustup || return
+	unpack ${rustup_org_src_dir} || return
+	(cd ${rustup_org_src_dir}
+	cargo run -j ${jobs} -v --release -- -v -y --no-modify-path) || return
 }
 
 install_native_ruby()
