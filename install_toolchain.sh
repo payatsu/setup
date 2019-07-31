@@ -1393,8 +1393,8 @@ func_place_holder()
 EOF
 	! which python3 > /dev/null 2>&1 && echo '}\n'${func_name} >> ${1} && return
 	python_site_packages=`python3 -c 'import sys; print("lib/python{}.{}/site-packages".format(*sys.version_info[:2]))'`
-	[ -d ${prefix}/${python_site_packages} ] || mkdir -pv ${prefix}/${python_site_packages} || return
 	cat <<\EOF | sed -e 's%py_place_holder%'${python_site_packages}'%g;$s%func_place_holder%'${func_name}'%' >> ${1} || return
+	[ ! -d ${prefix}/py_place_holder ] && return
 	echo ${PYTHONPATH} | tr : '\n' | grep -qe ^${prefix}/py_place_holder\$ \
 		&& export PYTHONPATH=${prefix}/py_place_holder`echo ${PYTHONPATH} | sed -e 's%\(^\|:\)'${prefix}'/py_place_holder\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//;s/^./:&/'` \
 		|| export PYTHONPATH=${prefix}/py_place_holder${PYTHONPATH:+:${PYTHONPATH}}
@@ -3720,7 +3720,13 @@ install_native_meson()
 	which ninja > /dev/null || install_native_ninja || return
 	fetch meson || return
 	unpack ${meson_org_src_dir} || return
-	python3 -c "import sys; sys.exit(int(not '${prefix}/lib/python{}.{}/site-packages'.format(*sys.version_info[:2]) in sys.path))" || update_path || return
+	python3 -c "
+import os
+import sys
+d = '${prefix}/lib/python{}.{}/site-packages'.format(*sys.version_info[:2])
+if not os.path.isdir(d):
+	os.makedirs(d)
+sys.exit(int(not d in sys.path))" || update_path || return
 	(cd ${meson_org_src_dir}
 	python3 ${meson_org_src_dir}/setup.py install --prefix ${DESTDIR}${prefix}) || return
 }
