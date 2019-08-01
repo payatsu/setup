@@ -88,7 +88,7 @@ COPY install_toolchain.sh .
 RUN \
 sudo mv -v /usr/local/lib/rustlib/uninstall.sh . && \
 ./install_toolchain.sh -p tmp -j ${njobs} install_native_rustup clean && \
-sudo mv -v tmp/src/rustup ${prefix}/src/rustup && \
+sudo cp -vr tmp/src/rustup ${prefix}/src && \
 rm -vr tmp install_toolchain.sh && \
 sudo mv -v uninstall.sh /usr/local/lib/rustlib && \
 echo colorscheme molokai > .vim/vimrc.local.vim && \
