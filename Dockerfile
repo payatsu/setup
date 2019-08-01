@@ -1,17 +1,18 @@
 ARG baseimage=ubuntu
 ARG prefix=/usr/local
 ARG prefixbase=local
+ARG njobs=4
 
 FROM ${baseimage} AS builder
 ARG prefix
-ARG njobs=4
+ARG njobs
 ARG pkgs="zlib binutils gmp mpfr mpc isl gcc \
 bzip2 elfutils m4 bison flex perl autoconf autoconf-archive automake libtool texinfo \
 gawk xz lzip ed bc curl cmake libffi Python2 Python ninja meson Bear libiconv glib pkg-config \
 ruby tcl tk libunistring libatomic_ops gc guile gdb gettext git go rustc \
 zsh bash screen libevent tmux plantuml patch lua vim ctags global \
 the_silver_searcher the_platinum_searcher highway fzf jq protobuf swig dtc \
-lld llvm compiler-rt libunwind libcxxabi libcxx cfe"
+lld llvm compiler-rt libunwind libcxxabi libcxx cfe boost"
 
 RUN apt-get update && apt-get upgrade -y
 COPY install_toolchain.sh .
@@ -44,6 +45,7 @@ FROM ${baseimage} AS dev
 ARG prefix
 ARG prefixbase
 ARG username=dev
+ARG njobs
 
 COPY --from=builder ${prefix} ${prefix}
 COPY --from=builder /etc/ld.so.conf.d/${prefixbase}.conf /etc/ld.so.conf.d/${prefixbase}.conf
@@ -56,7 +58,7 @@ apt-get install -y --no-install-recommends tzdata && \
 apt-get install -y --no-install-recommends \
 libc6-dev wget less make file man-db \
 libreadline7 \
-libssl1.1 ca-certificates \
+libssl-dev ca-certificates \
 libexpat1 libpcre2-8-0 libxml2 \
 graphviz openjdk-11-jre \
 libgtk-3-0 libxft2 libxt6 \
@@ -82,6 +84,12 @@ USER ${username}
 WORKDIR /home/${username}
 ENV LANG=ja_JP.utf8 SHELL=${prefix}/bin/zsh USER=${username}
 CMD exec ${SHELL} -l
+COPY install_toolchain.sh .
 RUN \
+sudo mv -v /usr/local/lib/rustlib/uninstall.sh . && \
+./install_toolchain.sh -p tmp -j ${njobs} install_native_rustup clean && \
+sudo mv -v tmp/src/rustup ${prefix}/src/rustup && \
+rm -vr tmp install_toolchain.sh && \
+sudo mv -v uninstall.sh /usr/local/lib/rustlib && \
 echo colorscheme molokai > .vim/vimrc.local.vim && \
 vim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .vim/vimrc -U NONE -i NONE -V1 -e -s

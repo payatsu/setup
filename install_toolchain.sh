@@ -4395,7 +4395,7 @@ install_native_rustc()
 			config.toml.example > config.toml || return
 	./x.py build || return
 	./x.py doc || return
-	./x.py install || return)
+	./x.py install) || return
 }
 
 install_native_rustup()
