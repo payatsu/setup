@@ -89,7 +89,8 @@ RUN \
 sudo mv -v /usr/local/lib/rustlib/uninstall.sh . && \
 ./install_toolchain.sh -p tmp -j ${njobs} install_native_rustup clean && \
 sudo cp -vr tmp/src/rustup ${prefix}/src && \
-rm -vr tmp install_toolchain.sh && \
 sudo mv -v uninstall.sh /usr/local/lib/rustlib && \
+rm -vr tmp install_toolchain.sh && \
+rustup completions zsh | sudo tee /usr/local/share/zsh/site-functions/_rustup > /dev/null && \
 echo colorscheme molokai > .vim/vimrc.local.vim && \
 vim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .vim/vimrc -U NONE -i NONE -V1 -e -s
