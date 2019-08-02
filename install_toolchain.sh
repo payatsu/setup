@@ -885,7 +885,7 @@ fetch()
 			git clone --depth 1 https://github.com/ianlancetaylor/libbacktrace ${libbacktrace_org_src_dir} || return;;
 		pkg-config)
 			wget -O ${pkg_config_org_src_dir}.tar.gz \
-				https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
+				https://github.com/freedesktop/pkg-config/archive/${pkg_config_name}.tar.gz || return;;
 		xextproto|fixesproto|damageproto|presentproto|inputproto|kbproto|xproto|glproto|dri2proto|dri3proto)
 			eval wget -O \${${_p}_org_src_dir}.tar.bz2 \
 				ftp://ftp.freedesktop.org/pub/individual/proto/\${${_p}_name}.tar.bz2 || return;;
@@ -903,7 +903,7 @@ fetch()
 				https://github.com/anholt/libepoxy/releases/download/v${libepoxy_ver}/${libepoxy_name}.tar.bz2 || return;;
 		mesa)
 			wget -O ${mesa_org_src_dir}.tar.xz \
-				https://mesa.freedesktop.org/archive/${mesa_name}.tar.xz || return;;
+				https://github.com/freedesktop/mesa/archive/${mesa_name}.tar.gz || return;;
 		cairo)
 			eval wget -O \${${_p}_org_src_dir}.tar.xz \
 				https://www.cairographics.org/releases/\${${_p}_name}.tar.xz || return;;
