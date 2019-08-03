@@ -91,6 +91,6 @@ sudo mv -v /usr/local/lib/rustlib/uninstall.sh . && \
 sudo cp -vr tmp/src/rustup ${prefix}/src && \
 sudo mv -v uninstall.sh /usr/local/lib/rustlib && \
 rm -vr tmp install_toolchain.sh && \
-rustup completions zsh | sudo tee /usr/local/share/zsh/site-functions/_rustup > /dev/null && \
+./.cargo/bin/rustup completions zsh | sudo tee /usr/local/share/zsh/site-functions/_rustup > /dev/null && \
 echo colorscheme molokai > .vim/vimrc.local.vim && \
 vim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .vim/vimrc -U NONE -i NONE -V1 -e -s
