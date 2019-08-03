@@ -39,7 +39,7 @@ for p in `echo ${pkgs} | tr - _`; do \
 done && \
 ./install_toolchain.sh -p ${prefix} -j ${njobs} force_install=yes install_native_go && \
 ./install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_cross_binutils install_cross_gcc && \
-./install_toolchain.sh -p ${prefix} clean
+./install_toolchain.sh -p ${prefix} clean convert_archives
 
 FROM ${baseimage} AS dev
 ARG prefix
@@ -87,7 +87,7 @@ CMD exec ${SHELL} -l
 COPY install_toolchain.sh .
 RUN \
 sudo mv -v /usr/local/lib/rustlib/uninstall.sh . && \
-./install_toolchain.sh -p tmp -j ${njobs} install_native_rustup clean && \
+./install_toolchain.sh -p tmp -j ${njobs} install_native_rustup clean convert_archives && \
 sudo cp -vr tmp/src/rustup ${prefix}/src && \
 sudo mv -v uninstall.sh /usr/local/lib/rustlib && \
 rm -vr tmp install_toolchain.sh && \
