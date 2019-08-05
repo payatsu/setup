@@ -1943,8 +1943,8 @@ install_native_dtc()
 	which swig > /dev/null || install_native_swig || return
 	fetch dtc || return
 	unpack ${dtc_org_src_dir} || return
-	make -C ${dtc_org_src_dir} -j ${jobs} V=1 || return
-	make -C ${dtc_org_src_dir} -j ${jobs} V=1 PREFIX=${DESTDIR}${prefix} install || return
+	make -C ${dtc_org_src_dir} -j 1 V=1 || return # XXX work around for parallel make
+	make -C ${dtc_org_src_dir} -j 1 V=1 PREFIX=${DESTDIR}${prefix} install || return # XXX work around for parallel make
 }
 
 install_native_u_boot()
