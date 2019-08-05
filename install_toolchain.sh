@@ -5,13 +5,8 @@
 # [TODO] ulibc
 # [TODO] qemu-kvm
 # [TODO] debかrpm化に対応する。
-# [TODO] lib/に配置されるlibstdc++.so.*gdb.pyをなんとかする。
-# [TODO] peco
-# [TODO] Rtags
 # [TODO] ccache, distcc
-# [TODO] insight
 # [TODO] haskell(stack<-(ghc, cabal))
-# [TODO] X11, gtk周りのインストールが未完成＆不安定
 # [TODO] libav<-
 # [TODO] webkitgtk<-libsoup
 # [TODO] libmount, dtrace (GLib)
