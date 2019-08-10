@@ -4,7 +4,6 @@
 # [TODO] pigz
 # [TODO] ulibc
 # [TODO] qemu-kvm
-# [TODO] debかrpm化に対応する。
 # [TODO] ccache, distcc
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] libav<-
@@ -46,7 +45,7 @@
 : ${u_boot_ver:=2019.07}
 : ${qemu_ver:=4.0.0}
 : ${gperf_ver:=3.1}
-: ${glibc_ver:=2.29}
+: ${glibc_ver:=2.30}
 : ${newlib_ver:=3.1.0}
 : ${mingw_w64_ver:=5.0.4}
 : ${gmp_ver:=6.1.2}
