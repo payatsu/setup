@@ -119,6 +119,7 @@
 : ${meson_ver:=0.51.1}
 : ${cmake_ver:=3.15.0}
 : ${Bear_ver:=2.4.0}
+: ${ccache_ver:=3.7.2}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=3.0.12}
 : ${llvm_ver:=8.0.0}
@@ -484,6 +485,8 @@ help()
 		Specify the version of CMake you want, currently '${cmake_ver}'.
 	Bear_ver
 		Specify the version of Build EAR you want, currently '${Bear_ver}'.
+	ccache_ver
+		Specify the version of ccache you want, currently '${ccache_ver}'.
 	libedit_ver
 		Specify the version of libedit you want, currently '${libedit_ver}'.
 	swig_ver
@@ -792,6 +795,9 @@ fetch()
 		Bear)
 			wget -O ${Bear_org_src_dir}.tar.gz \
 				https://github.com/rizsotto/Bear/archive/${Bear_ver}.tar.gz || return;;
+		ccache)
+			wget -O ${ccache_org_src_dir}.tar.xz \
+				https://github.com/ccache/ccache/releases/download/v${ccache_ver}/${ccache_name}.tar.xz || return;;
 		libedit)
 			wget -O ${libedit_org_src_dir}.tar.gz \
 				http://thrysoee.dk/editline/${libedit_name}.tar.gz || return;;
@@ -3770,6 +3776,20 @@ install_native_Bear()
 			-DCMAKE_INSTALL_PREFIX=${prefix} ${Bear_org_src_dir}) || return
 	make -C ${Bear_bld_dir_ntv} -j ${jobs} || return
 	make -C ${Bear_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
+}
+
+install_native_ccache()
+{
+	[ -x ${prefix}/bin/ccache -a "${force_install}" != yes ] && return
+	fetch ccache || return
+	unpack ${ccache_org_src_dir} || return
+	[ -f ${ccache_org_src_dir}/Makefile ] ||
+		(cd ${ccache_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return
+	make -C ${ccache_org_src_dir} -j ${jobs} V=1 || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${ccache_org_src_dir} -j ${jobs} -k V=1 check || return
+	make -C ${ccache_org_src_dir} -j ${jobs} V=1 install || return
 }
 
 install_native_libedit()
