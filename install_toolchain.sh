@@ -4,7 +4,7 @@
 # [TODO] pigz
 # [TODO] ulibc
 # [TODO] qemu-kvm
-# [TODO] ccache, distcc
+# [TODO] distcc
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] libav<-
 # [TODO] webkitgtk<-libsoup

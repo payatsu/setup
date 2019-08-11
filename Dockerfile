@@ -8,9 +8,9 @@ ARG prefix
 ARG njobs
 ARG pkgs="zlib binutils gmp mpfr mpc isl gcc \
 bzip2 elfutils m4 bison flex perl autoconf autoconf-archive automake libtool texinfo \
-gawk xz lzip ed bc curl cmake libffi Python2 Python ninja meson Bear libiconv glib pkg-config \
-ruby tcl tk libunistring libatomic_ops gc guile gdb gettext git go rustc \
-zsh bash screen libevent tmux plantuml patch lua vim ctags global \
+gawk xz lzip ed bc curl ccache cmake libffi Python2 Python ninja meson Bear \
+libiconv glib pkg-config ruby tcl tk libunistring libatomic_ops gc guile gdb \
+gettext git go rustc zsh bash screen libevent tmux plantuml patch lua vim ctags global \
 the_silver_searcher the_platinum_searcher highway fzf jq protobuf swig dtc \
 lld llvm compiler-rt libunwind libcxxabi libcxx cfe boost"
 
