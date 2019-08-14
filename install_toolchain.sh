@@ -4403,13 +4403,12 @@ install_native_rustc()
 		/^#extended = .\+/s//extended = true/
 		/^#prefix = .\+/s%%prefix = "'${prefix}'"%
 		/^#sysconfdir = .\+/s//sysconfdir = "etc"/
-		/^#codegen-units = .\+/s//codegen-units = '${jobs}'/
-		/^#codegen-units-std = .\+/s//codegen-units-std = '${jobs}'/
+		/^#parallel-compiler = .\+/s//parallel-compiler = true/
 		/^#rpath = .\+/s//rpath = false/' \
 			config.toml.example > config.toml || return
-	./x.py build || return
-	./x.py doc || return
-	./x.py install) || return
+	./x.py build -j ${jobs} || return
+	./x.py doc -j ${jobs} || return
+	./x.py install -j ${jobs}) || return
 }
 
 install_native_rustup()
