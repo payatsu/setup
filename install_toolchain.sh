@@ -4025,6 +4025,7 @@ install_native_lldb()
 	fetch llvm || return
 	unpack ${llvm_org_src_dir} || return
 	place_llvm_tools lldb || return
+	place_llvm_tools cfe || return
 	mkdir -pv ${lldb_bld_dir} || return
 	[ -f ${lldb_bld_dir}/Makefile ] ||
 		(cd ${lldb_bld_dir}
@@ -4033,6 +4034,8 @@ install_native_lldb()
 			-DLLVM_LINK_LLVM_DYLIB=ON \
 			-DCMAKE_C_FLAGS="${CFLAGS} -I`get_include_path Version.h clang/Basic`" \
 			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`get_include_path curses.h` -I`get_include_path histedit.h`" \
+			-DLLDB_TEST_C_COMPILER=${CC:-gcc} \
+			-DLLDB_TEST_CXX_COMPILER=${CXX:-g++} \
 			${llvm_org_src_dir}) || return
 	make -C ${lldb_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
