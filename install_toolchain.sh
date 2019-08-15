@@ -4022,9 +4022,8 @@ install_native_lldb()
 	search_header histedit.h > /dev/null || install_native_libedit || return
 	search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
 	which swig > /dev/null || install_native_swig || return
-	fetch llvm || return
-	unpack ${llvm_org_src_dir} || return
-	place_llvm_tools lldb || return
+	fetch lldb || return
+	unpack ${lldb_org_src_dir} || return
 	mkdir -pv ${lldb_bld_dir} || return
 	[ -f ${lldb_bld_dir}/Makefile ] ||
 		(cd ${lldb_bld_dir}
@@ -4033,9 +4032,8 @@ install_native_lldb()
 			-DLLVM_LINK_LLVM_DYLIB=ON \
 			-DCMAKE_C_FLAGS="${CFLAGS} -I`get_include_path Version.h clang/Basic`" \
 			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`get_include_path curses.h` -I`get_include_path histedit.h`" \
-			-DLLDB_TEST_C_COMPILER=${CC:-gcc} \
-			-DLLDB_TEST_CXX_COMPILER=${CXX:-g++} \
-			${llvm_org_src_dir}/tools/lldb) || return
+			-DLLDB_TEST_C_COMPILER=${CC:-gcc} -DLLDB_TEST_CXX_COMPILER=${CXX:-g++} \
+			${lldb_org_src_dir}) || return
 	make -C ${lldb_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${lldb_bld_dir} -j ${jobs} -k check || return
