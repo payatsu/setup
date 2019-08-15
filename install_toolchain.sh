@@ -3999,15 +3999,14 @@ install_native_lld()
 {
 	[ -x ${prefix}/bin/lld -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
-	fetch llvm || return
-	unpack ${llvm_org_src_dir} || return
-	place_llvm_tools lld || return
+	fetch lld || return
+	unpack ${lld_org_src_dir} || return
 	mkdir -pv ${lld_bld_dir} || return
 	[ -f ${lld_bld_dir}/Makefile ] ||
 		(cd ${lld_bld_dir}
 		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-			-DLLVM_LINK_LLVM_DYLIB=ON ${llvm_org_src_dir}) || return
+			-DLLVM_LINK_LLVM_DYLIB=ON ${lld_org_src_dir}) || return
 	make -C ${lld_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${lld_bld_dir} -j ${jobs} -k check || return

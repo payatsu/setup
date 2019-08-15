@@ -12,7 +12,7 @@ gawk xz lzip ed bc curl ccache cmake libffi Python2 Python ninja meson Bear \
 libiconv glib pkg-config ruby tcl tk libunistring libatomic_ops gc guile gdb \
 gettext git go rustc zsh bash screen libevent tmux plantuml patch lua vim ctags global \
 the_silver_searcher the_platinum_searcher highway fzf jq protobuf swig dtc \
-lld llvm compiler-rt libunwind libcxxabi libcxx cfe boost"
+llvm lld compiler-rt libunwind libcxxabi libcxx cfe lldb boost"
 
 RUN apt-get update && apt-get upgrade -y
 COPY install_toolchain.sh .
