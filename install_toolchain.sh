@@ -3831,15 +3831,15 @@ install_native_llvm()
 	fetch llvm || return
 	unpack ${llvm_org_src_dir} || return
 	mkdir -pv ${llvm_bld_dir} || return
-	[ -f ${llvm_bld_dir}/Makefile ] ||
-		(cd ${llvm_bld_dir}
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-			-DLLVM_LINK_LLVM_DYLIB=ON ${llvm_org_src_dir}) || return
-	make -C ${llvm_bld_dir} -j ${jobs} || return
+	(cd ${llvm_bld_dir}
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DLLVM_LINK_LLVM_DYLIB=ON ${llvm_org_src_dir}) || return
+	cmake --build ${llvm_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${llvm_bld_dir} -j ${jobs} -k check || return
-	make -C ${llvm_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	cmake --install ${llvm_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
 
@@ -3851,15 +3851,14 @@ install_native_compiler_rt()
 	fetch compiler-rt || return
 	unpack ${compiler_rt_org_src_dir} || return
 	mkdir -pv ${compiler_rt_bld_dir} || return
-	[ -f ${compiler_rt_bld_dir}/Makefile ] ||
-		(cd ${compiler_rt_bld_dir}
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-			-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
-			-DSANITIZER_CXX_ABI=libc++ \
-			${compiler_rt_org_src_dir}) || return
-	make -C ${compiler_rt_bld_dir} -j ${jobs} || return
-	make -C ${compiler_rt_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	(cd ${compiler_rt_bld_dir}
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
+		-DSANITIZER_CXX_ABI=libc++ ${compiler_rt_org_src_dir}) || return
+	cmake --build ${compiler_rt_bld_dir} -v -j ${jobs} || return
+	cmake --install ${compiler_rt_bld_dir} -v ${strip:+--${strip}} || return
 	mkdir -pv ${DESTDIR}${prefix}/lib/clang/${cfe_ver}/lib || return
 	rm -fvr ${DESTDIR}${prefix}/lib/clang/${cfe_ver}/lib/linux || return
 	mv -v ${DESTDIR}${prefix}/lib/linux ${DESTDIR}${prefix}/lib/clang/${cfe_ver}/lib || return # XXX: workaround for mismatch between clang search path and compiler-rt installation path.
@@ -3873,16 +3872,15 @@ install_native_libunwind()
 	fetch libunwind || return
 	unpack ${libunwind_org_src_dir} || return
 	mkdir -pv ${libunwind_bld_dir} || return
-	[ -f ${libunwind_bld_dir}/Makefile ] ||
-		(cd ${libunwind_bld_dir}
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-			-DLIBUNWIND_USE_COMPILER_RT=ON \
-			${libunwind_org_src_dir}) || return
-	make -C ${libunwind_bld_dir} -j ${jobs} || return
+	(cd ${libunwind_bld_dir}
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DLIBUNWIND_USE_COMPILER_RT=ON ${libunwind_org_src_dir}) || return
+	cmake --build ${libunwind_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libunwind_bld_dir} -j ${jobs} -k check-unwind || return
-	make -C ${libunwind_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	cmake --install ${libunwind_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
 
@@ -3897,15 +3895,14 @@ install_native_libcxxabi()
 	fetch libcxxabi || return
 	unpack ${libcxxabi_org_src_dir} || return
 	mkdir -pv ${libcxxabi_bld_dir} || return
-	[ -f ${libcxxabi_bld_dir}/Makefile ] ||
-		(cd ${libcxxabi_bld_dir}
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-			-DLIBCXXABI_LIBCXX_PATH=${libcxx_org_src_dir} \
-			-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
-			${libcxxabi_org_src_dir}) || return
-	make -C ${libcxxabi_bld_dir} -j ${jobs} || return
-	make -C ${libcxxabi_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	(cd ${libcxxabi_bld_dir}
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DLIBCXXABI_LIBCXX_PATH=${libcxx_org_src_dir} \
+		-DLIBCXXABI_USE_LLVM_UNWINDER=ON ${libcxxabi_org_src_dir}) || return
+	cmake --build ${libcxxabi_bld_dir} -v -j ${jobs} || return
+	cmake --install ${libcxxabi_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
 
@@ -3919,17 +3916,16 @@ install_native_libcxx()
 	fetch libcxx || return
 	unpack ${libcxx_org_src_dir} || return
 	mkdir -pv ${libcxx_bld_dir} || return
-	[ -f ${libcxx_bld_dir}/Makefile ] ||
-		(cd ${libcxx_bld_dir}
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-			-DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${libcxxabi_org_src_dir}/include \
-			-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
-			${libcxx_org_src_dir}) || return
-	make -C ${libcxx_bld_dir} -j ${jobs} || return
+	(cd ${libcxx_bld_dir}
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${libcxxabi_org_src_dir}/include \
+		-DLIBCXXABI_USE_LLVM_UNWINDER=ON ${libcxx_org_src_dir}) || return
+	cmake --build ${libcxx_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libcxx_bld_dir} -j ${jobs} -k check-libcxx || return
-	make -C ${libcxx_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	cmake --install ${libcxx_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
 
@@ -3962,20 +3958,20 @@ install_native_cfe()
  
 EOF
 	mkdir -pv ${cfe_bld_dir} || return
-	[ -f ${cfe_bld_dir}/Makefile ] ||
-		(cd ${cfe_bld_dir}
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-			-DENABLE_LINKER_BUILD_ID=ON \
-			-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
-			-DCLANG_DEFAULT_RTLIB=compiler-rt \
-			-DGCC_INSTALL_PREFIX=`get_prefix iostream c++` \
-			`which lld > /dev/null && echo -DCLANG_DEFAULT_LINKER=lld` \
-			${cfe_org_src_dir}) || return
-	make -C ${cfe_bld_dir} -j ${jobs} || return
+	(cd ${cfe_bld_dir}
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DENABLE_LINKER_BUILD_ID=ON \
+		-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+		-DCLANG_DEFAULT_RTLIB=compiler-rt \
+		-DGCC_INSTALL_PREFIX=`get_prefix iostream c++` \
+		`which lld > /dev/null && echo -DCLANG_DEFAULT_LINKER=lld` \
+		${cfe_org_src_dir}) || return
+	cmake --build ${cfe_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${cfe_bld_dir} -j ${jobs} -k check-all || return
-	make -C ${cfe_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	cmake --install ${cfe_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
 
@@ -4002,15 +3998,15 @@ install_native_lld()
 	fetch lld || return
 	unpack ${lld_org_src_dir} || return
 	mkdir -pv ${lld_bld_dir} || return
-	[ -f ${lld_bld_dir}/Makefile ] ||
-		(cd ${lld_bld_dir}
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-			-DLLVM_LINK_LLVM_DYLIB=ON ${lld_org_src_dir}) || return
-	make -C ${lld_bld_dir} -j ${jobs} || return
+	(cd ${lld_bld_dir}
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DLLVM_LINK_LLVM_DYLIB=ON ${lld_org_src_dir}) || return
+	cmake --build ${lld_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${lld_bld_dir} -j ${jobs} -k check || return
-	make -C ${lld_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	cmake --install ${lld_bld_dir} -v ${strip:+--${strip}} || return
 }
 
 install_native_lldb()
@@ -4024,19 +4020,19 @@ install_native_lldb()
 	fetch lldb || return
 	unpack ${lldb_org_src_dir} || return
 	mkdir -pv ${lldb_bld_dir} || return
-	[ -f ${lldb_bld_dir}/Makefile ] ||
-		(cd ${lldb_bld_dir}
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-			-DLLVM_LINK_LLVM_DYLIB=ON \
-			-DCMAKE_C_FLAGS="${CFLAGS} -I`get_include_path Version.h clang/Basic`" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`get_include_path curses.h` -I`get_include_path histedit.h`" \
-			-DLLDB_TEST_C_COMPILER=${CC:-gcc} -DLLDB_TEST_CXX_COMPILER=${CXX:-g++} \
-			${lldb_org_src_dir}) || return
-	make -C ${lldb_bld_dir} -j ${jobs} || return
+	(cd ${lldb_bld_dir}
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DLLVM_LINK_LLVM_DYLIB=ON \
+		-DCMAKE_C_FLAGS="${CFLAGS} -I`get_include_path Version.h clang/Basic`" \
+		-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`get_include_path curses.h` -I`get_include_path histedit.h`" \
+		-DLLDB_TEST_C_COMPILER=${CC:-gcc} -DLLDB_TEST_CXX_COMPILER=${CXX:-g++} \
+		${lldb_org_src_dir}) || return
+	cmake --build ${lldb_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${lldb_bld_dir} -j ${jobs} -k check || return
-	make -C ${lldb_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+	cmake --install ${lldb_bld_dir} -v ${strip:+--${strip}} || return
 }
 
 install_native_cling()
