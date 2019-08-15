@@ -3838,7 +3838,7 @@ install_native_llvm()
 		-DLLVM_LINK_LLVM_DYLIB=ON ${llvm_org_src_dir}) || return
 	cmake --build ${llvm_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${llvm_bld_dir} -j ${jobs} -k check || return
+		cmake --build ${llvm_bld_dir} -v -j ${jobs} --target check || return
 	cmake --install ${llvm_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
@@ -3879,7 +3879,7 @@ install_native_libunwind()
 		-DLIBUNWIND_USE_COMPILER_RT=ON ${libunwind_org_src_dir}) || return
 	cmake --build ${libunwind_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libunwind_bld_dir} -j ${jobs} -k check-unwind || return
+		cmake --build ${libunwind_bld_dir} -v -j ${jobs} --target check-unwind || return
 	cmake --install ${libunwind_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
@@ -3924,7 +3924,7 @@ install_native_libcxx()
 		-DLIBCXXABI_USE_LLVM_UNWINDER=ON ${libcxx_org_src_dir}) || return
 	cmake --build ${libcxx_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libcxx_bld_dir} -j ${jobs} -k check-libcxx || return
+		cmake --build ${libcxx_bld_dir} -v -j ${jobs} --target check-libcxx || return
 	cmake --install ${libcxx_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
@@ -3969,8 +3969,6 @@ EOF
 		`which lld > /dev/null && echo -DCLANG_DEFAULT_LINKER=lld` \
 		${cfe_org_src_dir}) || return
 	cmake --build ${cfe_bld_dir} -v -j ${jobs} || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${cfe_bld_dir} -j ${jobs} -k check-all || return
 	cmake --install ${cfe_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
@@ -4004,8 +4002,6 @@ install_native_lld()
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DLLVM_LINK_LLVM_DYLIB=ON ${lld_org_src_dir}) || return
 	cmake --build ${lld_bld_dir} -v -j ${jobs} || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${lld_bld_dir} -j ${jobs} -k check || return
 	cmake --install ${lld_bld_dir} -v ${strip:+--${strip}} || return
 }
 
@@ -4030,8 +4026,6 @@ install_native_lldb()
 		-DLLDB_TEST_C_COMPILER=${CC:-gcc} -DLLDB_TEST_CXX_COMPILER=${CXX:-g++} \
 		${lldb_org_src_dir}) || return
 	cmake --build ${lldb_bld_dir} -v -j ${jobs} || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${lldb_bld_dir} -j ${jobs} -k check || return
 	cmake --install ${lldb_bld_dir} -v ${strip:+--${strip}} || return
 }
 
