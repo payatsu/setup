@@ -3275,6 +3275,7 @@ install_native_source_highlight()
 	[ "${enable_check}" != yes ] ||
 		make -C ${source_highlight_org_src_dir} -j ${jobs} -k check || return
 	make -C ${source_highlight_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_screen()
@@ -4092,6 +4093,7 @@ install_native_boost()
 	./b2 --prefix=${DESTDIR}${prefix} --build-dir=${boost_bld_dir_ntv} \
 		--layout=system --build-type=minimal -j ${jobs} -q \
 		include=${prefix}/include library-path=${prefix}/lib install) || return
+	update_path || return
 }
 
 install_cross_binutils()
