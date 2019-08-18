@@ -87,6 +87,7 @@
 : ${patch_ver:=2.7.6}
 : ${findutils_ver:=4.6.0}
 : ${less_ver:=530}
+: ${source_highlight_ver:=3.1.8}
 : ${screen_ver:=4.6.2}
 : ${libevent_ver:=2.1.8}
 : ${tmux_ver:=2.8}
@@ -423,6 +424,8 @@ help()
 		Specify the version of GNU findutils you want, currently'${findutils_ver}'.
 	less_ver
 		Specify the version of GNU less you want, currently '${less_ver}'.
+	source_highlight_ver
+		Specify the version of src-highlite you want, currently '${source_highlight_ver}'.
 	screen_ver
 		Specify the version of GNU Screen you want, currently '${screen_ver}'.
 	libevent_ver
@@ -723,6 +726,9 @@ fetch()
 		libevent)
 			wget -O ${libevent_org_src_dir}.tar.gz \
 				https://github.com/libevent/libevent/releases/download/release-${libevent_ver}-stable/${libevent_name}-stable.tar.gz || return;;
+		source-highlight)
+			wget -O ${source_highlight_org_src_dir}.tar.gz \
+				https://ftp.gnu.org/gnu/src-highlite/${source_highlight_name}.tar.gz || return;;
 		tmux)
 			wget -O ${tmux_org_src_dir}.tar.gz \
 				https://github.com/tmux/tmux/releases/download/${tmux_ver}/${tmux_name}.tar.gz || return;;
@@ -1223,6 +1229,7 @@ set_variables()
 			s/u_boot/u-boot/
 			s/mingw_w64/mingw-w64/
 			s/vimdoc_ja/vimdoc-ja/
+			s/source_highlight/source-highlight/
 			s/util_linux/util-linux/
 			s/git_manpages/git-manpages/
 			s/sqlite_autoconf/sqlite-autoconf/
@@ -3254,6 +3261,20 @@ install_native_less()
 	[ "${enable_check}" != yes ] ||
 		make -C ${less_org_src_dir} -j ${jobs} -k check || return
 	make -C ${less_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_source_highlight()
+{
+	[ -x ${prefix}/bin/source-highlight -a "${force_install}" != yes ] && return
+	fetch source-highlight || return
+	unpack ${source_highlight_org_src_dir} || return
+	[ -f ${source_highlight_org_src_dir}/Makefile ] ||
+		(cd ${source_highlight_org_src_dir}
+		./configure --prefix=${prefix} --build=${build}) || return
+	make -C ${source_highlight_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${source_highlight_org_src_dir} -j ${jobs} -k check || return
+	make -C ${source_highlight_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_screen()
