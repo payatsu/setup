@@ -10,9 +10,9 @@ ARG pkgs="zlib binutils gmp mpfr mpc isl gcc \
 bzip2 elfutils m4 bison flex perl autoconf autoconf-archive automake libtool texinfo \
 gawk xz lzip ed bc patch curl ccache cmake swig libffi Python2 Python ninja meson Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx cfe lldb \
-libiconv glib pkg-config ruby tcl tk libunistring libatomic_ops gc guile gdb \
+libiconv glib pkg-config ruby tcl tk libunistring libatomic_ops gc guile boost source-highlight gdb \
 gettext git go rustc zsh bash screen libevent tmux plantuml lua vim ctags global \
-the_silver_searcher the_platinum_searcher highway fzf jq protobuf dtc boost"
+the_silver_searcher the_platinum_searcher highway fzf jq protobuf dtc"
 
 RUN apt-get update && apt-get upgrade -y
 COPY install_toolchain.sh .
