@@ -104,8 +104,8 @@
 : ${curl_ver:=7.64.0}
 : ${expat_ver:=2.2.6}
 : ${asciidoc_ver:=8.6.9}
-: ${libxml2_ver:=2.9.8}
-: ${libxslt_ver:=1.1.32}
+: ${libxml2_ver:=2.9.9}
+: ${libxslt_ver:=1.1.33}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.20.1}
 : ${git_ver:=2.23.0}
@@ -764,7 +764,7 @@ fetch()
 				https://sourceforge.net/projects/asciidoc/files/asciidoc/${asciidoc_ver}/${asciidoc_name}.tar.gz/download || return;;
 		libxml2|libxslt)
 			eval wget -O \${${_p}_org_src_dir}.tar.gz \
-				ftp://xmlsoft.org/${_p}/\${${_p}_name}.tar.gz || return;;
+				http://xmlsoft.org/sources/\${${_p}_name}.tar.gz || return;;
 		xmlto)
 			wget -O ${xmlto_org_src_dir}.tar.bz2 \
 				https://fedorahosted.org/releases/x/m/xmlto/${xmlto_name}.tar.bz2 || return;;
