@@ -20,6 +20,9 @@
 : ${gzip_ver:=1.10}
 : ${lzip_ver:=1.21}
 : ${lunzip_ver:=1.9}
+: ${lzo_ver:=2.10}
+: ${lzop_ver:=1.04}
+: ${lz4_ver:=1.9.1}
 : ${wget_ver:=1.20.3}
 : ${pkg_config_ver:=0.29.2}
 : ${texinfo_ver:=6.6}
@@ -292,6 +295,12 @@ help()
 		Specify the version of lzip you want, currently '${lzip_ver}'.
 	lunzip_ver
 		Specify the version of lunzip you want, currently '${lunzip_ver}'.
+	lzo_ver
+		Specify the version of lzo you want, currently '${lzo_ver}'.
+	lzop_ver
+		Specify the version of lzop you want, currently '${lzop_ver}'.
+	lz4_ver
+		Specify the version of lz4 you want, currently '${lz4_ver}'.
 	wget_ver
 		Specify the version of GNU wget you want, currently '${wget_ver}'.
 	pkg_config_ver
@@ -616,6 +625,15 @@ fetch()
 		lunzip)
 			wget -O ${lunzip_org_src_dir}.tar.gz \
 				http://download.savannah.gnu.org/releases/lzip/lunzip/${lunzip_name}.tar.gz || return;;
+		lzo)
+			wget -O ${lzo_org_src_dir}.tar.gz \
+				http://www.oberhumer.com/opensource/lzo/download/${lzo_name}.tar.gz || return;;
+		lzop)
+			wget -O ${lzop_org_src_dir}.tar.gz \
+				https://www.lzop.org/download/${lzop_name}.tar.gz || return;;
+		lz4)
+			wget -O ${lz4_org_src_dir}.tar.gz \
+				https://github.com/lz4/lz4/archive/v${lz4_ver}.tar.gz || return;;
 		busybox)
 			wget -O ${busybox_org_src_dir}.tar.bz2 \
 				https://www.busybox.net/downloads/${busybox_name}.tar.bz2 || return;;
@@ -1607,6 +1625,43 @@ install_native_lunzip()
 	[ "${enable_check}" != yes ] ||
 		make -C ${lunzip_org_src_dir} -j ${jobs} -k check || return
 	make -C ${lunzip_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_lzo()
+{
+	[ -f ${prefix}/include/lzo/lzo1.h -a "${force_install}" != yes ] && return
+	fetch lzo || return
+	unpack ${lzo_org_src_dir} || return
+	[ -f ${lzo_org_src_dir}/Makefile ] ||
+		(cd ${lzo_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules --enable-shared) || return
+	make -C ${lzo_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${lzo_org_src_dir} -j ${jobs} -k test || return
+	make -C ${lzo_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_lzop()
+{
+	[ -x ${prefix}/bin/lzop -a "${force_install}" != yes ] && return
+	search_header lzo1.h lzo > /dev/null || install_native_lzo || return
+	fetch lzop || return
+	unpack ${lzop_org_src_dir} || return
+	[ -f ${lzop_org_src_dir}/Makefile ] ||
+		(cd ${lzop_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+	make -C ${lzop_org_src_dir} -j ${jobs} || return
+	make -C ${lzop_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_lz4()
+{
+	[ -x ${prefix}/bin/lz4 -a "${force_install}" != yes ] && return
+	fetch lz4 || return
+	unpack ${lz4_org_src_dir} || return
+	make -C ${lz4_org_src_dir} -j ${jobs} V=1 || return
+	make -C ${lz4_org_src_dir} -j ${jobs} V=1 PREFIX=${prefix} install || return
 }
 
 install_native_wget()
