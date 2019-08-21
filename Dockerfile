@@ -8,7 +8,7 @@ ARG prefix
 ARG njobs
 ARG pkgs="zlib binutils gmp mpfr mpc isl gcc \
 bzip2 elfutils m4 bison flex perl autoconf autoconf-archive automake libtool texinfo \
-gawk xz lzip ed bc patch curl ccache cmake swig libffi Python2 Python ninja meson Bear \
+gawk xz lzip ed bc patch ccache swig libffi Python2 Python libxml2 curl cmake ninja meson Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx cfe lldb \
 libiconv glib pkg-config ruby tcl tk libunistring libatomic_ops gc guile boost source-highlight gdb \
 gettext git go rustc zsh bash screen libevent tmux plantuml lua vim ctags global \
