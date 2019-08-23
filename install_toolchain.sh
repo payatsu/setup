@@ -58,6 +58,7 @@
 : ${gcc_ver:=9.2.0}
 : ${readline_ver:=8.0}
 : ${ncurses_ver:=6.1}
+: ${babeltrace_ver:=1.5.6}
 : ${gdb_ver:=8.3}
 : ${lcov_ver:=1.14}
 : ${strace_ver:=5.0}
@@ -371,6 +372,8 @@ help()
 		Specify the version of GNU Readline Library you want, currently '${readline_ver}'.
 	ncurses_ver
 		Specify the version of ncurses you want, currently '${ncurses_ver}'.
+	babeltrace_ver
+		Specify the version of babeltrace you want, currently '${babeltrace_ver}'.
 	gdb_ver
 		Specify the version of GNU Debugger you want, currently '${gdb_ver}'.
 	lcov_ver
@@ -677,6 +680,9 @@ fetch()
 					&& break \
 					|| rm -v ${gcc_org_src_dir}.tar.${compress_format}
 			done || return;;
+		babeltrace)
+			wget -O ${babeltrace_org_src_dir}.tar.gz \
+				https://github.com/efficios/babeltrace/archive/v${babeltrace_ver}.tar.gz || return;;
 		lcov)
 			wget -O ${lcov_org_src_dir}.tar.gz \
 				https://github.com/linux-test-project/lcov/archive/v${lcov_ver}.tar.gz || return;;
@@ -2272,6 +2278,26 @@ EOF
 	for l in libform libmenu libncurses++ libncurses libpanel libtinfo libformtw libmenutw libncurses++tw libncursestw libpaneltw libtinfotw; do
 		strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
 	done
+}
+
+install_native_babeltrace()
+{
+	[ -x ${prefix}/bin/babeltrace -a "${force_install}" != yes ] && return
+	search_header pcre.h > /dev/null || install_native_pcre || return
+	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return
+# TODO: uuid, popt
+	search_header libelf.h > /dev/null || install_native_elfutils || return
+	fetch babeltrace || return
+	unpack ${babeltrace_org_src_dir} || return
+	[ -f ${babeltrace_org_src_dir}/configure ] || (cd ${babeltrace_org_src_dir}; ./bootstrap) || return
+	[ -f ${babeltrace_org_src_dir}/Makefile ] ||
+		(cd ${babeltrace_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+	make -C ${babeltrace_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${babeltrace_org_src_dir} -j ${jobs} -k check || return
+	make -C ${babeltrace_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_gdb()
