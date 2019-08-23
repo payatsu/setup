@@ -2285,7 +2285,8 @@ install_native_babeltrace()
 	[ -x ${prefix}/bin/babeltrace -a "${force_install}" != yes ] && return
 	search_header pcre.h > /dev/null || install_native_pcre || return
 	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return
-# TODO: uuid, popt
+	search_header uuid.h uuid > /dev/null || install_native_util_linux || return
+# TODO: popt
 	search_header libelf.h > /dev/null || install_native_elfutils || return
 	fetch babeltrace || return
 	unpack ${babeltrace_org_src_dir} || return
