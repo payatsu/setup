@@ -138,7 +138,7 @@
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
-: ${boost_ver:=1_70_0}
+: ${boost_ver:=1_71_0}
 : ${Python_ver:=3.7.4}
 : ${Python2_ver:=2.7.15}
 : ${rustc_ver:=1.37.0}
@@ -847,7 +847,7 @@ fetch()
 			git clone --depth 1 --recursive https://github.com/MaskRay/ccls ${ccls_org_src_dir} || return;;
 		boost)
 			wget --trust-server-names -O ${boost_org_src_dir}.tar.bz2 \
-				https://sourceforge.net/projects/boost/files/boost/`echo ${boost_ver} | tr _ .`/${boost_name}.tar.bz2/download || return;;
+				https://dl.bintray.com/boostorg/release/`echo ${boost_ver} | tr _ .`/source/${boost_name}.tar.bz2 || return;;
 		Python2|Python)
 			eval wget -O ${Python_src_base}/Python-\${${_p}_ver}.tar.xz \
 				https://www.python.org/ftp/python/\${${_p}_ver}/Python-\${${_p}_ver}.tar.xz || return;;
