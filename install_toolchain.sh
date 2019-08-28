@@ -4494,6 +4494,7 @@ install_native_rustc()
 	unpack ${rustc_org_src_dir} || return
 	(cd ${rustc_org_src_dir}
 	 sed -e '
+		/^#ninja = .\+/s//ninja = '`which ninja > /dev/null && echo true || echo false`'/
 		/^#extended = .\+/s//extended = true/
 		/^#prefix = .\+/s%%prefix = "'${prefix}'"%
 		/^#sysconfdir = .\+/s//sysconfdir = "etc"/
