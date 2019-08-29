@@ -72,7 +72,7 @@
 : ${libXpm_ver:=3.5.11}
 : ${libwebp_ver:=1.0.0}
 : ${libffi_ver:=3.2.1}
-: ${emacs_ver:=26.2}
+: ${emacs_ver:=26.3}
 : ${libiconv_ver:=1.15}
 : ${vim_ver:=8.1.1794}
 : ${vimdoc_ja_ver:=dummy}
@@ -143,7 +143,7 @@
 : ${Python2_ver:=2.7.15}
 : ${rustc_ver:=1.37.0}
 : ${rustup_ver:=1.18.3}
-: ${ruby_ver:=2.6.3}
+: ${ruby_ver:=2.6.4}
 : ${go_ver:=1.12.9}
 : ${perl_ver:=5.30.0}
 : ${tcl_ver:=8.6.9}
@@ -3008,7 +3008,7 @@ install_native_emacs()
 		(cd ${emacs_org_src_dir}
 		CPPFLAGS="${CPPFLAGS} -I${prefix}/include" LDFLAGS="${LDFLAGS} -L${prefix}/lib" \
 			./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
-			--with-modules --with-xwidgets) || return
+			--with-modules --with-xwidgets --without-gnutls) || return
 	make -C ${emacs_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${emacs_org_src_dir} -j ${jobs} -k check || return
