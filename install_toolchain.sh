@@ -166,10 +166,10 @@
 : ${libpcap_ver:=1.9.0}
 : ${tcpdump_ver:=4.9.2}
 : ${npth_ver:=1.6}
-: ${libgpg_error_ver:=1.33}
-: ${libgcrypt_ver:=1.8.4}
+: ${libgpg_error_ver:=1.36}
+: ${libgcrypt_ver:=1.8.5}
 : ${libksba_ver:=1.3.5}
-: ${libassuan_ver:=2.5.1}
+: ${libassuan_ver:=2.5.3}
 : ${gnupg_ver:=2.2.17}
 : ${protobuf_ver:=3.9.0}
 : ${libbacktrace_ver:=git}
