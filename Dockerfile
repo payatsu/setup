@@ -26,6 +26,7 @@ make gcc g++ \
 bison texinfo \
 libncurses5-dev libreadline-dev \
 openssh-client libssl-dev ca-certificates \
+libbabeltrace-dev uuid-dev \
 libexpat1-dev libpcre2-dev asciidoc xmlto \
 graphviz openjdk-11-jre \
 libgtk-3-dev libxft-dev libxt-dev \
@@ -58,6 +59,7 @@ apt-get install -y --no-install-recommends \
 libc6-dev wget less make file man-db \
 libreadline7 \
 libssl-dev ca-certificates \
+libbabeltrace1 libuuid1 \
 libexpat1 libpcre2-8-0 libxml2 \
 graphviz openjdk-11-jre \
 libgtk-3-0 libxft2 libxt6 \
