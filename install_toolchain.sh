@@ -89,7 +89,7 @@
 : ${plantuml_ver:=1.2019.3}
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
-: ${findutils_ver:=4.6.0}
+: ${findutils_ver:=4.7.0}
 : ${less_ver:=530}
 : ${source_highlight_ver:=3.1.8}
 : ${screen_ver:=4.6.2}
@@ -3330,7 +3330,7 @@ install_native_findutils()
 	unpack ${findutils_org_src_dir} || return
 	[ -f ${findutils_org_src_dir}/Makefile ] ||
 		(cd ${findutils_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --enable-threads) || return
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules --enable-threads) || return
 	make -C ${findutils_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${findutils_org_src_dir} -j ${jobs} -k check || return
