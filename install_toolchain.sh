@@ -2322,7 +2322,7 @@ install_native_gdb()
 			--with-system-zlib --with-system-readline \
 			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so` -L`get_library_path libncurses.so`" \
 			host_configargs='--disable-rpath 'CFLAGS=\'"${CFLAGS} -I`get_include_path zlib.h` -I`get_include_path curses.h`"\') || return
-	make -C ${gdb_bld_dir_ntv} -j ${jobs} || return
+	make -C ${gdb_bld_dir_ntv} -j ${jobs} V=1 || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gdb_bld_dir_ntv} -j ${jobs} -k check || return
 	make -C ${gdb_bld_dir_ntv} -j ${jobs} install || return
@@ -4442,7 +4442,7 @@ install_cross_gdb()
 			--with-system-zlib --with-system-readline --with-sysroot=${sysroot} \
 			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so` -L`get_library_path libncurses.so`" \
 			host_configargs='--disable-rpath 'CFLAGS=\'"${CFLAGS} -I`get_include_path zlib.h` -I`get_include_path curses.h`"\') || return
-	make -C ${gdb_bld_dir_crs} -j ${jobs} || return
+	make -C ${gdb_bld_dir_crs} -j ${jobs} V=1 || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gdb_bld_dir_crs} -j ${jobs} -k check || return
 	make -C ${gdb_bld_dir_crs} -j ${jobs} install || return
