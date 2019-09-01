@@ -10,9 +10,9 @@ ARG pkgs="zlib binutils gmp mpfr mpc isl gcc \
 bzip2 elfutils m4 bison flex perl autoconf autoconf-archive automake libtool texinfo \
 gawk xz lzip ed bc patch ccache swig libffi Python2 Python libxml2 curl cmake ninja meson Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx cfe lldb \
-libiconv glib pkg-config ruby tcl tk libunistring libatomic_ops gc guile boost source-highlight gdb \
+libiconv glib pkg-config ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight gdb \
 gettext git go rustc zsh bash screen libevent tmux plantuml lua vim ctags global \
-the_silver_searcher the_platinum_searcher highway fzf jq protobuf dtc"
+the_silver_searcher the_platinum_searcher gperf highway fzf jq protobuf dtc"
 
 RUN apt-get update && apt-get upgrade -y
 COPY install_toolchain.sh .
@@ -27,10 +27,9 @@ bison texinfo \
 libncurses5-dev libreadline-dev \
 openssh-client libssl-dev ca-certificates \
 libbabeltrace-dev uuid-dev \
-libexpat1-dev libpcre2-dev asciidoc xmlto \
+libpcre2-dev asciidoc xmlto \
 graphviz openjdk-11-jre \
 libgtk-3-dev libxft-dev libxt-dev \
-gperf \
 libedit-dev && \
 ./install_toolchain.sh -p ${prefix} -j ${njobs} go_ver=1.11.13 "fetch `echo ${pkgs} | sed -e 's/\<ctags\>//'` clang-tools-extra vimdoc-ja mingw-w64" convert_archives
 RUN \
@@ -60,7 +59,7 @@ libc6-dev wget less make file man-db \
 libreadline7 \
 libssl-dev ca-certificates \
 libbabeltrace1 libuuid1 \
-libexpat1 libpcre2-8-0 libxml2 \
+libpcre2-8-0 libxml2 \
 graphviz openjdk-11-jre \
 libgtk-3-0 libxft2 libxt6 \
 libedit2 \
