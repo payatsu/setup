@@ -59,7 +59,7 @@ libc6-dev wget less make file man-db \
 libreadline7 \
 libssl-dev ca-certificates \
 libbabeltrace1 libuuid1 \
-libpcre2-8-0 libxml2 \
+libpcre2-8-0 \
 graphviz openjdk-11-jre \
 libgtk-3-0 libxft2 libxt6 \
 libedit2 \
