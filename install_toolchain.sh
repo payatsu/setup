@@ -729,7 +729,7 @@ fetch()
 				https://ftp.pcre.org/pub/pcre/\${${_p}_name}.tar.bz2 || return;;
 		the_silver_searcher)
 			wget -O ${the_silver_searcher_org_src_dir}.tar.gz \
-				https://geoff.greer.fm/ag/releases/${the_silver_searcher_name}.tar.gz || return;;
+				https://github.com/ggreer/the_silver_searcher/archive/${the_silver_searcher_ver}.tar.gz || return;;
 		the_platinum_searcher)
 			wget -O ${the_platinum_searcher_org_src_dir}.tar.gz \
 				https://github.com/monochromegane/the_platinum_searcher/archive/v${the_platinum_searcher_ver}.tar.gz || return;;
@@ -3202,6 +3202,9 @@ install_native_the_silver_searcher()
 	search_header lzma.h > /dev/null || install_native_xz || return
 	fetch the_silver_searcher || return
 	unpack ${the_silver_searcher_org_src_dir} || return
+	[ -f ${the_silver_searcher_org_src_dir}/configure ] ||
+		(cd ${the_silver_searcher_org_src_dir}
+		./autogen.sh) || return
 	[ -f ${the_silver_searcher_org_src_dir}/Makefile ] ||
 		(cd ${the_silver_searcher_org_src_dir}
 		update_pkg_config_path
