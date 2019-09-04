@@ -2014,6 +2014,7 @@ install_native_dtc()
 	unpack ${dtc_org_src_dir} || return
 	make -C ${dtc_org_src_dir} -j 1 V=1 || return # XXX work around for parallel make
 	make -C ${dtc_org_src_dir} -j 1 V=1 PREFIX=${DESTDIR}${prefix} install || return # XXX work around for parallel make
+	[ "${strip}" != strip ] && return
 	for b in convert-dtsv0 dtc fdtdump fdtget fdtoverlay fdtput; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
@@ -2540,6 +2541,7 @@ install_native_glib()
 	ninja -v -C ${glib_org_src_dir}/_build || return
 	ninja -v -C ${glib_org_src_dir}/_build install || return
 	update_path || return
+	[ "${strip}" != strip ] && return
 	for b in gapplication gdbus gio gio-launch-desktop gio-querymodules glib-compile-resources glib-compile-schemas gobject-query gresource gsettings gtester; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
@@ -3936,6 +3938,7 @@ install_native_swig()
 	[ "${enable_check}" != yes ] ||
 		make -C ${swig_org_src_dir} -j ${jobs} -k check || return
 	make -C ${swig_org_src_dir} -j ${jobs} install || return
+	[ "${strip}" != strip ] && return
 	strip -v ${DESTDIR}${prefix}/bin/swig ${DESTDIR}${prefix}/bin/ccache-swig || return
 }
 
