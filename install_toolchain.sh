@@ -4560,8 +4560,11 @@ install_native_go()
 	fetch go || return
 	[ -d ${go_org_src_dir} ] || unpack ${go_org_src_dir} || return
 	[ -d ${go_src_base}/go ] && mv -v ${go_src_base}/go ${go_org_src_dir}
+	mkdir -pv ${DESTDIR}${prefix}/go/bin || return
+	[ -f ${DESTDIR}${prefix}/go/bin/go ] || ln -sv `which go` ${DESTDIR}${prefix}/go/bin/go || return
 	(cd ${go_org_src_dir}/src
-	CGO_CPPFLAGS=-I${prefix}/include GOROOT_FINAL=${DESTDIR}${prefix}/go bash -x ${go_org_src_dir}/src/make.bash -v) || return
+	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=`go version | grep -qe gccgo && echo ${DESTDIR}${prefix}/go` \
+		GOROOT_FINAL=${DESTDIR}${prefix}/go bash -x ${go_org_src_dir}/src/make.bash -v) || return
 	[ ! -d ${DESTDIR}${prefix}/go ] || rm -fvr ${DESTDIR}${prefix}/go || return
 	mkdir -pv ${DESTDIR}${prefix} || return
 	mv -v ${go_org_src_dir} ${DESTDIR}${prefix}/go || return
