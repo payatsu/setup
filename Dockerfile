@@ -7,11 +7,11 @@ FROM ${baseimage} AS builder
 ARG prefix
 ARG njobs
 ARG pkgs="zlib binutils gmp mpfr mpc isl gcc \
-bzip2 elfutils m4 bison flex perl autoconf autoconf-archive automake libtool texinfo \
+bzip2 elfutils m4 bison flex perl autoconf autoconf-archive automake libtool readline texinfo \
 gawk xz lzip ed bc patch ccache swig libffi Python2 Python libxml2 curl cmake ninja meson Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx cfe libedit lldb \
-libiconv glib pkg-config ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight gdb \
-gettext git go rustc zsh bash screen libevent tmux plantuml lua vim ctags global \
+libiconv glib pkg-config ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux babeltrace gdb \
+gettext git openssh go rustc zsh bash screen libevent tmux plantuml lua vim ctags global \
 the_silver_searcher the_platinum_searcher gperf highway fzf jq protobuf dtc"
 
 RUN apt-get update && apt-get upgrade -y
@@ -24,9 +24,9 @@ apt-get install -y --no-install-recommends \
 wget xz-utils \
 make gcc g++ \
 bison texinfo \
-libncurses5-dev libreadline-dev \
-openssh-client libssl-dev ca-certificates \
-libbabeltrace-dev uuid-dev \
+libncurses5-dev \
+libssl-dev ca-certificates \
+libpopt-dev \
 libpcre2-dev asciidoc xmlto \
 graphviz openjdk-11-jre \
 libgtk-3-dev libxft-dev libxt-dev && \
@@ -54,13 +54,11 @@ DEBIAN_FRONTEND=noninteractive \
 apt-get install -y --no-install-recommends tzdata && \
 apt-get install -y --no-install-recommends \
 libc6-dev wget less make file man-db \
-libreadline7 \
 libssl-dev ca-certificates \
-libbabeltrace1 libuuid1 \
+libpopt0 \
 libpcre2-8-0 \
 graphviz openjdk-11-jre \
 libgtk-3-0 libxft2 libxt6 \
-openssh-client \
 sudo locales \
 && \
 ldconfig && \
