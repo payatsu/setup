@@ -40,7 +40,8 @@
 : ${gawk_ver:=5.0.1}
 : ${make_ver:=4.2.1}
 : ${binutils_ver:=2.32}
-: ${elfutils_ver:=0.176}
+: ${elfutils_ver:=0.177}
+: ${systemtap_ver:=4.1}
 : ${ed_ver:=1.15}
 : ${bc_ver:=1.07.1}
 : ${linux_ver:=3.18.13}
@@ -338,6 +339,8 @@ help()
 		Specify the version of GNU Binutils you want, currently '${binutils_ver}'.
 	elfutils_ver
 		Specify the version of Elfutils you want, currently '${elfutils_ver}'.
+	systemtap_ver
+		Specify the version of SystemTap you want, currently '${systemtap_ver}'.
 	ed_ver
 		Specify the version of GNU ed you want, currently '${ed_ver}'.
 	bc_ver
@@ -646,6 +649,9 @@ fetch()
 		elfutils)
 			wget -O ${elfutils_org_src_dir}.tar.bz2 \
 				https://sourceware.org/elfutils/ftp/${elfutils_ver}/${elfutils_name}.tar.bz2 || return;;
+		systemtap)
+			wget -O ${systemtap_org_src_dir}.tar.gz \
+				https://sourceware.org/systemtap/ftp/releases/${systemtap_name}.tar.gz || return;;
 		linux)
 			case `echo ${linux_ver} | cut -d. -f1,2` in
 			2.6)     linux_major_ver=v2.6;;
@@ -1957,6 +1963,22 @@ install_native_elfutils()
 		make -C ${elfutils_org_src_dir} -j ${jobs} -k check || return
 	make -C ${elfutils_org_src_dir} -j 1 install${strip:+-${strip}} || return
 	update_path || return
+}
+
+install_native_systemtap()
+{
+	[ -x ${prefix}/bin/stap -a "${force_install}" != yes ] && return
+	which cpio > /dev/null || install_native_cpio || return
+	search_header libelf.h > /dev/null || install_native_elfutils || return
+	fetch systemtap || return
+	unpack ${systemtap_org_src_dir} || return
+	[ -f ${systemtap_org_src_dir}/Makefile ] ||
+		(cd ${systemtap_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+	make -C ${systemtap_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${systemtap_org_src_dir} -j ${jobs} -k check || return
+	make -C ${systemtap_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_ed()
