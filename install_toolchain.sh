@@ -106,7 +106,8 @@
 : ${squashfs_ver:=4.3}
 : ${openssl_ver:=1.0.2p}
 : ${openssh_ver:=7.9p1}
-: ${curl_ver:=7.64.0}
+: ${nghttp2_ver:=1.39.2}
+: ${curl_ver:=7.65.3}
 : ${expat_ver:=2.2.6}
 : ${asciidoc_ver:=8.6.9}
 : ${libxml2_ver:=2.9.9}
@@ -467,6 +468,8 @@ help()
 		Specify the version of openssl you want, currently '${openssl_ver}'.
 	openssh_ver
 		Specify the version of openssh you want, currently '${openssh_ver}'.
+	nghttp2_ver
+		Specify the version of nghttp2 you want, currently '${nghttp2_ver}'.
 	curl_ver
 		Specify the version of Curl you want, currently '${libcur_ver}'.
 	expat_ver
@@ -783,6 +786,9 @@ fetch()
 		openssh)
 			wget -O ${openssh_org_src_dir}.tar.gz \
 				http://ftp.jaist.ac.jp/pub/OpenBSD/OpenSSH/portable/${openssh_name}.tar.gz || return;;
+		nghttp2)
+			wget -O ${nghttp2_org_src_dir}.tar.xz \
+				https://github.com/nghttp2/nghttp2/releases/download/v${nghttp2_ver}/${nghttp2_name}.tar.xz || return;;
 		curl)
 			wget -O ${curl_org_src_dir}.tar.bz2 \
 				https://curl.haxx.se/download/${curl_name}.tar.bz2 || return;;
@@ -3594,6 +3600,19 @@ install_native_openssh()
 	[ "${enable_check}" != yes ] ||
 		make -C ${openssh_org_src_dir} -j ${jobs} -k tests || return
 	make -C ${openssh_org_src_dir} -j ${jobs} install || return
+}
+
+install_native_nghttp2()
+{
+	[ -f ${prefix}/include/nghttp2/nghttp2.h -a "${force_install}" != yes ] && return
+	which pkg-config > /dev/null || install_native_pkg_config || return
+	fetch nghttp2 || return
+	unpack ${nghttp2_org_src_dir} || return
+	[ -f ${nghttp2_org_src_dir}/Makefile ] ||
+		(cd ${nghttp2_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --disable-silent-rules --enable-lib-only) || return
+	make -C ${nghttp2_org_src_dir} -j ${jobs} || return
+	make -C ${nghttp2_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_curl()
