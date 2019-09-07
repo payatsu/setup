@@ -1931,7 +1931,6 @@ install_native_binutils()
 {
 	[ -x ${prefix}/bin/as -a "${force_install}" != yes ] && return
 	search_header zlib.h > /dev/null || install_native_zlib || return
-	which yacc > /dev/null || install_native_bison || return
 	fetch binutils || return
 	[ -d ${binutils_src_dir_ntv} ] ||
 		(unpack ${binutils_org_src_dir} &&
@@ -4238,7 +4237,6 @@ install_cross_binutils()
 	[ -x ${prefix}/bin/${target}-as -a "${force_install}" != yes ] && return
 	[ `check_platform ${build} ${host} ${target}` = cross ] || return
 	search_header zlib.h > /dev/null || install_native_zlib || return
-	which yacc > /dev/null || install_native_bison || return
 	fetch binutils || return
 	[ -d ${binutils_src_dir_crs} ] ||
 		(unpack ${binutils_org_src_dir} &&
@@ -5163,7 +5161,6 @@ install_crossed_binutils()
 		 `check_platform ${build} ${host} ${target}` = canadian -a -x ${sysroot}/usr/bin/${target}-as${exe} \) -a "${force_install}" != yes ] && return
 	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
 	[ -f ${sysroot}/usr/include/zlib.h ] || install_crossed_native_zlib || return
-	which yacc > /dev/null || install_native_bison || return
 	fetch binutils || return
 	[ -d ${binutils_src_dir_crs_ntv} ] ||
 		(unpack ${binutils_org_src_dir} &&

@@ -23,7 +23,7 @@ apt-get install -y --no-install-recommends tzdata && \
 apt-get install -y --no-install-recommends \
 wget xz-utils \
 make gcc g++ \
-bison texinfo \
+texinfo \
 libncurses5-dev \
 libssl-dev ca-certificates \
 libpopt-dev \
