@@ -6,8 +6,8 @@ ARG njobs=4
 FROM ${baseimage} AS builder
 ARG prefix
 ARG njobs
-ARG pkgs="zlib binutils gmp mpfr mpc isl gcc \
-bzip2 elfutils m4 bison flex perl autoconf autoconf-archive automake libtool readline texinfo \
+ARG pkgs="zlib binutils m4 gmp mpfr mpc isl gcc \
+bzip2 elfutils bison flex perl autoconf autoconf-archive automake libtool readline texinfo \
 gawk xz lzip ed bc patch ccache swig libffi Python2 Python libxml2 curl cmake ninja meson Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx cfe libedit lldb \
 libiconv glib pkg-config ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux babeltrace gdb \
