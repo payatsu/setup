@@ -2119,6 +2119,7 @@ install_native_glibc()
 install_native_gmp()
 {
 	[ -f ${prefix}/include/gmp.h -a "${force_install}" != yes ] && return
+	which m4 > /dev/null || install_native_m4 || return
 	fetch gmp || return
 	[ -d ${gmp_src_dir_ntv} ] ||
 		(unpack ${gmp_org_src_dir} &&
@@ -5181,6 +5182,7 @@ install_crossed_native_gmp()
 {
 	[ -f ${sysroot}/usr/include/gmp.h -a "${force_install}" != yes ] && return
 	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
+	which m4 > /dev/null || install_native_m4 || return
 	fetch gmp || return
 	[ -d ${gmp_src_dir_crs_ntv} ] ||
 		(unpack ${gmp_org_src_dir} &&
