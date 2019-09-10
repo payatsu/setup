@@ -3613,6 +3613,7 @@ install_native_nghttp2()
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules --enable-lib-only) || return
 	make -C ${nghttp2_org_src_dir} -j ${jobs} || return
 	make -C ${nghttp2_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_curl()
