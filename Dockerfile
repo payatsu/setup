@@ -7,10 +7,11 @@ FROM ${baseimage} AS builder
 ARG prefix
 ARG njobs
 ARG pkgs="zlib binutils m4 gmp mpfr mpc isl gcc \
-bzip2 elfutils bison flex perl autoconf autoconf-archive automake libtool readline texinfo \
-gawk xz lzip ed bc patch ccache swig libffi Python2 Python libxml2 curl cmake ninja meson Bear \
+bzip2 elfutils bison flex perl autoconf autoconf-archive automake libtool ncurses readline texinfo \
+gawk xz lzip ed bc patch ccache swig libffi Python2 Python libxml2 \
+libiconv ninja meson glib pkg-config nghttp2 curl cmake Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx cfe libedit lldb \
-libiconv glib pkg-config ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux babeltrace gdb \
+ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux babeltrace gdb \
 gettext git openssh go rustc zsh bash screen libevent tmux plantuml lua vim ctags global \
 the_silver_searcher the_platinum_searcher gperf highway fzf jq protobuf dtc"
 
@@ -24,7 +25,6 @@ apt-get install -y --no-install-recommends \
 wget xz-utils \
 make gcc g++ \
 texinfo \
-libncurses5-dev \
 libssl-dev ca-certificates \
 libpopt-dev \
 libpcre2-dev asciidoc xmlto \
