@@ -2298,17 +2298,20 @@ EOF
 	make -C ${ncurses_org_src_dir} -j 1 || return # XXX work around for parallel make
 	make -C ${ncurses_org_src_dir} -j ${jobs} install || return
 	update_path || return
-	for h in `find ${DESTDIR}${prefix}/include/ncurses -type f -name '*.h'`; do
+	for h in `find ${DESTDIR}${prefix}/include/ncurses \( -type f -o -type l \) -name '*.h'`; do
 		ln -fsv `echo ${h} | sed -e "s%${DESTDIR}${prefix}/include/%%"` ${DESTDIR}${prefix}/include || return
 	done
-	for ext in a la so; do
+	rm -fv ${DESTDIR}${prefix}/lib/libncurses.so || return
+	echo 'INPUT(libncurses.so.'`echo ${ncurses_ver} | cut -d. -f1`' -ltinfo)' > ${DESTDIR}${prefix}/lib/libncurses.so || return
+	echo 'INPUT(libncurses.so.'`echo ${ncurses_ver} | cut -d. -f1`' -ltinfo)' > ${DESTDIR}${prefix}/lib/libcurses.so || return
+	for ext in a la; do
 		ln -fsv libncurses.${ext} ${DESTDIR}${prefix}/lib/libcurses.${ext} || return
 	done
 	[ -z "${strip}" ] && return
 	for b in clear infocmp tabs tic toe tput tset; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
-	for l in libform libmenu libncurses++ libncurses libpanel libtinfo libformtw libmenutw libncurses++tw libncursestw libpaneltw libtinfotw; do
+	for l in libform libmenu libncurses++ libpanel libtinfo libformtw libmenutw libncurses++tw libncursestw libpaneltw libtinfotw; do
 		strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
 	done
 }
