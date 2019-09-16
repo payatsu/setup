@@ -15,9 +15,8 @@ ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight uti
 gettext git openssh go rustc zsh bash screen libevent tmux plantuml lua vim ctags global \
 the_silver_searcher the_platinum_searcher gperf highway fzf jq protobuf dtc"
 
-RUN apt-get update && apt-get upgrade -y
-COPY install_toolchain.sh .
 RUN \
+apt-get update && apt-get upgrade -y && \
 echo Asia/Tokyo > /etc/timezone && \
 DEBIAN_FRONTEND=noninteractive \
 apt-get install -y --no-install-recommends tzdata && \
@@ -29,7 +28,9 @@ libssl-dev ca-certificates \
 libpopt-dev \
 libpcre2-dev asciidoc xmlto \
 graphviz openjdk-11-jre \
-libgtk-3-dev libxft-dev libxt-dev && \
+libgtk-3-dev libxft-dev libxt-dev
+COPY install_toolchain.sh .
+RUN \
 ./install_toolchain.sh -p ${prefix} -j ${njobs} "fetch `echo ${pkgs} | sed -e 's/\<ctags\>//'` clang-tools-extra vimdoc-ja mingw-w64" convert_archives
 RUN \
 : "FIXME: can't build Emacs26 in Dockerfile. webkit2gtk-4.0-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev" && \
