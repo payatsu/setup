@@ -1425,6 +1425,7 @@ func_place_holder()
 {
 	for p in ${prefix}/cling/bin ${prefix}/bin ${prefix}/sbin ${prefix}/go/bin; do
 		[ -d ${p} ] || continue
+		echo ${p} | grep -qe "/usr/local/s\?bin" && continue
 		echo ${PATH} | tr : '\n' | grep -qe ^${p}\$ \
 			&& PATH=${p}`echo ${PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//;s/^./:&/"` \
 			|| PATH=${p}${PATH:+:${PATH}}
