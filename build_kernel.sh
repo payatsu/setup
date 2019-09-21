@@ -35,7 +35,7 @@ EOF
 
 init()
 {
-	: ${linux_ver:=4.18.5}
+	: ${linux_ver:=5.3.1}
 	: ${jobs:=`grep -ce '^processor\>' /proc/cpuinfo`}
 	: ${ARCH:=arm}
 	: ${CROSS_COMPILE:=arm-none-linux-gnueabi-}
@@ -49,6 +49,7 @@ prepare()
 {
 	[ -z "${kernel_build}" ] || {
 		which ed > /dev/null 2>&1 || apt install -y ed || return
+		which bc > /dev/null 2>&1 || apt install -y bc || return
 		find `echo | LANG=C ${CC:-gcc} -x c -v -E - -o /dev/null 2>&1 |
 			sed -e '/^#include "\.\.\." search starts here:$/,/^End of search list\.$/p;d' |
 			grep -e '^ /' | xargs readlink -e` \( -type f -o -type l \) -name 'curses.h' > /dev/null 2>&1 ||
@@ -69,7 +70,7 @@ fetch()
 	case `echo ${linux_ver} | cut -d. -f1,2` in
 	2.6) linux_major_ver=v2.6;;
 	3.*) linux_major_ver=v3.x;;
-	4.*) linux_major_ver=v4.x;;
+	[456].*) linux_major_ver=v`echo ${linux_ver} | cut -d. -f1`.x;;
 	*)   echo unsupported linux version >&2; return 1;;
 	esac
 	[ -f Kbuild ] || {
@@ -88,7 +89,7 @@ make()
 build()
 {
 	[ -z "${kernel_build}" ] || {
-		[ -f .config ] || make ${make_opts} olddefconfig || return
+		[ -f .config ] || make ${make_opts} defconfig || return
 		make ${make_opts} || return
 	}
 	[ -z "${modules_install}" ] || make ${make_opts} modules_install || return
