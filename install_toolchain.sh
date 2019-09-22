@@ -4281,7 +4281,7 @@ install_cross_gcc_without_headers()
 		(cd ${gcc_bld_dir_crs_1st}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
-			--with-isl=`get_prefix version.h isl` --with-system-zlib --enable-languages=c --disable-multilib \
+			--with-isl=`get_prefix version.h isl` --with-system-zlib --enable-languages=c,c++ --disable-multilib \
 			--program-prefix=${target}- --program-suffix=-${gcc_ver} --enable-version-specific-runtime-libs \
 			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` --without-headers \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
@@ -4291,7 +4291,7 @@ install_cross_gcc_without_headers()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_1st} -j ${jobs} -k check-gcc || return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-gcc || return
-	for b in cpp gcc gcc-ar gcc-nm gcc-ranlib gcov gcov-dump gcov-tool; do
+	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gcov gcov-dump gcov-tool; do
 		[ ! -f ${DESTDIR}${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${target}-${b} || return
 	done
 	update_path || return
