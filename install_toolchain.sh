@@ -44,7 +44,7 @@
 : ${systemtap_ver:=4.1}
 : ${ed_ver:=1.15}
 : ${bc_ver:=1.07.1}
-: ${linux_ver:=3.18.13}
+: ${linux_ver:=5.3.1}
 : ${dtc_ver:=1.5.0}
 : ${u_boot_ver:=2019.07}
 : ${qemu_ver:=4.0.0}
