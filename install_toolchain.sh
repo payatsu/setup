@@ -3647,7 +3647,7 @@ install_native_expat()
 	unpack ${expat_org_src_dir} || return
 	[ -f ${expat_org_src_dir}/Makefile ] ||
 		(cd ${expat_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${expat_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${expat_org_src_dir} -j ${jobs} -k check || return
