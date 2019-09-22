@@ -1418,9 +1418,9 @@ generate_shell_run_command()
 {
 	mkdir -pv `dirname ${1}`
 	func_name=`basename ${1} | tr . _ | tr -cd '[:alpha:]_'`
-	cat <<\EOF | sed -e '1,/^{$/{s%prefix_place_holder%'${prefix}'%;s%native_place_holder%'${host}'%;s%func_place_holder%'${func_name}'%}' > ${1} || return
+	cat <<\EOF | sed -e '1,/^{$/{s%prefix_place_holder%'${prefix}'%;s%host_place_holder%'${host}'%;s%func_place_holder%'${func_name}'%}' > ${1} || return
 prefix=prefix_place_holder
-native=native_place_holder
+host=host_place_holder
 func_place_holder()
 {
 	for p in ${prefix}/cling/bin ${prefix}/bin ${prefix}/sbin ${prefix}/go/bin; do
@@ -1434,7 +1434,7 @@ func_place_holder()
 		&& export GOPATH=${prefix}/.go`echo ${GOPATH} | sed -e 's%\(^\|:\)'${prefix}'/.go\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//;s/^./:&/'` \
 		|| export GOPATH=${prefix}/.go${GOPATH:+:${GOPATH}}
 	[ ${prefix} = /usr/local -a "${force_set}" != yes ] && return
-	for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${native} ] && find ${prefix}/lib/gcc/${native} -mindepth 1 -maxdepth 1 -name '*.?.?' | sort -rV | head -n 1`; do
+	for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${host} ] && find ${prefix}/lib/gcc/${host} -mindepth 1 -maxdepth 1 -name '*.?.?' | sort -rV | head -n 1`; do
 		[ -d ${p} ] || continue
 		echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ \
 			&& export LD_LIBRARY_PATH=${p}`echo ${LD_LIBRARY_PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//;s/^./:&/"` \
@@ -2353,7 +2353,7 @@ install_native_gdb()
 		(cd ${gdb_bld_dir_ntv}
 		${gdb_org_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--enable-targets=all --enable-64-bit-bfd --enable-tui \
-			--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${native} --without-guile --with-python=python3 \
+			--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${host} --without-guile --with-python=python3 \
 			--with-system-zlib --with-system-readline \
 			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so` -L`get_library_path libncurses.so`" \
 			host_configargs='--disable-rpath 'CFLAGS=\'"${CFLAGS} -I`get_include_path zlib.h` -I`get_include_path curses.h`"\') || return
