@@ -1107,7 +1107,7 @@ deb()
 	for pkg in $@; do
 		${pkg} || return
 	done
-	generate_shell_run_command ${DESTDIR}${set_path_sh}
+	generate_shell_run_command ${set_path_sh}
 	unset DESTDIR
 	mkdir -pv ${deb_prefix}/DEBIAN || return
 	cat <<EOF > ${deb_prefix}/DEBIAN/control || return
@@ -1241,7 +1241,7 @@ set_variables()
 {
 	prefix=`realpath -m ${prefix}`
 	[ -n "${src}" ] && src=`realpath -m ${src}` || src=${prefix}/src
-	set_path_sh=${prefix}/set_path.sh
+	set_path_sh=${DESTDIR}${prefix}/set_path.sh
 	[ ${build} = ${host} ] && sysroot=${prefix}/${target}/sysroot || sysroot=${prefix}/${host}/sysroot
 	sysroot_mingw='C:/MinGW64'
 	echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && exe=.exe || exe=''
@@ -1282,8 +1282,8 @@ set_variables()
 		set_src_directory ${pkg}
 	done
 
-	[ -f ${set_path_sh} ] || generate_shell_run_command ${set_path_sh} || return
-	source_path || return
+	[ -f ${set_path_sh} ] || generate_shell_run_command ${set_path_sh} || true
+	[ ! -f ${set_path_sh} ] || source_path || return
 	echo ${PATH} | tr : '\n' | grep -qe ^/sbin\$ || PATH=/sbin:${PATH}
 	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${src}/.ccache CCACHE_BASEDIR=${src} && ! mkdir -pv ${src} && return 1
 	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-gcc}" CXX="ccache ${CXX:-g++}"
@@ -1402,7 +1402,7 @@ source_path()
 		esac
 	done
 	shift `expr ${OPTIND} - 1`
-	. ${set_path_sh} || return
+	[ `check_platform ${build} ${host} ${target}` != native ] || . ${set_path_sh} || return
 	unset force_set
 }
 
