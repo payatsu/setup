@@ -1655,7 +1655,7 @@ install_native_lzo()
 	unpack ${lzo_org_src_dir} || return
 	[ -f ${lzo_org_src_dir}/Makefile ] ||
 		(cd ${lzo_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules --enable-shared) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules --enable-shared) || return
 	make -C ${lzo_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${lzo_org_src_dir} -j ${jobs} -k test || return
@@ -1671,7 +1671,7 @@ install_native_lzop()
 	unpack ${lzop_org_src_dir} || return
 	[ -f ${lzop_org_src_dir}/Makefile ] ||
 		(cd ${lzop_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${lzop_org_src_dir} -j ${jobs} || return
 	make -C ${lzop_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
@@ -1681,7 +1681,7 @@ install_native_lz4()
 	[ -x ${prefix}/bin/lz4 -a "${force_install}" != yes ] && return
 	fetch lz4 || return
 	unpack ${lz4_org_src_dir} || return
-	make -C ${lz4_org_src_dir} -j ${jobs} V=1 || return
+	make -C ${lz4_org_src_dir} -j ${jobs} V=1 CC=${host}-gcc || return
 	make -C ${lz4_org_src_dir} -j ${jobs} V=1 PREFIX=${prefix} install || return
 }
 
@@ -1726,7 +1726,7 @@ install_native_texinfo()
 	unpack ${texinfo_org_src_dir} || return
 	[ -f ${texinfo_org_src_dir}/Makefile ] ||
 		(cd ${texinfo_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${texinfo_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${texinfo_org_src_dir} -j ${jobs} -k check || return
@@ -1779,7 +1779,7 @@ install_native_flex()
 	unpack ${flex_org_src_dir} || return
 	[ -f ${flex_org_src_dir}/Makefile ] ||
 		(cd ${flex_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${flex_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${flex_org_src_dir} -j ${jobs} -k check || return
@@ -1809,7 +1809,7 @@ install_native_autoconf()
 	unpack ${autoconf_org_src_dir} || return
 	[ -f ${autoconf_org_src_dir}/Makefile ] ||
 		(cd ${autoconf_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${autoconf_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${autoconf_org_src_dir} -j ${jobs} -k check || return
@@ -1823,7 +1823,7 @@ install_native_autoconf_archive()
 	unpack ${autoconf_archive_org_src_dir} || return
 	[ -f ${autoconf_archive_org_src_dir}/Makefile ] ||
 		(cd ${autoconf_archive_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${autoconf_archive_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${autoconf_archive_org_src_dir} -j ${jobs} -k check || return
@@ -1838,7 +1838,7 @@ install_native_automake()
 	unpack ${automake_org_src_dir} || return
 	[ -f ${automake_org_src_dir}/Makefile ] ||
 		(cd ${automake_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${automake_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${automake_org_src_dir} -j ${jobs} -k check || return
@@ -1981,7 +1981,7 @@ install_native_systemtap()
 	unpack ${systemtap_org_src_dir} || return
 	[ -f ${systemtap_org_src_dir}/Makefile ] ||
 		(cd ${systemtap_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${systemtap_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${systemtap_org_src_dir} -j ${jobs} -k check || return
@@ -2146,7 +2146,7 @@ install_native_mpfr()
 			mv -v ${mpfr_org_src_dir} ${mpfr_src_dir_ntv}) || return
 	[ -f ${mpfr_src_dir_ntv}/Makefile ] ||
 		(cd ${mpfr_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --with-gmp=`get_prefix gmp.h`) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --with-gmp=`get_prefix gmp.h`) || return
 	make -C ${mpfr_src_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${mpfr_src_dir_ntv} -j ${jobs} -k check || return
@@ -2181,7 +2181,7 @@ install_native_isl()
 	unpack ${isl_org_src_dir} || return
 	[ -f ${isl_org_src_dir}/Makefile ] ||
 		(cd ${isl_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${isl_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${isl_org_src_dir} -j ${jobs} -k check || return
@@ -2243,7 +2243,7 @@ install_native_readline()
 	make -C ${readline_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${readline_org_src_dir} -j ${jobs} -k check || return
-	make -C ${readline_org_src_dir} -j ${jobs} install || return
+	make -C ${readline_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 	update_path || return
 }
 
@@ -2379,7 +2379,7 @@ install_native_strace()
 	unpack ${strace_org_src_dir} || return
 	[ -f ${strace_org_src_dir}/Makefile ] ||
 		(cd ${strace_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --enable-mpers=check) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --enable-mpers=check) || return
 	make -C ${strace_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${strace_org_src_dir} -j ${jobs} -k check || return
