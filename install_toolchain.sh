@@ -1585,7 +1585,7 @@ install_native_bzip2()
 		}
 		s/ln -s -f \$(PREFIX)\/bin\//ln -s -f /' ${bzip2_org_src_dir}/Makefile || return
 	make -C ${bzip2_org_src_dir} -j ${jobs} \
-		CC=${host}-gcc AR=${host}-ar RANLIB=${host}-ranlib bzip2 bzip2recover || return
+		CC=${host}-gcc AR=${host}-gcc-ar RANLIB=${host}-gcc-ranlib bzip2 bzip2recover || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${bzip2_org_src_dir} -j ${jobs} -k check || return
 	make -C ${bzip2_org_src_dir} -j ${jobs} PREFIX=${DESTDIR}${prefix} install || return
@@ -1602,7 +1602,7 @@ install_native_bzip2()
 	update_path || return
 	[ -z "${strip}" ] && return
 	for b in bunzip2 bzcat bzip2 bzip2recover; do
-		${host}-strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 }
 
@@ -2089,7 +2089,7 @@ install_native_gperf()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gperf_org_src_dir} -j ${jobs} -k check || return
 	make -C ${gperf_org_src_dir} -j ${jobs} install || return
-	[ -z "${strip}" ] || ${host}-strip -v ${DESTDIR}${prefix}/bin/gperf || return
+	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/gperf || return
 }
 
 install_native_glibc()
@@ -2222,11 +2222,8 @@ install_native_gcc()
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
 		[ -f ${DESTDIR}${prefix}/bin/${b}-${gcc_ver} ] || continue
 		ln -fsv ${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${b} || return
+		ln -fsv ${b} ${DESTDIR}${prefix}/bin/${host}-${b} || return
 		ln -fsv ${b}-${gcc_ver}.1 ${DESTDIR}${prefix}/share/man/man1/${b}.1 || return
-		[ ${b} = go -o ${b} = gofmt ] || continue
-		[ -f ${DESTDIR}${prefix}/bin/${build}-${b}-${gcc_ver} ] ||
-			ln -fv ${DESTDIR}${prefix}/bin/${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${build}-${b}-${gcc_ver} || return
-		ln -fsv ${build}-${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${build}-${b} || return
 	done
 	[ -f ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_ver}/libgcc_s.so ] || ln -fsv ../lib64/libgcc_s.so ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_ver} || return # XXX work around for --enable-version-specific-runtime-libs
 }
@@ -2311,10 +2308,10 @@ EOF
 	done
 	[ -z "${strip}" ] && return
 	for b in clear infocmp tabs tic toe tput tset; do
-		${host}-strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 	for l in libform libmenu libncurses++ libpanel libtinfo libformtw libmenutw libncurses++tw libncursestw libpaneltw libtinfotw; do
-		${host}-strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
+		strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
 	done
 }
 
@@ -4584,7 +4581,7 @@ install_native_ruby()
 	unpack ${ruby_org_src_dir} || return
 	[ -f ${ruby_org_src_dir}/Makefile ] ||
 		(cd ${ruby_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} \
+		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			--disable-silent-rules --enable-multiarch --enable-shared \
 			--with-compress-debug-sections) || return
 	make -C ${ruby_org_src_dir} -j ${jobs} V=1 || return
@@ -4593,9 +4590,9 @@ install_native_ruby()
 	make -C ${ruby_org_src_dir} -j ${jobs} V=1 install || return
 	update_path || return
 	[ -z "${strip}" ] && return
-	strip -v ${prefix}/bin/ruby || return
-	strip -v ${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_org_src_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/libruby.so || return
-	find ${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_org_src_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/ruby/`echo ${ruby_ver} | cut -d. -f-2`.0 -type f -name '*.so' -exec strip -v {} + || return
+	strip -v ${DESTDIR}${prefix}/bin/ruby || return
+	strip -v ${DESTDIR}${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_org_src_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/libruby.so || return
+	find ${DESTDIR}${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_org_src_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/ruby/`echo ${ruby_ver} | cut -d. -f-2`.0 -type f -name '*.so' -exec strip -v {} + || return
 }
 
 install_native_go()
