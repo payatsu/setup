@@ -104,7 +104,7 @@
 : ${util_linux_ver:=2.33}
 : ${e2fsprogs_ver:=1.44.5}
 : ${squashfs_ver:=4.3}
-: ${openssl_ver:=1.0.2p}
+: ${openssl_ver:=1.1.1c}
 : ${openssh_ver:=7.9p1}
 : ${nghttp2_ver:=1.39.2}
 : ${curl_ver:=7.65.3}
@@ -3217,7 +3217,7 @@ install_native_pcre2()
 	unpack ${pcre2_org_src_dir} || return
 	[ -f ${pcre2_org_src_dir}/Makefile ] ||
 		(cd ${pcre2_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			--enable-pcre2-16 --enable-pcre2-32 --enable-jit --enable-newline-is-any \
 			--enable-pcre2grep-libz --enable-pcre2grep-libbz2 \
 			CPPFLAGS="${CPPFLAGS} -I`get_include_path bzlib.h`" \
@@ -3270,7 +3270,7 @@ install_native_highway()
 	which automake > /dev/null || install_native_automake || return
 	fetch highway || return
 	unpack ${highway_org_src_dir} || return
-	sed -ie "s%^\./configure %&--prefix=${prefix}%;
+	sed -i -e "s%^\./configure %&--prefix=${prefix} --host=${host} %;
 				s/^make\$/& -j ${jobs} \&\& make -j ${jobs} install${strip:+-${strip}}/" \
 				${highway_org_src_dir}/tools/build.sh || return
 	(cd ${highway_org_src_dir}
@@ -3341,7 +3341,7 @@ install_native_diffutils()
 	unpack ${diffutils_org_src_dir} || return
 	[ -f ${diffutils_org_src_dir}/Makefile ] ||
 		(cd ${diffutils_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${diffutils_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${diffutils_org_src_dir} -j ${jobs} -k check || return
@@ -3355,7 +3355,7 @@ install_native_patch()
 	unpack ${patch_org_src_dir} || return
 	[ -f ${patch_org_src_dir}/Makefile ] ||
 		(cd ${patch_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${patch_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${patch_org_src_dir} -j ${jobs} -k check || return
@@ -3369,7 +3369,7 @@ install_native_findutils()
 	unpack ${findutils_org_src_dir} || return
 	[ -f ${findutils_org_src_dir}/Makefile ] ||
 		(cd ${findutils_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules --enable-threads) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules --enable-threads) || return
 	make -C ${findutils_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${findutils_org_src_dir} -j ${jobs} -k check || return
@@ -3379,11 +3379,12 @@ install_native_findutils()
 install_native_less()
 {
 	[ -x ${prefix}/bin/less -a "${force_install}" != yes ] && return
+	search_header curses.h > /dev/null || install_native_ncurses || return
 	fetch less || return
 	unpack ${less_org_src_dir} || return
 	[ -f ${less_org_src_dir}/Makefile ] ||
 		(cd ${less_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${less_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${less_org_src_dir} -j ${jobs} -k check || return
@@ -3555,7 +3556,7 @@ install_native_e2fsprogs()
 	mkdir -pv ${e2fsprogs_org_src_dir}/build || return
 	[ -f ${e2fsprogs_org_src_dir}/build/Makefile ] ||
 		(cd ${e2fsprogs_org_src_dir}/build
-		../configure --prefix=${prefix} --enable-verbose-makecmds --enable-elf-shlibs) || return
+		../configure --prefix=${prefix} --host=${host} --enable-verbose-makecmds --enable-elf-shlibs) || return
 	make -C ${e2fsprogs_org_src_dir}/build -j 1 || return # -j '1' is for workaround
 	[ "${enable_check}" != yes ] ||
 		make -C ${e2fsprogs_org_src_dir}/build -j ${jobs} -k check || return
@@ -3587,7 +3588,7 @@ install_native_openssl()
 	mkdir -pv ${DESTDIR}${prefix}/ssl || return
 	rm -fv ${DESTDIR}${prefix}/ssl/certs || return
 	ln -fsv /etc/ssl/certs ${DESTDIR}${prefix}/ssl/certs || return
-	make -C ${openssl_org_src_dir} -j 1 INSTALL_PREFIX=${DESTDIR} install || return # XXX work around for parallel make
+	make -C ${openssl_org_src_dir} -j 1 DESTDIR=${DESTDIR} install || return # XXX work around for parallel make
 	update_path || return
 }
 
@@ -3662,7 +3663,7 @@ install_native_asciidoc()
 	unpack ${asciidoc_org_src_dir} || return
 	[ -f ${asciidoc_org_src_dir}/Makefile ] ||
 		(cd ${asciidoc_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${asciidoc_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${asciidoc_org_src_dir} -j ${jobs} -k test || return
@@ -3677,7 +3678,7 @@ install_native_libxml2()
 	unpack ${libxml2_org_src_dir} || return
 	[ -f ${libxml2_org_src_dir}/Makefile ] ||
 		(cd ${libxml2_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} \
+		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			--without-python --disable-silent-rules) || return
 	make -C ${libxml2_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -3791,7 +3792,7 @@ install_native_sqlite()
 	unpack ${sqlite_autoconf_org_src_dir} || return
 	[ -f ${sqlite_autoconf_org_src_dir}/Makefile ] ||
 		(cd ${sqlite_autoconf_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${sqlite_autoconf_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${sqlite_autoconf_org_src_dir} -j ${jobs} -k check || return
@@ -3838,7 +3839,7 @@ install_native_utf8proc()
 	[ -f ${prefix}/include/utf8proc.h -a "${force_install}" != yes ] && return
 	fetch utf8proc || return
 	unpack ${utf8proc_org_src_dir} || return
-	make -C ${utf8proc_org_src_dir} -j ${jobs} || return
+	make -C ${utf8proc_org_src_dir} -j ${jobs} CC=${host}-gcc || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${utf8proc_org_src_dir} -j ${jobs} -k check || return
 	make -C ${utf8proc_org_src_dir} -j ${jobs} prefix=${prefix} install || return
