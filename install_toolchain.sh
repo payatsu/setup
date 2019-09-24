@@ -25,7 +25,7 @@
 : ${lz4_ver:=1.9.1}
 : ${wget_ver:=1.20.3}
 : ${pkg_config_ver:=0.29.2}
-: ${texinfo_ver:=6.6}
+: ${texinfo_ver:=6.7}
 : ${coreutils_ver:=8.31}
 : ${busybox_ver:=1.30.1}
 : ${bison_ver:=3.3.2}
