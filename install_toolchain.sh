@@ -1388,7 +1388,7 @@ update_pkg_config_path()
 {
 	PKG_CONFIG_PATH=`([ -d ${DESTDIR}${prefix}/lib ] && find ${DESTDIR}${prefix}/lib -type d -name pkgconfig
 						[ -d ${DESTDIR}${prefix}/share ] && find ${DESTDIR}${prefix}/share -type d -name pkgconfig
-						LANG=C ${CC:-gcc} -print-search-dirs | sed -e '/^libraries: =/{s/^libraries: =//;p};d' |
+						LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs | sed -e '/^libraries: =/{s/^libraries: =//;p};d' |
 							tr : '\n' | xargs realpath -eq | xargs -I dir find dir -maxdepth 1 -type d -name pkgconfig
 						[ -d /usr/share ] && find /usr/share -type d -name pkgconfig) | tr '\n' : | sed -e 's/:$//'`
 	export PKG_CONFIG_PATH
@@ -1613,7 +1613,7 @@ install_native_gzip()
 	unpack ${gzip_org_src_dir} || return
 	[ -f ${gzip_org_src_dir}/Makefile ] ||
 		(cd ${gzip_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${gzip_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gzip_org_src_dir} -j ${jobs} -k check || return
@@ -1818,7 +1818,6 @@ install_native_autoconf()
 
 install_native_autoconf_archive()
 {
-#	[ -x ${prefix}/bin/autoconf -a "${force_install}" != yes ] && return
 	fetch autoconf-archive || return
 	unpack ${autoconf_archive_org_src_dir} || return
 	[ -f ${autoconf_archive_org_src_dir}/Makefile ] ||
@@ -1904,7 +1903,7 @@ install_native_gawk()
 	unpack ${gawk_org_src_dir} || return
 	[ -f ${gawk_org_src_dir}/Makefile ] ||
 		(cd ${gawk_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --enable-static \
+		./configure --prefix=${prefix} --build=${build} --host=${host} --enable-static \
 			--with-readline=`get_prefix readline.h readline` \
 			--with-mpfr=`get_prefix mpfr.h`) || return
 	make -C ${gawk_org_src_dir} -j ${jobs} || return
@@ -2311,7 +2310,7 @@ EOF
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 	for l in libform libmenu libncurses++ libpanel libtinfo libformtw libmenutw libncurses++tw libncursestw libpaneltw libtinfotw; do
-		strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
+		[ ! -f ${DESTDIR}${prefix}/lib/${l}.so ] || strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
 	done
 }
 
@@ -2438,7 +2437,7 @@ install_native_libpng()
 			mv -v ${libpng_org_src_dir} ${libpng_src_dir_ntv}) || return
 	[ -f ${libpng_src_dir_ntv}/Makefile ] ||
 		(cd ${libpng_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} \
+		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			CPPFLAGS="${CPPFLAGS} -I`get_include_path zlib.h`" \
 			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
 	make -C ${libpng_src_dir_ntv} -j ${jobs} || return
@@ -2457,7 +2456,7 @@ install_native_libtiff()
 			mv -v ${tiff_org_src_dir} ${tiff_src_dir_ntv}) || return
 	[ -f ${tiff_src_dir_ntv}/Makefile ] ||
 		(cd ${tiff_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${tiff_src_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${tiff_src_dir_ntv} -j ${jobs} -k check || return
@@ -2474,7 +2473,7 @@ install_native_libjpeg()
 			mv -v ${jpeg_org_src_dir} ${jpeg_src_dir_ntv}) || return
 	[ -f ${jpeg_src_dir_ntv}/Makefile ] ||
 		(cd ${jpeg_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${jpeg_src_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${jpeg_src_dir_ntv} -j ${jobs} -k check || return
@@ -2491,7 +2490,7 @@ install_native_giflib()
 			mv -v ${giflib_org_src_dir} ${giflib_src_dir_ntv}) || return
 	[ -f ${giflib_src_dir_ntv}/Makefile ] ||
 		(cd ${giflib_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${giflib_src_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${giflib_src_dir_ntv} -j ${jobs} -k check || return
@@ -2528,7 +2527,7 @@ install_native_libwebp()
 	unpack ${libwebp_org_src_dir} || return
 	[ -f ${libwebp_org_src_dir}/Makefile ] ||
 		(cd ${libwebp_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libwebp_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libwebp_org_src_dir} -j ${jobs} -k check || return
@@ -3161,7 +3160,7 @@ install_native_grep()
 	unpack ${grep_org_src_dir} || return
 	[ -f ${grep_org_src_dir}/Makefile ] ||
 		(cd ${grep_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${grep_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${grep_org_src_dir} -j ${jobs} -k check || return
@@ -3176,7 +3175,7 @@ install_native_global()
 	unpack ${global_org_src_dir} || return
 	[ -f ${global_org_src_dir}/Makefile ] ||
 		(cd ${global_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} \
+		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			--with-ncurses=`get_prefix curses.h` CPPFLAGS="${CPPFLAGS} -I`get_include_path curses.h`") || return
 	make -C ${global_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -3240,7 +3239,7 @@ install_native_the_silver_searcher()
 	[ -f ${the_silver_searcher_org_src_dir}/Makefile ] ||
 		(cd ${the_silver_searcher_org_src_dir}
 		update_pkg_config_path
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`" LIBS=-lz \
 			PCRE_CFLAGS=-I`get_include_path pcre.h` PCRE_LIBS="-L`get_library_path libpcre.so` -lpcre" \
 			LZMA_CFLAGS=-I`get_include_path lzma.h` LZMA_LIBS="-L`get_library_path liblzma.so` -llzma") || return
@@ -3385,7 +3384,7 @@ install_native_less()
 	make -C ${less_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${less_org_src_dir} -j ${jobs} -k check || return
-	make -C ${less_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	make -C ${less_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 }
 
 install_native_source_highlight()
@@ -3411,7 +3410,7 @@ install_native_screen()
 	unpack ${screen_org_src_dir} || return
 	[ -f ${screen_org_src_dir}/Makefile ] ||
 		(cd ${screen_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} \
+		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			--enable-telnet --enable-colors256 --enable-rxvt_osc) || return
 	make -C ${screen_org_src_dir} -j ${jobs} || return
 	mkdir -pv ${DESTDIR}${prefix}/share/screen/utf8encodings || return
@@ -3492,7 +3491,7 @@ install_native_zsh()
 	unpack ${zsh_org_src_dir} || return
 	[ -f ${zsh_org_src_dir}/Makefile ] ||
 		(cd ${zsh_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} \
+		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			--enable-multibyte --enable-unicode9 --with-tcsetpgrp) || return
 	make -C ${zsh_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -3507,11 +3506,11 @@ install_native_bash()
 	unpack ${bash_org_src_dir} || return
 	[ -f ${bash_org_src_dir}/Makefile ] ||
 		(cd ${bash_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${bash_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${bash_org_src_dir} -j ${jobs} -k check || return
-	make -C ${bash_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	make -C ${bash_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 	update_path || return
 	ln -fsv bash ${DESTDIR}${prefix}/bin/sh || return
 }
@@ -3523,7 +3522,7 @@ install_native_inetutils()
 	unpack ${inetutils_org_src_dir} || return
 	[ -f ${inetutils_org_src_dir}/Makefile ] ||
 		(cd ${inetutils_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules LDFLAGS=-ltinfo) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules LDFLAGS=-ltinfo) || return
 	make -C ${inetutils_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${inetutils_org_src_dir} -j ${jobs} -k check || return
@@ -3613,7 +3612,7 @@ install_native_nghttp2()
 	unpack ${nghttp2_org_src_dir} || return
 	[ -f ${nghttp2_org_src_dir}/Makefile ] ||
 		(cd ${nghttp2_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules --enable-lib-only) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules --enable-lib-only) || return
 	make -C ${nghttp2_org_src_dir} -j ${jobs} || return
 	make -C ${nghttp2_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
@@ -3946,7 +3945,7 @@ install_native_ccache()
 	unpack ${ccache_org_src_dir} || return
 	[ -f ${ccache_org_src_dir}/Makefile ] ||
 		(cd ${ccache_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${ccache_org_src_dir} -j ${jobs} V=1 || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${ccache_org_src_dir} -j ${jobs} -k V=1 check || return
@@ -3961,7 +3960,7 @@ install_native_libedit()
 	unpack ${libedit_org_src_dir} || return
 	[ -f ${libedit_org_src_dir}/Makefile ] ||
 		(cd ${libedit_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} \
+		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			--disable-silent-rules CFLAGS="${CFLAGS} -I`get_include_path curses.h`") || return
 	make -C ${libedit_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -4639,7 +4638,7 @@ install_native_tcl()
 	unpack ${tcl_org_src_dir} || return
 	[ -f ${tcl_org_src_dir}/unix/Makefile ] ||
 		(cd ${tcl_org_src_dir}/unix
-		./configure --prefix=${prefix} -build=${build} \
+		./configure --prefix=${prefix} -build=${build} --host=${host} \
 			--disable-silent-rules --enable-64bit --enable-man-symlinks) || return
 	make -C ${tcl_org_src_dir}/unix -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -4675,7 +4674,7 @@ install_native_libunistring()
 	unpack ${libunistring_org_src_dir} || return
 	[ -f ${libunistring_org_src_dir}/Makefile ] ||
 		(cd ${libunistring_org_src_dir}
-		./configure --prefix=${prefix} -build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} -build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libunistring_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libunistring_org_src_dir} -j ${jobs} -k check || return
@@ -4689,7 +4688,7 @@ install_native_libatomic_ops()
 	unpack ${libatomic_ops_org_src_dir} || return
 	[ -f ${libatomic_ops_org_src_dir}/Makefile ] ||
 		(cd ${libatomic_ops_org_src_dir}
-		./configure --prefix=${prefix} -build=${build} --disable-silent-rules \
+		./configure --prefix=${prefix} -build=${build} --host=${host} --disable-silent-rules \
 			--enable-shared) || return
 	make -C ${libatomic_ops_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -4706,11 +4705,12 @@ install_native_gc()
 	unpack ${gc_org_src_dir} || return
 	[ -f ${gc_org_src_dir}/Makefile ] ||
 		(cd ${gc_org_src_dir}
-		./configure --prefix=${prefix} -build=${build} --disable-silent-rules \
+		./configure --prefix=${prefix} -build=${build} --host=${host} --disable-silent-rules \
 			ATOMIC_OPS_CFLAGS=-I`get_include_path atomic_ops.h` \
 			ATOMIC_OPS_LIBS=-L`get_library_path libatomic_ops.so`) || return
 	make -C ${gc_org_src_dir} -j ${jobs} || return
-	make -C ${gc_org_src_dir} -j ${jobs} check || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${gc_org_src_dir} -j ${jobs} check || return
 	make -C ${gc_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
@@ -4813,7 +4813,7 @@ install_native_nasm()
 	unpack ${nasm_org_src_dir} || return
 	[ -f ${nasm_org_src_dir}/Makefile ] ||
 		(cd ${nasm_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${nasm_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${nasm_org_src_dir} -j ${jobs} -k test || return
@@ -4828,7 +4828,7 @@ install_native_yasm()
 	unpack ${yasm_org_src_dir} || return
 	[ -f ${yasm_org_src_dir}/Makefile ] ||
 		(cd ${yasm_org_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${yasm_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${yasm_org_src_dir} -j ${jobs} -k check || return
@@ -5008,7 +5008,7 @@ install_native_libpcap()
 	unpack ${libpcap_org_src_dir} || return
 	[ -f ${libpcap_org_src_dir}/Makefile ] ||
 		(cd ${libpcap_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libpcap_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libpcap_org_src_dir} -j ${jobs} -k test || return
@@ -5023,7 +5023,7 @@ install_native_tcpdump()
 	unpack ${tcpdump_org_src_dir} || return
 	[ -f ${tcpdump_org_src_dir}/Makefile ] ||
 		(cd ${tcpdump_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${tcpdump_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${tcpdump_org_src_dir} -j ${jobs} -k check || return
