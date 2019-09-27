@@ -1693,8 +1693,7 @@ install_native_wget()
 	unpack ${wget_org_src_dir} || return
 	[ -f ${wget_org_src_dir}/Makefile ] ||
 		(cd ${wget_org_src_dir}
-		OPENSSL_CFLAGS="-I${prefix}/include -L${prefix}/lib" OPENSSL_LIBS='-lssl -lcrypto' \
-			./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			--enable-threads --with-ssl=openssl) || return
 	make -C ${wget_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -2168,7 +2167,7 @@ install_native_mpc()
 			mv -v ${mpc_org_src_dir} ${mpc_src_dir_ntv}) || return
 	[ -f ${mpc_src_dir_ntv}/Makefile ] ||
 		(cd ${mpc_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} \
+		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h`) || return
 	make -C ${mpc_src_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -3430,7 +3429,7 @@ install_native_libevent()
 	unpack ${libevent_org_src_dir} || return
 	[ -f ${libevent_org_src_dir}-stable/Makefile ] ||
 		(cd ${libevent_org_src_dir}-stable
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libevent_org_src_dir}-stable -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libevent_org_src_dir}-stable -j ${jobs} -k check || return
@@ -3447,7 +3446,7 @@ install_native_tmux()
 	unpack ${tmux_org_src_dir} || return
 	[ -f ${tmux_org_src_dir}/Makefile ] ||
 		(cd ${tmux_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} \
+		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			CPPFLAGS="${CPPFLAGS} -I`get_include_path curses.h`" LIBTINFO_LIBS=-ltinfo) || return
 	make -C ${tmux_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -3591,6 +3590,8 @@ install_native_openssl()
 	ln -fsv /etc/ssl/certs ${DESTDIR}${prefix}/ssl/certs || return
 	make -C ${openssl_org_src_dir} -j 1 DESTDIR=${DESTDIR} install || return # XXX work around for parallel make
 	update_path || return
+	[ -z "${strip}" ] && return
+	strip -v ${DESTDIR}${prefix}/bin/openssl || return
 }
 
 install_native_openssh()
@@ -3602,11 +3603,11 @@ install_native_openssh()
 	unpack ${openssh_org_src_dir} || return
 	[ -f ${openssh_org_src_dir}/Makefile ] ||
 		(cd ${openssh_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --with-zlib=`get_prefix zlib.h`) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --with-zlib=`get_prefix zlib.h`) || return
 	make -C ${openssh_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${openssh_org_src_dir} -j ${jobs} -k tests || return
-	make -C ${openssh_org_src_dir} -j ${jobs} install || return
+	make -C ${openssh_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 }
 
 install_native_nghttp2()
@@ -3630,7 +3631,7 @@ install_native_curl()
 	fetch curl || return
 	unpack ${curl_org_src_dir} || return
 	(cd ${curl_org_src_dir}
-	./configure --prefix=${prefix} --build=${build} \
+	./configure --prefix=${prefix} --build=${build} --host=${host} \
 		--enable-optimize --disable-silent-rules \
 		--enable-http --enable-ftp --enable-file \
 		--enable-ldap --enable-ldaps --enable-rtsp --enable-proxy \
@@ -4731,7 +4732,7 @@ install_native_guile()
 	unpack ${guile_org_src_dir} || return
 	[ -f ${guile_org_src_dir}/Makefile ] ||
 		(cd ${guile_org_src_dir}
-		./configure --prefix=${prefix} -build=${build} \
+		./configure --prefix=${prefix} -build=${build} --host=${host} \
 			--disable-silent-rules --with-libunistring-prefix=`get_prefix unistr.h` \
 			LIBFFI_CFLAGS=-I`get_include_path ffi.h` LIBFFI_LIBS="-L`get_library_path libffi.so` -lffi" \
 			BDW_GC_CFLAGS="-I`get_include_path gc.h gc` -DHAVE_GC_SET_FINALIZER_NOTIFIER -DHAVE_GC_GET_HEAP_USAGE_SAFE -DHAVE_GC_GET_FREE_SPACE_DIVISOR -DHAVE_GC_SET_FINALIZE_ON_DEMAND" \
