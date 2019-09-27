@@ -1953,6 +1953,11 @@ install_native_binutils()
 	source_path -f || return
 	make -C ${binutils_src_dir_ntv} -j 1 install${strip:+-${strip}} || return
 	update_path || return
+	for b in addr2line ar as c++filt coffdump dlltool dllwrap dwp \
+		elfedit gprof ld ld.bfd ld.gold nm objcopy objdump ranlib \
+		readelf size srconv strings strip sysdump windmc windres; do
+		ln -fsv ${b} ${DESTDIR}${prefix}/bin/${host}-${b} || return
+	done
 }
 
 install_native_elfutils()
@@ -3577,8 +3582,8 @@ install_native_openssl()
 	fetch openssl || return
 	unpack ${openssl_org_src_dir} || return
 	(cd ${openssl_org_src_dir}
-	./config --prefix=${prefix} shared) || return
-	make -C ${openssl_org_src_dir} -j 1 || return # XXX work around for parallel make
+	MACHINE=`echo ${host} | cut -d- -f1` SYSTEM=Linux ./config --prefix=${prefix} shared) || return
+	make -C ${openssl_org_src_dir} -j 1 CROSS_COMPILE=${host}- || return # XXX work around for parallel make
 	[ "${enable_check}" != yes ] ||
 		make -C ${openssl_org_src_dir} -j 1 -k test || return # XXX work around for parallel make
 	mkdir -pv ${DESTDIR}${prefix}/ssl || return
