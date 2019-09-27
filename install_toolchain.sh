@@ -143,7 +143,7 @@
 : ${boost_ver:=1_71_0}
 : ${Python_ver:=3.7.4}
 : ${Python2_ver:=2.7.15}
-: ${rustc_ver:=1.37.0}
+: ${rustc_ver:=1.38.0}
 : ${rustup_ver:=1.19.0}
 : ${ruby_ver:=2.6.4}
 : ${go_ver:=1.13}
