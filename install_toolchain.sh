@@ -4556,7 +4556,7 @@ install_native_rustc()
 	fetch rustc || return
 	unpack ${rustc_org_src_dir} || return
 	(cd ${rustc_org_src_dir}
-	 sed -e '
+	sed -e '
 		/^#ninja = .\+/s//ninja = '`which ninja > /dev/null && echo true || echo false`'/
 		/^#extended = .\+/s//extended = true/
 		/^#prefix = .\+/s%%prefix = "'${prefix}'"%
@@ -4996,7 +4996,7 @@ install_native_jq()
 	unpack ${jq_org_src_dir} || return
 	[ -f ${jq_org_src_dir}/Makefile ] ||
 		(cd ${jq_org_src_dir}
-		 autoreconf -fiv || return
+		autoreconf -fiv || return
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
 			--disable-maintainer-mode --with-oniguruma=builtin) || return
 	make -C ${jq_org_src_dir} -j ${jobs} || return
