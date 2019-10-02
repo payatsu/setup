@@ -93,7 +93,7 @@
 : ${findutils_ver:=4.7.0}
 : ${less_ver:=530}
 : ${source_highlight_ver:=3.1.8}
-: ${screen_ver:=4.6.2}
+: ${screen_ver:=4.7.0}
 : ${libevent_ver:=2.1.8}
 : ${tmux_ver:=2.8}
 : ${expect_ver:=5.45.4}
