@@ -4204,15 +4204,13 @@ install_native_cling()
 	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	fetch cling || return
 	mkdir -pv ${cling_bld_dir_ntv} || return
-	[ -f ${cling_bld_dir_ntv}/Makefile ] ||
-		(cd ${cling_bld_dir_ntv}
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix}/cling \
-			-DENABLE_LINKER_BUILD_ID=ON ${cling_org_src_dir}) || return
-	make -C ${cling_bld_dir_ntv} -j ${jobs} || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${cling_bld_dir_ntv} -j ${jobs} -k check || return
-	make -C ${cling_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${cling_org_src_dir} -B ${cling_bld_dir_ntv} \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix}/cling \
+		-DENABLE_LINKER_BUILD_ID=ON || return
+	cmake --build ${cling_bld_dir_ntv} -v -j ${jobs} || return
+	cmake --install ${cling_bld_dir_ntv} -v ${strip:+--${strip}} || return
 }
 
 install_native_ccls()
