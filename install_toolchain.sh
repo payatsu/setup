@@ -3936,12 +3936,12 @@ install_native_Bear()
 	fetch Bear || return
 	unpack ${Bear_org_src_dir} || return
 	mkdir -pv ${Bear_bld_dir_ntv} || return
-	[ -f ${Bear_bld_dir_ntv}/Makefile ] ||
-		(cd ${Bear_bld_dir_ntv}
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_BUILD_TYPE=${cmake_build_type} \
-			-DCMAKE_INSTALL_PREFIX=${prefix} ${Bear_org_src_dir}) || return
-	make -C ${Bear_bld_dir_ntv} -j ${jobs} || return
-	make -C ${Bear_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${Bear_org_src_dir} -B ${Bear_bld_dir_ntv} \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_BUILD_TYPE=${cmake_build_type} \
+		-DCMAKE_INSTALL_PREFIX=${prefix} || return
+	cmake --build ${Bear_bld_dir_ntv} -v -j ${jobs} || return
+	cmake --install ${Bear_bld_dir_ntv} -v ${strip:+--${strip}} || return
 }
 
 install_native_ccache()
@@ -4221,11 +4221,11 @@ install_native_ccls()
 	which cmake > /dev/null || install_native_cmake || return
 	search_library libclang.so || install_native_cfe || return
 	fetch ccls || return
-	[ -f ${ccls_bld_dir_ntv}/Makefile ] ||
-		cmake -S ${ccls_org_src_dir} -B ${ccls_bld_dir_ntv} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} || return
-	make -C ${ccls_bld_dir_ntv} -j ${jobs} || return
-	make -C ${ccls_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${ccls_org_src_dir} -B ${ccls_bld_dir_ntv} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} || return
+	cmake --build ${ccls_bld_dir_ntv} -v -j ${jobs} || return
+	cmake --install ${ccls_bld_dir_ntv} -v ${strip:+--${strip}} || return
 }
 
 install_native_boost()
