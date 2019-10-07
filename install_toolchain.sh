@@ -145,7 +145,7 @@
 : ${Python2_ver:=2.7.15}
 : ${rustc_ver:=1.38.0}
 : ${rustup_ver:=1.19.0}
-: ${ruby_ver:=2.6.4}
+: ${ruby_ver:=2.6.5}
 : ${go_ver:=1.13}
 : ${perl_ver:=5.30.0}
 : ${tcl_ver:=8.6.9}
@@ -515,7 +515,7 @@ help()
 	llvm_ver
 		Specify the version of llvm you want, currently '${llvm_ver}'.
 	cling_ver
-		Specify the version of cling you want, currently 'i${cling_ver}'.
+		Specify the version of cling you want, currently '${cling_ver}'.
 	ccls_ver
 		Specify the version of ccls you want, currently '${ccls_ver}'.
 	boost_ver
