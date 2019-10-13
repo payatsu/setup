@@ -39,7 +39,7 @@
 : ${sed_ver:=4.7}
 : ${gawk_ver:=5.0.1}
 : ${make_ver:=4.2.1}
-: ${binutils_ver:=2.32}
+: ${binutils_ver:=2.33.1}
 : ${elfutils_ver:=0.177}
 : ${systemtap_ver:=4.1}
 : ${ed_ver:=1.15}
@@ -105,7 +105,7 @@
 : ${e2fsprogs_ver:=1.44.5}
 : ${squashfs_ver:=4.3}
 : ${openssl_ver:=1.1.1c}
-: ${openssh_ver:=7.9p1}
+: ${openssh_ver:=8.1p1}
 : ${nghttp2_ver:=1.39.2}
 : ${curl_ver:=7.65.3}
 : ${expat_ver:=2.2.6}
