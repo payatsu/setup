@@ -155,6 +155,7 @@
 : ${gc_ver:=7.6.6}
 : ${guile_ver:=2.2.6}
 : ${lua_ver:=5.3.5}
+: ${node_ver:=12.12.0}
 : ${nasm_ver:=2.14}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
@@ -546,6 +547,8 @@ help()
 		Specify the version of GNU Guile you want, currently '${guile_ver}'.
 	lua_ver
 		Specify the version of Lua you want, currently '${lua_ver}'.
+	node_ver
+		Specify the version of Node.js you want, currently '${node_ver}'.
 	nasm_ver
 		Specify the version of NASM you want, currently '${nasm_ver}'.
 	yasm_ver
@@ -887,6 +890,9 @@ fetch()
 		lua)
 			wget -O ${lua_org_src_dir}.tar.gz \
 				http://www.lua.org/ftp/${lua_name}.tar.gz || return;;
+		node)
+			wget -O ${node_org_src_dir}.tar.gz \
+				https://nodejs.org/dist/v${node_ver}/node-v${node_ver}.tar.gz || return;;
 		nasm)
 			wget -O ${nasm_org_src_dir}.tar.xz \
 				https://www.nasm.us/pub/nasm/releasebuilds/${nasm_ver}/${nasm_name}.tar.xz || return;;
@@ -1191,7 +1197,7 @@ set_src_directory()
 		eval ${_1}_name=${1}-\${${_1}_ver}-src;;
 	rustup)
 		eval ${_1}_name=${1}.rs-\${${_1}_ver};;
-	mingw-w64)
+	node|mingw-w64)
 		eval ${_1}_name=${1}-v\${${_1}_ver};;
 	squashfs|expect|tcl|tk)
 		eval ${_1}_name=${1}\${${_1}_ver};;
@@ -4805,6 +4811,19 @@ EOF
 	ln -fsv liblua.so.`echo ${lua_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/lib/liblua.so || return
 	update_path || return
 	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/lua ${DESTDIR}${prefix}/bin/luac || return
+}
+
+install_native_node()
+{
+	[ -x ${prefix}/bin/node -a "${force_install}" != yes ] && return
+	fetch node || return
+	unpack ${node_org_src_dir} || return
+	(cd ${node_org_src_dir}
+	./configure --prefix=${prefix} `which ninja > /dev/null && echo --ninja`) || return
+	make -C ${node_org_src_dir} -j ${jobs} || return
+	make -C ${node_org_src_dir} test-only || return
+	make -C ${node_org_src_dir} -j ${jobs} doc || return
+	make -C ${node_org_src_dir} -j ${jobs} install || return
 }
 
 install_native_nasm()
