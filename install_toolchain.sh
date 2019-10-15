@@ -141,7 +141,7 @@
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
 : ${boost_ver:=1_71_0}
-: ${Python_ver:=3.7.4}
+: ${Python_ver:=3.8.0}
 : ${Python2_ver:=2.7.15}
 : ${rustc_ver:=1.38.0}
 : ${rustup_ver:=1.19.0}
@@ -4524,10 +4524,10 @@ install_native_Python()
 	[ -f ${Python_org_src_dir}/Makefile ] ||
 		(cd ${Python_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --enable-universalsdk \
-			--enable-shared --enable-optimizations --disable-ipv6 \
+			--enable-shared --enable-optimizations --enable-ipv6 \
 			--with-universal-archs=all --with-lto --with-system-expat --with-system-ffi \
 			--with-signal-module --with-threads --with-doc-strings \
-			--with-tsc --with-pymalloc --with-ensurepip) || return # --enable-ipv6
+			--with-tsc --with-pymalloc --with-ensurepip) || return
 	make -C ${Python_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${Python_org_src_dir} -j ${jobs} -k test || return
