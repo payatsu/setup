@@ -174,7 +174,7 @@
 : ${libksba_ver:=1.3.5}
 : ${libassuan_ver:=2.5.3}
 : ${gnupg_ver:=2.2.17}
-: ${protobuf_ver:=3.9.0}
+: ${protobuf_ver:=3.10.0}
 : ${libbacktrace_ver:=git}
 
 # TODO X11周りのインストールは未着手。
@@ -5158,7 +5158,7 @@ install_native_protobuf()
 	unpack ${protobuf_org_src_dir} || return
 	[ -f ${protobuf_org_src_dir}/Makefile ] ||
 		(cd ${protobuf_org_src_dir}
-		./configure --prefix=${prefix}) || return
+		./configure --prefix=${prefix} --disable-silent-rules) || return
 	make -C ${protobuf_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${protobuf_org_src_dir} -j ${jobs} -k check || return
