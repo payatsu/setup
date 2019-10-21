@@ -156,6 +156,7 @@
 : ${guile_ver:=2.2.6}
 : ${lua_ver:=5.3.5}
 : ${node_ver:=12.12.0}
+: ${jdk_ver:=13.0.1}
 : ${nasm_ver:=2.14}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
@@ -549,6 +550,8 @@ help()
 		Specify the version of Lua you want, currently '${lua_ver}'.
 	node_ver
 		Specify the version of Node.js you want, currently '${node_ver}'.
+	jdk_ver
+		Specify the version of OpenJDK you want, currently '${jdk_ver}'.
 	nasm_ver
 		Specify the version of NASM you want, currently '${nasm_ver}'.
 	yasm_ver
@@ -893,6 +896,10 @@ fetch()
 		node)
 			wget -O ${node_org_src_dir}.tar.gz \
 				https://nodejs.org/dist/v${node_ver}/node-v${node_ver}.tar.gz || return;;
+		jdk)
+			wget -O ${jdk_org_src_dir}.tar.gz \
+				`wget -O- https://jdk.java.net/\`echo ${jdk_ver} | cut -d. -f1\` |
+					grep -oe 'https://download\.java\.net/java/GA/jdk'${jdk_ver}'/.\+/GPL/open'${jdk_name}'_linux-x64_bin\.tar\.gz' | uniq`;;
 		nasm)
 			wget -O ${nasm_org_src_dir}.tar.xz \
 				https://www.nasm.us/pub/nasm/releasebuilds/${nasm_ver}/${nasm_name}.tar.xz || return;;
@@ -4824,6 +4831,27 @@ install_native_node()
 	make -C ${node_org_src_dir} test-only || return
 	make -C ${node_org_src_dir} -j ${jobs} doc || return
 	make -C ${node_org_src_dir} -j ${jobs} install || return
+}
+
+install_native_jdk()
+{
+	[ -x ${prefix}/bin/javac -a "${force_install}" != yes ] && return
+	fetch jdk || return
+	unpack ${jdk_org_src_dir} || return
+	rm -fvr ${DESTDIR}${prefix}/jdk || return
+	cp -vr ${jdk_org_src_dir} ${DESTDIR}${prefix}/jdk || return
+	mkdir -pv ${DESTDIR}${prefix}/bin || return
+	for f in `find ${DESTDIR}${prefix}/jdk/bin -type f`; do
+		ln -fsv `echo ${f} | sed -e "s%${DESTDIR}${prefix}/jdk/bin%../jdk/bin%"` ${DESTDIR}${prefix}/bin/`basename ${f}` || return
+	done
+	mkdir -pv ${DESTDIR}${prefix}/include || return
+	for f in `find ${DESTDIR}${prefix}/jdk/include -mindepth 1 -maxdepth 1`; do
+		ln -fsv `echo ${f} | sed -e "s%${DESTDIR}${prefix}/jdk/include%../jdk/include%"` ${DESTDIR}${prefix}/include/`basename ${f}` || return
+	done
+	mkdir -pv ${DESTDIR}${prefix}/lib || return
+	for f in `find ${DESTDIR}${prefix}/jdk/lib -mindepth 1 -maxdepth 1 ! -name src.zip `; do
+		ln -fsv `echo ${f} | sed -e "s%${DESTDIR}${prefix}/jdk/lib%../jdk/lib%"` ${DESTDIR}${prefix}/lib/`basename ${f}` || return
+	done
 }
 
 install_native_nasm()
