@@ -12,8 +12,8 @@ gawk xz lzip ed bc patch ccache swig libffi Python2 Python libxml2 \
 libiconv ninja meson glib pkg-config nghttp2 curl cmake Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx cfe libedit lldb \
 ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux babeltrace gdb \
-gettext git openssh go rustc zsh bash screen libevent tmux plantuml lua vim ctags global \
-the_silver_searcher the_platinum_searcher gperf highway fzf jq protobuf dtc"
+gettext git openssh go rustc zsh bash screen libevent tmux lua vim ctags global \
+the_silver_searcher the_platinum_searcher gperf highway fzf graphviz jdk plantuml jq protobuf dtc"
 
 RUN \
 apt-get update && apt-get upgrade -y && \
@@ -27,7 +27,6 @@ texinfo \
 libssl-dev ca-certificates \
 libpopt-dev \
 libpcre2-dev asciidoc xmlto \
-graphviz openjdk-11-jre \
 libgtk-3-dev libxft-dev libxt-dev
 COPY install_toolchain.sh .
 RUN \
@@ -58,7 +57,6 @@ libc6-dev wget less make file man-db \
 libssl-dev ca-certificates \
 libpopt0 \
 libpcre2-8-0 \
-graphviz openjdk-11-jre \
 libgtk-3-0 libxft2 libxt6 \
 sudo locales \
 && \

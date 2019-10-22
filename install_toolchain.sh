@@ -75,7 +75,7 @@
 : ${libffi_ver:=3.2.1}
 : ${emacs_ver:=26.3}
 : ${libiconv_ver:=1.15}
-: ${vim_ver:=8.1.1794}
+: ${vim_ver:=8.1.2198}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.3}
@@ -141,7 +141,7 @@
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
 : ${boost_ver:=1_71_0}
-: ${Python_ver:=3.8.0}
+: ${Python_ver:=3.7.5}
 : ${Python2_ver:=2.7.15}
 : ${rustc_ver:=1.38.0}
 : ${rustup_ver:=1.19.0}
@@ -899,7 +899,7 @@ fetch()
 		jdk)
 			wget -O ${jdk_org_src_dir}.tar.gz \
 				`wget -O- https://jdk.java.net/\`echo ${jdk_ver} | cut -d. -f1\` |
-					grep -oe 'https://download\.java\.net/java/GA/jdk'${jdk_ver}'/.\+/GPL/open'${jdk_name}'_linux-x64_bin\.tar\.gz' | uniq`;;
+					grep -oe 'https://download\.java\.net/java/GA/jdk'${jdk_ver}'/.\+/GPL/open'${jdk_name}'_linux-x64_bin\.tar\.gz' | uniq` || return;;
 		nasm)
 			wget -O ${nasm_org_src_dir}.tar.xz \
 				https://www.nasm.us/pub/nasm/releasebuilds/${nasm_ver}/${nasm_name}.tar.xz || return;;
