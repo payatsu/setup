@@ -23,6 +23,7 @@
 : ${lzo_ver:=2.10}
 : ${lzop_ver:=1.04}
 : ${lz4_ver:=1.9.1}
+: ${zstd_ver:=1.4.3}
 : ${wget_ver:=1.20.3}
 : ${pkg_config_ver:=0.29.2}
 : ${texinfo_ver:=6.7}
@@ -306,6 +307,8 @@ help()
 		Specify the version of lzop you want, currently '${lzop_ver}'.
 	lz4_ver
 		Specify the version of lz4 you want, currently '${lz4_ver}'.
+	zstd_ver
+		Specify the version of Zstd you want, currently '${zstd_ver}'.
 	wget_ver
 		Specify the version of GNU wget you want, currently '${wget_ver}'.
 	pkg_config_ver
@@ -649,6 +652,9 @@ fetch()
 		lz4)
 			wget -O ${lz4_org_src_dir}.tar.gz \
 				https://github.com/lz4/lz4/archive/v${lz4_ver}.tar.gz || return;;
+		zstd)
+			wget -O ${zstd_org_src_dir}.tar.gz \
+				https://github.com/facebook/zstd/releases/download/v${zstd_ver}/${zstd_name}.tar.gz || return;;
 		busybox)
 			wget -O ${busybox_org_src_dir}.tar.bz2 \
 				https://www.busybox.net/downloads/${busybox_name}.tar.bz2 || return;;
@@ -1696,6 +1702,18 @@ install_native_lz4()
 	unpack ${lz4_org_src_dir} || return
 	make -C ${lz4_org_src_dir} -j ${jobs} V=1 CC=${host}-gcc || return
 	make -C ${lz4_org_src_dir} -j ${jobs} V=1 PREFIX=${prefix} install || return
+}
+
+install_native_zstd()
+{
+	[ -x ${prefix}/bin/zstd -a "${force_install}" != yes ] && return
+	fetch zstd || return
+	unpack ${zstd_org_src_dir} || return
+	make -C ${zstd_org_src_dir} -j ${jobs} || return
+	make -C ${zstd_org_src_dir} -j ${jobs} prefix=${prefix} install || return
+	update_path || return
+	[ -z "${strip}" ] && return
+	strip -v ${DESTDIR}${prefix}/bin/zstd || return
 }
 
 install_native_wget()
