@@ -24,10 +24,11 @@ apt-get install -y --no-install-recommends \
 wget xz-utils \
 make gcc g++ \
 texinfo \
+pkg-config \
 libssl-dev ca-certificates \
 libpopt-dev \
 asciidoc xmlto \
-libgtk-3-dev libxft-dev libxt-dev
+libxt-dev
 COPY install_toolchain.sh .
 RUN \
 ./install_toolchain.sh -p ${prefix} -j ${njobs} "fetch `echo ${pkgs} | sed -e 's/\<ctags\>//'` clang-tools-extra vimdoc-ja mingw-w64" convert_archives
@@ -56,7 +57,7 @@ apt-get install -y --no-install-recommends \
 libc6-dev wget less make file man-db \
 libssl-dev ca-certificates \
 libpopt0 \
-libgtk-3-0 libxft2 libxt6 \
+libxt6 \
 sudo locales \
 && \
 ldconfig && \
