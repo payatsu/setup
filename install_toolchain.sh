@@ -76,7 +76,7 @@
 : ${libffi_ver:=3.2.1}
 : ${emacs_ver:=26.3}
 : ${libiconv_ver:=1.15}
-: ${vim_ver:=8.1.2198}
+: ${vim_ver:=8.1.2214}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.3}
@@ -142,7 +142,7 @@
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
 : ${boost_ver:=1_71_0}
-: ${Python_ver:=3.7.5}
+: ${Python_ver:=3.8.0}
 : ${Python2_ver:=2.7.15}
 : ${rustc_ver:=1.38.0}
 : ${rustup_ver:=1.19.0}
@@ -2375,7 +2375,7 @@ install_native_gdb()
 	[ -x ${prefix}/bin/gdb -a "${force_install}" != yes ] && return
 	search_header readline.h readline > /dev/null || install_native_readline || return
 	search_header curses.h > /dev/null || install_native_ncurses || return
-	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m.so > /dev/null || install_native_Python || return
+	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`.so > /dev/null || install_native_Python || return
 	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gdb || return
 	unpack ${gdb_org_src_dir} || return
@@ -3111,7 +3111,7 @@ install_native_vim()
 	search_header lua.h > /dev/null || install_native_lua || return
 	search_library libperl.so > /dev/null || install_native_perl || return
 	search_header Python.h python`python --version 2>&1 | grep -oe '[[:digit:]]\.[[:digit:]]'` > /dev/null || (install_native_Python2) || return
-	search_header Python.h python`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m > /dev/null || install_native_Python || return
+	search_header Python.h python`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'` > /dev/null || install_native_Python || return
 	search_library tclConfig.sh > /dev/null || install_native_tcl || return
 	search_header ruby.h > /dev/null || install_native_ruby || return
 	fetch vim || return
@@ -4511,7 +4511,7 @@ install_cross_gdb()
 	[ `check_platform ${build} ${host} ${target}` = cross ] || return
 	search_header readline.h readline > /dev/null || install_native_readline || return
 	search_header curses.h > /dev/null || install_native_ncurses || return
-	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`m.so > /dev/null || install_native_Python || return
+	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`.so > /dev/null || install_native_Python || return
 	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gdb || return
 	unpack ${gdb_org_src_dir} || return
