@@ -12,7 +12,7 @@ gawk cpio xz lzip lunzip lzo lzop lz4 zstd ed bc patch ccache swig libffi Python
 libiconv ninja meson glib pkg-config nghttp2 curl cmake Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx cfe libedit lldb \
 ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux babeltrace gdb \
-gettext git openssh go rustc zsh bash screen libevent tmux lua vim ctags global \
+gettext pcre2 git openssh go rustc zsh bash screen libevent tmux lua vim ctags global \
 the_silver_searcher the_platinum_searcher gperf highway fzf graphviz jdk plantuml jq protobuf dtc"
 
 RUN \
@@ -26,7 +26,7 @@ make gcc g++ \
 texinfo \
 libssl-dev ca-certificates \
 libpopt-dev \
-libpcre2-dev asciidoc xmlto \
+asciidoc xmlto \
 libgtk-3-dev libxft-dev libxt-dev
 COPY install_toolchain.sh .
 RUN \
@@ -56,7 +56,6 @@ apt-get install -y --no-install-recommends \
 libc6-dev wget less make file man-db \
 libssl-dev ca-certificates \
 libpopt0 \
-libpcre2-8-0 \
 libgtk-3-0 libxft2 libxt6 \
 sudo locales \
 && \
