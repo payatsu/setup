@@ -1702,6 +1702,8 @@ install_native_lz4()
 	unpack ${lz4_org_src_dir} || return
 	make -C ${lz4_org_src_dir} -j ${jobs} V=1 CC=${host}-gcc || return
 	make -C ${lz4_org_src_dir} -j ${jobs} V=1 PREFIX=${prefix} install || return
+	[ -z "${strip}" ] && return
+	strip -v ${DESTDIR}${prefix}/bin/lz4 || return
 }
 
 install_native_zstd()
@@ -3672,6 +3674,8 @@ install_native_curl()
 	make -C ${curl_org_src_dir} -j ${jobs} || return
 	make -C ${curl_org_src_dir} -j ${jobs} install || return
 	update_path || return
+	[ -z "${strip}" ] && return
+	strip -v ${DESTDIR}${prefix}/bin/curl || return
 }
 
 install_native_expat()
@@ -3687,6 +3691,8 @@ install_native_expat()
 		make -C ${expat_org_src_dir} -j ${jobs} -k check || return
 	make -C ${expat_org_src_dir} -j ${jobs} INSTALL_ROOT=${DESTDIR} install || return
 	update_path || return
+	[ -z "${strip}" ] && return
+	strip -v ${DESTDIR}${prefix}/bin/xmlwf || return
 }
 
 install_native_asciidoc()
@@ -3796,6 +3802,10 @@ install_native_git()
 		make -C ${git_org_src_dir} -j ${jobs} -k V=1 test || return
 	make -C ${git_org_src_dir} -j ${jobs} V=1 ${strip} install || return
 	make -C ${git_org_src_dir} -j ${jobs} -k V=1 install-doc install-html || true # git-manpagesでfallbackするのでmake install-docの失敗はシェル関数の失敗ではない。
+	[ -z "${strip}" ] && return
+	for b in git git-receive-pack git-upload-archive git-upload-pack; do
+		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+	done
 }
 
 install_native_git_manpages()
@@ -3987,6 +3997,8 @@ install_native_ccache()
 	[ "${enable_check}" != yes ] ||
 		make -C ${ccache_org_src_dir} -j ${jobs} -k V=1 check || return
 	make -C ${ccache_org_src_dir} -j ${jobs} V=1 install || return
+	[ -z "${strip}" ] && return
+	strip -v ${DESTDIR}${prefix}/bin/ccache || return
 }
 
 install_native_libedit()
@@ -4593,6 +4605,10 @@ install_native_rustc()
 	./x.py build -j ${jobs} || return
 	./x.py doc -j ${jobs} || return
 	./x.py install -j ${jobs}) || return
+	[ -z "${strip}" ] && return
+	for b in cargo cargo-clippy cargo-fmt cargo-miri clippy-driver miri rls rustc rustdoc rustfmt; do
+		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+	done
 }
 
 install_native_rustup()
@@ -5047,6 +5063,8 @@ install_native_fzf()
 	mkdir -pv ${DESTDIR}${prefix}/share/man && cp -fvr ${fzf_org_src_dir}/man/man1 ${DESTDIR}${prefix}/share/man || return
 	mkdir -pv ${DESTDIR}${prefix}/share/vim/vim`echo ${vim_ver} | cut -d. -f-2 | tr -d .`/plugin || return
 	cp -fv ${fzf_org_src_dir}/plugin/fzf.vim ${DESTDIR}${prefix}/share/vim/vim`echo ${vim_ver} | cut -d. -f-2 | tr -d .`/plugin || return
+	[ -z "${strip}" ] && return
+	strip -v ${DESTDIR}${prefix}/bin/fzf || return
 }
 
 install_native_jq()
