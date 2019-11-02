@@ -92,6 +92,7 @@
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
 : ${findutils_ver:=4.7.0}
+: ${procps_ver:=3.3.15}
 : ${less_ver:=530}
 : ${source_highlight_ver:=3.1.8}
 : ${screen_ver:=4.7.0}
@@ -443,6 +444,8 @@ help()
 		Specify the version of GNU Patch you want, currently '${patch_ver}'.
 	findutils_ver
 		Specify the version of GNU findutils you want, currently'${findutils_ver}'.
+	procps_ver
+		Specify the version of procps you want, currently '${procps_ver}'.
 	less_ver
 		Specify the version of GNU less you want, currently '${less_ver}'.
 	source_highlight_ver
@@ -768,6 +771,9 @@ fetch()
 				https://sourceforge.net/projects/plantuml/files/${plantuml_name}.jar/download || return
 			[ -f ${plantuml_org_src_dir}.pdf ] ||
 				wget -O ${plantuml_org_src_dir}.pdf http://pdf.plantuml.net/PlantUML_Language_Reference_Guide_ja.pdf || return;;
+		procps)
+			wget -O ${procps_org_src_dir}.tar.bz2 \
+				https://gitlab.com/procps-ng/procps/-/archive/v${procps_ver}/procps-v${procps_ver}.tar.bz2 || return;;
 		libevent)
 			wget -O ${libevent_org_src_dir}.tar.gz \
 				https://github.com/libevent/libevent/releases/download/release-${libevent_ver}-stable/${libevent_name}-stable.tar.gz || return;;
@@ -1210,7 +1216,7 @@ set_src_directory()
 		eval ${_1}_name=${1}-\${${_1}_ver}-src;;
 	rustup)
 		eval ${_1}_name=${1}.rs-\${${_1}_ver};;
-	node|mingw-w64)
+	procps|node|mingw-w64)
 		eval ${_1}_name=${1}-v\${${_1}_ver};;
 	squashfs|expect|tcl|tk)
 		eval ${_1}_name=${1}\${${_1}_ver};;
@@ -3407,6 +3413,23 @@ install_native_findutils()
 	[ "${enable_check}" != yes ] ||
 		make -C ${findutils_org_src_dir} -j ${jobs} -k check || return
 	make -C ${findutils_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_procps()
+{
+	[ -x ${prefix}/bin/ps -a "${force_install}" != yes ] && return
+	fetch procps || return
+	unpack ${procps_org_src_dir} || return
+	[ -f ${procps_org_src_dir}/configure ] ||
+		(cd ${procps_org_src_dir}; ./autogen.sh) || return
+	[ -f ${procps_org_src_dir}/Makefile ] ||
+		(cd ${procps_org_src_dir}
+		./configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
+	make -C ${procps_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${procps_org_src_dir} -j ${jobs} -k check || return
+	make -C ${procps_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_less()
