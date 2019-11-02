@@ -157,7 +157,7 @@
 : ${gc_ver:=7.6.6}
 : ${guile_ver:=2.2.6}
 : ${lua_ver:=5.3.5}
-: ${node_ver:=12.12.0}
+: ${node_ver:=12.13.0}
 : ${jdk_ver:=13.0.1}
 : ${nasm_ver:=2.14}
 : ${yasm_ver:=1.3.0}
@@ -4885,7 +4885,8 @@ install_native_node()
 	(cd ${node_org_src_dir}
 	./configure --prefix=${prefix} `which ninja > /dev/null && echo --ninja`) || return
 	make -C ${node_org_src_dir} -j ${jobs} || return
-	make -C ${node_org_src_dir} test-only || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${node_org_src_dir} test-only || return
 	make -C ${node_org_src_dir} -j ${jobs} doc || return
 	make -C ${node_org_src_dir} -j ${jobs} install || return
 }
