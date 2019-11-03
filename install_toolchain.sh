@@ -625,7 +625,9 @@ fetch()
 		tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|autoconf-archive|automake|libtool|sed|gawk|\
 		make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
 		diffutils|patch|findutils|less|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
-			for compress_format in xz bz2 gz lz; do
+			eval [ "\${${p}_ver}" = git ] && {
+				eval git clone --depth 1 https://git.savannah.gnu.org/git/${p}.git \${${_p}_org_src_dir} || return
+			} || for compress_format in xz bz2 gz lz; do
 				eval wget -O \${${_p}_org_src_dir}.tar.${compress_format} \
 					https://ftp.gnu.org/gnu/${p}/\${${_p}_name}.tar.${compress_format} \
 					&& break \
@@ -698,7 +700,9 @@ fetch()
 			wget -O ${isl_org_src_dir}.tar.xz \
 				http://isl.gforge.inria.fr/${isl_name}.tar.xz || return;;
 		gcc)
-			for compress_format in xz bz2 gz; do
+			[ "${gcc_ver}" = git ] && {
+				git clone -b master --depth 1 git://gcc.gnu.org/git/gcc.git ${gcc_org_src_dir} || return
+			} || for compress_format in xz bz2 gz; do
 				wget -O ${gcc_org_src_dir}.tar.${compress_format} \
 					https://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.${compress_format} \
 					&& break \
@@ -1956,6 +1960,8 @@ install_native_make()
 	search_header libguile.h > /dev/null || install_native_guile || return
 	fetch make || return
 	unpack ${make_org_src_dir} || return
+	[ -f ${make_org_src_dir}/configure ] ||
+		(cd ${make_org_src_dir}; ./bootstrap) || return
 	[ -f ${make_org_src_dir}/Makefile ] ||
 		(cd ${make_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --host=${host} \
@@ -4884,7 +4890,7 @@ install_native_node()
 	unpack ${node_org_src_dir} || return
 	(cd ${node_org_src_dir}
 	./configure --prefix=${prefix} `which ninja > /dev/null && echo --ninja`) || return
-	make -C ${node_org_src_dir} -j ${jobs} || return
+	make -C ${node_org_src_dir} -j ${jobs} V=1 || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${node_org_src_dir} test-only || return
 	make -C ${node_org_src_dir} -j ${jobs} doc || return
