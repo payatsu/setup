@@ -1283,7 +1283,7 @@ set_variables()
 	microblaze*) cross_linux_arch=microblaze;;
 	nios2*)      cross_linux_arch=nios2;;
 	x86_64*)     cross_linux_arch=x86;;
-	*) echo Unknown target architecture: ${target} >&2; return 1;;
+	*)           cross_linux_arch=unknown; echo Unknown target architecture: ${target} >&2;;
 	esac
 
 	for pkg in `sed -e '
@@ -1431,7 +1431,7 @@ source_path()
 		esac
 	done
 	shift `expr ${OPTIND} - 1`
-	[ `check_platform ${build} ${host} ${target}` != native ] || . ${set_path_sh} || return
+	! check_platform ${build} ${host} ${target} | grep -qe '\<native\>\|\<cross\>' || . ${set_path_sh} || return
 	unset force_set
 }
 
