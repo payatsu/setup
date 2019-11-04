@@ -18,6 +18,7 @@
 : ${xz_ver:=5.2.4}
 : ${bzip2_ver:=1.0.6}
 : ${gzip_ver:=1.10}
+: ${zip_ver:=3.0}
 : ${lzip_ver:=1.21}
 : ${lunzip_ver:=1.9}
 : ${lzo_ver:=2.10}
@@ -299,6 +300,8 @@ help()
 		Specify the version of bzip2 you want, currently '${bzip2_ver}'.
 	gzip_ver
 		Specify the version of GNU gzip you want, currently '${gzip_ver}'.
+	zip_ver
+		Specify the version of Info-ZIP you want, currently '${zip_ver}'.
 	lzip_ver
 		Specify the version of lzip you want, currently '${lzip_ver}'.
 	lunzip_ver
@@ -645,6 +648,9 @@ fetch()
 		bzip2)
 			wget -O ${bzip2_org_src_dir}.tar.gz \
 				https://www.sourceware.org/pub/bzip2/${bzip2_name}.tar.gz || return;;
+		zip)
+			wget -O ${zip_org_src_dir}.tar.gz \
+				https://sourceforge.net/projects/infozip/files/Zip%203.x%20%28latest%29/${zip_ver}/zip`echo ${zip_ver} | tr -d .`.tar.gz/download || return;;
 		lzip)
 			wget -O ${lzip_org_src_dir}.tar.gz \
 				http://download.savannah.gnu.org/releases/lzip/${lzip_name}.tar.gz || return;;
@@ -1212,6 +1218,8 @@ set_src_directory()
 	esac
 
 	case ${1} in
+	zip)
+		eval ${_1}_name=${1}`eval echo \\${${_1}_ver} | tr -d .`;;
 	jpeg)
 		eval ${_1}_name=${1}src.\${${_1}_ver};;
 	vimdoc-ja)
@@ -1653,6 +1661,19 @@ install_native_gzip()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gzip_org_src_dir} -j ${jobs} -k check || return
 	make -C ${gzip_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_zip()
+{
+	[ -x ${prefix}/bin/zip -a "${force_install}" != yes ] && return
+	fetch zip || return
+	unpack ${zip_org_src_dir} || return
+	make -C ${zip_org_src_dir} -f unix/Makefile CC=${host}-gcc BIND=${host}-gcc AS=${host}-as generic || return
+	make -C ${zip_org_src_dir} -f unix/Makefile prefix=${DESTDIR}${prefix} install || return
+	[ -z "${strip}" ] && return
+	for b in zip zipcloak zipnote zipsplit; do
+		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+	done
 }
 
 install_native_lzip()
