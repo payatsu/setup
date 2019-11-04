@@ -45,6 +45,7 @@
 : ${systemtap_ver:=4.1}
 : ${ed_ver:=1.15}
 : ${bc_ver:=1.07.1}
+: ${rsync_ver:=3.1.3}
 : ${linux_ver:=5.3.1}
 : ${dtc_ver:=1.5.0}
 : ${u_boot_ver:=2019.07}
@@ -352,6 +353,8 @@ help()
 		Specify the version of GNU ed you want, currently '${ed_ver}'.
 	bc_ver
 		Specify the version of GNU bc you want, currently '${bc_ver}'.
+	rsync_ver
+		Specify the version of rsync you want, currently '${rsync_ver}'.
 	linux_ver
 		Specify the version of Linux kernel you want, currently '${linux_ver}'.
 	dtc_ver
@@ -672,6 +675,9 @@ fetch()
 		systemtap)
 			wget -O ${systemtap_org_src_dir}.tar.gz \
 				https://sourceware.org/systemtap/ftp/releases/${systemtap_name}.tar.gz || return;;
+		rsync)
+			wget -O ${rsync_org_src_dir}.tar.gz \
+				https://download.samba.org/pub/rsync/src/${rsync_name}.tar.gz || return;;
 		linux)
 			case `echo ${linux_ver} | cut -d. -f1,2` in
 			2.6)     linux_major_ver=v2.6;;
@@ -2063,6 +2069,18 @@ install_native_bc()
 	[ "${enable_check}" != yes ] ||
 		make -C ${bc_org_src_dir} -j ${jobs} -k check || return
 	make -C ${bc_org_src_dir} -j 1 install${strip:+-${strip}} || return
+}
+
+install_native_rsync()
+{
+	[ -x ${prefix}/bin/rsync -a "${force_install}" != yes ] && return
+	fetch rsync || return
+	unpack ${rsync_org_src_dir} || return
+	[ -f ${rsync_org_src_dir}/Makefile ] ||
+		(cd ${rsync_org_src_dir}
+		./configure --prefix=${prefix} --host=${host}) || return
+	make -C ${rsync_org_src_dir} -j ${jobs} || return
+	make -C ${rsync_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_linux_header()
