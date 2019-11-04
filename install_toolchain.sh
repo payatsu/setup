@@ -4449,9 +4449,9 @@ install_cross_newlib()
 		(cd ${newlib_bld_dir_crs_hdr}
 		${newlib_src_dir_crs_hdr}/configure --prefix=/ --build=${build} --target=${target}) || return
 	make -C ${newlib_bld_dir_crs_hdr} -j 1 || return
-	make -C ${newlib_bld_dir_crs_hdr} -j 1 DESTDIR=${sysroot} install || return
-	[ ! -d ${sysroot}/usr/${target} ] || rm -fvr ${sysroot}/usr/${target} || return
-	mv -v ${sysroot}/${target} ${sysroot}/usr || return
+	make -C ${newlib_bld_dir_crs_hdr} -j 1 DESTDIR=${DESTDIR}${prefix} install || return
+	mkdir -pv ${sysroot}/usr || return
+	ln -fsv ../../include -t ${sysroot}/usr || return
 }
 
 install_mingw_w64_header()
