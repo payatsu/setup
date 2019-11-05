@@ -19,6 +19,7 @@
 : ${bzip2_ver:=1.0.6}
 : ${gzip_ver:=1.10}
 : ${zip_ver:=3.0}
+: ${unzip_ver:=6.0}
 : ${lzip_ver:=1.21}
 : ${lunzip_ver:=1.9}
 : ${lzo_ver:=2.10}
@@ -301,7 +302,9 @@ help()
 	gzip_ver
 		Specify the version of GNU gzip you want, currently '${gzip_ver}'.
 	zip_ver
-		Specify the version of Info-ZIP you want, currently '${zip_ver}'.
+		Specify the version of Zip you want, currently '${zip_ver}'.
+	unzip_ver
+		Specify the version of UnZip you want, currently '${unzip_ver}'.
 	lzip_ver
 		Specify the version of lzip you want, currently '${lzip_ver}'.
 	lunzip_ver
@@ -651,6 +654,9 @@ fetch()
 		zip)
 			wget -O ${zip_org_src_dir}.tar.gz \
 				https://sourceforge.net/projects/infozip/files/Zip%203.x%20%28latest%29/${zip_ver}/zip`echo ${zip_ver} | tr -d .`.tar.gz/download || return;;
+		unzip)
+			wget -O ${unzip_org_src_dir}.tar.gz \
+				https://sourceforge.net/projects/infozip/files/UnZip%206.x%20%28latest%29/UnZip%206.0/unzip`echo ${unzip_ver} | tr -d .`.tar.gz/download || return;;
 		lzip)
 			wget -O ${lzip_org_src_dir}.tar.gz \
 				http://download.savannah.gnu.org/releases/lzip/${lzip_name}.tar.gz || return;;
@@ -1218,7 +1224,7 @@ set_src_directory()
 	esac
 
 	case ${1} in
-	zip)
+	zip|unzip)
 		eval ${_1}_name=${1}`eval echo \\${${_1}_ver} | tr -d .`;;
 	jpeg)
 		eval ${_1}_name=${1}src.\${${_1}_ver};;
@@ -1668,12 +1674,21 @@ install_native_zip()
 	[ -x ${prefix}/bin/zip -a "${force_install}" != yes ] && return
 	fetch zip || return
 	unpack ${zip_org_src_dir} || return
-	make -C ${zip_org_src_dir} -f unix/Makefile CC=${host}-gcc BIND=${host}-gcc AS=${host}-as generic || return
-	make -C ${zip_org_src_dir} -f unix/Makefile prefix=${DESTDIR}${prefix} install || return
+	make -C ${zip_org_src_dir} -f unix/Makefile -j ${jobs} CC=${host}-gcc BIND=${host}-gcc AS=${host}-as generic || return
+	make -C ${zip_org_src_dir} -f unix/Makefile -j ${jobs} prefix=${DESTDIR}${prefix} install || return
 	[ -z "${strip}" ] && return
 	for b in zip zipcloak zipnote zipsplit; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
+}
+
+install_native_unzip()
+{
+	[ -x ${prefix}/bin/unzip -a "${force_install}" != yes ] && return
+	fetch unzip || return
+	unpack ${unzip_org_src_dir} || return
+	make -C ${unzip_org_src_dir} -f unix/Makefile -j ${jobs} CC=${host}-gcc AS=${host}-gcc LOCAL_UNZIP=-DNO_LCHMOD generic || return
+	make -C ${unzip_org_src_dir} -f unix/Makefile -j ${jobs} prefix=${DESTDIR}${prefix} install || return
 }
 
 install_native_lzip()
