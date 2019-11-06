@@ -130,6 +130,7 @@
 : ${ninja_ver:=1.9.0}
 : ${meson_ver:=0.51.1}
 : ${cmake_ver:=3.15.0}
+: ${bazel_ver:=1.1.0}
 : ${Bear_ver:=2.4.0}
 : ${ccache_ver:=3.7.2}
 : ${libedit_ver:=20181209-3.1}
@@ -521,6 +522,8 @@ help()
 		Specify the version of Meson you want, currently '${meson_ver}'.
 	cmake_ver
 		Specify the version of CMake you want, currently '${cmake_ver}'.
+	bazel_ver
+		Specify the version of Bazel you want, currently '${bazel_ver}'.
 	Bear_ver
 		Specify the version of Build EAR you want, currently '${Bear_ver}'.
 	ccache_ver
@@ -874,6 +877,9 @@ fetch()
 		cmake)
 			wget -O ${cmake_org_src_dir}.tar.gz \
 				https://cmake.org/files/v`echo ${cmake_ver} | cut -d. -f1,2`/${cmake_name}.tar.gz || return;;
+		bazel)
+			wget -O ${bazel_org_src_dir}.zip \
+				https://github.com/bazelbuild/bazel/releases/download/${bazel_ver}/${bazel_name}-dist.zip || return;;
 		Bear)
 			wget -O ${Bear_org_src_dir}.tar.gz \
 				https://github.com/rizsotto/Bear/archive/${Bear_ver}.tar.gz || return;;
@@ -4052,6 +4058,26 @@ install_native_cmake()
 	[ "${enable_check}" != yes ] ||
 		make -C ${cmake_org_src_dir} -j ${jobs} -k test || return
 	make -C ${cmake_org_src_dir} -j ${jobs} install${strip:+/${strip}} || return
+}
+
+install_native_bazel()
+{
+	[ -x ${prefix}/bin/bazel -a "${force_install}" != yes ] && return
+	which bash > /dev/null || install_native_bash || return
+	which zip > /dev/null || install_native_zip || return
+	which unzip > /dev/null || install_native_unzip || return
+	which javac > /dev/null || install_native_jdk || return
+	which python3 > /dev/null || install_native_Python || return
+	fetch bazel || return
+	[ -d ${bazel_org_src_dir} ] ||
+		unpack ${bazel_org_src_dir} ${bazel_org_src_dir} || return
+	(cd ${bazel_org_src_dir}
+	EXTRA_BAZEL_ARGS='--host_javabase=@local_jdk//:jdk' VERBOSE=yes bash ./compile.sh)
+	mkdir -pv ${DESTDI}${prefix}/bin || return
+	cp -v ${bazel_org_src_dir}/output/bazel ${DESTDIR}${prefix}/bin/bazel || return
+	update_path || return
+	[ -z "${strip}" ] && return
+	strip -v ${DESTDIR}${prefix}/bin/bazel || return
 }
 
 install_native_Bear()
