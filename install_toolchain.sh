@@ -1676,6 +1676,7 @@ install_native_zip()
 	unpack ${zip_org_src_dir} || return
 	make -C ${zip_org_src_dir} -f unix/Makefile -j ${jobs} CC=${host}-gcc BIND=${host}-gcc AS=${host}-as generic || return
 	make -C ${zip_org_src_dir} -f unix/Makefile -j ${jobs} prefix=${DESTDIR}${prefix} install || return
+	update_path || return
 	[ -z "${strip}" ] && return
 	for b in zip zipcloak zipnote zipsplit; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
@@ -1689,6 +1690,7 @@ install_native_unzip()
 	unpack ${unzip_org_src_dir} || return
 	make -C ${unzip_org_src_dir} -f unix/Makefile -j ${jobs} CC=${host}-gcc AS=${host}-gcc LOCAL_UNZIP=-DNO_LCHMOD generic || return
 	make -C ${unzip_org_src_dir} -f unix/Makefile -j ${jobs} prefix=${DESTDIR}${prefix} install || return
+	update_path || return
 }
 
 install_native_lzip()
@@ -2117,6 +2119,7 @@ install_native_rsync()
 		./configure --prefix=${prefix} --host=${host}) || return
 	make -C ${rsync_org_src_dir} -j ${jobs} || return
 	make -C ${rsync_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_linux_header()
