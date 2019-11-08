@@ -14,7 +14,7 @@
 # [TODO] update-alternatives
 
 : ${tar_ver:=1.32}
-: ${cpio_ver:=2.12}
+: ${cpio_ver:=2.13}
 : ${xz_ver:=5.2.4}
 : ${bzip2_ver:=1.0.6}
 : ${gzip_ver:=1.10}
