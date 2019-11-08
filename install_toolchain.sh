@@ -129,7 +129,7 @@
 : ${subversion_ver:=1.11.0}
 : ${ninja_ver:=1.9.0}
 : ${meson_ver:=0.51.1}
-: ${cmake_ver:=3.15.0}
+: ${cmake_ver:=3.15.5}
 : ${bazel_ver:=1.1.0}
 : ${Bear_ver:=2.4.0}
 : ${ccache_ver:=3.7.2}
@@ -149,7 +149,7 @@
 : ${boost_ver:=1_71_0}
 : ${Python_ver:=3.8.0}
 : ${Python2_ver:=2.7.15}
-: ${rustc_ver:=1.38.0}
+: ${rustc_ver:=1.39.0}
 : ${rustup_ver:=1.19.0}
 : ${ruby_ver:=2.6.5}
 : ${go_ver:=1.13.4}
