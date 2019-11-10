@@ -1,4 +1,4 @@
-ARG baseimage=ubuntu
+ARG baseimage=ubuntu:18.04
 ARG prefix=/usr/local
 ARG prefixbase=local
 ARG njobs=4
@@ -8,12 +8,12 @@ ARG prefix
 ARG njobs
 ARG pkgs="zlib binutils m4 gmp mpfr mpc isl gcc \
 bzip2 elfutils bison flex perl autoconf autoconf-archive automake libtool ncurses readline texinfo \
-gawk cpio xz lzip lunzip lzo lzop lz4 zstd ed bc patch ccache swig libffi Python2 Python libxml2 \
+gawk cpio xz zip unzip lzip lunzip lzo lzop lz4 zstd ed bc patch ccache swig libffi Python2 Python libxml2 \
 libiconv ninja meson glib pkg-config nghttp2 curl cmake Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx cfe libedit lldb \
 ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux babeltrace gdb \
 gettext pcre2 git openssh go rustc zsh bash screen libevent tmux lua vim ctags global \
-the_silver_searcher the_platinum_searcher gperf highway fzf graphviz jdk plantuml jq protobuf dtc"
+the_silver_searcher the_platinum_searcher gperf highway fzf graphviz jdk plantuml jq protobuf rsync dtc"
 
 RUN \
 apt-get update && apt-get upgrade -y && \
