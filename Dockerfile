@@ -29,15 +29,16 @@ libssl-dev ca-certificates \
 libpopt-dev \
 asciidoc xmlto \
 libxt-dev
-COPY install_toolchain.sh .
+COPY install_toolchain.sh ${prefix}/install_toolchain.sh
+COPY Dockerfile ${prefix}/Dockerfile
 RUN \
-./install_toolchain.sh -p ${prefix} -j ${njobs} "fetch `echo ${pkgs} | sed -e 's/\<ctags\>//'` clang-tools-extra vimdoc-ja mingw-w64" convert_archives
+${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} "fetch `echo ${pkgs} | sed -e 's/\<ctags\>//'` clang-tools-extra vimdoc-ja mingw-w64" convert_archives
 RUN \
 : "FIXME: can't build Emacs26 in Dockerfile. webkit2gtk-4.0-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev" && \
 for p in `echo ${pkgs} | tr - _`; do \
-	./install_toolchain.sh -p ${prefix} -j ${njobs} install_native_${p} clean || exit; \
+	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} install_native_${p} clean || exit; \
 done && \
-./install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_cross_binutils install_cross_gcc clean
+${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_cross_binutils install_cross_gcc clean
 
 FROM ${baseimage} AS dev
 ARG prefix
@@ -49,18 +50,18 @@ COPY --from=builder ${prefix} ${prefix}
 COPY --from=builder /etc/ld.so.conf.d/${prefixbase}.conf /etc/ld.so.conf.d/${prefixbase}.conf
 COPY dotfiles /etc/skel
 RUN \
+ldconfig && \
 apt-get update && apt-get upgrade -y && \
 echo Asia/Tokyo > /etc/timezone && \
 DEBIAN_FRONTEND=noninteractive \
-apt-get install -y --no-install-recommends tzdata && \
+apt-get install -y --no-install-recommends tzdata locales && \
 apt-get install -y --no-install-recommends \
 libc6-dev wget less make file man-db \
 libssl-dev ca-certificates \
 libpopt0 \
 libxt6 \
-sudo locales \
+sudo \
 && \
-ldconfig && \
 rm -v /etc/skel/install.sh /etc/skel/seq.puml && \
 echo . ${prefix}/set_path.sh > /etc/skel/.sh/.local.pre && \
 echo . '${HOME}'/.sh/.local.pre > /etc/skel/.zsh/.zshrc.local.pre && \
@@ -78,13 +79,12 @@ USER ${username}
 WORKDIR /home/${username}
 ENV LANG=ja_JP.utf8 SHELL=${prefix}/bin/zsh USER=${username}
 CMD exec ${SHELL} -l
-COPY install_toolchain.sh .
 RUN \
-sudo mv -v /usr/local/lib/rustlib/uninstall.sh . && \
-./install_toolchain.sh -p tmp -j ${njobs} install_native_rustup clean convert_archives && \
+sudo mv -v ${prefix}/lib/rustlib/uninstall.sh . && \
+${prefix}/install_toolchain.sh -p tmp -j ${njobs} install_native_rustup clean convert_archives && \
 sudo cp -vr tmp/src/rustup ${prefix}/src && \
-sudo mv -v uninstall.sh /usr/local/lib/rustlib && \
-rm -vr tmp install_toolchain.sh && \
-./.cargo/bin/rustup completions zsh | sudo tee /usr/local/share/zsh/site-functions/_rustup > /dev/null && \
+sudo mv -v uninstall.sh ${prefix}/lib/rustlib && \
+rm -vr tmp && \
+./.cargo/bin/rustup completions zsh | sudo tee ${prefix}/share/zsh/site-functions/_rustup > /dev/null && \
 echo colorscheme molokai > .vim/vimrc.local.vim && \
 vim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .vim/vimrc -U NONE -i NONE -V1 -e -s
