@@ -72,7 +72,7 @@ useradd -g ${username} -m -s `which zsh` ${username} && \
 echo root:root | chpasswd && \
 echo ${username}:${username} | chpasswd && \
 sed -i -e '/^root\>/a'${username}'	ALL=(ALL:ALL) NOPASSWD: ALL' /etc/sudoers && \
-apt-get autoremove -y && apt-get autoclean -y && \
+apt-get autoremove -y && apt-get autoclean -y && rm -vr /var/lib/apt/lists/* && \
 sed -i -e 's/^# \(ja_JP\.UTF-8 UTF-8\)$/\1/' /etc/locale.gen && \
 locale-gen
 USER ${username}

@@ -150,7 +150,7 @@
 : ${Python_ver:=3.8.0}
 : ${Python2_ver:=2.7.15}
 : ${rustc_ver:=1.39.0}
-: ${rustup_ver:=1.19.0}
+: ${rustup_ver:=1.20.2}
 : ${ruby_ver:=2.6.5}
 : ${go_ver:=1.13.4}
 : ${perl_ver:=5.30.0}
@@ -914,7 +914,7 @@ fetch()
 				https://static.rust-lang.org/dist/${rustc_name}.tar.gz || return;;
 		rustup)
 			wget -O ${rustup_org_src_dir}.tar.gz \
-				https://github.com/rust-lang/rustup.rs/archive/${rustup_ver}.tar.gz || return;;
+				https://github.com/rust-lang/rustup/archive/${rustup_ver}.tar.gz || return;;
 		ruby)
 			wget -O ${ruby_org_src_dir}.tar.xz \
 				http://cache.ruby-lang.org/pub/ruby/`echo ${ruby_ver} | cut -d. -f-2`/${ruby_name}.tar.xz || return;;
@@ -1244,8 +1244,6 @@ set_src_directory()
 		eval ${_1}_name=${1}_\${${_1}_ver};;
 	rustc)
 		eval ${_1}_name=${1}-\${${_1}_ver}-src;;
-	rustup)
-		eval ${_1}_name=${1}.rs-\${${_1}_ver};;
 	procps|node|mingw-w64)
 		eval ${_1}_name=${1}-v\${${_1}_ver};;
 	squashfs|expect|tcl|tk)
