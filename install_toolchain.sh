@@ -3152,6 +3152,8 @@ install_native_emacs()
 	search_header xpm.h X11 > /dev/null || install_native_libXpm || return
 	fetch emacs || return
 	unpack ${emacs_org_src_dir} || return
+	[ -f ${emacs_org_src_dir}/configure ] ||
+		(cd ${emacs_org_src_dir}; ./autogen.sh) || return
 	[ -f ${emacs_org_src_dir}/Makefile ] ||
 		(cd ${emacs_org_src_dir}
 		CPPFLAGS="${CPPFLAGS} -I${prefix}/include" LDFLAGS="${LDFLAGS} -L${prefix}/lib" \
