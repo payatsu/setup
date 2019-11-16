@@ -8,7 +8,7 @@ ARG prefix
 ARG njobs
 ARG pkgs="zlib binutils m4 gmp mpfr mpc isl gcc \
 bzip2 elfutils bison flex perl autoconf autoconf-archive automake libtool ncurses readline texinfo \
-gawk cpio xz zip unzip lzip lunzip lzo lzop lz4 zstd ed bc patch ccache swig libffi Python2 Python libxml2 \
+gawk cpio xz zip unzip lzip lunzip lzo lzop lz4 zstd ed bc patch ccache pcre swig libffi Python2 Python libxml2 \
 libiconv ninja meson glib pkg-config nghttp2 curl cmake Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx cfe libedit lldb \
 ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux babeltrace gdb \
@@ -32,13 +32,13 @@ libxt-dev
 COPY install_toolchain.sh ${prefix}/install_toolchain.sh
 COPY Dockerfile ${prefix}/Dockerfile
 RUN \
-${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} "fetch `echo ${pkgs} | sed -e 's/\<ctags\>//'` clang-tools-extra vimdoc-ja mingw-w64" convert_archives
+${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} "fetch `echo ${pkgs} | sed -e 's/\<ctags\>//'` clang-tools-extra vimdoc-ja mingw-w64"
 RUN \
 : "FIXME: can't build Emacs26 in Dockerfile. webkit2gtk-4.0-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev" && \
 for p in `echo ${pkgs} | tr - _`; do \
 	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} install_native_${p} clean || exit; \
 done && \
-${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_cross_binutils install_cross_gcc clean
+${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_cross_binutils install_cross_gcc clean convert_archives
 
 FROM ${baseimage} AS dev
 ARG prefix
