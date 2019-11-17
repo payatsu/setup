@@ -70,9 +70,9 @@
 : ${ltrace_ver:=0.7.3}
 : ${valgrind_ver:=3.15.0}
 : ${zlib_ver:=1.2.11}
-: ${libpng_ver:=1.6.36}
-: ${tiff_ver:=4.0.6}
-: ${jpeg_ver:=v9b}
+: ${libpng_ver:=1.6.37}
+: ${tiff_ver:=4.1.0}
+: ${jpeg_ver:=v9c}
 : ${giflib_ver:=5.1.4}
 : ${libXpm_ver:=3.5.11}
 : ${libwebp_ver:=1.0.0}
@@ -752,7 +752,7 @@ fetch()
 				https://download.sourceforge.net/libpng/${libpng_name}.tar.xz || return;;
 		tiff)
 			wget -O ${tiff_org_src_dir}.tar.gz \
-				http://download.osgeo.org/libtiff/${tiff_name}.tar.gz || return;;
+				https://download.osgeo.org/libtiff/${tiff_name}.tar.gz || return;;
 		jpeg)
 			wget -O ${jpeg_org_src_dir}.tar.gz \
 				http://www.ijg.org/files/${jpeg_name}.tar.gz || return;;
@@ -2557,7 +2557,7 @@ install_native_libpng()
 	update_path || return
 }
 
-install_native_libtiff()
+install_native_tiff()
 {
 	[ -f ${prefix}/include/tiffio.h -a "${force_install}" != yes ] && return
 	fetch tiff || return
@@ -2574,7 +2574,7 @@ install_native_libtiff()
 	update_path || return
 }
 
-install_native_libjpeg()
+install_native_jpeg()
 {
 	[ -f ${prefix}/include/jpeglib.h -a "${force_install}" != yes ] && return
 	fetch jpeg || return
@@ -2630,8 +2630,8 @@ install_native_libwebp()
 {
 	[ -f ${prefix}/include/webp/decode.h -a "${force_install}" != yes ] && return
 	search_header png.h > /dev/null || install_native_libpng || return
-	search_header tiff.h > /dev/null || install_native_libtiff || return
-	search_header jpeglib.h > /dev/null || install_native_libjpeg || return
+	search_header tiff.h > /dev/null || install_native_tiff || return
+	search_header jpeglib.h > /dev/null || install_native_jpeg || return
 	search_header gif_lib.h > /dev/null || install_native_giflib || return
 	fetch libwebp || return
 	unpack ${libwebp_org_src_dir} || return
@@ -3119,8 +3119,8 @@ install_native_glib()
 #	search_header gtk.h gtk-3.0/gtk > /dev/null || install_native_gtk || return
 #	search_header sqlite3.h > /dev/null || install_native_sqlite || return
 #	search_header png.h > /dev/null || install_native_libpng || return
-#	search_header tiff.h > /dev/null || install_native_libtiff || return
-#	search_header jpeglib.h > /dev/null || install_native_libjpeg || return
+#	search_header tiff.h > /dev/null || install_native_tiff || return
+#	search_header jpeglib.h > /dev/null || install_native_jpeg || return
 #	search_header gif_lib.h > /dev/null || install_native_giflib || return
 #	search_header decode.h webp > /dev/null || install_native_libwebp || return
 #	fetch webkitgtk || return
@@ -3146,8 +3146,8 @@ install_native_emacs()
 	search_header curses.h > /dev/null || install_native_ncurses || return
 	search_header zlib.h > /dev/null || install_native_zlib || return
 	search_header png.h > /dev/null || install_native_libpng || return
-	search_header tiff.h > /dev/null || install_native_libtiff || return
-	search_header jpeglib.h > /dev/null || install_native_libjpeg || return
+	search_header tiff.h > /dev/null || install_native_tiff || return
+	search_header jpeglib.h > /dev/null || install_native_jpeg || return
 	search_header gif_lib.h > /dev/null || install_native_giflib || return
 	search_header xpm.h X11 > /dev/null || install_native_libXpm || return
 	fetch emacs || return
@@ -5122,8 +5122,8 @@ install_native_opencv()
 	[ -f ${prefix}/include/opencv2/opencv.hpp -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	search_header png.h > /dev/null || install_native_libpng || return # systemのlibpngだと古くて新規インストール必須かも。
-	search_header tiff.h > /dev/null || install_native_libtiff || return
-	search_header jpeglib.h > /dev/null || install_native_libjpeg || return # systemのlibjpegだと古くて新規インストール必須かも。
+	search_header tiff.h > /dev/null || install_native_tiff || return
+	search_header jpeglib.h > /dev/null || install_native_jpeg || return # systemのlibjpegだと古くて新規インストール必須かも。
 	fetch opencv || return
 	unpack ${opencv_org_src_dir} || return
 	fetch opencv_contrib || return
@@ -5488,7 +5488,7 @@ install_crossed_native_libpng()
 	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
 
-install_crossed_native_libtiff()
+install_crossed_native_tiff()
 {
 	[ -f ${sysroot}/usr/include/tiffio.h -a "${force_install}" != yes ] && return
 	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
