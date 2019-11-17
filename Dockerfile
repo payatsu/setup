@@ -38,6 +38,9 @@ RUN \
 for p in `echo ${pkgs} | tr - _`; do \
 	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} install_native_${p} clean || exit; \
 done && \
+for p in make; do \
+	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} ${p}_ver=git install_native_${p} clean || exit; \
+done && \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_cross_binutils install_cross_gcc clean convert_archives
 
 FROM ${baseimage} AS dev
@@ -56,7 +59,7 @@ echo Asia/Tokyo > /etc/timezone && \
 DEBIAN_FRONTEND=noninteractive \
 apt-get install -y --no-install-recommends tzdata locales && \
 apt-get install -y --no-install-recommends \
-libc6-dev wget less make file man-db \
+libc6-dev wget less file man-db \
 libssl-dev ca-certificates \
 libpopt0 \
 libxt6 \
