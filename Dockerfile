@@ -12,8 +12,9 @@ gawk cpio xz zip unzip lzip lunzip lzo lzop lz4 zstd ed bc patch ccache pcre swi
 libiconv ninja meson glib pkg-config nghttp2 curl cmake Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx cfe libedit lldb \
 ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux babeltrace gdb \
-gettext pcre2 git openssh go rustc zsh bash screen libevent tmux lua vim ctags global \
-the_silver_searcher the_platinum_searcher gperf highway fzf graphviz jdk plantuml jq protobuf rsync dtc"
+gettext pcre2 git openssh go rustc zsh bash screen libevent tmux lua vim global \
+the_silver_searcher the_platinum_searcher gperf highway fzf graphviz jdk plantuml jq protobuf rsync dtc \
+libpng tiff jpeg giflib"
 
 RUN \
 apt-get update && apt-get upgrade -y && \
@@ -28,18 +29,18 @@ pkg-config \
 libssl-dev ca-certificates \
 libpopt-dev \
 asciidoc xmlto \
-libxt-dev
+libxt-dev \
+libxaw7-dev libxpm-dev
 COPY install_toolchain.sh ${prefix}/install_toolchain.sh
 COPY Dockerfile ${prefix}/Dockerfile
 RUN \
-${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} "fetch `echo ${pkgs} | sed -e 's/\<ctags\>//'` clang-tools-extra vimdoc-ja mingw-w64"
+${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} "fetch ${pkgs} clang-tools-extra vimdoc-ja mingw-w64"
 RUN \
-: "FIXME: can't build Emacs26 in Dockerfile. webkit2gtk-4.0-dev libpng-dev libtiff-dev libjpeg-dev libgif-dev libxpm-dev" && \
 for p in `echo ${pkgs} | tr - _`; do \
 	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} install_native_${p} clean || exit; \
 done && \
-for p in make; do \
-	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} ${p}_ver=git install_native_${p} clean || exit; \
+for p in make emacs ctags; do \
+	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} ${p}_ver=git force_install=yes install_native_${p} clean || exit; \
 done && \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_cross_binutils install_cross_gcc clean convert_archives
 
@@ -63,6 +64,7 @@ libc6-dev wget less file man-db \
 libssl-dev ca-certificates \
 libpopt0 \
 libxt6 \
+libxaw7 libxpm4 \
 sudo \
 && \
 rm -v /etc/skel/install.sh /etc/skel/seq.puml && \

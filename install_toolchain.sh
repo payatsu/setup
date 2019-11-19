@@ -3158,7 +3158,7 @@ install_native_emacs()
 		(cd ${emacs_org_src_dir}
 		CPPFLAGS="${CPPFLAGS} -I${prefix}/include" LDFLAGS="${LDFLAGS} -L${prefix}/lib" \
 			./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
-			--with-modules --with-xwidgets --without-gnutls) || return
+			--with-modules --without-gnutls) || return
 	make -C ${emacs_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${emacs_org_src_dir} -j ${jobs} -k check || return
