@@ -171,7 +171,7 @@
 : ${opencv_ver:=4.0.0}
 : ${opencv_contrib_ver:=4.0.0}
 : ${googletest_ver:=1.8.1}
-: ${fzf_ver:=0.18.0}
+: ${fzf_ver:=0.19.0}
 : ${jq_ver:=1.6}
 : ${libpcap_ver:=1.9.0}
 : ${tcpdump_ver:=4.9.2}
