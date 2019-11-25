@@ -1137,7 +1137,8 @@ clean()
 	[ "${enable_ccache}" != yes ] || ccache -C > /dev/null || return
 	[ ! -d ${src} ] && return
 	find ${src} -mindepth 2 -maxdepth 2 \
-		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.tar.lz' ! -name '*.zip' ! -name '*-git' -exec rm -fvr {} +
+		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.tar.lz' ! -name '*.zip' \
+		! -name '*.jar' ! -name '*.pdf' ! -name '*-git' -exec rm -fvr {} +
 	find ${src} -mindepth 2 -maxdepth 2 \
 		-name '*-git' | xargs -I \{\} find \{\} -type d -name .git -execdir git clean -dfx \; -execdir git checkout -- . \;
 	return 0
