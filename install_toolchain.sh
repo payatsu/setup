@@ -97,7 +97,7 @@
 : ${findutils_ver:=4.7.0}
 : ${procps_ver:=3.3.15}
 : ${less_ver:=530}
-: ${source_highlight_ver:=3.1.8}
+: ${source_highlight_ver:=3.1.9}
 : ${screen_ver:=4.7.0}
 : ${libevent_ver:=2.1.8}
 : ${tmux_ver:=2.8}
