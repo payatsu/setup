@@ -180,7 +180,7 @@
 : ${libgcrypt_ver:=1.8.5}
 : ${libksba_ver:=1.3.5}
 : ${libassuan_ver:=2.5.3}
-: ${gnupg_ver:=2.2.17}
+: ${gnupg_ver:=2.2.18}
 : ${protobuf_ver:=3.10.0}
 : ${libbacktrace_ver:=git}
 
