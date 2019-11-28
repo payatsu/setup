@@ -90,7 +90,7 @@
 : ${the_platinum_searcher_ver:=2.2.0}
 : ${highway_ver:=1.1.0}
 : ${graphviz_ver:=2.40.1}
-: ${doxygen_ver:=1.8.14}
+: ${doxygen_ver:=1.8.16}
 : ${plantuml_ver:=1.2019.3}
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
@@ -3416,16 +3416,17 @@ install_native_doxygen()
 	[ -d ${doxygen_org_src_dir} ] ||
 		mv -v ${src}/doxygen/doxygen-Release_`echo ${doxygen_ver} | tr . _` ${doxygen_org_src_dir} || return
 	mkdir -pv ${doxygen_bld_dir_ntv} || return
-	[ -f ${doxygen_bld_dir_ntv}/Makefile ] ||
-		(cd ${doxygen_bld_dir_ntv}
-		cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-			-Dbuild_doc=ON -Duse_libclang=ON ${doxygen_org_src_dir}) || return # [TODO] Xapian入れられたら、build_search=ONにする・・・かも。
-	make -C ${doxygen_bld_dir_ntv} -j ${jobs} || return
-#	make -C ${doxygen_bld_dir_ntv} -j ${jobs} docs || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${doxygen_org_src_dir} -B ${doxygen_bld_dir_ntv} \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DCMAKE_C_FLAGS="${CFLAGS} -DLIBICONV_PLUG" \
+		-DCMAKE_CXX_FLAGS="${CXXFLAGS} -DLIBICONV_PLUG" \
+		-Dbuild_parse=ON -Duse_libclang=ON ${doxygen_org_src_dir} || return
+	cmake --build ${doxygen_bld_dir_ntv} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${doxygen_bld_dir_ntv} -j ${jobs} -k tests || return
-	make -C ${doxygen_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
+		cmake --build ${doxygen_bld_dir_ntv} -v -j ${jobs} --target tests || return
+	cmake --install ${doxygen_bld_dir_ntv} -v ${strip:+--${strip}} || return
 }
 
 install_native_plantuml()
