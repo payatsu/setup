@@ -638,7 +638,12 @@ fetch()
 		make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
 		diffutils|patch|findutils|less|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
 			eval [ "\${${p}_ver}" = git ] && {
-				eval git clone --depth 1 https://git.savannah.gnu.org/git/${p}.git \${${_p}_org_src_dir} || return
+				case ${p} in
+				binutils|gdb)
+					eval git clone --depth 1 git://sourceware.org/git/binutils-gdb.git \${${_p}_org_src_dir} || return;;
+				*)
+					eval git clone --depth 1 https://git.savannah.gnu.org/git/${p}.git \${${_p}_org_src_dir} || return;;
+				esac
 			} || for compress_format in xz bz2 gz lz; do
 				eval wget -O \${${_p}_org_src_dir}.tar.${compress_format} \
 					https://ftp.gnu.org/gnu/${p}/\${${_p}_name}.tar.${compress_format} \
