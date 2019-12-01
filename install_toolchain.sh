@@ -1274,7 +1274,10 @@ set_src_directory()
 		eval ${_1}_bld_dir_crs_2nd=\${${_1}_src_base}/${target}-\${${_1}_name}-2nd
 		eval ${_1}_bld_dir_crs_ntv=\${${_1}_src_base}/${target}-\${${_1}_name}-crs-ntv
 		;;
-	gdb)
+	linux)
+		eval ${_1}_src_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-src
+		;;
+	binutils|gdb)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_bld_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-bld
 		;;
@@ -1285,7 +1288,6 @@ set_src_directory()
 	*)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-src
-		eval ${_1}_src_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-src
 		eval ${_1}_src_dir_crs_ntv=\${${_1}_src_base}/${target}-\${${_1}_name}-crs-ntv
 		;;
 	esac
@@ -2026,25 +2028,21 @@ install_native_binutils()
 	[ -x ${prefix}/bin/as -a "${force_install}" != yes ] && return
 	search_header zlib.h > /dev/null || install_native_zlib || return
 	fetch binutils || return
-	[ -d ${binutils_src_dir_ntv} ] ||
-		(unpack ${binutils_org_src_dir} &&
-			mv -v ${binutils_org_src_dir} ${binutils_src_dir_ntv}) || return
-	[ -f ${binutils_src_dir_ntv}/Makefile ] ||
-		(cd ${binutils_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --host=${host} \
+	unpack ${binutils_org_src_dir} || return
+	mkdir -pv ${binutils_bld_dir_ntv} || return
+	[ -f ${binutils_bld_dir_ntv}/Makefile ] ||
+		(cd ${binutils_bld_dir_ntv}
+		${binutils_org_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			--enable-shared --enable-gold --enable-threads --enable-plugins \
 			--enable-compressed-debug-sections=all --enable-targets=all --enable-64-bit-bfd \
 			--with-sysroot=/ --with-system-zlib \
 			CFLAGS="${CFLAGS} -I`get_include_path zlib.h`" CXXFLAGS="${CXXFLAGS} -I`get_include_path zlib.h`" \
-			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`" \
-#			CFLAGS="${CFLAGS} -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
-#			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function"
-		) || return
-	make -C ${binutils_src_dir_ntv} -j 1 || return
+			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
+	make -C ${binutils_bld_dir_ntv} -j 1 || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${binutils_src_dir_ntv} -j 1 -k check || return
+		make -C ${binutils_bld_dir_ntv} -j 1 -k check || return
 	source_path -f || return
-	make -C ${binutils_src_dir_ntv} -j 1 install${strip:+-${strip}} || return
+	make -C ${binutils_bld_dir_ntv} -j 1 install${strip:+-${strip}} || return
 	update_path || return
 	for b in addr2line ar as c++filt coffdump dlltool dllwrap dwp \
 		elfedit gprof ld ld.bfd ld.gold nm objcopy objdump ranlib \
@@ -4400,12 +4398,11 @@ install_cross_binutils()
 	[ `check_platform ${build} ${host} ${target}` = cross ] || return
 	search_header zlib.h > /dev/null || install_native_zlib || return
 	fetch binutils || return
-	[ -d ${binutils_src_dir_crs} ] ||
-		(unpack ${binutils_org_src_dir} &&
-			mv -v ${binutils_org_src_dir} ${binutils_src_dir_crs}) || return
-	[ -f ${binutils_src_dir_crs}/Makefile ] ||
-		(cd ${binutils_src_dir_crs}
-		./configure --prefix=${prefix} --build=${build} --target=${target} \
+	unpack ${binutils_org_src_dir} || return
+	mkdir -pv ${binutils_bld_dir_crs} || return
+	[ -f ${binutils_bld_dir_crs}/Makefile ] ||
+		(cd ${binutils_bld_dir_crs}
+		${binutils_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--enable-shared --enable-gold --enable-threads --enable-plugins \
 			`echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' || echo --enable-compressed-debug-sections=all` \
 			--enable-targets=all --enable-64-bit-bfd \
@@ -4413,10 +4410,10 @@ install_cross_binutils()
 			CFLAGS="${CFLAGS} -I`get_include_path zlib.h` -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
 			CXXFLAGS="${CXXFLAGS} -I`get_include_path zlib.h` -Wno-error=unused-function" \
 			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
-	make -C ${binutils_src_dir_crs} -j 1 || return
+	make -C ${binutils_bld_dir_crs} -j 1 || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${binutils_src_dir_crs} -j 1 -k check || return
-	make -C ${binutils_src_dir_crs} -j 1 install${strip:+-${strip}} || return
+		make -C ${binutils_bld_dir_crs} -j 1 -k check || return
+	make -C ${binutils_bld_dir_crs} -j 1 install${strip:+-${strip}} || return
 	update_path || return
 }
 
