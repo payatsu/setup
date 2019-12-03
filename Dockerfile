@@ -12,7 +12,7 @@ gawk cpio xz zip unzip lzip lunzip lzo lzop lz4 zstd ed bc patch ccache pcre swi
 libiconv ninja meson glib pkg-config nghttp2 curl cmake Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx cfe libedit lldb \
 ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux babeltrace gdb \
-gettext pcre2 git openssh go rustc zsh bash screen libevent tmux lua vim global \
+autogen gettext pcre2 git openssh go rustc zsh bash screen libevent tmux lua vim global \
 the_silver_searcher the_platinum_searcher gperf highway fzf graphviz jdk plantuml jq protobuf rsync dtc \
 libpng tiff jpeg giflib"
 
