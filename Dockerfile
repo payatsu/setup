@@ -91,5 +91,6 @@ sudo cp -vr tmp/src/rustup ${prefix}/src && \
 sudo mv -v uninstall.sh ${prefix}/lib/rustlib && \
 rm -vr tmp && \
 ./.cargo/bin/rustup completions zsh | sudo tee ${prefix}/share/zsh/site-functions/_rustup > /dev/null && \
-echo colorscheme molokai > .vim/vimrc.local.vim && \
+./.cargo/bin/rustup component add rls && \
+echo colorscheme jellybeans > .vim/vimrc.local.vim && \
 vim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .vim/vimrc -U NONE -i NONE -V1 -e -s
