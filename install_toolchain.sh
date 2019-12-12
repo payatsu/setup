@@ -119,7 +119,7 @@
 : ${libxslt_ver:=1.1.33}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.20.1}
-: ${git_ver:=2.24.0}
+: ${git_ver:=2.24.1}
 : ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=4.9}
 : ${sqlite_autoconf_ver:=3260000}
@@ -1477,7 +1477,7 @@ update_path()
 
 generate_shell_run_command()
 {
-	mkdir -pv `dirname ${1}`
+	mkdir -pv `dirname ${1}` || return
 	func_name=`basename ${1} | tr . _ | tr -cd '[:alpha:]_'`
 	cat <<\EOF | sed -e '1,/^{$/{s%prefix_place_holder%'${prefix}'%;s%host_place_holder%'${host}'%;s%func_place_holder%'${func_name}'%}' > ${1} || return
 prefix=prefix_place_holder
