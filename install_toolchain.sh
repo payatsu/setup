@@ -79,7 +79,7 @@
 : ${libffi_ver:=3.2.1}
 : ${emacs_ver:=26.3}
 : ${libiconv_ver:=1.15}
-: ${vim_ver:=8.1.2214}
+: ${vim_ver:=8.2.0002}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.3}
@@ -3232,6 +3232,9 @@ install_native_vim()
 EOF
 	make -C ${vim_org_src_dir} -j ${jobs} || return
 	make -C ${vim_org_src_dir} -j ${jobs} install || return
+	for l in ${DESTDIR}${prefix}/bin/ex ${DESTDIR}${prefix}/bin/view; do
+		[ ! -h ${l} ] || rm -fv ${l} || return
+	done
 	fetch vimdoc-ja || return
 	[ -d ${vimdoc_ja_org_src_dir} ] ||
 		(unpack ${vimdoc_ja_org_src_dir} &&
