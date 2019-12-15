@@ -3231,10 +3231,10 @@ install_native_vim()
  DEST_BIN = $(DESTDIR)$(BINDIR)
 EOF
 	make -C ${vim_org_src_dir} -j ${jobs} || return
-	make -C ${vim_org_src_dir} -j ${jobs} install || return
 	for l in ${DESTDIR}${prefix}/bin/ex ${DESTDIR}${prefix}/bin/view; do
 		[ ! -h ${l} ] || rm -fv ${l} || return
 	done
+	make -C ${vim_org_src_dir} -j ${jobs} install || return
 	fetch vimdoc-ja || return
 	[ -d ${vimdoc_ja_org_src_dir} ] ||
 		(unpack ${vimdoc_ja_org_src_dir} &&
