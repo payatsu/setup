@@ -109,7 +109,7 @@
 : ${util_linux_ver:=2.33}
 : ${e2fsprogs_ver:=1.44.5}
 : ${squashfs_ver:=4.3}
-: ${openssl_ver:=1.1.1c}
+: ${openssl_ver:=1.1.1d}
 : ${openssh_ver:=8.1p1}
 : ${nghttp2_ver:=1.39.2}
 : ${curl_ver:=7.65.3}
@@ -830,7 +830,9 @@ fetch()
 				https://sourceforge.net/projects/squashfs/files/squashfs/${squashfs_name}/${squashfs_name}.tar.gz/download || return;;
 		openssl)
 			wget -O ${openssl_org_src_dir}.tar.gz \
-				http://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return;;
+				https://www.openssl.org/source/${openssl_name}.tar.gz ||
+					wget -O ${openssl_org_src_dir}.tar.gz \
+						http://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return;;
 		openssh)
 			wget -O ${openssh_org_src_dir}.tar.gz \
 				http://ftp.jaist.ac.jp/pub/OpenBSD/OpenSSH/portable/${openssh_name}.tar.gz || return;;
