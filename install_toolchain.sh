@@ -3725,6 +3725,10 @@ install_native_openssl()
 	rm -fv ${DESTDIR}${prefix}/ssl/certs || return
 	ln -fsv /etc/ssl/certs ${DESTDIR}${prefix}/ssl/certs || return
 	make -C ${openssl_org_src_dir} -j 1 DESTDIR=${DESTDIR} install || return # XXX work around for parallel make
+	mkdir -pv ${DESTDIR}${prefix}/lib/pkgconfig || return
+	for f in libcrypto.pc libssl.pc openssl.pc; do
+		[ ! -f ${DESTDIR}${prefix}/lib64/pkgconfig/${f} ] || ln -fsv ../../lib64/pkgconfig/${f} ${DESTDIR}${prefix}/lib/pkgconfig || return
+	done
 	update_path || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/openssl || return

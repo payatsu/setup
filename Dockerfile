@@ -9,7 +9,7 @@ ARG njobs
 ARG pkgs="zlib binutils m4 gmp mpfr mpc isl gcc \
 bzip2 elfutils bison flex perl autoconf autoconf-archive automake libtool ncurses readline texinfo \
 gawk cpio xz zip unzip lzip lunzip lzo lzop lz4 zstd ed bc patch ccache pcre swig libffi Python2 Python libxml2 \
-libiconv ninja meson glib pkg-config nghttp2 curl cmake Bear \
+libiconv ninja meson glib pkg-config nghttp2 openssl curl cmake Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx cfe libedit lldb \
 ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux babeltrace gdb \
 autogen gettext pcre2 git openssh go rustc zsh bash screen libevent tmux lua vim global \
@@ -26,7 +26,7 @@ wget xz-utils \
 make gcc g++ \
 texinfo \
 pkg-config \
-libssl-dev ca-certificates \
+ca-certificates \
 libpopt-dev \
 asciidoc xmlto \
 libxt-dev \
@@ -61,7 +61,7 @@ DEBIAN_FRONTEND=noninteractive \
 apt-get install -y --no-install-recommends tzdata locales && \
 apt-get install -y --no-install-recommends \
 libc6-dev wget less file man-db \
-libssl-dev ca-certificates \
+ca-certificates \
 libpopt0 \
 libxt6 \
 libxaw7 libxpm4 \
