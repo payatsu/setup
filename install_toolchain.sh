@@ -128,10 +128,10 @@
 : ${utf8proc_ver:=2.2.0}
 : ${subversion_ver:=1.11.0}
 : ${ninja_ver:=1.9.0}
-: ${meson_ver:=0.51.1}
-: ${cmake_ver:=3.15.5}
-: ${bazel_ver:=1.1.0}
-: ${Bear_ver:=2.4.0}
+: ${meson_ver:=0.52.1}
+: ${cmake_ver:=3.16.1}
+: ${bazel_ver:=2.0.0}
+: ${Bear_ver:=2.4.2}
 : ${ccache_ver:=3.7.2}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=3.0.12}
@@ -146,7 +146,7 @@
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
-: ${boost_ver:=1_71_0}
+: ${boost_ver:=1_72_0}
 : ${Python_ver:=3.8.0}
 : ${Python2_ver:=2.7.15}
 : ${rustc_ver:=1.39.0}
@@ -161,15 +161,15 @@
 : ${gc_ver:=7.6.6}
 : ${guile_ver:=2.2.6}
 : ${lua_ver:=5.3.5}
-: ${node_ver:=12.13.1}
+: ${node_ver:=12.14.0}
 : ${jdk_ver:=13.0.1}
-: ${nasm_ver:=2.14}
+: ${nasm_ver:=2.14.02}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
 : ${x265_ver:=2.9}
 : ${libav_ver:=11.9}
-: ${opencv_ver:=4.0.0}
-: ${opencv_contrib_ver:=4.0.0}
+: ${opencv_ver:=4.1.2}
+: ${opencv_contrib_ver:=4.1.2}
 : ${googletest_ver:=1.8.1}
 : ${fzf_ver:=0.19.0}
 : ${jq_ver:=1.6}
@@ -181,7 +181,7 @@
 : ${libksba_ver:=1.3.5}
 : ${libassuan_ver:=2.5.3}
 : ${gnupg_ver:=2.2.19}
-: ${protobuf_ver:=3.11.0}
+: ${protobuf_ver:=3.11.2}
 : ${libbacktrace_ver:=git}
 
 # TODO X11周りのインストールは未着手。
