@@ -149,7 +149,7 @@
 : ${boost_ver:=1_72_0}
 : ${Python_ver:=3.8.0}
 : ${Python2_ver:=2.7.15}
-: ${rustc_ver:=1.39.0}
+: ${rustc_ver:=1.40.0}
 : ${rustup_ver:=1.20.2}
 : ${ruby_ver:=2.6.5}
 : ${go_ver:=1.13.5}
@@ -5143,20 +5143,18 @@ install_native_opencv()
 	fetch opencv_contrib || return
 	unpack ${opencv_contrib_org_src_dir} || return
 	mkdir -pv ${opencv_bld_dir_ntv} || return
-	(cd ${opencv_bld_dir_ntv}
 	libdirs="-L`get_library_path libpng.so` -L`get_library_path libtiff.so` -L`get_library_path libjpeg.so` -L${prefix}/lib"
-	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${opencv_org_src_dir} -B ${opencv_bld_dir_ntv} \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
 		-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
 		-DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DENABLE_PRECOMPILED_HEADERS=OFF \
-		-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_org_src_dir}/modules ${opencv_org_src_dir}) || return
-	make -C ${opencv_bld_dir_ntv} -j ${jobs} -k || return # make 一発じゃだめっぽいので2回。
-	make -C ${opencv_bld_dir_ntv} -j ${jobs} || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${opencv_bld_dir_ntv} -j ${jobs} -k check || return
-	make -C ${opencv_bld_dir_ntv} -j ${jobs} install${strip:+/${strip}} || return
+		-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_org_src_dir}/modules || return
+	cmake --build ${opencv_bld_dir_ntv} -v -j ${jobs} || return
+	cmake --install ${opencv_bld_dir_ntv} -v ${strip:+--${strip}} || return
 	update_path || return
 }
 
