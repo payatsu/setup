@@ -150,7 +150,7 @@
 : ${Python_ver:=3.8.0}
 : ${Python2_ver:=2.7.15}
 : ${rustc_ver:=1.40.0}
-: ${rustup_ver:=1.20.2}
+: ${rustup_ver:=1.21.1}
 : ${ruby_ver:=2.6.5}
 : ${go_ver:=1.13.5}
 : ${perl_ver:=5.30.0}
@@ -4735,6 +4735,7 @@ install_native_rustc()
 	for b in cargo cargo-clippy cargo-fmt cargo-miri clippy-driver miri rls rustc rustdoc rustfmt; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
+	update_path || return
 }
 
 install_native_rustup()
