@@ -147,8 +147,8 @@
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
 : ${boost_ver:=1_72_0}
-: ${Python_ver:=3.8.0}
-: ${Python2_ver:=2.7.15}
+: ${Python_ver:=3.8.1}
+: ${Python2_ver:=2.7.17}
 : ${rustc_ver:=1.40.0}
 : ${rustup_ver:=1.21.1}
 : ${ruby_ver:=2.6.5}
