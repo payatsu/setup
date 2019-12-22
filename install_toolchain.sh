@@ -4682,6 +4682,7 @@ install_native_Python()
 	[ -x ${prefix}/bin/python3 -a "${force_install}" != yes ] && return
 	search_header expat.h > /dev/null || install_native_expat || return
 	search_header ffi.h > /dev/null || install_native_libffi || return
+	search_header ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch Python || return
 	unpack ${Python_org_src_dir} || return
 	[ -f ${Python_org_src_dir}/Makefile ] ||
@@ -4690,7 +4691,7 @@ install_native_Python()
 			--enable-shared --enable-optimizations --enable-ipv6 \
 			--with-universal-archs=all --with-lto --with-system-expat --with-system-ffi \
 			--with-signal-module --with-threads --with-doc-strings \
-			--with-tsc --with-pymalloc --with-ensurepip) || return
+			--with-tsc --with-pymalloc --with-ensurepip LDFLAGS="${LDFLAGS} -L`get_library_path libssl.so`") || return
 	make -C ${Python_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${Python_org_src_dir} -j ${jobs} -k test || return
