@@ -168,8 +168,8 @@
 : ${x264_ver:=last-stable}
 : ${x265_ver:=2.9}
 : ${libav_ver:=11.9}
-: ${opencv_ver:=4.1.2}
-: ${opencv_contrib_ver:=4.1.2}
+: ${opencv_ver:=4.2.0}
+: ${opencv_contrib_ver:=4.2.0}
 : ${googletest_ver:=1.8.1}
 : ${fzf_ver:=0.19.0}
 : ${jq_ver:=1.6}
@@ -5135,7 +5135,7 @@ install_native_libav()
 
 install_native_opencv()
 {
-	[ -f ${prefix}/include/opencv2/opencv.hpp -a "${force_install}" != yes ] && return
+	[ -f ${prefix}/include/opencv`echo ${opencv_ver} | cut -d. -f1`/opencv2/opencv.hpp -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	search_header png.h > /dev/null || install_native_libpng || return # systemのlibpngだと古くて新規インストール必須かも。
 	search_header tiff.h > /dev/null || install_native_tiff || return
