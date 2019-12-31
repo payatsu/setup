@@ -4725,6 +4725,7 @@ install_native_rustc()
 	sed -e '
 		/^#ninja = .\+/s//ninja = '`which ninja > /dev/null && echo true || echo false`'/
 		/^#extended = .\+/s//extended = true/
+		/^#profiler = .\+/s//profiler = true/
 		/^#prefix = .\+/s%%prefix = "'${prefix}'"%
 		/^#sysconfdir = .\+/s//sysconfdir = "etc"/
 		/^#parallel-compiler = .\+/s//parallel-compiler = true/
