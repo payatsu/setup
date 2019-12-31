@@ -1667,6 +1667,7 @@ install_native_bzip2()
 	for b in bunzip2 bzcat bzip2 bzip2recover; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
+	strip -v ${DESTDIR}${prefix}/lib/libbz2.so || return
 }
 
 install_native_gzip()
@@ -2163,6 +2164,7 @@ install_native_dtc()
 	for b in convert-dtsv0 dtc fdtdump fdtget fdtoverlay fdtput; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
+	strip -v ${DESTDIR}${prefix}/lib/libfdt-${dtc_ver}.so || return
 }
 
 install_native_u_boot()
@@ -2358,6 +2360,10 @@ install_native_readline()
 		make -C ${readline_org_src_dir} -j ${jobs} -k check || return
 	make -C ${readline_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 	update_path || return
+	[ -z "${strip}" ] && return
+	for l in libhistory libreadline; do
+		strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
+	done
 }
 
 install_native_ncurses()
@@ -3185,6 +3191,10 @@ install_native_libiconv()
 		make -C ${libiconv_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libiconv_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
+	[ -z "${strip}" ] && return
+	for l in libcharset libiconv; do
+		strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
+	done
 }
 
 install_native_vim()
@@ -3800,6 +3810,7 @@ install_native_expat()
 	update_path || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/xmlwf || return
+	strip -v ${DESTDIR}${prefix}/lib/libexpat.so || return
 }
 
 install_native_asciidoc()
@@ -4823,7 +4834,9 @@ install_native_tcl()
 	make -C ${tcl_org_src_dir}/unix -j ${jobs} install-private-headers || return
 	update_path || return
 	ln -fsv tclsh`echo ${tcl_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/bin/tclsh || return
-	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/tclsh || return
+	[ -z "${strip}" ] && return
+	strip -v ${DESTDIR}${prefix}/bin/tclsh || return
+	strip -v ${DESTDIR}${prefix}/lib/libtcl`echo ${tcl_ver} | cut -d. -f-2`.so || return
 }
 
 install_native_tk()
