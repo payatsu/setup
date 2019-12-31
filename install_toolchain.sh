@@ -99,7 +99,7 @@
 : ${less_ver:=530}
 : ${source_highlight_ver:=3.1.9}
 : ${screen_ver:=4.7.0}
-: ${libevent_ver:=2.1.8}
+: ${libevent_ver:=2.1.11}
 : ${tmux_ver:=2.8}
 : ${expect_ver:=5.45.4}
 : ${dejagnu_ver:=1.6.2}
@@ -1980,6 +1980,8 @@ install_native_libtool()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libtool_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libtool_org_src_dir} -j ${jobs} install || return
+	[ -z "${strip}" ] && return
+	strip -v ${DESTDIR}${prefix}/lib/libltdl.so || return
 }
 
 install_native_sed()
@@ -3581,6 +3583,10 @@ install_native_libevent()
 		make -C ${libevent_org_src_dir}-stable -j ${jobs} -k check || return
 	make -C ${libevent_org_src_dir}-stable -j ${jobs} install || return
 	update_path || return
+	[ -z "${strip}" ] && return
+	for l in '' _core _extra _openssl _pthreads; do
+		strip -v ${DESTDIR}${prefix}/lib/libevent${l}.so || return
+	done
 }
 
 install_native_tmux()
@@ -4854,6 +4860,8 @@ install_native_tk()
 		make -C ${tk_org_src_dir}/unix -j ${jobs} -k test || return
 	make -C ${tk_org_src_dir}/unix -j ${jobs} install${strip:+-${strip}} || return
 	ln -fsv wish`echo ${tk_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/bin/wish || return
+	[ -z "${strip}" ] && return
+	strip -v ${DESTDIR}${prefix}/lib/libtk`echo ${tk_ver} | cut -d. -f-2`.so || return
 }
 
 install_native_libunistring()
