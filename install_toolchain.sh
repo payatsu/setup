@@ -135,12 +135,12 @@
 : ${ccache_ver:=3.7.2}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=3.0.12}
-: ${llvm_ver:=9.0.0}
+: ${llvm_ver:=9.0.1}
 : ${compiler_rt_ver:=${llvm_ver}}
 : ${libunwind_ver:=${llvm_ver}}
 : ${libcxxabi_ver:=${llvm_ver}}
 : ${libcxx_ver:=${llvm_ver}}
-: ${cfe_ver:=${llvm_ver}}
+: ${clang_ver:=${llvm_ver}}
 : ${clang_tools_extra_ver:=${llvm_ver}}
 : ${lld_ver:=${llvm_ver}}
 : ${lldb_ver:=${llvm_ver}}
@@ -899,9 +899,9 @@ fetch()
 		swig)
 			wget --trust-server-names -O ${swig_org_src_dir}.tar.gz \
 				https://sourceforge.net/projects/swig/files/swig/${swig_name}/${swig_name}.tar.gz/download || return;;
-		llvm|compiler-rt|libunwind|libcxxabi|libcxx|cfe|clang-tools-extra|lld|lldb)
+		llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
 			eval wget -O \${${_p}_org_src_dir}.tar.xz \
-				http://llvm.org/releases/\${${_p}_ver}/\${${_p}_name}.tar.xz || return;;
+				https://github.com/llvm/llvm-project/releases/download/llvmorg-\${${_p}_ver}/\${${_p}_name}.tar.xz || return;;
 		cling)
 			git clone --depth 1 http://root.cern.ch/git/llvm.git ${cling_org_src_dir} -b cling-patches || return
 			[ -d ${cling_org_src_dir}/tools/clang ] ||
@@ -1228,7 +1228,7 @@ set_src_directory()
 	_1=`echo ${1} | tr - _`
 
 	case ${1} in
-	llvm|compiler-rt|libunwind|libcxxabi|libcxx|cfe|clang-tools-extra|lld|lldb)
+	llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
 		eval ${_1}_name=${1}-\${${_1}_ver}.src
 		eval ${_1}_src_base=${src}/${1}
 		eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
@@ -3429,7 +3429,7 @@ install_native_doxygen()
 {
 	[ -x ${prefix}/bin/doxygen -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
-	which clang > /dev/null || install_native_cfe || return
+	which clang > /dev/null || install_native_clang || return
 	which flex > /dev/null || install_native_flex || return
 	which yacc > /dev/null || install_native_bison || return
 	fetch doxygen || return
@@ -4213,9 +4213,9 @@ install_native_compiler_rt()
 		-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ || return
 	cmake --build ${compiler_rt_bld_dir} -v -j ${jobs} || return
 	cmake --install ${compiler_rt_bld_dir} -v ${strip:+--${strip}} || return
-	mkdir -pv ${DESTDIR}${prefix}/lib/clang/${cfe_ver}/lib || return
-	rm -fvr ${DESTDIR}${prefix}/lib/clang/${cfe_ver}/lib/linux || return
-	mv -v ${DESTDIR}${prefix}/lib/linux ${DESTDIR}${prefix}/lib/clang/${cfe_ver}/lib || return # XXX: workaround for mismatch between clang search path and compiler-rt installation path.
+	mkdir -pv ${DESTDIR}${prefix}/lib/clang/${clang_ver}/lib || return
+	rm -fvr ${DESTDIR}${prefix}/lib/clang/${clang_ver}/lib/linux || return
+	mv -v ${DESTDIR}${prefix}/lib/linux ${DESTDIR}${prefix}/lib/clang/${clang_ver}/lib || return # XXX: workaround for mismatch between clang search path and compiler-rt installation path.
 	update_path || return
 }
 
@@ -4283,7 +4283,7 @@ install_native_libcxx()
 	update_path || return
 }
 
-install_native_cfe()
+install_native_clang()
 {
 	[ -x ${prefix}/bin/clang -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
@@ -4292,13 +4292,13 @@ install_native_cfe()
 	search_library libunwind.so > /dev/null || install_native_libunwind || return
 	search_library libc++abi.so > /dev/null || install_native_libcxxabi || return
 	search_header iostream c++/v1 > /dev/null || install_native_libcxx || return
-	fetch cfe || return
-	unpack ${cfe_org_src_dir} || return
+	fetch clang || return
+	unpack ${clang_org_src_dir} || return
 	fetch clang-tools-extra || return
-	[ -d ${cfe_org_src_dir}/tools/extra ] ||
+	[ -d ${clang_org_src_dir}/tools/extra ] ||
 		(unpack ${clang_tools_extra_org_src_dir} &&
-		mv -v ${clang_tools_extra_org_src_dir} ${cfe_org_src_dir}/tools/extra) || return
-	patch -N -p0 -d ${cfe_org_src_dir} <<EOF || [ $? = 1 ] || return
+		mv -v ${clang_tools_extra_org_src_dir} ${clang_org_src_dir}/tools/extra) || return
+	patch -N -p0 -d ${clang_org_src_dir} <<EOF || [ $? = 1 ] || return
 --- tools/extra/clangd/CodeComplete.h
 +++ tools/extra/clangd/CodeComplete.h
 @@ -71,7 +71,7 @@
@@ -4311,9 +4311,9 @@ install_native_cfe()
    } IncludeIndicator;
  
 EOF
-	mkdir -pv ${cfe_bld_dir} || return
+	mkdir -pv ${clang_bld_dir} || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
-		-S ${cfe_org_src_dir} -B ${cfe_bld_dir} \
+		-S ${clang_org_src_dir} -B ${clang_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DENABLE_LINKER_BUILD_ID=ON \
@@ -4321,25 +4321,9 @@ EOF
 		-DCLANG_DEFAULT_RTLIB=compiler-rt \
 		-DGCC_INSTALL_PREFIX=`get_prefix iostream c++` \
 		`which lld > /dev/null && echo -DCLANG_DEFAULT_LINKER=lld` || return
-	cmake --build ${cfe_bld_dir} -v -j ${jobs} || return
-	cmake --install ${cfe_bld_dir} -v ${strip:+--${strip}} || return
+	cmake --build ${clang_bld_dir} -v -j ${jobs} || return
+	cmake --install ${clang_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
-}
-
-get_llvm_tools_name()
-{
-	case ${1} in
-	cfe) echo clang;;
-	*)   echo ${1};;
-	esac
-}
-
-place_llvm_tools()
-{
-	fetch ${1} || return
-	[ -d ${llvm_org_src_dir}/tools/`get_llvm_tools_name ${1}` ] ||
-		(eval unpack \${${1}_org_src_dir} &&
-		eval mv -v \${${1}_org_src_dir} ${llvm_org_src_dir}/tools/`get_llvm_tools_name ${1}`) || return
 }
 
 install_native_lld()
@@ -4401,7 +4385,7 @@ install_native_ccls()
 {
 	[ -x ${prefix}/bin/ccls -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
-	search_library libclang.so || install_native_cfe || return
+	search_library libclang.so || install_native_clang || return
 	fetch ccls || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${ccls_org_src_dir} -B ${ccls_bld_dir_ntv} \
