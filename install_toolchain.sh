@@ -900,7 +900,10 @@ fetch()
 			wget --trust-server-names -O ${swig_org_src_dir}.tar.gz \
 				https://sourceforge.net/projects/swig/files/swig/${swig_name}/${swig_name}.tar.gz/download || return;;
 		llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
-			eval wget -O \${${_p}_org_src_dir}.tar.xz \
+			eval [ "\${${_p}_ver}" = git ] && {
+				mkdir -pv ${llvm_src_base} || return
+				[ -d ${llvm_src_base}/llvm-project ] || git -C ${llvm_src_base} clone --depth 1 https://github.com/llvm/llvm-project || return
+			} || eval wget -O \${${_p}_org_src_dir}.tar.xz \
 				https://github.com/llvm/llvm-project/releases/download/llvmorg-\${${_p}_ver}/\${${_p}_name}.tar.xz || return;;
 		cling)
 			git clone --depth 1 http://root.cern.ch/git/llvm.git ${cling_org_src_dir} -b cling-patches || return
@@ -1232,10 +1235,15 @@ set_src_directory()
 
 	case ${1} in
 	llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
-		eval ${_1}_name=${1}-\${${_1}_ver}.src
-		eval ${_1}_src_base=${src}/${1}
-		eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
-		eval ${_1}_bld_dir=\${${_1}_src_base}/\${${_1}_name}-bld
+		eval [ "\${${_1}_ver}" = git ] && {
+			eval ${_1}_name=${1}
+			eval ${_1}_org_src_dir=${llvm_src_base}/llvm-project/\${${_1}_name}
+			eval ${_1}_bld_dir=\${${_1}_src_base}/\${${_1}_name}-bld
+		} || {
+			eval ${_1}_name=${1}-\${${_1}_ver}.src
+			eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
+			eval ${_1}_bld_dir=\${${_1}_src_base}/\${${_1}_name}-bld
+		}
 		return 0
 		;;
 	esac
@@ -4214,9 +4222,9 @@ install_native_compiler_rt()
 		-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ || return
 	cmake --build ${compiler_rt_bld_dir} -v -j ${jobs} || return
 	cmake --install ${compiler_rt_bld_dir} -v ${strip:+--${strip}} || return
-	mkdir -pv ${DESTDIR}${prefix}/lib/clang/${clang_ver}/lib || return
-	rm -fvr ${DESTDIR}${prefix}/lib/clang/${clang_ver}/lib/linux || return
-	mv -v ${DESTDIR}${prefix}/lib/linux ${DESTDIR}${prefix}/lib/clang/${clang_ver}/lib || return # XXX: workaround for mismatch between clang search path and compiler-rt installation path.
+	mkdir -pv ${DESTDIR}${prefix}/lib/clang/`llvm-config --version | grep -oe '^\(\.\?[[:digit:]]\+\)\{3\}'`/lib || return
+	rm -fvr ${DESTDIR}${prefix}/lib/clang/`llvm-config --version | grep -oe '^\(\.\?[[:digit:]]\+\)\{3\}'`/lib/linux || return
+	mv -v ${DESTDIR}${prefix}/lib/linux ${DESTDIR}${prefix}/lib/clang/`llvm-config --version | grep -oe '^\(\.\?[[:digit:]]\+\)\{3\}'`/lib || return # XXX: workaround for mismatch between clang search path and compiler-rt installation path.
 	update_path || return
 }
 
