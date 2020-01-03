@@ -632,7 +632,7 @@ fetch()
 	for p in "$@"; do
 		_p=`echo ${p} | tr - _`
 		eval [ -n \"\${${_p}_src_base}\" ] && eval mkdir -pv \${${_p}_src_base} || return
-		eval check_archive \${${_p}_org_src_dir} || eval [ -d \${${_p}_org_src_dir} ] && continue
+		eval check_archive \${${_p}_org_src_dir} || eval [ -d \${${_p}_org_src_dir} -o -h \${${_p}_org_src_dir} ] && continue
 		case ${p} in
 		tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|autoconf-archive|automake|libtool|sed|gawk|\
 		make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
@@ -1227,6 +1227,9 @@ set_src_directory()
 {
 	_1=`echo ${1} | tr - _`
 
+	eval ${_1}_src_base=${src}/${1}
+	[ ${_1} = Python2 ] && Python2_src_base=${src}/Python
+
 	case ${1} in
 	llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
 		eval ${_1}_name=${1}-\${${_1}_ver}.src
@@ -1262,8 +1265,6 @@ set_src_directory()
 		eval ${_1}_name=${1}-\${${_1}_ver};;
 	esac
 
-	eval ${_1}_src_base=${src}/${1}
-	[ ${_1} = Python2 ] && Python2_src_base=${src}/Python
 	eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
 
 	case ${1} in
