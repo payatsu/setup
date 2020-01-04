@@ -708,7 +708,7 @@ fetch()
 			*)       echo unsupported linux version >&2; return 1;;
 			esac
 			wget -O ${linux_org_src_dir}.tar.xz \
-				https://www.kernel.org/pub/linux/kernel/${linux_major_ver}/${linux_name}.tar.xz || return;;
+				https://www.kernel.org/pub/linux/kernel/${linux_major_ver:-v`echo ${linux_ver} | cut -d. -f1`.x}/${linux_name}.tar.xz || return;;
 		dtc)
 			wget -O ${dtc_org_src_dir}.tar.xz \
 				https://www.kernel.org/pub/software/utils/dtc/${dtc_name}.tar.xz || return;;
@@ -732,10 +732,10 @@ fetch()
 				git clone -b master --depth 1 \
 					git://gcc.gnu.org/git/gcc.git ${gcc_org_src_dir} || return
 			} || for compress_format in xz bz2 gz; do
-				wget -O ${gcc_org_src_dir}.tar.${compress_format} \
-					https://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.${compress_format} \
+				wget -O ${gcc_org_src_dir}.tar.${compress_format:-xz} \
+					https://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.${compress_format:-xz} \
 					&& break \
-					|| rm -v ${gcc_org_src_dir}.tar.${compress_format}
+					|| rm -v ${gcc_org_src_dir}.tar.${compress_format:-xz}
 			done || return;;
 		babeltrace)
 			wget -O ${babeltrace_org_src_dir}.tar.gz \
@@ -784,7 +784,7 @@ fetch()
 				http://github.com/universal-ctags/ctags.git ${ctags_org_src_dir} || return;;
 		pcre|pcre2)
 			eval wget -O \${${_p}_org_src_dir}.tar.bz2 \
-				https://ftp.pcre.org/pub/pcre/\${${_p}_name}.tar.bz2 || return;;
+				https://ftp.pcre.org/pub/pcre/\${${_p:-pcre2}_name}.tar.bz2 || return;;
 		the_silver_searcher)
 			wget -O ${the_silver_searcher_org_src_dir}.tar.gz \
 				https://github.com/ggreer/the_silver_searcher/archive/${the_silver_searcher_ver}.tar.gz || return;;
@@ -804,7 +804,8 @@ fetch()
 			wget --trust-server-names -O ${plantuml_org_src_dir}.jar \
 				https://sourceforge.net/projects/plantuml/files/${plantuml_name}.jar/download || return
 			[ -f ${plantuml_org_src_dir}.pdf ] ||
-				wget -O ${plantuml_org_src_dir}.pdf http://pdf.plantuml.net/PlantUML_Language_Reference_Guide_ja.pdf || return;;
+				wget -O ${plantuml_org_src_dir}.pdf \
+					http://pdf.plantuml.net/PlantUML_Language_Reference_Guide_ja.pdf || return;;
 		procps)
 			wget -O ${procps_org_src_dir}.tar.bz2 \
 				https://gitlab.com/procps-ng/procps/-/archive/v${procps_ver}/procps-v${procps_ver}.tar.bz2 || return;;
@@ -854,7 +855,7 @@ fetch()
 				https://sourceforge.net/projects/asciidoc/files/asciidoc/${asciidoc_ver}/${asciidoc_name}.tar.gz/download || return;;
 		libxml2|libxslt)
 			eval wget -O \${${_p}_org_src_dir}.tar.gz \
-				http://xmlsoft.org/sources/\${${_p}_name}.tar.gz || return;;
+				http://xmlsoft.org/sources/\${${_p:-libxml2}_name}.tar.gz || return;;
 		xmlto)
 			wget -O ${xmlto_org_src_dir}.tar.bz2 \
 				https://fedorahosted.org/releases/x/m/xmlto/${xmlto_name}.tar.bz2 || return;;
@@ -872,7 +873,7 @@ fetch()
 				https://www.sqlite.org/2018/${sqlite_autoconf_name}.tar.gz || return;;
 		apr|apr-util)
 			eval wget -O \${${_p}_org_src_dir}.tar.bz2 \
-				http://ftp.tsukuba.wide.ad.jp/software/apache/apr/\${${_p}_name}.tar.bz2 || return;;
+				http://ftp.tsukuba.wide.ad.jp/software/apache/apr/\${${_p:-apr}_name}.tar.bz2 || return;;
 		utf8proc)
 			wget -O ${utf8proc_org_src_dir}.tar.gz \
 				https://github.com/JuliaStrings/utf8proc/archive/v${utf8proc_ver}.tar.gz || return;;
@@ -909,7 +910,7 @@ fetch()
 				[ -d ${llvm_src_base}/llvm-project.git ] || git -C ${llvm_src_base} clone --depth 1 \
 					https://github.com/llvm/llvm-project llvm-project.git || return
 			} || eval wget -O \${${_p}_org_src_dir}.tar.xz \
-				https://github.com/llvm/llvm-project/releases/download/llvmorg-\${${_p}_ver}/\${${_p}_name}.tar.xz || return;;
+				https://github.com/llvm/llvm-project/releases/download/llvmorg-\${${_p:-llvm}_ver}/\${${_p:-llvm}_name}.tar.xz || return;;
 		cling)
 			git clone --depth 1 \
 				http://root.cern.ch/git/llvm.git ${cling_org_src_dir} -b cling-patches || return
@@ -927,7 +928,7 @@ fetch()
 				https://dl.bintray.com/boostorg/release/`echo ${boost_ver} | tr _ .`/source/${boost_name}.tar.bz2 || return;;
 		Python2|Python)
 			eval wget -O ${Python_src_base}/Python-\${${_p}_ver}.tar.xz \
-				https://www.python.org/ftp/python/\${${_p}_ver}/Python-\${${_p}_ver}.tar.xz || return;;
+				https://www.python.org/ftp/python/\${${_p:-Python}_ver}/Python-\${${_p:-Python}_ver}.tar.xz || return;;
 		rustc)
 			wget -O ${rustc_org_src_dir}.tar.gz \
 				https://static.rust-lang.org/dist/${rustc_name}.tar.gz || return;;
@@ -945,10 +946,10 @@ fetch()
 				http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return;;
 		tcl|tk)
 			eval wget -O \${${_p}_org_src_dir}.tar.gz \
-				http://prdownloads.sourceforge.net/tcl/\${${_p}_name}-src.tar.gz || return;;
+				http://prdownloads.sourceforge.net/tcl/\${${_p:-tcl}_name}-src.tar.gz || return;;
 		libatomic_ops|gc)
 			eval wget -O \${${_p}_org_src_dir}.tar.gz \
-				https://www.hboehm.info/gc/gc_source/\${${_p}_name}.tar.gz || return;;
+				https://www.hboehm.info/gc/gc_source/\${${_p:-libatomic_ops}_name}.tar.gz || return;;
 		lua)
 			wget -O ${lua_org_src_dir}.tar.gz \
 				http://www.lua.org/ftp/${lua_name}.tar.gz || return;;
@@ -976,7 +977,7 @@ fetch()
 				https://libav.org/releases/${libav_name}.tar.xz || return;;
 		opencv|opencv_contrib)
 			eval wget -O \${${_p}_org_src_dir}.tar.gz \
-				https://github.com/opencv/${_p}/archive/\${${_p}_ver}.tar.gz || return;;
+				https://github.com/opencv/${_p:-opencv}/archive/\${${_p:-opencv}_ver}.tar.gz || return;;
 		googletest)
 			wget -O ${googletest_org_src_dir}.tar.gz \
 				https://github.com/google/googletest/archive/release-${googletest_ver}.tar.gz || return;;
@@ -988,10 +989,10 @@ fetch()
 				https://github.com/stedolan/jq/releases/download/${jq_name}/${jq_name}.tar.gz || return;;
 		libpcap|tcpdump)
 			eval wget -O \${${_p}_org_src_dir}.tar.gz \
-				http://www.tcpdump.org/release/\${${_p}_name}.tar.gz || return;;
+				http://www.tcpdump.org/release/\${${_p:-libpcap}_name}.tar.gz || return;;
 		npth|libgpg-error|libgcrypt|libksba|libassuan|gnupg)
 			eval wget -O \${${_p}_org_src_dir}.tar.bz2 \
-				https://www.gnupg.org/ftp/gcrypt/${p}/\${${_p}_name}.tar.bz2 || return;;
+				https://www.gnupg.org/ftp/gcrypt/${p:-gnupg}/\${${_p:-gnupg}_name}.tar.bz2 || return;;
 		protobuf)
 			wget -O ${protobuf_org_src_dir}.tar.gz \
 				https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_ver}/protobuf-all-${protobuf_ver}.tar.gz || return;;
@@ -1003,16 +1004,16 @@ fetch()
 				https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
 		xextproto|fixesproto|damageproto|presentproto|inputproto|kbproto|xproto|glproto|dri2proto|dri3proto)
 			eval wget -O \${${_p}_org_src_dir}.tar.bz2 \
-				ftp://ftp.freedesktop.org/pub/individual/proto/\${${_p}_name}.tar.bz2 || return;;
+				ftp://ftp.freedesktop.org/pub/individual/proto/\${${_p:-xproto}_name}.tar.bz2 || return;;
 		libXext|libXfixes|libXdamage|xtrans|libX11|libxshmfence|libpciaccess|libXpm|libXt)
 			eval wget -O \${${_p}_org_src_dir}.tar.bz2 \
-				https://www.x.org/releases/individual/lib/\${${_p}_name}.tar.bz2 || return;;
+				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.bz2 || return;;
 		libdrm)
 			wget -O ${libdrm_org_src_dir}.tar.bz2 \
 				https://dri.freedesktop.org/libdrm/${libdrm_name}.tar.bz2 || return;;
 		xcb-proto|libxcb)
 			eval wget -O \${${_p}_org_src_dir}.tar.bz2 \
-				https://www.x.org/releases/individual/xcb/\${${_p}_name}.tar.bz2 || return;;
+				https://www.x.org/releases/individual/xcb/\${${_p:-xcb_proto}_name}.tar.bz2 || return;;
 		libepoxy)
 			wget -O ${libepoxy_org_src_dir}.tar.bz2 \
 				https://github.com/anholt/libepoxy/releases/download/v${libepoxy_ver}/${libepoxy_name}.tar.bz2 || return;;
@@ -1021,16 +1022,16 @@ fetch()
 				https://mesa.freedesktop.org/archive/${mesa_name}.tar.xz || return;;
 		cairo)
 			eval wget -O \${${_p}_org_src_dir}.tar.xz \
-				https://www.cairographics.org/releases/\${${_p}_name}.tar.xz || return;;
+				https://www.cairographics.org/releases/\${${_p:-cairo}_name}.tar.xz || return;;
 		pixman)
 			eval wget -O \${${_p}_org_src_dir}.tar.gz \
-				https://www.cairographics.org/releases/\${${_p}_name}.tar.gz || return;;
+				https://www.cairographics.org/releases/\${${_p:-pixman}_name}.tar.gz || return;;
 		glib|pango|gdk-pixbuf|atk|gobject-introspection)
 			eval wget -O \${${_p}_org_src_dir}.tar.xz \
-				http://ftp.gnome.org/pub/gnome/sources/${p}/\`echo \${${_p}_ver} \| cut -d. -f-2\`/\${${_p}_name}.tar.xz || return;;
+				http://ftp.gnome.org/pub/gnome/sources/${p:-glib}/\`echo \${${_p:-glib}_ver} \| cut -d. -f-2\`/\${${_p:-glib}_name}.tar.xz || return;;
 		gtk)
 			eval wget -O \${${_p}_org_src_dir}.tar.xz \
-				http://ftp.gnome.org/pub/gnome/sources/gtk+/\`echo \${${_p}_ver} \| cut -d. -f-2\`/\${${_p}_name}.tar.xz || return;;
+				http://ftp.gnome.org/pub/gnome/sources/gtk+/\`echo \${${_p:-gtk}_ver} \| cut -d. -f-2\`/\${${_p:-gtk}_name}.tar.xz || return;;
 		webkitgtk)
 			wget -O ${webkitgtk_org_src_dir}.tar.xz \
 				https://webkitgtk.org/releases/${webkitgtk_name}.tar.xz || return;;
@@ -1533,6 +1534,7 @@ func_place_holder()
 			&& export LD_LIBRARY_PATH=${p}`echo ${LD_LIBRARY_PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//;s/^./:&/"` \
 			|| export LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 	done
+	unset p
 	echo ${MANPATH} | tr : '\n' | grep -qe ^${prefix}/share/man\$ \
 		&& export MANPATH=${prefix}/share/man:`echo ${MANPATH} | sed -e 's%\(^\|:\)'${prefix}'/share/man\($\|:\)%\1\2%g;s/::/:/g;s/^://'` \
 		|| export MANPATH=${prefix}/share/man:${MANPATH}
