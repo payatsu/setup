@@ -640,9 +640,11 @@ fetch()
 			eval [ "\${${p}_ver}" = git ] && {
 				case ${p} in
 				binutils|gdb)
-					eval git clone --depth 1 git://sourceware.org/git/binutils-gdb.git \${${_p}_org_src_dir} || return;;
+					eval git clone --depth 1 \
+						git://sourceware.org/git/binutils-gdb.git \${${_p}_org_src_dir} || return;;
 				*)
-					eval git clone --depth 1 https://git.savannah.gnu.org/git/${p}.git \${${_p}_org_src_dir} || return;;
+					eval git clone --depth 1 \
+						https://git.savannah.gnu.org/git/${p}.git \${${_p}_org_src_dir} || return;;
 				esac
 			} || for compress_format in xz bz2 gz lz; do
 				eval wget -O \${${_p}_org_src_dir}.tar.${compress_format} \
@@ -727,7 +729,8 @@ fetch()
 				http://isl.gforge.inria.fr/${isl_name}.tar.xz || return;;
 		gcc)
 			[ "${gcc_ver}" = git ] && {
-				git clone -b master --depth 1 git://gcc.gnu.org/git/gcc.git ${gcc_org_src_dir} || return
+				git clone -b master --depth 1 \
+					git://gcc.gnu.org/git/gcc.git ${gcc_org_src_dir} || return
 			} || for compress_format in xz bz2 gz; do
 				wget -O ${gcc_org_src_dir}.tar.${compress_format} \
 					https://ftp.gnu.org/gnu/gcc/${gcc_name}/${gcc_name}.tar.${compress_format} \
@@ -777,7 +780,8 @@ fetch()
 			wget -O ${vimdoc_ja_org_src_dir}.tar.gz \
 				https://github.com/vim-jp/vimdoc-ja/archive/master.tar.gz || return;;
 		ctags)
-			git clone --depth 1 http://github.com/universal-ctags/ctags.git ${ctags_org_src_dir} || return;;
+			git clone --depth 1 \
+				http://github.com/universal-ctags/ctags.git ${ctags_org_src_dir} || return;;
 		pcre|pcre2)
 			eval wget -O \${${_p}_org_src_dir}.tar.bz2 \
 				https://ftp.pcre.org/pub/pcre/\${${_p}_name}.tar.bz2 || return;;
@@ -902,17 +906,22 @@ fetch()
 		llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
 			eval [ "\${${_p}_ver}" = git ] && {
 				mkdir -pv ${llvm_src_base} || return
-				[ -d ${llvm_src_base}/llvm-project ] || git -C ${llvm_src_base} clone --depth 1 https://github.com/llvm/llvm-project || return
+				[ -d ${llvm_src_base}/llvm-project.git ] || git -C ${llvm_src_base} clone --depth 1 \
+					https://github.com/llvm/llvm-project llvm-project.git || return
 			} || eval wget -O \${${_p}_org_src_dir}.tar.xz \
 				https://github.com/llvm/llvm-project/releases/download/llvmorg-\${${_p}_ver}/\${${_p}_name}.tar.xz || return;;
 		cling)
-			git clone --depth 1 http://root.cern.ch/git/llvm.git ${cling_org_src_dir} -b cling-patches || return
+			git clone --depth 1 \
+				http://root.cern.ch/git/llvm.git ${cling_org_src_dir} -b cling-patches || return
 			[ -d ${cling_org_src_dir}/tools/clang ] ||
-				git clone --depth 1 http://root.cern.ch/git/clang.git ${cling_org_src_dir}/tools/clang -b cling-patches || return
+				git clone --depth 1 \
+					http://root.cern.ch/git/clang.git ${cling_org_src_dir}/tools/clang -b cling-patches || return
 			[ -d ${cling_org_src_dir}/tools/cling ] ||
-				git clone --depth 1 http://root.cern.ch/git/cling.git ${cling_org_src_dir}/tools/cling || return;;
+				git clone --depth 1 \
+					http://root.cern.ch/git/cling.git ${cling_org_src_dir}/tools/cling || return;;
 		ccls)
-			git clone --depth 1 --recursive https://github.com/MaskRay/ccls ${ccls_org_src_dir} || return;;
+			git clone --depth 1 --recursive \
+				https://github.com/MaskRay/ccls ${ccls_org_src_dir} || return;;
 		boost)
 			wget --trust-server-names -O ${boost_org_src_dir}.tar.bz2 \
 				https://dl.bintray.com/boostorg/release/`echo ${boost_ver} | tr _ .`/source/${boost_name}.tar.bz2 || return;;
@@ -985,9 +994,10 @@ fetch()
 				https://www.gnupg.org/ftp/gcrypt/${p}/\${${_p}_name}.tar.bz2 || return;;
 		protobuf)
 			wget -O ${protobuf_org_src_dir}.tar.gz \
-				https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_ver}/protobuf-all-${protobuf_ver}.tar.gz;;
+				https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_ver}/protobuf-all-${protobuf_ver}.tar.gz || return;;
 		libbacktrace)
-			git clone --depth 1 https://github.com/ianlancetaylor/libbacktrace ${libbacktrace_org_src_dir} || return;;
+			git clone --depth 1 \
+				https://github.com/ianlancetaylor/libbacktrace ${libbacktrace_org_src_dir} || return;;
 		pkg-config)
 			wget -O ${pkg_config_org_src_dir}.tar.gz \
 				https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
@@ -1148,7 +1158,7 @@ clean()
 	[ ! -d ${src} ] && return
 	find ${src} -mindepth 2 -maxdepth 2 \
 		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.tar.lz' ! -name '*.zip' \
-		! -name '*.jar' ! -name '*.pdf' ! -name '*-git' -exec rm -fvr {} +
+		! -name '*.jar' ! -name '*.pdf' ! -name '*[-.]git' -exec rm -fvr {} +
 	find ${src} -mindepth 2 -maxdepth 2 \
 		-name '*-git' | xargs -I \{\} find \{\} -type d -name .git -execdir git clean -dfx \; -execdir git checkout -- . \;
 	return 0
@@ -1237,7 +1247,7 @@ set_src_directory()
 	llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
 		eval [ "\${${_1}_ver}" = git ] && {
 			eval ${_1}_name=${1}
-			eval ${_1}_org_src_dir=${llvm_src_base}/llvm-project/\${${_1}_name}
+			eval ${_1}_org_src_dir=${llvm_src_base}/llvm-project.git/\${${_1}_name}
 			eval ${_1}_bld_dir=\${${_1}_src_base}/\${${_1}_name}-bld
 		} || {
 			eval ${_1}_name=${1}-\${${_1}_ver}.src
@@ -1272,6 +1282,7 @@ set_src_directory()
 	*)
 		eval ${_1}_name=${1}-\${${_1}_ver};;
 	esac
+	eval [ "\${${_1}_ver}" = git ] && eval ${_1}_name=${1}.git
 
 	eval ${_1}_org_src_dir=\${${_1}_src_base}/\${${_1}_name}
 
@@ -1440,7 +1451,8 @@ list_repositories()
 	cat <<EOF
 [All repositories]
 EOF
-	eval echo `grep -e '^[[:space:]]\+\(https\?\|ftp\)://.\+/' ${0} | sed -e 's/ || return$//;s/^[[:space:]]\+//'` | tr ' ' '\n'
+	eval eval echo `grep -e '^[[:space:]]\+\(https\?\|git\|ftp\)://.\+/' ${0} | sed -e 's/ ||\( return\(\;\;\)\?\)\?$//;s/ \\\\$//;s/^[[:space:]]\+//'` |
+		tr ' ' '\n' | grep -oe '^\(https\?\|git\|ftp\)://[[:graph:]]\+'
 }
 
 write_if_not_match()
@@ -3297,10 +3309,10 @@ install_native_ctags()
 
 install_native_dein()
 {
+	mkdir -pv ${src}/vim || return
 	[ -f ${src}/vim/installer.sh ] ||
-		(mkdir -pv ${src}/vim || return
 		wget --no-check-certificate -O ${src}/vim/installer.sh \
-			https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh) || return
+			https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh || return
 	[ `whoami` != root ] || ! echo Error. run as root is not recommended. >&2 || return
 	sh ${src}/vim/installer.sh ${HOME}/.vim || return
 }
