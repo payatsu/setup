@@ -82,7 +82,7 @@
 : ${vim_ver:=8.2.0002}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
-: ${grep_ver:=3.3}
+: ${grep_ver:=3.4}
 : ${global_ver:=6.6.3}
 : ${pcre_ver:=8.43}
 : ${pcre2_ver:=10.32}
