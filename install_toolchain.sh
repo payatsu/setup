@@ -1443,16 +1443,25 @@ EOF
 	eval echo `grep -e '^[[:space:]]\+\(https\?\|ftp\)://.\+/' ${0} | sed -e 's/ || return$//;s/^[[:space:]]\+//'` | tr ' ' '\n'
 }
 
+write_if_not_match()
+{
+	[ ! -d ${2} ] && return
+	dir=`find ${2} -mindepth 1 -maxdepth 1 -type d -name '*.?.?' | sort -rV | head -n 1` || return
+	[ -z "${dir}" ] && return
+	grep -qe ^${dir}\$ ${1} || echo ${dir} > ${1} || return
+}
+
 update_library_search_path()
 {
 	[ `whoami` != root ] && return
 	ld_so_conf=/etc/ld.so.conf.d/`basename ${prefix}`.conf
+	ld_so_conf_gcc=/etc/ld.so.conf.d/`basename ${prefix}`.gcc.conf
 	[ -f ${ld_so_conf} ] || cat <<EOF > ${ld_so_conf} || return
 ${prefix}/lib
 ${prefix}/lib64
 ${prefix}/lib32
 EOF
-	grep -qe ^${prefix}/lib/gcc/${host}/${gcc_ver}\$ ${ld_so_conf} || echo ${prefix}/lib/gcc/${host}/${gcc_ver} >> ${ld_so_conf} || return
+	write_if_not_match ${ld_so_conf_gcc} ${prefix}/lib/gcc/${host} || return
 	ldconfig || return
 }
 
@@ -1506,7 +1515,7 @@ func_place_holder()
 		&& export GOPATH=${prefix}/.go`echo ${GOPATH} | sed -e 's%\(^\|:\)'${prefix}'/.go\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//;s/^./:&/'` \
 		|| export GOPATH=${prefix}/.go${GOPATH:+:${GOPATH}}
 	[ ${prefix} = /usr/local -a "${force_set}" != yes ] && return
-	for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${host} ] && find ${prefix}/lib/gcc/${host} -mindepth 1 -maxdepth 1 -name '*.?.?' | sort -rV | head -n 1`; do
+	for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${host} ] && find ${prefix}/lib/gcc/${host} -mindepth 1 -maxdepth 1 -type d -name '*.?.?' | sort -rV | head -n 1`; do
 		[ -d ${p} ] || continue
 		echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ \
 			&& export LD_LIBRARY_PATH=${p}`echo ${LD_LIBRARY_PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//;s/^./:&/"` \
@@ -2331,13 +2340,14 @@ install_native_gcc()
 	fetch gcc || return
 	unpack ${gcc_org_src_dir} || return
 	mkdir -pv ${gcc_bld_dir_ntv} || return
+	gcc_base_ver=`cat ${gcc_org_src_dir}/gcc/BASE-VER` || return
 	[ -f ${gcc_bld_dir_ntv}/Makefile ] ||
 		(cd ${gcc_bld_dir_ntv}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
 			--with-isl=`get_prefix version.h isl` --with-system-zlib \
 			--enable-languages=${languages} --disable-multilib --enable-linker-build-id --enable-libstdcxx-debug \
-			--program-suffix=-${gcc_ver} --enable-version-specific-runtime-libs \
+			--program-suffix=-${gcc_base_ver} --enable-version-specific-runtime-libs \
 		) || return
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} CPPFLAGS="${CPPFLAGS} -DLIBICONV_PLUG" CPPFLAGS_FOR_TARGET="${CPPFLAGS} -DLIBICONV_PLUG" || return
 	[ "${enable_check}" != yes ] ||
@@ -2349,12 +2359,12 @@ install_native_gcc()
 	ln -fsv gcc ${DESTDIR}${prefix}/bin/cc || return
 	[ ! -f ${DESTDIR}${prefix}/bin/${build}-gcc-tmp ] || rm -v ${DESTDIR}${prefix}/bin/${build}-gcc-tmp || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
-		[ -f ${DESTDIR}${prefix}/bin/${b}-${gcc_ver} ] || continue
-		ln -fsv ${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${b} || return
+		[ -f ${DESTDIR}${prefix}/bin/${b}-${gcc_base_ver} ] || continue
+		ln -fsv ${b}-${gcc_base_ver} ${DESTDIR}${prefix}/bin/${b} || return
 		ln -fsv ${b} ${DESTDIR}${prefix}/bin/${host}-${b} || return
-		ln -fsv ${b}-${gcc_ver}.1 ${DESTDIR}${prefix}/share/man/man1/${b}.1 || return
+		ln -fsv ${b}-${gcc_base_ver}.1 ${DESTDIR}${prefix}/share/man/man1/${b}.1 || return
 	done
-	[ -f ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_ver}/libgcc_s.so ] || ln -fsv ../lib64/libgcc_s.so ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_ver} || return # XXX work around for --enable-version-specific-runtime-libs
+	[ -f ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_base_ver}/libgcc_s.so ] || ln -fsv ../lib64/libgcc_s.so ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_base_ver} || return # XXX work around for --enable-version-specific-runtime-libs
 }
 
 install_native_readline()
@@ -4455,12 +4465,13 @@ install_cross_gcc_without_headers()
 	fetch gcc || return
 	unpack ${gcc_org_src_dir} || return
 	mkdir -pv ${gcc_bld_dir_crs_1st} || return
+	gcc_base_ver=`cat ${gcc_org_src_dir}/gcc/BASE-VER` || return
 	[ -f ${gcc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_1st}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
 			--with-isl=`get_prefix version.h isl` --with-system-zlib --enable-languages=c,c++ --disable-multilib \
-			--program-prefix=${target}- --program-suffix=-${gcc_ver} --enable-version-specific-runtime-libs \
+			--program-prefix=${target}- --program-suffix=-${gcc_base_ver} --enable-version-specific-runtime-libs \
 			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` --without-headers \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
@@ -4470,7 +4481,7 @@ install_cross_gcc_without_headers()
 		make -C ${gcc_bld_dir_crs_1st} -j ${jobs} -k check-gcc || return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} install-gcc || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gcov gcov-dump gcov-tool; do
-		[ ! -f ${DESTDIR}${prefix}/bin/${target}-${b}-${gcc_ver} ] || ln -fsv ${target}-${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${target}-${b} || return
+		[ ! -f ${DESTDIR}${prefix}/bin/${target}-${b}-${gcc_base_ver} ] || ln -fsv ${target}-${b}-${gcc_base_ver} ${DESTDIR}${prefix}/bin/${target}-${b} || return
 	done
 	update_path || return
 	echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && return
@@ -4610,13 +4621,14 @@ install_cross_functional_gcc()
 	fetch gcc || return
 	unpack ${gcc_org_src_dir} || return
 	mkdir -pv ${gcc_bld_dir_crs_2nd} || return
+	gcc_base_ver=`cat ${gcc_org_src_dir}/gcc/BASE-VER` || return
 	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_2nd}
 		${gcc_org_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
 			--with-isl=`get_prefix version.h isl` --with-system-zlib --enable-languages=${languages} --disable-multilib \
 			--enable-linker-build-id --enable-libstdcxx-debug \
-			--program-prefix=${target}- --program-suffix=-${gcc_ver} --enable-version-specific-runtime-libs \
+			--program-prefix=${target}- --program-suffix=-${gcc_base_ver} --enable-version-specific-runtime-libs \
 			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` --with-sysroot=${sysroot}) || return
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} LIBS=-lgcc_s || return
 	[ "${enable_check}" != yes ] ||
@@ -4624,12 +4636,12 @@ install_cross_functional_gcc()
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k install${strip:+-${strip}} ${strip:+STRIP=${target}-strip} || true # [XXX] install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
 	update_path || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool; do
-		[ -f ${DESTDIR}${prefix}/bin/${target}-${b}-${gcc_ver} ] || continue
-		ln -fsv ${target}-${b}-${gcc_ver} ${DESTDIR}${prefix}/bin/${target}-${b} || return
-		ln -fsv ${target}-${b}-${gcc_ver}.1 ${DESTDIR}${prefix}/share/man/man1/${target}-${b}.1 || return
+		[ -f ${DESTDIR}${prefix}/bin/${target}-${b}-${gcc_base_ver} ] || continue
+		ln -fsv ${target}-${b}-${gcc_base_ver} ${DESTDIR}${prefix}/bin/${target}-${b} || return
+		ln -fsv ${target}-${b}-${gcc_base_ver}.1 ${DESTDIR}${prefix}/share/man/man1/${target}-${b}.1 || return
 	done
 	! echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' ||
-		ln -fsv ../lib/libgcc_s.a ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_ver} || return # XXX work around for --enable-version-specific-runtime-libs
+		ln -fsv ../lib/libgcc_s.a ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_base_ver} || return # XXX work around for --enable-version-specific-runtime-libs
 }
 
 install_cross_gcc()
