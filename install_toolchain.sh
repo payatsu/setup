@@ -123,10 +123,10 @@
 : ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=4.9}
 : ${sqlite_autoconf_ver:=3260000}
-: ${apr_ver:=1.6.5}
+: ${apr_ver:=1.7.0}
 : ${apr_util_ver:=1.6.1}
-: ${utf8proc_ver:=2.2.0}
-: ${subversion_ver:=1.11.0}
+: ${utf8proc_ver:=2.4.0}
+: ${subversion_ver:=1.13.0}
 : ${ninja_ver:=1.9.0}
 : ${meson_ver:=0.52.1}
 : ${cmake_ver:=3.16.1}
