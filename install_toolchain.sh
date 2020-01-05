@@ -2369,7 +2369,6 @@ install_native_gcc()
 	make -C ${gcc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
 	[ -f ${gcc_bld_dir_ntv}/gcc/xg++ -a "${force_install}" = yes ] &&
 		which doxygen > /dev/null && make -C ${gcc_bld_dir_ntv}/${build}/libstdc++-v3 -j ${jobs} install-man
-	update_path || return
 	ln -fsv gcc ${DESTDIR}${prefix}/bin/cc || return
 	[ ! -f ${DESTDIR}${prefix}/bin/${build}-gcc-tmp ] || rm -v ${DESTDIR}${prefix}/bin/${build}-gcc-tmp || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
@@ -2379,6 +2378,7 @@ install_native_gcc()
 		ln -fsv ${b}-${gcc_base_ver}.1 ${DESTDIR}${prefix}/share/man/man1/${b}.1 || return
 	done
 	[ -f ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_base_ver}/libgcc_s.so ] || ln -fsv ../lib64/libgcc_s.so ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_base_ver} || return # XXX work around for --enable-version-specific-runtime-libs
+	update_path || return
 }
 
 install_native_readline()
@@ -4648,7 +4648,6 @@ install_cross_functional_gcc()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k install${strip:+-${strip}} ${strip:+STRIP=${target}-strip} || true # [XXX] install-stripを強行する(現状gotoolsだけ失敗する)ため、-kと|| trueで暫定対応(WA)
-	update_path || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool; do
 		[ -f ${DESTDIR}${prefix}/bin/${target}-${b}-${gcc_base_ver} ] || continue
 		ln -fsv ${target}-${b}-${gcc_base_ver} ${DESTDIR}${prefix}/bin/${target}-${b} || return
@@ -4656,6 +4655,7 @@ install_cross_functional_gcc()
 	done
 	! echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' ||
 		ln -fsv ../lib/libgcc_s.a ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_base_ver} || return # XXX work around for --enable-version-specific-runtime-libs
+	update_path || return
 }
 
 install_cross_gcc()

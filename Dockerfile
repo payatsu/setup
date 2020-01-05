@@ -32,7 +32,6 @@ asciidoc xmlto \
 libxt-dev \
 libxaw7-dev libxpm-dev
 COPY install_toolchain.sh ${prefix}/install_toolchain.sh
-COPY Dockerfile ${prefix}/Dockerfile
 RUN \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} "fetch ${pkgs} clang-tools-extra vimdoc-ja mingw-w64"
 RUN \
@@ -43,6 +42,7 @@ for p in make emacs ctags; do \
 	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} ${p}_ver=git force_install=yes install_native_${p} clean || exit; \
 done && \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_cross_binutils install_cross_gcc clean convert_archives
+COPY Dockerfile ${prefix}/Dockerfile
 
 FROM ${baseimage} AS dev
 ARG prefix
@@ -52,6 +52,7 @@ ARG njobs
 
 COPY --from=builder ${prefix} ${prefix}
 COPY --from=builder /etc/ld.so.conf.d/${prefixbase}.conf /etc/ld.so.conf.d/${prefixbase}.conf
+COPY --from=builder /etc/ld.so.conf.d/${prefixbase}.gcc.conf /etc/ld.so.conf.d/${prefixbase}.gcc.conf
 COPY dotfiles /etc/skel
 RUN \
 ldconfig && \
