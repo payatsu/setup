@@ -2061,7 +2061,7 @@ install_native_make()
 		(cd ${make_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			--with-guile) || return
-	make -C ${make_org_src_dir} -j ${jobs} || return
+	make -C ${make_org_src_dir} -j ${jobs} MAKE_MAINTAINER_MODE= || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${make_org_src_dir} -j ${jobs} -k check || return
 	make -C ${make_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
