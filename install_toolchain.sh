@@ -41,6 +41,7 @@
 : ${libtool_ver:=2.4.6}
 : ${sed_ver:=4.7}
 : ${gawk_ver:=5.0.1}
+: ${gnulib_ver:=git}
 : ${make_ver:=4.2.1}
 : ${binutils_ver:=2.33.1}
 : ${elfutils_ver:=0.177}
@@ -348,6 +349,8 @@ help()
 		Specify the version of GNU sed you want, currently '${sed_ver}'.
 	gawk_ver
 		Specify the version of GNU awk you want, currently '${gawk_ver}'.
+	gnulib_ver
+		Specify the version of Gnulib you want, currently '${gnulib_ver}'.
 	make_ver
 		Specify the version of GNU Make you want, currently '${make_ver}'.
 	binutils_ver
@@ -635,7 +638,7 @@ fetch()
 		eval check_archive \${${_p}_org_src_dir} || eval [ -d \${${_p}_org_src_dir} -o -h \${${_p}_org_src_dir} ] && continue
 		case ${p} in
 		tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|autoconf-archive|automake|libtool|sed|gawk|\
-		make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
+		gnulib|make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
 		diffutils|patch|findutils|less|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
 			eval [ "\${${p}_ver}" = git ] && {
 				case ${p} in
@@ -2056,7 +2059,8 @@ install_native_make()
 	fetch make || return
 	unpack ${make_org_src_dir} || return
 	[ -f ${make_org_src_dir}/configure ] ||
-		(cd ${make_org_src_dir}; ./bootstrap) || return
+		(fetch gnulib || return
+		cd ${make_org_src_dir}; ./bootstrap --gnulib-srcdir=${gnulib_org_src_dir}) || return
 	[ -f ${make_org_src_dir}/Makefile ] ||
 		(cd ${make_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --host=${host} \
