@@ -116,12 +116,12 @@
 : ${expat_ver:=2.2.6}
 : ${asciidoc_ver:=8.6.9}
 : ${libxml2_ver:=2.9.9}
-: ${libxslt_ver:=1.1.33}
+: ${libxslt_ver:=1.1.34}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.20.1}
 : ${git_ver:=2.24.1}
 : ${git_manpages_ver:=${git_ver}}
-: ${mercurial_ver:=4.9}
+: ${mercurial_ver:=5.0.2}
 : ${sqlite_autoconf_ver:=3260000}
 : ${apr_ver:=1.7.0}
 : ${apr_util_ver:=1.6.1}
