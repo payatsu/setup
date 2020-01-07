@@ -1246,6 +1246,7 @@ set_src_directory()
 
 	case ${1} in
 	llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
+		eval ${_1}_ver=${llvm_ver}
 		eval [ "\${${_1}_ver}" = git ] && {
 			eval ${_1}_name=${1}
 			eval ${_1}_org_src_dir=${llvm_src_base}/llvm-project.git/\${${_1}_name}
