@@ -84,7 +84,7 @@
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.4}
-: ${global_ver:=6.6.3}
+: ${global_ver:=6.6.4}
 : ${pcre_ver:=8.43}
 : ${pcre2_ver:=10.32}
 : ${the_silver_searcher_ver:=2.2.0}
