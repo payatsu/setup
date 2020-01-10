@@ -113,7 +113,7 @@
 : ${openssl_ver:=1.1.1d}
 : ${openssh_ver:=8.1p1}
 : ${nghttp2_ver:=1.39.2}
-: ${curl_ver:=7.65.3}
+: ${curl_ver:=7.68.0}
 : ${expat_ver:=2.2.6}
 : ${asciidoc_ver:=8.6.9}
 : ${libxml2_ver:=2.9.9}
