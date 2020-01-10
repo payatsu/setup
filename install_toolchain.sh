@@ -153,7 +153,7 @@
 : ${rustc_ver:=1.40.0}
 : ${rustup_ver:=1.21.1}
 : ${ruby_ver:=2.7.0}
-: ${go_ver:=1.13.5}
+: ${go_ver:=1.13.6}
 : ${perl_ver:=5.30.0}
 : ${tcl_ver:=8.6.9}
 : ${tk_ver:=8.6.9}
