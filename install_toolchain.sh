@@ -83,6 +83,7 @@
 : ${vim_ver:=8.2.0002}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
+: ${neovim_ver:=0.4.3}
 : ${grep_ver:=3.4}
 : ${global_ver:=6.6.4}
 : ${pcre_ver:=8.43}
@@ -431,6 +432,8 @@ help()
 		Specify the version of Vim you want, currently '${vim_ver}'.
 	ctags_ver
 		Specify the version of ctags you want, currently '${ctags_ver}'.
+	neovim_ver
+		Specify the version of Neovim you want, currently '${neovim_ver}'.
 	grep_ver
 		Specify the version of GNU Grep you want, currently '${grep_ver}'.
 	global_ver
@@ -785,6 +788,9 @@ fetch()
 		ctags)
 			git clone --depth 1 \
 				http://github.com/universal-ctags/ctags.git ${ctags_org_src_dir} || return;;
+		neovim)
+			wget -O ${neovim_org_src_dir}.tar.gz \
+				https://github.com/neovim/neovim/archive/v${neovim_ver}.tar.gz || return;;
 		pcre|pcre2)
 			eval wget -O \${${_p}_org_src_dir}.tar.bz2 \
 				https://ftp.pcre.org/pub/pcre/\${${_p:-pcre2}_name}.tar.bz2 || return;;
@@ -3312,6 +3318,19 @@ install_native_ctags()
 			LDFLAGS="${LDFLAGS} -liconv") || return
 	make -C ${ctags_org_src_dir} -j ${jobs} || return
 	make -C ${ctags_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_neovim()
+{
+	[ -x ${prefix}/bin/nvim -a "${force_install}" != yes ] && return
+	fetch neovim || return
+	unpack ${neovim_org_src_dir} || return
+	make -C ${neovim_org_src_dir} -j ${jobs} \
+		CMAKE_BUILD_TYPE=${cmake_build_type} \
+		CMAKE_INSTALL_PREFIX=${prefix} || return
+	make -C ${neovim_org_src_dir} -j ${jobs} install || return
+	[ -z "${strip}" ] && return
+	strip -v ${prefix}/bin/nvim || return
 }
 
 install_native_dein()
