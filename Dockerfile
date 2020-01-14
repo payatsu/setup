@@ -7,7 +7,7 @@ FROM ${baseimage} AS builder
 ARG prefix
 ARG njobs
 ARG pkgs="zlib binutils m4 gmp mpfr mpc isl gcc \
-bzip2 elfutils bison flex perl autoconf autoconf-archive automake libtool ncurses readline texinfo \
+bzip2 elfutils bison flex perl autoconf autoconf-archive automake libtool ncurses readline less texinfo \
 gawk cpio xz zip unzip lzip lunzip lzo lzop lz4 zstd ed bc patch ccache pcre swig libffi openssl \
 Python2 Python libxml2 libiconv ninja meson glib pkg-config nghttp2 curl cmake Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx clang libedit lldb \
@@ -61,7 +61,7 @@ echo Asia/Tokyo > /etc/timezone && \
 DEBIAN_FRONTEND=noninteractive \
 apt-get install -y --no-install-recommends tzdata locales && \
 apt-get install -y --no-install-recommends \
-libc6-dev wget less file man-db \
+libc6-dev wget file man-db \
 ca-certificates \
 libpopt0 \
 libxt6 \
