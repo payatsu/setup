@@ -99,6 +99,7 @@
 : ${findutils_ver:=4.7.0}
 : ${procps_ver:=3.3.15}
 : ${less_ver:=530}
+: ${file_ver:=5.38}
 : ${source_highlight_ver:=3.1.9}
 : ${screen_ver:=4.7.0}
 : ${libevent_ver:=2.1.11}
@@ -464,6 +465,8 @@ help()
 		Specify the version of procps you want, currently '${procps_ver}'.
 	less_ver
 		Specify the version of GNU less you want, currently '${less_ver}'.
+	file_ver
+		Specify the version of File you want, currently '${file_ver}'.
 	source_highlight_ver
 		Specify the version of src-highlite you want, currently '${source_highlight_ver}'.
 	screen_ver
@@ -818,12 +821,15 @@ fetch()
 		procps)
 			wget -O ${procps_org_src_dir}.tar.bz2 \
 				https://gitlab.com/procps-ng/procps/-/archive/v${procps_ver}/procps-v${procps_ver}.tar.bz2 || return;;
-		libevent)
-			wget -O ${libevent_org_src_dir}.tar.gz \
-				https://github.com/libevent/libevent/releases/download/release-${libevent_ver}-stable/${libevent_name}-stable.tar.gz || return;;
+		file)
+			wget -O ${file_org_src_dir}.tar.gz \
+				http://ftp.astron.com/pub/file/${file_name}.tar.gz || return;;
 		source-highlight)
 			wget -O ${source_highlight_org_src_dir}.tar.gz \
 				https://ftp.gnu.org/gnu/src-highlite/${source_highlight_name}.tar.gz || return;;
+		libevent)
+			wget -O ${libevent_org_src_dir}.tar.gz \
+				https://github.com/libevent/libevent/releases/download/release-${libevent_ver}-stable/${libevent_name}-stable.tar.gz || return;;
 		tmux)
 			wget -O ${tmux_org_src_dir}.tar.gz \
 				https://github.com/tmux/tmux/releases/download/${tmux_ver}/${tmux_name}.tar.gz || return;;
@@ -3594,6 +3600,21 @@ install_native_less()
 	[ "${enable_check}" != yes ] ||
 		make -C ${less_org_src_dir} -j ${jobs} -k check || return
 	make -C ${less_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+}
+
+install_native_file()
+{
+	[ -x ${prefix}/bin/file -a "${force_install}" != yes ] && return
+	fetch file || return
+	unpack ${file_org_src_dir} || return
+	[ -f ${file_org_src_dir}/Makefile ] ||
+		(cd ${file_org_src_dir}
+		./configure --prefix=${prefix} --host=${host} --enable-static --disable-silent-rules) || return
+	make -C ${file_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${file_org_src_dir} -j ${jobs} check || return
+	make -C ${file_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_source_highlight()
