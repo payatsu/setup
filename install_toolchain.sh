@@ -99,6 +99,7 @@
 : ${findutils_ver:=4.7.0}
 : ${procps_ver:=3.3.15}
 : ${less_ver:=530}
+: ${groff_ver:=1.22.4}
 : ${man_db_ver:=2.9.0}
 : ${file_ver:=5.38}
 : ${source_highlight_ver:=3.1.9}
@@ -466,6 +467,8 @@ help()
 		Specify the version of procps you want, currently '${procps_ver}'.
 	less_ver
 		Specify the version of GNU less you want, currently '${less_ver}'.
+	groff_ver
+		Specify the version of GNU troff you want, currently '${groff_ver}'.
 	man_db_ver
 		Specify the version of man-db you want, currently '${man_db_ver}'.
 	file_ver
@@ -648,7 +651,7 @@ fetch()
 		case ${p} in
 		tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|autoconf-archive|automake|libtool|sed|gawk|\
 		gnulib|make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
-		diffutils|patch|findutils|less|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
+		diffutils|patch|findutils|less|groff|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
 			eval [ "\${${p}_ver}" = git ] && {
 				case ${p} in
 				binutils|gdb)
@@ -3607,6 +3610,20 @@ install_native_less()
 	[ "${enable_check}" != yes ] ||
 		make -C ${less_org_src_dir} -j ${jobs} -k check || return
 	make -C ${less_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+}
+
+install_native_groff()
+{
+	[ -x ${prefix}/bin/groff -a "${force_install}" != yes ] && return
+	fetch groff || return
+	unpack ${groff_org_src_dir} || return
+	[ -f ${groff_org_src_dir}/Makefile ] ||
+		(cd ${groff_org_src_dir}
+		./configure --prefix=${prefix} --host=${host} --disable-rpath) || return
+	make -C ${groff_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${groff_org_src_dir} -j ${jobs} -k check || return
+	make -C ${groff_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 }
 
 install_native_man_db()
