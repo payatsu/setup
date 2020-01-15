@@ -100,6 +100,7 @@
 : ${procps_ver:=3.3.15}
 : ${less_ver:=530}
 : ${groff_ver:=1.22.4}
+: ${libpipeline_ver:=1.5.2}
 : ${man_db_ver:=2.9.0}
 : ${file_ver:=5.38}
 : ${source_highlight_ver:=3.1.9}
@@ -469,6 +470,8 @@ help()
 		Specify the version of GNU less you want, currently '${less_ver}'.
 	groff_ver
 		Specify the version of GNU troff you want, currently '${groff_ver}'.
+	libpipeline_ver
+		Specify the version of libpipeline you want, currently '${libpipeline_ver}'.
 	man_db_ver
 		Specify the version of man-db you want, currently '${man_db_ver}'.
 	file_ver
@@ -827,9 +830,13 @@ fetch()
 		procps)
 			wget -O ${procps_org_src_dir}.tar.bz2 \
 				https://gitlab.com/procps-ng/procps/-/archive/v${procps_ver}/procps-v${procps_ver}.tar.bz2 || return;;
-		man-db)
-			wget -O ${man_db_org_src_dir}.tar.xz \
-				http://download.savannah.nongnu.org/releases/man-db/${man_db_name}.tar.xz || return;;
+		libpipeline|man-db)
+			for compress_format in xz gz; do
+				eval wget -O \${${_p}_org_src_dir}.tar.${compress_format:-xz} \
+					http://download.savannah.nongnu.org/releases/${p:-man-db}/\${${_p}_name}.tar.${compress_format} \
+					&& break \
+					|| eval rm -v \${${_p}_org_src_dir}.tar.${compress_format:-xz}
+			done || return;;
 		file)
 			wget -O ${file_org_src_dir}.tar.gz \
 				http://ftp.astron.com/pub/file/${file_name}.tar.gz || return;;
@@ -3619,17 +3626,33 @@ install_native_groff()
 	unpack ${groff_org_src_dir} || return
 	[ -f ${groff_org_src_dir}/Makefile ] ||
 		(cd ${groff_org_src_dir}
-		./configure --prefix=${prefix} --host=${host} --disable-rpath) || return
+		./configure --prefix=${prefix} --host=${host} --disable-silent-rules --disable-rpath) || return
 	make -C ${groff_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${groff_org_src_dir} -j ${jobs} -k check || return
 	make -C ${groff_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 }
 
+install_native_libpipeline()
+{
+	[ -f ${prefix}/include/pipeline.h -a "${force_install}" != yes ] && return
+	fetch libpipeline || return
+	unpack ${libpipeline_org_src_dir} || return
+	[ -f ${libpipeline_org_src_dir}/Makefile ] ||
+		(cd ${libpipeline_org_src_dir}
+		./configure --prefix=${prefix} --host=${host} --disable-silent-rules --enable-static --disable-rpath) || return
+	make -C ${libpipeline_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libpipeline_org_src_dir} -j ${jobs} -k check || return
+	make -C ${libpipeline_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+	update_path || return
+}
+
 install_native_man_db()
 {
 	[ -x ${prefix}/bin/man -a "${force_install}" != yes ] && return
-# TODO: libpipeline, libgdbm
+	search_header pipeline.h > /dev/null || install_native_libpipeline || return
+# TODO: libgdbm
 	fetch man-db || return
 	unpack ${man_db_org_src_dir} || return
 	[ -f ${man_db_org_src_dir}/Makefile ] ||
