@@ -99,6 +99,7 @@
 : ${findutils_ver:=4.7.0}
 : ${procps_ver:=3.3.15}
 : ${less_ver:=530}
+: ${man_db_ver:=2.9.0}
 : ${file_ver:=5.38}
 : ${source_highlight_ver:=3.1.9}
 : ${screen_ver:=4.7.0}
@@ -465,6 +466,8 @@ help()
 		Specify the version of procps you want, currently '${procps_ver}'.
 	less_ver
 		Specify the version of GNU less you want, currently '${less_ver}'.
+	man_db_ver
+		Specify the version of man-db you want, currently '${man_db_ver}'.
 	file_ver
 		Specify the version of File you want, currently '${file_ver}'.
 	source_highlight_ver
@@ -821,6 +824,9 @@ fetch()
 		procps)
 			wget -O ${procps_org_src_dir}.tar.bz2 \
 				https://gitlab.com/procps-ng/procps/-/archive/v${procps_ver}/procps-v${procps_ver}.tar.bz2 || return;;
+		man-db)
+			wget -O ${man_db_org_src_dir}.tar.xz \
+				http://download.savannah.nongnu.org/releases/man-db/${man_db_name}.tar.xz || return;;
 		file)
 			wget -O ${file_org_src_dir}.tar.gz \
 				http://ftp.astron.com/pub/file/${file_name}.tar.gz || return;;
@@ -1365,6 +1371,7 @@ set_variables()
 			s/u_boot/u-boot/
 			s/mingw_w64/mingw-w64/
 			s/vimdoc_ja/vimdoc-ja/
+			s/man_db/man-db/
 			s/source_highlight/source-highlight/
 			s/util_linux/util-linux/
 			s/git_manpages/git-manpages/
@@ -3600,6 +3607,23 @@ install_native_less()
 	[ "${enable_check}" != yes ] ||
 		make -C ${less_org_src_dir} -j ${jobs} -k check || return
 	make -C ${less_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+}
+
+install_native_man_db()
+{
+	[ -x ${prefix}/bin/man -a "${force_install}" != yes ] && return
+# TODO: libpipeline, libgdbm
+	fetch man-db || return
+	unpack ${man_db_org_src_dir} || return
+	[ -f ${man_db_org_src_dir}/Makefile ] ||
+		(cd ${man_db_org_src_dir}
+		./configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+			--disable-setuid --enable-static --disable-rpath \
+			--without-systemdtmpfilesdir --without-systemdsystemunitdir) || return
+	make -C ${man_db_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${man_db_org_src_dir} -j ${jobs} -k check || return
+	make -C ${man_db_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 }
 
 install_native_file()
