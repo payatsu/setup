@@ -100,6 +100,7 @@
 : ${procps_ver:=3.3.15}
 : ${less_ver:=530}
 : ${groff_ver:=1.22.4}
+: ${gdbm_ver:=1.18.1}
 : ${libpipeline_ver:=1.5.2}
 : ${man_db_ver:=2.9.0}
 : ${file_ver:=5.38}
@@ -470,6 +471,8 @@ help()
 		Specify the version of GNU less you want, currently '${less_ver}'.
 	groff_ver
 		Specify the version of GNU troff you want, currently '${groff_ver}'.
+	gdbm_ver
+		Specify the version of GNU dbm you want, currently '${gdbm_ver}'.
 	libpipeline_ver
 		Specify the version of libpipeline you want, currently '${libpipeline_ver}'.
 	man_db_ver
@@ -654,7 +657,7 @@ fetch()
 		case ${p} in
 		tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|autoconf-archive|automake|libtool|sed|gawk|\
 		gnulib|make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
-		diffutils|patch|findutils|less|groff|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
+		diffutils|patch|findutils|less|groff|gdbm|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
 			eval [ "\${${p}_ver}" = git ] && {
 				case ${p} in
 				binutils|gdb)
@@ -3633,6 +3636,21 @@ install_native_groff()
 	make -C ${groff_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 }
 
+install_native_gdbm()
+{
+	[ -f ${prefix}/include/gdbm.h -a "${force_install}" != yes ] && return
+	fetch gdbm || return
+	unpack ${gdbm_org_src_dir} || return
+	[ -f ${gdbm_org_src_dir}/Makefile ] ||
+		(cd ${gdbm_org_src_dir}
+		./configure --prefix=${prefix} --host=${host} --disable-silent-rules --disable-rpath) || return
+	make -C ${gdbm_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${gdbm_org_src_dir} -j ${jobs} -k check || return
+	make -C ${gdbm_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+	update_path || return
+}
+
 install_native_libpipeline()
 {
 	[ -f ${prefix}/include/pipeline.h -a "${force_install}" != yes ] && return
@@ -3651,8 +3669,8 @@ install_native_libpipeline()
 install_native_man_db()
 {
 	[ -x ${prefix}/bin/man -a "${force_install}" != yes ] && return
+	search_header gdbm.h > /dev/null || install_native_gdbm || return
 	search_header pipeline.h > /dev/null || install_native_libpipeline || return
-# TODO: libgdbm
 	fetch man-db || return
 	unpack ${man_db_org_src_dir} || return
 	[ -f ${man_db_org_src_dir}/Makefile ] ||
