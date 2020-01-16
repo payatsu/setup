@@ -169,7 +169,7 @@
 : ${guile_ver:=2.2.6}
 : ${lua_ver:=5.3.5}
 : ${node_ver:=12.14.0}
-: ${jdk_ver:=13.0.1}
+: ${jdk_ver:=13.0.2}
 : ${nasm_ver:=2.14.02}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=last-stable}
