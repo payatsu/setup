@@ -50,7 +50,7 @@
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
 : ${linux_ver:=5.3.1}
-: ${dtc_ver:=1.5.0}
+: ${dtc_ver:=1.5.1}
 : ${u_boot_ver:=2019.07}
 : ${qemu_ver:=4.0.0}
 : ${gperf_ver:=3.1}
@@ -2235,7 +2235,7 @@ install_native_dtc()
 	for b in convert-dtsv0 dtc fdtdump fdtget fdtoverlay fdtput; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
-	strip -v ${DESTDIR}${prefix}/lib/libfdt-${dtc_ver}.so || return
+	strip -v ${DESTDIR}${prefix}/lib/libfdt-`echo ${dtc_ver} | cut -d. -f-2`.0.so || return
 }
 
 install_native_u_boot()
