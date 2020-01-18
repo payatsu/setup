@@ -49,7 +49,7 @@
 : ${ed_ver:=1.15}
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
-: ${linux_ver:=5.3.1}
+: ${linux_ver:=5.4.12}
 : ${dtc_ver:=1.5.1}
 : ${u_boot_ver:=2019.07}
 : ${qemu_ver:=4.0.0}
@@ -1337,9 +1337,6 @@ set_src_directory()
 		eval ${_1}_bld_dir_crs_2nd=\${${_1}_src_base}/${target}-\${${_1}_name}-2nd
 		eval ${_1}_bld_dir_crs_ntv=\${${_1}_src_base}/${target}-\${${_1}_name}-crs-ntv
 		;;
-	linux)
-		eval ${_1}_src_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-src
-		;;
 	binutils|gdb)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_bld_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-bld
@@ -1351,6 +1348,7 @@ set_src_directory()
 	*)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-src
+		eval ${_1}_src_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-src
 		eval ${_1}_src_dir_crs_ntv=\${${_1}_src_base}/${target}-\${${_1}_name}-crs-ntv
 		;;
 	esac

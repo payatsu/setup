@@ -35,7 +35,7 @@ EOF
 
 init()
 {
-	: ${linux_ver:=5.3.1}
+	: ${linux_ver:=5.4.12}
 	: ${jobs:=`grep -ce '^processor\>' /proc/cpuinfo`}
 	: ${ARCH:=arm}
 	: ${CROSS_COMPILE:=arm-none-linux-gnueabi-}
