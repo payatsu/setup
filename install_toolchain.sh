@@ -64,6 +64,7 @@
 : ${gcc_ver:=9.2.0}
 : ${readline_ver:=8.0}
 : ${ncurses_ver:=6.1}
+: ${popt_ver:=1.16}
 : ${babeltrace_ver:=1.5.6}
 : ${gdb_ver:=8.3.1}
 : ${lcov_ver:=1.14}
@@ -401,6 +402,8 @@ help()
 		Specify the version of GNU Readline Library you want, currently '${readline_ver}'.
 	ncurses_ver
 		Specify the version of ncurses you want, currently '${ncurses_ver}'.
+	popt_ver
+		Specify the version of popt you want, currently '${popt_ver}'.
 	babeltrace_ver
 		Specify the version of babeltrace you want, currently '${babeltrace_ver}'.
 	gdb_ver
@@ -758,6 +761,9 @@ fetch()
 					&& break \
 					|| rm -v ${gcc_org_src_dir}.tar.${compress_format:-xz}
 			done || return;;
+		popt)
+			wget -O ${popt_org_src_dir}.tar.gz \
+				http://anduin.linuxfromscratch.org/BLFS/popt/${popt_name}.tar.gz || return;;
 		babeltrace)
 			wget -O ${babeltrace_org_src_dir}.tar.gz \
 				https://github.com/efficios/babeltrace/archive/v${babeltrace_ver}.tar.gz || return;;
@@ -2505,6 +2511,22 @@ EOF
 	for l in libform libmenu libncurses++ libpanel libtinfo libformtw libmenutw libncurses++tw libncursestw libpaneltw libtinfotw; do
 		[ ! -f ${DESTDIR}${prefix}/lib/${l}.so ] || strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
 	done
+}
+
+install_native_popt()
+{
+	[ -f ${prefix}/include/popt.h -a "${force_install}" != yes ] && return
+	fetch popt || return
+	unpack ${popt_org_src_dir} || return
+	[ -f ${popt_org_src_dir}/Makefile ] ||
+		(cd ${popt_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-rpath) || return
+
+	make -C ${popt_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${popt_org_src_dir} -j ${jobs} -k check || return
+	make -C ${popt_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_babeltrace()
