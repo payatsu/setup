@@ -2418,7 +2418,10 @@ install_native_gcc()
 		ln -fsv ${b} ${DESTDIR}${prefix}/bin/${host}-${b} || return
 		ln -fsv ${b}-${gcc_base_ver}.1 ${DESTDIR}${prefix}/share/man/man1/${b}.1 || return
 	done
-	[ -f ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_base_ver}/libgcc_s.so ] || ln -fsv ../lib64/libgcc_s.so ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_base_ver} || return # XXX work around for --enable-version-specific-runtime-libs
+	for l in libgcc_s.so libgcc_s.so.1; do
+		[ -f ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_base_ver}/${l} ] ||
+			ln -fsv ../lib64/${l} ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_base_ver} || return # XXX work around for --enable-version-specific-runtime-libs
+	done
 	update_path || return
 }
 
