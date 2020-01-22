@@ -11,7 +11,7 @@ bzip2 elfutils bison flex perl autoconf autoconf-archive automake libtool ncurse
 gawk cpio xz zip unzip lzip lunzip lzo lzop lz4 zstd file groff gdbm libpipeline man-db ed bc patch ccache \
 pcre swig libffi openssl Python2 Python libxml2 libiconv ninja meson glib pkg-config nghttp2 curl cmake Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx clang libedit lldb \
-ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux babeltrace gdb \
+ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux popt babeltrace gdb make \
 autogen gettext pcre2 git openssh go rustc zsh bash screen libevent tmux lua vim neovim global \
 the_silver_searcher the_platinum_searcher gperf highway fzf graphviz jdk plantuml jq protobuf rsync dtc \
 libpng tiff jpeg giflib"
@@ -38,7 +38,7 @@ for p in `echo ${pkgs} | tr - _`; do \
 	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} install_native_${p} clean convert_archives || exit; \
 done
 RUN \
-for p in make emacs ctags; do \
+for p in emacs ctags; do \
 	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} ${p}_ver=git force_install=yes install_native_${p} clean || exit; \
 done && \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_cross_binutils install_cross_gcc clean
