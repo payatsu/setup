@@ -898,7 +898,7 @@ fetch()
 				http://xmlsoft.org/sources/\${${_p:-libxml2}_name}.tar.gz || return;;
 		xmlto)
 			wget -O ${xmlto_org_src_dir}.tar.bz2 \
-				https://fedorahosted.org/releases/x/m/xmlto/${xmlto_name}.tar.bz2 || return;;
+				https://releases.pagure.org/xmlto/${xmlto_name}.tar.bz2 || return;;
 		git)
 			wget -O ${git_org_src_dir}.tar.xz \
 				https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return;;
