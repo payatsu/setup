@@ -3353,7 +3353,8 @@ EOF
 
 install_native_ctags()
 {
-	[ -x ${prefix}/bin/ctags -a "${force_install}" != yes ] && return
+	[ -x ${prefix}/bin/ctags -a "${force_install}" != yes ] &&
+		${prefix}/bin/ctags --version | grep -qe '\<Universal Ctags\>' && return
 	which pkg-config > /dev/null || install_native_pkg_config || return
 	search_library libiconv.so > /dev/null || install_native_libiconv || return
 	fetch ctags || return
