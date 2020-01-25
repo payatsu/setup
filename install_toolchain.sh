@@ -1874,13 +1874,14 @@ install_native_zstd()
 install_native_wget()
 {
 	[ -x ${prefix}/bin/wget -a "${force_install}" != yes ] && return
+	search_header libpsl.h > /dev/null || install_native_libpsl || return
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch wget || return
 	unpack ${wget_org_src_dir} || return
 	[ -f ${wget_org_src_dir}/Makefile ] ||
 		(cd ${wget_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-			--enable-threads --with-ssl=openssl) || return
+			--disable-rpath --enable-threads --with-ssl=openssl) || return
 	make -C ${wget_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${wget_org_src_dir} -j ${jobs} -k check || return
