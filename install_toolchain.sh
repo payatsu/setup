@@ -3318,18 +3318,19 @@ install_native_vim()
 	search_header ruby.h > /dev/null || install_native_ruby || return
 	fetch vim || return
 	unpack ${vim_org_src_dir} || return
-	(cd ${vim_org_src_dir}
-	./configure --prefix=${prefix} --build=${build} \
-		--with-features=huge --enable-fail-if-missing \
-		--enable-luainterp=dynamic --with-lua-prefix=`get_prefix lua.h` \
-		--enable-perlinterp=dynamic \
-		--enable-pythoninterp=dynamic \
-		--enable-python3interp=dynamic \
-		--enable-tclinterp=dynamic --with-tclsh=tclsh \
-		--enable-rubyinterp=dynamic \
-		--enable-cscope --enable-terminal --enable-autoservername --enable-multibyte \
-		--enable-xim --enable-fontset --enable-gui=auto \
-	) || return
+	[ -f ${vim_org_src_dir}/src/auto/config.h ] ||
+		(cd ${vim_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} \
+			--with-features=huge --enable-fail-if-missing \
+			--enable-luainterp=dynamic --with-lua-prefix=`get_prefix lua.h` \
+			--enable-perlinterp=dynamic \
+			--enable-pythoninterp=dynamic \
+			--enable-python3interp=dynamic \
+			--enable-tclinterp=dynamic --with-tclsh=tclsh \
+			--enable-rubyinterp=dynamic \
+			--enable-cscope --enable-terminal --enable-autoservername --enable-multibyte \
+			--enable-xim --enable-fontset --enable-gui=auto \
+		) || return
 	patch -N -p0 -d ${vim_org_src_dir} <<'EOF' || [ $? = 1 ] || return
 --- src/Makefile
 +++ src/Makefile
@@ -3351,8 +3352,8 @@ install_native_vim()
  DEST_BIN = $(DESTDIR)$(BINDIR)
 EOF
 	make -C ${vim_org_src_dir} -j ${jobs} || return
-	for l in ${DESTDIR}${prefix}/bin/ex ${DESTDIR}${prefix}/bin/view; do
-		[ ! -h ${l} ] || rm -fv ${l} || return
+	for l in ex rview rvim view; do
+		[ ! -h ${DESTDIR}${prefix}/bin/${l} ] || rm -fv ${DESTDIR}${prefix}/bin/${l} || return
 	done
 	make -C ${vim_org_src_dir} -j ${jobs} install || return
 	fetch vimdoc-ja || return
@@ -3859,7 +3860,7 @@ install_native_bash()
 	unpack ${bash_org_src_dir} || return
 	[ -f ${bash_org_src_dir}/Makefile ] ||
 		(cd ${bash_org_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-rpath) || return
 	make -C ${bash_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${bash_org_src_dir} -j ${jobs} -k check || return
