@@ -166,6 +166,7 @@
 : ${tk_ver:=8.6.9}
 : ${libunistring_ver:=0.9.10}
 : ${libidn2_ver:=2.3.0}
+: ${libpsl_ver:=0.21.0}
 : ${libatomic_ops_ver:=7.6.4}
 : ${gc_ver:=7.6.6}
 : ${guile_ver:=2.2.6}
@@ -585,6 +586,8 @@ help()
 		Specify the version of libunistring you want, currently '${libunistring_ver}'.
 	libidn2_ver
 		Specify the version of libidn2 you want, currently '${libidn2_ver}'.
+	libpsl_ver
+		Specify the version of libpsl you want, currently '${libpsl_ver}'.
 	libatomic_ops_ver
 		Specify the version of libatomic_ops you want, currently '${libatomic_ops_ver}'.
 	gc_ver
@@ -993,6 +996,9 @@ fetch()
 		libidn2)
 			wget -O ${libidn2_org_src_dir}.tar.gz \
 				https://ftp.gnu.org/gnu/libidn/${libidn2_name}.tar.gz || return;;
+		libpsl)
+			wget -O ${libpsl_org_src_dir}.tar.gz \
+				https://github.com/rockdaboot/libpsl/releases/download/${libpsl_name}/${libpsl_name}.tar.gz || return;;
 		libatomic_ops|gc)
 			eval wget -O \${${_p}_org_src_dir}.tar.gz \
 				https://www.hboehm.info/gc/gc_source/\${${_p:-libatomic_ops}_name}.tar.gz || return;;
@@ -5060,6 +5066,7 @@ install_native_libunistring()
 install_native_libidn2()
 {
 	[ -f ${prefix}/include/idn2.h -a "${force_install}" != yes ] && return
+	search_header unistr.h > /dev/null || install_native_libunistring || return
 	fetch libidn2 || return
 	unpack ${libidn2_org_src_dir} || return
 	[ -f ${libidn2_org_src_dir}/Makefile ] ||
@@ -5069,6 +5076,22 @@ install_native_libidn2()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libidn2_org_src_dir} -j ${jobs} -k check || return
 	make -C ${libidn2_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libpsl()
+{
+	[ -f ${prefix}/include/libpsl.h -a "${force_install}" != yes ] && return
+	search_header idn2.h > /dev/null || install_native_libidn2 || return
+	fetch libpsl || return
+	unpack ${libpsl_org_src_dir} || return
+	[ -f ${libpsl_org_src_dir}/Makefile ] ||
+		(cd ${libpsl_org_src_dir}
+		./configure --prefix=${prefix} --host=${host} --disable-silent-rules --disable-rpath) || return
+	make -C ${libpsl_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libpsl_org_src_dir} -j ${jobs} -k check || return
+	make -C ${libpsl_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
