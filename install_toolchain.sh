@@ -4086,7 +4086,7 @@ install_native_gettext()
 	[ -f ${gettext_org_src_dir}/Makefile ] ||
 		(cd ${gettext_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
-			--enable-threads) || return
+			--enable-threads --disable-rpath) || return
 	make -C ${gettext_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gettext_org_src_dir} -j ${jobs} -k check || return
@@ -5017,7 +5017,7 @@ install_native_tcl()
 	[ -f ${tcl_org_src_dir}/unix/Makefile ] ||
 		(cd ${tcl_org_src_dir}/unix
 		./configure --prefix=${prefix} -build=${build} --host=${host} \
-			--disable-silent-rules --enable-64bit --enable-man-symlinks) || return
+			--disable-silent-rules --enable-64bit --enable-man-symlinks --disable-rpath) || return
 	make -C ${tcl_org_src_dir}/unix -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${tcl_org_src_dir}/unix -j ${jobs} -k test || return
@@ -5039,7 +5039,7 @@ install_native_tk()
 	[ -f ${tk_org_src_dir}/unix/Makefile ] ||
 		(cd ${tk_org_src_dir}/unix
 		./configure --prefix=${prefix} -build=${build} \
-			--disable-silent-rules --enable-64bit --enable-man-symlinks) || return
+			--disable-silent-rules --enable-64bit --enable-man-symlinks --disable-rpath) || return
 	make -C ${tk_org_src_dir}/unix -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${tk_org_src_dir}/unix -j ${jobs} -k test || return
@@ -5056,7 +5056,8 @@ install_native_libunistring()
 	unpack ${libunistring_org_src_dir} || return
 	[ -f ${libunistring_org_src_dir}/Makefile ] ||
 		(cd ${libunistring_org_src_dir}
-		./configure --prefix=${prefix} -build=${build} --host=${host} --disable-silent-rules) || return
+		./configure --prefix=${prefix} -build=${build} --host=${host} \
+			--disable-rpath --disable-silent-rules) || return
 	make -C ${libunistring_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libunistring_org_src_dir} -j ${jobs} -k check || return
