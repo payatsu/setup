@@ -4388,7 +4388,7 @@ install_native_llvm()
 		-S ${llvm_org_src_dir} -B ${llvm_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DLLVM_LINK_LLVM_DYLIB=ON || return
+		-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON || return
 	cmake --build ${llvm_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		cmake --build ${llvm_bld_dir} -v -j ${jobs} --target check || return
@@ -4408,7 +4408,7 @@ install_native_compiler_rt()
 		-S ${compiler_rt_org_src_dir} -B ${compiler_rt_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ || return
+		-DCMAKE_INSTALL_RPATH=';' -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ || return
 	cmake --build ${compiler_rt_bld_dir} -v -j ${jobs} || return
 	cmake --install ${compiler_rt_bld_dir} -v ${strip:+--${strip}} || return
 	mkdir -pv ${DESTDIR}${prefix}/lib/clang/`llvm-config --version | grep -oe '^\(\.\?[[:digit:]]\+\)\{3\}'`/lib || return
@@ -4428,7 +4428,7 @@ install_native_libunwind()
 		-S ${libunwind_org_src_dir} -B ${libunwind_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DLIBUNWIND_USE_COMPILER_RT=ON || return
+		-DCMAKE_INSTALL_RPATH=';' -DLIBUNWIND_USE_COMPILER_RT=ON || return
 	cmake --build ${libunwind_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		cmake --build ${libunwind_bld_dir} -v -j ${jobs} --target check-unwind || return
@@ -4451,7 +4451,7 @@ install_native_libcxxabi()
 		-S ${libcxxabi_org_src_dir} -B ${libcxxabi_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DLIBCXXABI_LIBCXX_PATH=${libcxx_org_src_dir} \
+		-DCMAKE_INSTALL_RPATH=';' -DLIBCXXABI_LIBCXX_PATH=${libcxx_org_src_dir} \
 		-DLIBCXXABI_USE_LLVM_UNWINDER=ON || return
 	cmake --build ${libcxxabi_bld_dir} -v -j ${jobs} || return
 	cmake --install ${libcxxabi_bld_dir} -v ${strip:+--${strip}} || return
@@ -4472,7 +4472,7 @@ install_native_libcxx()
 		-S ${libcxx_org_src_dir} -B ${libcxx_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${libcxxabi_org_src_dir}/include \
+		-DCMAKE_INSTALL_RPATH=';' -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${libcxxabi_org_src_dir}/include \
 		-DLIBCXXABI_USE_LLVM_UNWINDER=ON || return
 	cmake --build ${libcxx_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -4514,7 +4514,7 @@ EOF
 		-S ${clang_org_src_dir} -B ${clang_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DENABLE_LINKER_BUILD_ID=ON \
+		-DCMAKE_INSTALL_RPATH=';' -DENABLE_LINKER_BUILD_ID=ON \
 		-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
 		-DCLANG_DEFAULT_RTLIB=compiler-rt \
 		-DGCC_INSTALL_PREFIX=`get_prefix iostream c++` \
@@ -4535,7 +4535,7 @@ install_native_lld()
 		-S ${lld_org_src_dir} -B ${lld_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DLLVM_LINK_LLVM_DYLIB=ON || return
+		-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON || return
 	cmake --build ${lld_bld_dir} -v -j ${jobs} || return
 	cmake --install ${lld_bld_dir} -v ${strip:+--${strip}} || return
 }
@@ -4555,7 +4555,7 @@ install_native_lldb()
 		-S ${lldb_org_src_dir} -B ${lldb_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DLLVM_LINK_LLVM_DYLIB=ON \
+		-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON \
 		-DCMAKE_C_FLAGS="${CFLAGS} -I`get_include_path Version.h clang/Basic`" \
 		-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`get_include_path curses.h` -I`get_include_path histedit.h`" \
 		-DLLDB_TEST_C_COMPILER=${CC:-gcc} -DLLDB_TEST_CXX_COMPILER=${CXX:-g++} || return
