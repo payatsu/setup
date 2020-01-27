@@ -2040,7 +2040,7 @@ install_native_autogen()
 	[ -f ${autogen_org_src_dir}/Makefile ] ||
 		(cd ${autogen_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
-			--disable-dependency-tracking \
+			--disable-rpath --disable-dependency-tracking \
 			CFLAGS="${CFLAGS} -Wno-error=implicit-fallthrough=") || return
 	make -C ${autogen_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
