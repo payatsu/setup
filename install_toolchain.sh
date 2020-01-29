@@ -4118,6 +4118,7 @@ install_native_git()
 		--with-iconv=`get_prefix iconv.h` --with-perl=`which perl` --with-python=`which python3` \
 		--with-zlib=`get_prefix zlib.h`) || return
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_org_src_dir}/Makefile || return
+	sed -i -e 's/^\(CC_LD_DYNPATH=\).\+/\1-L/' ${git_org_src_dir}/config.mak.autogen || return
 	make -C ${git_org_src_dir} -j 1       V=1 PROFILE=BUILD LDFLAGS="${LDFLAGS} -ldl" all || return
 	make -C ${git_org_src_dir} -j ${jobs} V=1 doc || install_native_git_manpages || return
 	[ "${enable_check}" != yes ] ||
