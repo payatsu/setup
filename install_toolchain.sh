@@ -3351,6 +3351,10 @@ install_native_vim()
  # abbreviations
  DEST_BIN = $(DESTDIR)$(BINDIR)
 EOF
+	sed -i -e '
+		/^LDFLAGS\>/s/-Wl,-rpath,[[:graph:]]\+//
+		/^PERL_LIBS\>/s/[[:graph:]]\+CORE//g
+		' ${vim_org_src_dir}/src/auto/config.mk || return
 	make -C ${vim_org_src_dir} -j ${jobs} || return
 	for l in ex rview rvim view; do
 		[ ! -h ${DESTDIR}${prefix}/bin/${l} ] || rm -fv ${DESTDIR}${prefix}/bin/${l} || return
