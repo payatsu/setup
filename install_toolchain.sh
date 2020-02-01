@@ -43,7 +43,7 @@
 : ${gawk_ver:=5.0.1}
 : ${gnulib_ver:=git}
 : ${make_ver:=4.3}
-: ${binutils_ver:=2.33.1}
+: ${binutils_ver:=2.34}
 : ${elfutils_ver:=0.177}
 : ${systemtap_ver:=4.1}
 : ${ed_ver:=1.15}
@@ -54,7 +54,7 @@
 : ${u_boot_ver:=2019.07}
 : ${qemu_ver:=4.0.0}
 : ${gperf_ver:=3.1}
-: ${glibc_ver:=2.30}
+: ${glibc_ver:=2.31}
 : ${newlib_ver:=3.1.0}
 : ${mingw_w64_ver:=5.0.4}
 : ${gmp_ver:=6.1.2}
