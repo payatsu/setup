@@ -106,7 +106,7 @@
 : ${man_db_ver:=2.9.0}
 : ${file_ver:=5.38}
 : ${source_highlight_ver:=3.1.9}
-: ${screen_ver:=4.7.0}
+: ${screen_ver:=4.8.0}
 : ${libevent_ver:=2.1.11}
 : ${tmux_ver:=2.8}
 : ${expect_ver:=5.45.4}
