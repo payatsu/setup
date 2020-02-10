@@ -34,13 +34,10 @@ COPY install_toolchain.sh ${prefix}/install_toolchain.sh
 RUN \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} "fetch ${pkgs} clang-tools-extra vimdoc-ja mingw-w64"
 RUN \
-for p in `echo ${pkgs} | tr - _`; do \
+for p in `echo ${pkgs} | tr - _` ctags; do \
 	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} install_native_${p} clean convert_archives || exit; \
 done
 RUN \
-for p in emacs ctags; do \
-	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} ${p}_ver=git force_install=yes install_native_${p} clean || exit; \
-done && \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_cross_binutils install_cross_gcc clean
 COPY Dockerfile ${prefix}/Dockerfile
 
