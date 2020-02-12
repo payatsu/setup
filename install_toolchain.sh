@@ -114,14 +114,14 @@
 : ${zsh_ver:=5.7.1}
 : ${bash_ver:=5.0}
 : ${inetutils_ver:=1.9.4}
-: ${util_linux_ver:=2.33}
-: ${e2fsprogs_ver:=1.44.5}
-: ${squashfs_ver:=4.3}
+: ${util_linux_ver:=2.35.1}
+: ${e2fsprogs_ver:=1.45.5}
+: ${squashfs_ver:=4.4}
 : ${openssl_ver:=1.1.1d}
 : ${openssh_ver:=8.1p1}
-: ${nghttp2_ver:=1.39.2}
+: ${nghttp2_ver:=1.40.0}
 : ${curl_ver:=7.68.0}
-: ${expat_ver:=2.2.6}
+: ${expat_ver:=2.2.9}
 : ${asciidoc_ver:=8.6.9}
 : ${libxml2_ver:=2.9.9}
 : ${libxslt_ver:=1.1.34}
@@ -130,17 +130,17 @@
 : ${git_ver:=2.25.0}
 : ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=5.0.2}
-: ${sqlite_autoconf_ver:=3260000}
+: ${sqlite_autoconf_ver:=3310100}
 : ${apr_ver:=1.7.0}
 : ${apr_util_ver:=1.6.1}
 : ${utf8proc_ver:=2.4.0}
 : ${subversion_ver:=1.13.0}
-: ${ninja_ver:=1.9.0}
-: ${meson_ver:=0.52.1}
-: ${cmake_ver:=3.16.1}
-: ${bazel_ver:=2.0.0}
-: ${Bear_ver:=2.4.2}
-: ${ccache_ver:=3.7.2}
+: ${ninja_ver:=1.10.0}
+: ${meson_ver:=0.53.1}
+: ${cmake_ver:=3.16.4}
+: ${bazel_ver:=2.1.0}
+: ${Bear_ver:=2.4.3}
+: ${ccache_ver:=3.7.7}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=3.0.12}
 : ${llvm_ver:=9.0.1}
@@ -916,7 +916,7 @@ fetch()
 				https://www.mercurial-scm.org/release/${mercurial_name}.tar.gz || return;;
 		sqlite-autoconf)
 			wget -O ${sqlite_autoconf_org_src_dir}.tar.gz \
-				https://www.sqlite.org/2018/${sqlite_autoconf_name}.tar.gz || return;;
+				https://www.sqlite.org/2020/${sqlite_autoconf_name}.tar.gz || return;;
 		apr|apr-util)
 			eval wget -O \${${_p}_org_src_dir}.tar.bz2 \
 				http://ftp.tsukuba.wide.ad.jp/software/apache/apr/\${${_p:-apr}_name}.tar.bz2 || return;;
