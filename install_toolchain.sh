@@ -45,7 +45,7 @@
 : ${make_ver:=4.3}
 : ${binutils_ver:=2.34}
 : ${elfutils_ver:=0.178}
-: ${systemtap_ver:=4.1}
+: ${systemtap_ver:=4.2}
 : ${ed_ver:=1.15}
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
@@ -68,7 +68,7 @@
 : ${babeltrace_ver:=1.5.6}
 : ${gdb_ver:=9.1}
 : ${lcov_ver:=1.14}
-: ${strace_ver:=5.0}
+: ${strace_ver:=5.5}
 : ${ltrace_ver:=0.7.3}
 : ${valgrind_ver:=3.15.0}
 : ${zlib_ver:=1.2.11}
