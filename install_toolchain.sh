@@ -16,7 +16,7 @@
 : ${tar_ver:=1.32}
 : ${cpio_ver:=2.13}
 : ${xz_ver:=5.2.4}
-: ${bzip2_ver:=1.0.6}
+: ${bzip2_ver:=1.0.8}
 : ${gzip_ver:=1.10}
 : ${zip_ver:=3.0}
 : ${unzip_ver:=6.0}
@@ -24,14 +24,14 @@
 : ${lunzip_ver:=1.9}
 : ${lzo_ver:=2.10}
 : ${lzop_ver:=1.04}
-: ${lz4_ver:=1.9.1}
-: ${zstd_ver:=1.4.3}
+: ${lz4_ver:=1.9.2}
+: ${zstd_ver:=1.4.4}
 : ${wget_ver:=1.20.3}
 : ${pkg_config_ver:=0.29.2}
 : ${texinfo_ver:=6.7}
 : ${coreutils_ver:=8.31}
-: ${busybox_ver:=1.30.1}
-: ${bison_ver:=3.5}
+: ${busybox_ver:=1.31.1}
+: ${bison_ver:=3.5.1}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
