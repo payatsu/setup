@@ -44,7 +44,7 @@
 : ${gnulib_ver:=git}
 : ${make_ver:=4.3}
 : ${binutils_ver:=2.34}
-: ${elfutils_ver:=0.177}
+: ${elfutils_ver:=0.178}
 : ${systemtap_ver:=4.1}
 : ${ed_ver:=1.15}
 : ${bc_ver:=1.07.1}
@@ -2156,7 +2156,9 @@ install_native_elfutils()
 	[ -f ${elfutils_org_src_dir}/Makefile ] ||
 		(cd ${elfutils_org_src_dir}
 		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-			CFLAGS="${CFLAGS} -I`get_include_path zlib.h`" LDFLAGS="${LDFLAGS} -L`get_library_path libz.so` -lbz2") || return
+			--disable-debuginfod \
+			CFLAGS="${CFLAGS} -I`get_include_path zlib.h`" \
+			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so` -lbz2") || return
 	make -C ${elfutils_org_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${elfutils_org_src_dir} -j ${jobs} -k check || return
