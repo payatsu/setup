@@ -57,7 +57,7 @@
 : ${glibc_ver:=2.31}
 : ${newlib_ver:=3.1.0}
 : ${mingw_w64_ver:=5.0.4}
-: ${gmp_ver:=6.1.2}
+: ${gmp_ver:=6.2.0}
 : ${mpfr_ver:=4.0.2}
 : ${mpc_ver:=1.1.0}
 : ${isl_ver:=0.20}
@@ -108,7 +108,7 @@
 : ${source_highlight_ver:=3.1.9}
 : ${screen_ver:=4.8.0}
 : ${libevent_ver:=2.1.11}
-: ${tmux_ver:=2.8}
+: ${tmux_ver:=3.0a}
 : ${expect_ver:=5.45.4}
 : ${dejagnu_ver:=1.6.2}
 : ${zsh_ver:=5.7.1}
@@ -142,7 +142,7 @@
 : ${Bear_ver:=2.4.3}
 : ${ccache_ver:=3.7.7}
 : ${libedit_ver:=20181209-3.1}
-: ${swig_ver:=3.0.12}
+: ${swig_ver:=4.0.1}
 : ${llvm_ver:=9.0.1}
 : ${compiler_rt_ver:=${llvm_ver}}
 : ${libunwind_ver:=${llvm_ver}}
