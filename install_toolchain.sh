@@ -4906,6 +4906,7 @@ install_native_Python()
 		make -C ${Python_org_src_dir} -j ${jobs} -k test || return
 	make -C ${Python_org_src_dir} -j ${jobs} install || return
 	update_path || return
+	pip`echo ${Python_ver} | cut -d. -f1` install -U pip || return
 	[ -z "${strip}" ] && return
 	for v in `echo ${Python_ver} | cut -d. -f-2` `echo ${Python_ver} | cut -d. -f-2`m; do
 		[ ! -f ${DESTDIR}${prefix}/bin/python${v} ] || strip -v ${DESTDIR}${prefix}/bin/python${v} || return
@@ -4974,6 +4975,7 @@ install_native_ruby()
 		make -C ${ruby_org_src_dir} -j ${jobs} -k V=1 check || return
 	make -C ${ruby_org_src_dir} -j ${jobs} V=1 install || return
 	update_path || return
+	gem update || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/ruby || return
 	strip -v ${DESTDIR}${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_org_src_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/libruby.so || return
