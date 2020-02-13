@@ -167,11 +167,11 @@
 : ${libunistring_ver:=0.9.10}
 : ${libidn2_ver:=2.3.0}
 : ${libpsl_ver:=0.21.0}
-: ${libatomic_ops_ver:=7.6.4}
-: ${gc_ver:=7.6.6}
+: ${libatomic_ops_ver:=7.6.10}
+: ${gc_ver:=7.6.12}
 : ${guile_ver:=2.2.6}
 : ${lua_ver:=5.3.5}
-: ${node_ver:=12.14.0}
+: ${node_ver:=12.16.0}
 : ${jdk_ver:=13.0.2}
 : ${nasm_ver:=2.14.02}
 : ${yasm_ver:=1.3.0}
@@ -181,17 +181,17 @@
 : ${opencv_ver:=4.2.0}
 : ${opencv_contrib_ver:=4.2.0}
 : ${googletest_ver:=1.8.1}
-: ${fzf_ver:=0.19.0}
+: ${fzf_ver:=0.20.0}
 : ${jq_ver:=1.6}
-: ${libpcap_ver:=1.9.0}
-: ${tcpdump_ver:=4.9.2}
+: ${libpcap_ver:=1.9.1}
+: ${tcpdump_ver:=4.9.3}
 : ${npth_ver:=1.6}
 : ${libgpg_error_ver:=1.36}
 : ${libgcrypt_ver:=1.8.5}
 : ${libksba_ver:=1.3.5}
 : ${libassuan_ver:=2.5.3}
 : ${gnupg_ver:=2.2.19}
-: ${protobuf_ver:=3.11.2}
+: ${protobuf_ver:=3.11.3}
 : ${libbacktrace_ver:=git}
 
 # TODO X11周りのインストールは未着手。
