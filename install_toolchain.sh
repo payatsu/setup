@@ -63,7 +63,7 @@
 : ${isl_ver:=0.20}
 : ${gcc_ver:=9.2.0}
 : ${readline_ver:=8.0}
-: ${ncurses_ver:=6.1}
+: ${ncurses_ver:=6.2}
 : ${popt_ver:=1.16}
 : ${babeltrace_ver:=1.5.6}
 : ${gdb_ver:=9.1}
