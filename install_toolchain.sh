@@ -3362,6 +3362,7 @@ EOF
 		[ ! -h ${DESTDIR}${prefix}/bin/${l} ] || rm -fv ${DESTDIR}${prefix}/bin/${l} || return
 	done
 	make -C ${vim_org_src_dir} -j ${jobs} install || return
+	[ -f ${DESTDIR}${prefix}/bin/vi ] || ln -fsv vim ${DESTDIR}${prefix}/bin/vi || return
 	fetch vimdoc-ja || return
 	[ -d ${vimdoc_ja_org_src_dir} ] ||
 		(unpack ${vimdoc_ja_org_src_dir} &&
