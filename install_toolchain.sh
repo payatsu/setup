@@ -46,7 +46,7 @@
 : ${binutils_ver:=2.34}
 : ${elfutils_ver:=0.178}
 : ${systemtap_ver:=4.2}
-: ${ed_ver:=1.15}
+: ${ed_ver:=1.16}
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
 : ${linux_ver:=5.4.12}
