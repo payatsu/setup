@@ -1,0 +1,10 @@
+MS-CEINTL.vscode-language-pack-ja
+vscode-icons-team.vscode-icons
+ms-vscode.cpptools
+ms-vscode.go
+ms-vscode.cmake-tools
+ms-python.python
+rust-lang.rust
+ms-azuretools.vscode-docker
+ms-vscode-remote.vscode-remote-extensionpack
+ms-vsliveshare.vsliveshare-pack
