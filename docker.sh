@@ -1,5 +1,7 @@
 #!/bin/sh
 
+which docker > /dev/null && exit
+
 apt-get update || exit
 apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common || exit
 
