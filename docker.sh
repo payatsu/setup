@@ -26,6 +26,14 @@ install_docker_compose()
 	curl -fSL -o /usr/local/bin/docker-compose \
 		https://github.com/docker/compose/releases/download/${latest_version}/docker-compose-`uname -s`-`uname -m` || return
 	chmod a+x /usr/local/bin/docker-compose || return
+
+	mkdir -pv /etc/bash_completion.d || return
+	curl -fSL -o /etc/bash_completion.d/docker-compose \
+		https://raw.githubusercontent.com/docker/compose/${latest_version}/contrib/completion/bash/docker-compose || return
+
+	mkdir -pv /usr/share/zsh/vendor-completions || return
+	curl -fSL -o /usr/share/zsh/vendor-completions/_docker-compose \
+		https://raw.githubusercontent.com/docker/compose/${latest_version}/contrib/completion/zsh/_docker-compose || return
 }
 
 setup()
