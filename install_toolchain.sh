@@ -29,7 +29,7 @@
 : ${wget_ver:=1.20.3}
 : ${pkg_config_ver:=0.29.2}
 : ${texinfo_ver:=6.7}
-: ${coreutils_ver:=8.31}
+: ${coreutils_ver:=8.32}
 : ${busybox_ver:=1.31.1}
 : ${bison_ver:=3.5.1}
 : ${flex_ver:=2.6.4}
