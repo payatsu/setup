@@ -44,7 +44,7 @@ COPY Dockerfile ${prefix}/Dockerfile
 FROM ${baseimage} AS dev
 ARG prefix
 ARG prefixbase
-ARG username=dev
+ARG USER=dev
 ARG njobs
 
 COPY --from=builder ${prefix} ${prefix}
@@ -69,17 +69,17 @@ echo . ${prefix}/set_path.sh > /etc/skel/.sh/.local.pre && \
 echo . '${HOME}'/.sh/.local.pre > /etc/skel/.zsh/.zshrc.local.pre && \
 echo . '${HOME}'/.sh/.local.pre > /etc/skel/.bash/.bashrc.local.pre && \
 echo `which zsh` >> /etc/shells && \
-groupadd ${username} && \
-useradd -g ${username} -m -s `which zsh` ${username} && \
+groupadd ${USER} && \
+useradd -g ${USER} -m -s `which zsh` ${USER} && \
 echo root:root | chpasswd && \
-echo ${username}:${username} | chpasswd && \
-sed -i -e '/^root\>/a'${username}'	ALL=(ALL:ALL) NOPASSWD: ALL' /etc/sudoers && \
+echo ${USER}:${USER} | chpasswd && \
+sed -i -e '/^root\>/a'${USER}'	ALL=(ALL:ALL) NOPASSWD: ALL' /etc/sudoers && \
 apt-get autoremove -y && apt-get autoclean -y && rm -vr /var/lib/apt/lists/* && \
 sed -i -e 's/^# \(ja_JP\.UTF-8 UTF-8\)$/\1/' /etc/locale.gen && \
 locale-gen
-USER ${username}
-WORKDIR /home/${username}
-ENV LANG=ja_JP.utf8 SHELL=${prefix}/bin/zsh USER=${username}
+USER ${USER}
+WORKDIR /home/${USER}
+ENV LANG=ja_JP.utf8 SHELL=${prefix}/bin/zsh USER=${USER}
 CMD exec ${SHELL} -l
 RUN \
 sudo mv -v ${prefix}/lib/rustlib/uninstall.sh . && \

@@ -1,0 +1,19 @@
+version: "3.7"
+
+services:
+  dev:
+    image: dev
+    build:
+      context: .
+      args:
+        - USER
+    hostname: docker
+    environment:
+      - TERM
+      - http_proxy
+      - https_proxy
+    volumes:
+      - "${HOME}/.gitconfig:${HOME}/.gitconfig:ro"
+      - "${HOME}/.ssh:${HOME}/.ssh:ro"
+
+# vim: set expandtab shiftwidth=0 tabstop=2 :
