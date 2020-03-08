@@ -169,7 +169,7 @@
 : ${libpsl_ver:=0.21.0}
 : ${libatomic_ops_ver:=7.6.10}
 : ${gc_ver:=7.6.12}
-: ${guile_ver:=2.2.6}
+: ${guile_ver:=2.2.7}
 : ${lua_ver:=5.3.5}
 : ${node_ver:=12.16.0}
 : ${jdk_ver:=13.0.2}
