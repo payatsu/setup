@@ -1,6 +1,6 @@
 #!/bin/sh
 
-install_docker()
+install_docker_engine()
 {
 	which docker > /dev/null && return
 
@@ -36,10 +36,10 @@ install_docker_compose()
 		https://raw.githubusercontent.com/docker/compose/${latest_version}/contrib/completion/zsh/_docker-compose || return
 }
 
-setup()
+install_docker()
 {
-	install_docker || return
+	install_docker_engine || return
 	install_docker_compose || return
 }
 
-setup || exit
+install_docker || exit
