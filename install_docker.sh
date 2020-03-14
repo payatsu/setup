@@ -18,12 +18,14 @@ install_docker_engine()
 		apt-get install -y docker-ce || return
 		;;
 	centos)
+		yum install -y yum-utils device-mapper-persistent-data lvm2 || return
+		yum-config-manager --add-repo https://download.docker.com/linux/${ID}/docker-ce.repo || return
+		yum install -y docker-ce || return
+		systemctl start docker || return
 		;;
 	*)
 		return 1;;
 	esac
-
-
 	usermod -aG docker ${SUDO_USER:-${USER:-`whoami`}} || return
 }
 
