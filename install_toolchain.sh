@@ -81,7 +81,7 @@
 : ${libffi_ver:=3.3}
 : ${emacs_ver:=26.3}
 : ${libiconv_ver:=1.15}
-: ${vim_ver:=8.2.0221}
+: ${vim_ver:=8.2.0391}
 : ${vimdoc_ja_ver:=dummy}
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.4.3}
@@ -127,7 +127,7 @@
 : ${libxslt_ver:=1.1.34}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.20.1}
-: ${git_ver:=2.25.0}
+: ${git_ver:=2.25.1}
 : ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=5.0.2}
 : ${sqlite_autoconf_ver:=3310100}
