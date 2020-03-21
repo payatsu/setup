@@ -138,7 +138,7 @@
 : ${ninja_ver:=1.10.0}
 : ${meson_ver:=0.53.1}
 : ${cmake_ver:=3.16.4}
-: ${bazel_ver:=2.1.0}
+: ${bazel_ver:=2.2.0}
 : ${Bear_ver:=2.4.3}
 : ${ccache_ver:=3.7.7}
 : ${libedit_ver:=20181209-3.1}
@@ -171,7 +171,7 @@
 : ${gc_ver:=7.6.12}
 : ${guile_ver:=2.2.7}
 : ${lua_ver:=5.3.5}
-: ${node_ver:=12.16.0}
+: ${node_ver:=12.16.1}
 : ${jdk_ver:=14}
 : ${nasm_ver:=2.14.02}
 : ${yasm_ver:=1.3.0}
