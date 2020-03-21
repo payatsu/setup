@@ -185,6 +185,7 @@
 : ${jq_ver:=1.6}
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
+: ${nmap_ver:=7.80}
 : ${npth_ver:=1.6}
 : ${libgpg_error_ver:=1.37}
 : ${libgcrypt_ver:=1.8.5}
@@ -624,6 +625,8 @@ help()
 		Specify the version of libpcap you want, currently '${libpcap_ver}'.
 	tcpdump_ver
 		Specify the version of tcpdump you want, currently '${tcpdump_ver}'.
+	nmap_ver
+		Specify the version of Nmap you want, currently '${nmap_ver}'.
 	npth_ver
 		Specify the version of nPth you want, currently '${npth_ver}'.
 	libgpg_error_ver
@@ -1042,6 +1045,9 @@ fetch()
 		libpcap|tcpdump)
 			eval wget -O \${${_p}_org_src_dir}.tar.gz \
 				http://www.tcpdump.org/release/\${${_p:-libpcap}_name}.tar.gz || return;;
+		nmap)
+			wget -O ${nmap_org_src_dir}.tar.bz2 \
+				https://nmap.org/dist/${nmap_name}.tar.bz2 || return;;
 		npth|libgpg-error|libgcrypt|libksba|libassuan|gnupg)
 			eval wget -O \${${_p}_org_src_dir}.tar.bz2 \
 				https://www.gnupg.org/ftp/gcrypt/${p:-gnupg}/\${${_p:-gnupg}_name}.tar.bz2 || return;;
@@ -5475,6 +5481,7 @@ install_native_libpcap()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libpcap_org_src_dir} -j ${jobs} -k test || return
 	make -C ${libpcap_org_src_dir} -j ${jobs} install || return
+	update_path || return
 }
 
 install_native_tcpdump()
@@ -5490,6 +5497,24 @@ install_native_tcpdump()
 	[ "${enable_check}" != yes ] ||
 		make -C ${tcpdump_org_src_dir} -j ${jobs} -k check || return
 	make -C ${tcpdump_org_src_dir} -j ${jobs} install || return
+}
+
+install_native_nmap()
+{
+	[ -x ${prefix}/bin/nmap -a "${force_install}" != yes ] && return
+	fetch nmap || return
+	unpack ${nmap_org_src_dir} || return
+	[ -f ${nmap_org_src_dir}/Makefile ] ||
+		(cd ${nmap_org_src_dir}
+		./configure --prefix=${prefix} --host=${host}) || return
+	make -C ${nmap_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${nmap_org_src_dir} -j ${jobs} -k check || return
+	make -C ${nmap_org_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+	[ -z "${strip}" ] && return
+	for b in ncat nmap nping; do
+		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+	done
 }
 
 install_native_npth()
