@@ -50,7 +50,7 @@
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
 : ${linux_ver:=5.4.12}
-: ${dtc_ver:=1.5.1}
+: ${dtc_ver:=1.6.0}
 : ${u_boot_ver:=2019.07}
 : ${qemu_ver:=4.0.0}
 : ${gperf_ver:=3.1}
