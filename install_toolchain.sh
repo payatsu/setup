@@ -36,7 +36,7 @@
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
 : ${autoconf_archive_ver:=2019.01.06}
-: ${automake_ver:=1.16.1}
+: ${automake_ver:=1.16.2}
 : ${autogen_ver:=5.18.16}
 : ${libtool_ver:=2.4.6}
 : ${sed_ver:=4.8}
