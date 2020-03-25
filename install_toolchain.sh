@@ -143,7 +143,7 @@
 : ${ccache_ver:=3.7.7}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=4.0.1}
-: ${llvm_ver:=9.0.1}
+: ${llvm_ver:=10.0.0}
 : ${compiler_rt_ver:=${llvm_ver}}
 : ${libunwind_ver:=${llvm_ver}}
 : ${libcxxabi_ver:=${llvm_ver}}
