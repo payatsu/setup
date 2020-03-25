@@ -1391,6 +1391,7 @@ set_variables()
 
 	case ${target} in
 	arm*)        cross_linux_arch=arm;;
+	aarch64*)    cross_linux_arch=arm64;;
 	i?86*)       cross_linux_arch=x86;;
 	microblaze*) cross_linux_arch=microblaze;;
 	nios2*)      cross_linux_arch=nios2;;
@@ -4745,6 +4746,7 @@ EOF
 	[ "${enable_check}" != yes ] ||
 		make -C ${glibc_bld_dir_crs_1st} -j ${jobs} -k check || return
 	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${DESTDIR}${sysroot} install || return
+	mkdir -pv ${DESTDIR}${sysroot}/usr/lib || return # XXX: workaround for aarch64
 }
 
 install_cross_newlib()
@@ -4833,8 +4835,12 @@ install_cross_functional_gcc()
 		ln -fsv ${target}-${b}-${gcc_base_ver} ${DESTDIR}${prefix}/bin/${target}-${b} || return
 		ln -fsv ${target}-${b}-${gcc_base_ver}.1 ${DESTDIR}${prefix}/share/man/man1/${target}-${b}.1 || return
 	done
-	! echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' ||
-		ln -fsv ../lib/libgcc_s.a ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_base_ver} || return # XXX work around for --enable-version-specific-runtime-libs
+	for d in lib lib64; do
+		for e in a so; do
+			[ -f ${DESTDIR}${prefix}/lib/gcc/${target}/${d}/libgcc_s.${e} ] || continue
+			ln -fsv ../${d}/libgcc_s.${e} ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_base_ver} || return # XXX work around for --enable-version-specific-runtime-libs
+		done
+	done
 	update_path || return
 }
 
