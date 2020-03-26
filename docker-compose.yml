@@ -8,6 +8,8 @@ services:
       args:
         - USER
         - njobs=6
+        - http_proxy
+        - https_proxy
     hostname: docker
     environment:
       - TERM
