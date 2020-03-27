@@ -35,7 +35,7 @@ EOF
 
 init()
 {
-	: ${linux_ver:=5.4.12}
+	: ${linux_ver:=5.5.13}
 	: ${jobs:=`grep -ce '^processor\>' /proc/cpuinfo`}
 	: ${ARCH:=arm}
 	: ${CROSS_COMPILE:=arm-none-linux-gnueabi-}
@@ -62,6 +62,7 @@ prepare()
 	}
 	[ -z "${documents_build}" ] || {
 		which virtualenv > /dev/null 2>&1 || apt install -y virtualenv || return
+		which fc-list > /dev/null 2>&1 || apt install -y fontconfig || return
 	}
 }
 
@@ -113,7 +114,7 @@ build()
 		virtualenv sphinx_1.4 || return
 		. sphinx_1.4/bin/activate || return
 		pip install -r Documentation/sphinx/requirements.txt || return
-		make ${make_opts} -k pdfdocs
+		make ${make_opts} -k htmldocs
 		deactivate || return
 	}
 	[ -z "${mymodule_create}" ] || create_my_module || return
