@@ -50,6 +50,7 @@
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
 : ${linux_ver:=5.4.12}
+: ${kmod_ver:=27}
 : ${dtc_ver:=1.6.0}
 : ${u_boot_ver:=2019.07}
 : ${qemu_ver:=4.0.0}
@@ -377,6 +378,8 @@ help()
 		Specify the version of rsync you want, currently '${rsync_ver}'.
 	linux_ver
 		Specify the version of Linux kernel you want, currently '${linux_ver}'.
+	kmod_ver
+		Specify the version of kmod you want, currently '${kmod_ver}'.
 	dtc_ver
 		Specify the version of Device Tree Compiler you want, currently '${dtc_ver}'.
 	u_boot_ver
@@ -742,6 +745,9 @@ fetch()
 			esac
 			wget -O ${linux_org_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/kernel/${linux_major_ver:-v`echo ${linux_ver} | cut -d. -f1`.x}/${linux_name}.tar.xz || return;;
+		kmod)
+			wget -O ${kmod_org_src_dir}.tar.xz \
+				https://www.kernel.org/pub/linux/utils/kernel/kmod/${kmod_name}.tar.xz || return;;
 		dtc)
 			wget -O ${dtc_org_src_dir}.tar.xz \
 				https://www.kernel.org/pub/software/utils/dtc/${dtc_name}.tar.xz || return;;
@@ -2247,6 +2253,26 @@ install_native_linux_header()
 	esac
 	make -C ${linux_src_dir_ntv} -j ${jobs} V=1 \
 		ARCH=${native_linux_arch} INSTALL_HDR_PATH=${DESTDIR}${prefix} headers_install || return
+}
+
+install_native_kmod()
+{
+	[ -x ${prefix}/bin/kmod -a "${force_install}" != yes ] && return
+	fetch kmod || return
+	unpack ${kmod_org_src_dir} || return
+
+	[ -f ${kmod_org_src_dir}/Makefile ] ||
+		(cd ${kmod_org_src_dir}
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+			--enable-python --with-xz --with-zlib --with-openssl) || return
+	make -C ${kmod_org_src_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${kmod_org_src_dir} -j ${jobs} -k check || return
+	make -C ${kmod_org_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	for f in depmod insmod lsmod modinfo modprobe rmmod; do
+		ln -fsv kmod ${DESTDIR}${prefix}/bin/${f} || return
+	done
+	update_path || return
 }
 
 install_native_dtc()
