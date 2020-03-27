@@ -116,7 +116,7 @@
 : ${bash_ver:=5.0}
 : ${inetutils_ver:=1.9.4}
 : ${util_linux_ver:=2.35.1}
-: ${e2fsprogs_ver:=1.45.5}
+: ${e2fsprogs_ver:=1.45.6}
 : ${squashfs_ver:=4.4}
 : ${openssl_ver:=1.1.1e}
 : ${openssh_ver:=8.1p1}
