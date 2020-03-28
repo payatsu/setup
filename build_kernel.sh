@@ -111,8 +111,8 @@ build()
 		make ${make_opts} -C tools spi || return
 	}
 	[ -z "${documents_build}" ] || {
-		virtualenv sphinx_1.4 || return
-		. sphinx_1.4/bin/activate || return
+		virtualenv sphinx_1.7.9 || return
+		. sphinx_1.7.9/bin/activate || return
 		pip install -r Documentation/sphinx/requirements.txt || return
 		make ${make_opts} -k htmldocs
 		deactivate || return
