@@ -1354,7 +1354,6 @@ set_src_directory()
 
 	case ${1} in
 	glibc|newlib|mingw-w64)
-		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-src
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_bld_dir_crs_hdr=\${${_1}_src_base}/${target}-\${${_1}_name}-bld-hdr
 		eval ${_1}_bld_dir_crs_1st=\${${_1}_src_base}/${target}-\${${_1}_name}-bld-1st
@@ -2338,13 +2337,11 @@ install_native_glibc()
 	which gawk > /dev/null || install_native_gawk || return
 	which gperf > /dev/null || install_native_gperf || return
 	fetch glibc || return
-	[ -d ${glibc_src_dir_ntv} ] ||
-		(unpack ${glibc_org_src_dir} &&
-			mv -v ${glibc_org_src_dir} ${glibc_src_dir_ntv}) || return
+	unpack ${glibc_org_src_dir} || return
 	mkdir -pv ${glibc_bld_dir_ntv} || return
 	[ -f ${glibc_bld_dir_ntv}/Makefile ] ||
 		(cd ${glibc_bld_dir_ntv}
-		LD_LIBRARY_PATH='' ${glibc_src_dir_ntv}/configure \
+		LD_LIBRARY_PATH='' ${glibc_org_src_dir}/configure \
 			--prefix=${prefix} --build=${build} \
 			--with-headers=${DESTDIR}${prefix}/include --without-selinux --enable-add-ons \
 			CPPFLAGS="${CPPFLAGS} -I${prefix}/include -D_LIBC") || return
