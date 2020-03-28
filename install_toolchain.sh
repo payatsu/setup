@@ -1355,8 +1355,8 @@ set_src_directory()
 	case ${1} in
 	glibc|newlib|mingw-w64)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
+		eval ${_1}_bld_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-bld
 		eval ${_1}_bld_dir_crs_hdr=\${${_1}_src_base}/${target}-\${${_1}_name}-bld-hdr
-		eval ${_1}_bld_dir_crs_1st=\${${_1}_src_base}/${target}-\${${_1}_name}-bld-1st
 		;;
 	gcc)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
@@ -4754,17 +4754,17 @@ install_cross_glibc()
 +#endif /* _LINUX_MICROBLAZE_SYSDEP_H */
 EOF
 
-	mkdir -pv ${glibc_bld_dir_crs_1st} || return
-	[ -f ${glibc_bld_dir_crs_1st}/Makefile ] ||
-		(cd ${glibc_bld_dir_crs_1st}
+	mkdir -pv ${glibc_bld_dir_crs} || return
+	[ -f ${glibc_bld_dir_crs}/Makefile ] ||
+		(cd ${glibc_bld_dir_crs}
 		${glibc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-headers=${DESTDIR}${sysroot}/usr/include CFLAGS="${CFLAGS} -Wno-error=parentheses -O2" \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return
-	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${DESTDIR}${sysroot} install-headers || return
-	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} AR=${target}-ar || return
+	make -C ${glibc_bld_dir_crs} -j ${jobs} DESTDIR=${DESTDIR}${sysroot} install-headers || return
+	make -C ${glibc_bld_dir_crs} -j ${jobs} AR=${target}-ar || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${glibc_bld_dir_crs_1st} -j ${jobs} -k check || return
-	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${DESTDIR}${sysroot} install || return
+		make -C ${glibc_bld_dir_crs} -j ${jobs} -k check || return
+	make -C ${glibc_bld_dir_crs} -j ${jobs} DESTDIR=${DESTDIR}${sysroot} install || return
 	mkdir -pv ${DESTDIR}${sysroot}/usr/lib || return # XXX: workaround for aarch64
 }
 
@@ -4774,12 +4774,12 @@ install_cross_newlib()
 	which ${target}-gcc > /dev/null || install_cross_gcc_without_headers || return
 	fetch newlib || return
 	unpack ${newlib_org_src_dir} || return
-	mkdir -pv ${newlib_bld_dir_crs_1st} || return
-	[ -f ${newlib_bld_dir_crs_1st}/Makefile ] ||
-		(cd ${newlib_bld_dir_crs_1st}
+	mkdir -pv ${newlib_bld_dir_crs} || return
+	[ -f ${newlib_bld_dir_crs}/Makefile ] ||
+		(cd ${newlib_bld_dir_crs}
 		${newlib_org_src_dir}/configure --prefix=/ --build=${build} --target=${target}) || return
-	make -C ${newlib_bld_dir_crs_1st} -j 1 || return
-	make -C ${newlib_bld_dir_crs_1st} -j 1 DESTDIR=${DESTDIR}${prefix} install || return
+	make -C ${newlib_bld_dir_crs} -j 1 || return
+	make -C ${newlib_bld_dir_crs} -j 1 DESTDIR=${DESTDIR}${prefix} install || return
 	mkdir -pv ${sysroot}/usr || return
 	ln -fsv ../../include -t ${sysroot}/usr || return
 }
@@ -4803,18 +4803,18 @@ install_mingw_w64_crt()
 {
 	fetch mingw-w64 || return
 	unpack ${mingw_w64_org_src_dir} || return
-	mkdir -pv ${mingw_w64_bld_dir_crs_1st} || return
-	[ -f ${mingw_w64_bld_dir_crs_1st}/Makefile ] ||
-		(cd ${mingw_w64_bld_dir_crs_1st}
+	mkdir -pv ${mingw_w64_bld_dir_crs} || return
+	[ -f ${mingw_w64_bld_dir_crs}/Makefile ] ||
+		(cd ${mingw_w64_bld_dir_crs}
 		CFLAGS="${CFLAGS} -Wno-error=expansion-to-defined -Wno-error=cast-function-type" \
 		CPPFLAGS="${CPPFLAGS} -I${sysroot}/mingw/include" \
 			${mingw_w64_org_src_dir}/configure --prefix=${sysroot}/mingw --build=${build} --host=${target} \
 			--disable-multilib --without-headers --with-sysroot=${sysroot} \
 			`${target}-gcc -print-file-name=libmsvcrt.a | grep -qe ^/ && echo --with-libraries=all --with-tools=all`) || return
-	make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} || return
+	make -C ${mingw_w64_bld_dir_crs} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} -k check || return
-	make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} install || return
+		make -C ${mingw_w64_bld_dir_crs} -j ${jobs} -k check || return
+	make -C ${mingw_w64_bld_dir_crs} -j ${jobs} install || return
 }
 
 install_cross_functional_gcc()
@@ -4873,7 +4873,7 @@ install_cross_gcc()
 	install_cross_functional_gcc || return
 	case ${target} in
 	x86_64-w64-mingw32|i686-w64-mingw32)
-		rm -fv ${mingw_w64_bld_dir_crs_1st}/Makefile || return
+		rm -fv ${mingw_w64_bld_dir_crs}/Makefile || return
 		install_mingw_w64_crt || return;; # XXX: for --with-libraries, --with-tools to MinGW-w64
 	esac
 }
