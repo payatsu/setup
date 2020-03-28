@@ -1354,12 +1354,10 @@ set_src_directory()
 
 	case ${1} in
 	glibc|newlib|mingw-w64)
-		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-src
+		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
 		eval ${_1}_bld_dir_crs_hdr=\${${_1}_src_base}/${target}-\${${_1}_name}-bld-hdr
 		eval ${_1}_bld_dir_crs_1st=\${${_1}_src_base}/${target}-\${${_1}_name}-bld-1st
-		eval ${_1}_src_dir_crs_hdr=\${${_1}_src_base}/${target}-\${${_1}_name}-src-hdr
-		eval ${_1}_src_dir_crs_1st=\${${_1}_src_base}/${target}-\${${_1}_name}-src-1st
 		;;
 	gcc)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
@@ -4732,12 +4730,10 @@ install_cross_glibc()
 	which gawk > /dev/null || install_native_gawk || return
 	which gperf > /dev/null || install_native_gperf || return
 	fetch glibc || return
-	[ -d ${glibc_src_dir_crs_1st} ] ||
-		(unpack ${glibc_org_src_dir} &&
-			mv -v ${glibc_org_src_dir} ${glibc_src_dir_crs_1st}) || return
+	unpack ${glibc_org_src_dir} || return
 
 	[ ${cross_linux_arch} != microblaze ] ||
-		patch -N -p0 -d ${glibc_src_dir_crs_1st} <<EOF || [ $? = 1 ] || return
+		patch -N -p0 -d ${glibc_org_src_dir} <<EOF || [ $? = 1 ] || return
 --- sysdeps/unix/sysv/linux/microblaze/sysdep.h
 +++ sysdeps/unix/sysv/linux/microblaze/sysdep.h
 @@ -16,8 +16,11 @@
@@ -4764,7 +4760,7 @@ EOF
 	mkdir -pv ${glibc_bld_dir_crs_1st} || return
 	[ -f ${glibc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${glibc_bld_dir_crs_1st}
-		${glibc_src_dir_crs_1st}/configure --prefix=/usr --build=${build} --host=${target} \
+		${glibc_org_src_dir}/configure --prefix=/usr --build=${build} --host=${target} \
 			--with-headers=${DESTDIR}${sysroot}/usr/include CFLAGS="${CFLAGS} -Wno-error=parentheses -O2" \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return
 	make -C ${glibc_bld_dir_crs_1st} -j ${jobs} DESTDIR=${DESTDIR}${sysroot} install-headers || return
@@ -4780,15 +4776,13 @@ install_cross_newlib()
 	[ -f ${sysroot}/usr/include/stdio.h -a "${force_install}" != yes ] && return
 	which ${target}-gcc > /dev/null || install_cross_gcc_without_headers || return
 	fetch newlib || return
-	[ -d ${newlib_src_dir_crs_hdr} ] ||
-		(unpack ${newlib_org_src_dir} &&
-			mv -v ${newlib_org_src_dir} ${newlib_src_dir_crs_hdr}) || return
-	mkdir -pv ${newlib_bld_dir_crs_hdr} || return
-	[ -f ${newlib_bld_dir_crs_hdr}/Makefile ] ||
-		(cd ${newlib_bld_dir_crs_hdr}
-		${newlib_src_dir_crs_hdr}/configure --prefix=/ --build=${build} --target=${target}) || return
-	make -C ${newlib_bld_dir_crs_hdr} -j 1 || return
-	make -C ${newlib_bld_dir_crs_hdr} -j 1 DESTDIR=${DESTDIR}${prefix} install || return
+	unpack ${newlib_org_src_dir} || return
+	mkdir -pv ${newlib_bld_dir_crs_1st} || return
+	[ -f ${newlib_bld_dir_crs_1st}/Makefile ] ||
+		(cd ${newlib_bld_dir_crs_1st}
+		${newlib_org_src_dir}/configure --prefix=/ --build=${build} --target=${target}) || return
+	make -C ${newlib_bld_dir_crs_1st} -j 1 || return
+	make -C ${newlib_bld_dir_crs_1st} -j 1 DESTDIR=${DESTDIR}${prefix} install || return
 	mkdir -pv ${sysroot}/usr || return
 	ln -fsv ../../include -t ${sysroot}/usr || return
 }
@@ -4796,13 +4790,11 @@ install_cross_newlib()
 install_mingw_w64_header()
 {
 	fetch mingw-w64 || return
-	[ -d ${mingw_w64_src_dir_crs_hdr} ] ||
-		(unpack ${mingw_w64_org_src_dir} &&
-			mv -v ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_crs_hdr}) || return
+	unpack ${mingw_w64_org_src_dir} || return
 	mkdir -pv ${mingw_w64_bld_dir_crs_hdr} || return
 	[ -f ${mingw_w64_bld_dir_crs_hdr}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_crs_hdr}
-		${mingw_w64_src_dir_crs_hdr}/configure --prefix=${sysroot}/mingw --build=${build} --host=${target} \
+		${mingw_w64_org_src_dir}/configure --prefix=${sysroot}/mingw --build=${build} --host=${target} \
 			--disable-multilib --without-crt --with-sysroot=${sysroot}) || return
 	make -C ${mingw_w64_bld_dir_crs_hdr} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -4813,15 +4805,13 @@ install_mingw_w64_header()
 install_mingw_w64_crt()
 {
 	fetch mingw-w64 || return
-	[ -d ${mingw_w64_src_dir_crs_1st} ] ||
-		(unpack ${mingw_w64_org_src_dir} &&
-			mv -v ${mingw_w64_org_src_dir} ${mingw_w64_src_dir_crs_1st}) || return
+	unpack ${mingw_w64_org_src_dir} || return
 	mkdir -pv ${mingw_w64_bld_dir_crs_1st} || return
 	[ -f ${mingw_w64_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${mingw_w64_bld_dir_crs_1st}
 		CFLAGS="${CFLAGS} -Wno-error=expansion-to-defined -Wno-error=cast-function-type" \
 		CPPFLAGS="${CPPFLAGS} -I${sysroot}/mingw/include" \
-			${mingw_w64_src_dir_crs_1st}/configure --prefix=${sysroot}/mingw --build=${build} --host=${target} \
+			${mingw_w64_org_src_dir}/configure --prefix=${sysroot}/mingw --build=${build} --host=${target} \
 			--disable-multilib --without-headers --with-sysroot=${sysroot} \
 			`${target}-gcc -print-file-name=libmsvcrt.a | grep -qe ^/ && echo --with-libraries=all --with-tools=all`) || return
 	make -C ${mingw_w64_bld_dir_crs_1st} -j ${jobs} || return
