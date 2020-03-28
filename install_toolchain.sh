@@ -2355,16 +2355,15 @@ install_native_gmp()
 	[ -f ${prefix}/include/gmp.h -a "${force_install}" != yes ] && return
 	which m4 > /dev/null || install_native_m4 || return
 	fetch gmp || return
-	[ -d ${gmp_src_dir_ntv} ] ||
-		(unpack ${gmp_org_src_dir} &&
-			mv -v ${gmp_org_src_dir} ${gmp_src_dir_ntv}) || return
-	[ -f ${gmp_src_dir_ntv}/Makefile ] ||
-		(cd ${gmp_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --enable-cxx) || return
-	make -C ${gmp_src_dir_ntv} -j ${jobs} || return
+	unpack ${gmp_org_src_dir} || return
+	mkdir -pv ${gmp_bld_dir_ntv} || return
+	[ -f ${gmp_bld_dir_ntv}/Makefile ] ||
+		(cd ${gmp_bld_dir_ntv}
+		${gmp_org_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-cxx) || return
+	make -C ${gmp_bld_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${gmp_src_dir_ntv} -j ${jobs} -k check || return
-	make -C ${gmp_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${gmp_bld_dir_ntv} -j ${jobs} -k check || return
+	make -C ${gmp_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -2373,16 +2372,15 @@ install_native_mpfr()
 	[ -f ${prefix}/include/mpfr.h -a "${force_install}" != yes ] && return
 	search_header gmp.h > /dev/null || install_native_gmp || return
 	fetch mpfr || return
-	[ -d ${mpfr_src_dir_ntv} ] ||
-		(unpack ${mpfr_org_src_dir} &&
-			mv -v ${mpfr_org_src_dir} ${mpfr_src_dir_ntv}) || return
-	[ -f ${mpfr_src_dir_ntv}/Makefile ] ||
-		(cd ${mpfr_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --with-gmp=`get_prefix gmp.h`) || return
-	make -C ${mpfr_src_dir_ntv} -j ${jobs} || return
+	unpack ${mpfr_org_src_dir} || return
+	mkdir -pv ${mpfr_bld_dir_ntv} || return
+	[ -f ${mpfr_bld_dir_ntv}/Makefile ] ||
+		(cd ${mpfr_bld_dir_ntv}
+		${mpfr_org_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --with-gmp=`get_prefix gmp.h`) || return
+	make -C ${mpfr_bld_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${mpfr_src_dir_ntv} -j ${jobs} -k check || return
-	make -C ${mpfr_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${mpfr_bld_dir_ntv} -j ${jobs} -k check || return
+	make -C ${mpfr_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -2391,17 +2389,16 @@ install_native_mpc()
 	[ -f ${prefix}/include/mpc.h -a "${force_install}" != yes ] && return
 	search_header mpfr.h > /dev/null || install_native_mpfr || return
 	fetch mpc || return
-	[ -d ${mpc_src_dir_ntv} ] ||
-		(unpack ${mpc_org_src_dir} &&
-			mv -v ${mpc_org_src_dir} ${mpc_src_dir_ntv}) || return
-	[ -f ${mpc_src_dir_ntv}/Makefile ] ||
-		(cd ${mpc_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --host=${host} \
+	unpack ${mpc_org_src_dir} || return
+	mkdir -pv ${mpc_bld_dir_ntv} || return
+	[ -f ${mpc_bld_dir_ntv}/Makefile ] ||
+		(cd ${mpc_bld_dir_ntv}
+		${mpc_org_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h`) || return
-	make -C ${mpc_src_dir_ntv} -j ${jobs} || return
+	make -C ${mpc_bld_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${mpc_src_dir_ntv} -j ${jobs} -k check || return
-	make -C ${mpc_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${mpc_bld_dir_ntv} -j ${jobs} -k check || return
+	make -C ${mpc_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
