@@ -1366,7 +1366,7 @@ set_src_directory()
 		;;
 	jpeg)
 		eval ${_1}_org_src_dir=\${${_1}_src_base}/${_1}-\`echo \${${_1}_ver} \| sed -e 's/^v//'\`
-		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/${_1}-\`echo \${${_1}_ver} \| sed -e 's/^v//'\`-ntv
+		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/${_1}-\`echo \${${_1}_ver} \| sed -e 's/^v//'\`-bld
 		;;
 	*)
 		eval ${_1}_bld_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-bld
@@ -2669,15 +2669,14 @@ install_native_zlib()
 {
 	[ -f ${prefix}/include/zlib.h -a "${force_install}" != yes ] && return
 	fetch zlib || return
-	[ -d ${zlib_src_dir_ntv} ] ||
-		(unpack ${zlib_org_src_dir} &&
-			mv -v ${zlib_org_src_dir} ${zlib_src_dir_ntv}) || return
-	(cd ${zlib_src_dir_ntv}
-	eval `[ ${build} != ${host} ] && echo CHOST=${host}` ./configure --prefix=${prefix}) || return
-	make -C ${zlib_src_dir_ntv} -j ${jobs} || return
+	unpack ${zlib_org_src_dir} || return
+	mkdir -pv ${zlib_bld_dir_ntv} || return
+	(cd ${zlib_bld_dir_ntv}
+	eval `[ ${build} != ${host} ] && echo CHOST=${host}` ${zlib_org_src_dir}/configure --prefix=${prefix}) || return
+	make -C ${zlib_bld_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${zlib_src_dir_ntv} -j ${jobs} -k check || return
-	make -C ${zlib_src_dir_ntv} -j ${jobs} install || return
+		make -C ${zlib_bld_dir_ntv} -j ${jobs} -k check || return
+	make -C ${zlib_bld_dir_ntv} -j ${jobs} install || return
 	update_path || return
 }
 
@@ -2686,18 +2685,17 @@ install_native_libpng()
 	[ -f ${prefix}/include/png.h -a "${force_install}" != yes ] && return
 	search_header zlib.h > /dev/null || install_native_zlib || return
 	fetch libpng || return
-	[ -d ${libpng_src_dir_ntv} ] ||
-		(unpack ${libpng_org_src_dir} &&
-			mv -v ${libpng_org_src_dir} ${libpng_src_dir_ntv}) || return
-	[ -f ${libpng_src_dir_ntv}/Makefile ] ||
-		(cd ${libpng_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --host=${host} \
+	unpack ${libpng_org_src_dir} || return
+	mkdir -pv ${libpng_bld_dir_ntv} || return
+	[ -f ${libpng_bld_dir_ntv}/Makefile ] ||
+		(cd ${libpng_bld_dir_ntv}
+		${libpng_org_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			CPPFLAGS="${CPPFLAGS} -I`get_include_path zlib.h`" \
 			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
-	make -C ${libpng_src_dir_ntv} -j ${jobs} || return
+	make -C ${libpng_bld_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libpng_src_dir_ntv} -j ${jobs} -k check || return
-	make -C ${libpng_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libpng_bld_dir_ntv} -j ${jobs} -k check || return
+	make -C ${libpng_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -2705,16 +2703,15 @@ install_native_tiff()
 {
 	[ -f ${prefix}/include/tiffio.h -a "${force_install}" != yes ] && return
 	fetch tiff || return
-	[ -d ${tiff_src_dir_ntv} ] ||
-		(unpack ${tiff_org_src_dir} &&
-			mv -v ${tiff_org_src_dir} ${tiff_src_dir_ntv}) || return
-	[ -f ${tiff_src_dir_ntv}/Makefile ] ||
-		(cd ${tiff_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${tiff_src_dir_ntv} -j ${jobs} || return
+	unpack ${tiff_org_src_dir} || return
+	mkdir -pv ${tiff_bld_dir_ntv} || return
+	[ -f ${tiff_bld_dir_ntv}/Makefile ] ||
+		(cd ${tiff_bld_dir_ntv}
+		${tiff_org_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${tiff_bld_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${tiff_src_dir_ntv} -j ${jobs} -k check || return
-	make -C ${tiff_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${tiff_bld_dir_ntv} -j ${jobs} -k check || return
+	make -C ${tiff_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -2722,16 +2719,15 @@ install_native_jpeg()
 {
 	[ -f ${prefix}/include/jpeglib.h -a "${force_install}" != yes ] && return
 	fetch jpeg || return
-	[ -d ${jpeg_src_dir_ntv} ] ||
-		(unpack ${jpeg_org_src_dir} &&
-			mv -v ${jpeg_org_src_dir} ${jpeg_src_dir_ntv}) || return
-	[ -f ${jpeg_src_dir_ntv}/Makefile ] ||
-		(cd ${jpeg_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${jpeg_src_dir_ntv} -j ${jobs} || return
+	unpack ${jpeg_org_src_dir} || return
+	mkdir -pv ${jpeg_bld_dir_ntv} || return
+	[ -f ${jpeg_bld_dir_ntv}/Makefile ] ||
+		(cd ${jpeg_bld_dir_ntv}
+		${jpeg_org_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${jpeg_bld_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${jpeg_src_dir_ntv} -j ${jobs} -k check || return
-	make -C ${jpeg_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${jpeg_bld_dir_ntv} -j ${jobs} -k check || return
+	make -C ${jpeg_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -2739,16 +2735,15 @@ install_native_giflib()
 {
 	[ -f ${prefix}/include/gif_lib.h -a "${force_install}" != yes ] && return
 	fetch giflib || return
-	[ -d ${giflib_src_dir_ntv} ] ||
-		(unpack ${giflib_org_src_dir} &&
-			mv -v ${giflib_org_src_dir} ${giflib_src_dir_ntv}) || return
-	[ -f ${giflib_src_dir_ntv}/Makefile ] ||
-		(cd ${giflib_src_dir_ntv}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${giflib_src_dir_ntv} -j ${jobs} || return
+	unpack ${giflib_org_src_dir} || return
+	mkdir -pv ${giflib_bld_dir_ntv} || return
+	[ -f ${giflib_bld_dir_ntv}/Makefile ] ||
+		(cd ${giflib_bld_dir_ntv}
+		${giflib_org_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${giflib_bld_dir_ntv} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${giflib_src_dir_ntv} -j ${jobs} -k check || return
-	make -C ${giflib_src_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${giflib_bld_dir_ntv} -j ${jobs} -k check || return
+	make -C ${giflib_bld_dir_ntv} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
