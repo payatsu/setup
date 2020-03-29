@@ -1350,7 +1350,6 @@ set_src_directory()
 	gcc)
 		eval ${_1}_bld_dir_crs_1st=\${${_1}_src_base}/${target}-\${${_1}_name}-1st
 		eval ${_1}_bld_dir_crs_2nd=\${${_1}_src_base}/${target}-\${${_1}_name}-2nd
-		eval ${_1}_bld_dir_crs_ntv=\${${_1}_src_base}/${target}-\${${_1}_name}-crs-ntv
 		;;
 	linux)
 		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-src
@@ -1358,7 +1357,7 @@ set_src_directory()
 		;;
 	jpeg)
 		eval ${_1}_src_dir=\${${_1}_src_base}/${_1}-\`echo \${${_1}_ver} \| sed -e 's/^v//'\`
-		eval ${_1}_bld_dir=\${${_1}_src_base}/${_1}-\`echo \${${_1}_ver} \| sed -e 's/^v//'\`-bld
+		eval ${_1}_bld_dir=\${${_1}_src_base}/${_1}-\`echo \${${_1}_ver} \| sed -e 's/^v//'\`-bld-${host}`[ ${host} != ${target} ] && echo -${target}`
 		;;
 	esac
 }
