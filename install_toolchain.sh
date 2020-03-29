@@ -1139,9 +1139,6 @@ install()
 		install_cross_binutils || return
 		install_cross_gcc || return
 		install_cross_gdb || return;;
-	crossed)
-		install_crossed_binutils || return
-		install_crossed_gcc || return;;
 	*)
 		echo install: no match: ${1} >&2; return 1;;
 	esac
@@ -2432,7 +2429,7 @@ install_native_gcc()
 	gcc_base_ver=`cat ${gcc_src_dir}/gcc/BASE-VER` || return
 	[ -f ${gcc_bld_dir}/Makefile ] ||
 		(cd ${gcc_bld_dir}
-		${gcc_src_dir}/configure --prefix=${prefix} --build=${build} \
+		${gcc_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --target=${target} \
 			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
 			--with-isl=`get_prefix version.h isl` --with-system-zlib \
 			--enable-languages=${languages} --disable-multilib --enable-linker-build-id --enable-libstdcxx-debug \
@@ -2443,18 +2440,18 @@ install_native_gcc()
 		make -C ${gcc_bld_dir} -j ${jobs} -k check || return
 	make -C ${gcc_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	[ -f ${gcc_bld_dir}/gcc/xg++ -a "${force_install}" = yes ] &&
-		which doxygen > /dev/null && make -C ${gcc_bld_dir}/${build}/libstdc++-v3 -j ${jobs} install-man
+		which doxygen > /dev/null && make -C ${gcc_bld_dir}/${target}/libstdc++-v3 -j ${jobs} install-man
 	ln -fsv gcc ${DESTDIR}${prefix}/bin/cc || return
-	[ ! -f ${DESTDIR}${prefix}/bin/${build}-gcc-tmp ] || rm -v ${DESTDIR}${prefix}/bin/${build}-gcc-tmp || return
+	[ ! -f ${DESTDIR}${prefix}/bin/${target}-gcc-tmp ] || rm -v ${DESTDIR}${prefix}/bin/${target}-gcc-tmp || return
 	for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
 		[ -f ${DESTDIR}${prefix}/bin/${b}-${gcc_base_ver} ] || continue
 		ln -fsv ${b}-${gcc_base_ver} ${DESTDIR}${prefix}/bin/${b} || return
-		ln -fsv ${b} ${DESTDIR}${prefix}/bin/${host}-${b} || return
+		ln -fsv ${b} ${DESTDIR}${prefix}/bin/${target}-${b} || return
 		ln -fsv ${b}-${gcc_base_ver}.1 ${DESTDIR}${prefix}/share/man/man1/${b}.1 || return
 	done
 	for l in libgcc_s.so libgcc_s.so.1; do
-		[ -f ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_base_ver}/${l} ] ||
-			ln -fsv ../lib64/${l} ${DESTDIR}${prefix}/lib/gcc/${host}/${gcc_base_ver} || return # XXX work around for --enable-version-specific-runtime-libs
+		[ -f ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_base_ver}/${l} ] ||
+			ln -fsv ../lib64/${l} ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_base_ver} || return # XXX work around for --enable-version-specific-runtime-libs
 	done
 	update_path || return
 }
@@ -5651,32 +5648,6 @@ install_native_libbacktrace()
 		make -C ${libbacktrace_src_dir} -j ${jobs} -k check || return
 	make -C ${libbacktrace_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
-}
-
-install_crossed_gcc()
-{
-	[ -x ${sysroot}/usr/bin/gcc${exe} -a "${force_install}" != yes ] && return
-	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
-	(target=${host}; host=${build}; set_variables; install_cross_binutils) || return # XXX libgccのconfigureが${target}-nm, ${target}-ranlib見つけてくれないので現状は${prefix}/bin/${target}-{nm,ranlib}が必須。
-	(target=${host}; host=${build}; set_variables; install_cross_gcc) || return
-	[ -f ${sysroot}/usr/bin/as${exe} ] || install_crossed_binutils || return
-	echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
-	[ -f ${sysroot}/usr/include/gmp.h ] || install_crossed_native_gmp || return
-	[ -f ${sysroot}/usr/include/mpfr.h ] || install_crossed_native_mpfr || return
-	[ -f ${sysroot}/usr/include/mpc.h ] || install_crossed_native_mpc || return
-	which perl > /dev/null || install_native_perl || return
-	fetch gcc || return
-	unpack ${gcc_src_dir} || return
-	mkdir -pv ${gcc_bld_dir_crs_ntv} || return
-	[ -f ${gcc_bld_dir_crs_ntv}/Makefile ] ||
-		(cd ${gcc_bld_dir_crs_ntv}
-		${gcc_src_dir}/configure --prefix=/usr --build=${build} --host=${host} --target=${target} \
-			--with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr --with-mpc=${sysroot}/usr \
-			--enable-languages=${languages} --with-sysroot=${sysroot_mingw:-/} --with-build-sysroot=${sysroot} --without-isl --with-system-zlib \
-			--enable-libstdcxx-debug \
-			CC_FOR_TARGET=${target}-gcc CXX_FOR_TARGET=${target}-g++ GOC_FOR_TARGET=${target}-gccgo) || return
-	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} || return
-	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
 
 realpath -e ${0} | grep -qe ^/tmp/ || { tmpdir=`mktemp -dp /tmp` && trap 'rm -fvr ${tmpdir}' EXIT HUP INT QUIT TERM && cp -v ${0} ${tmpdir} && sh -$- ${tmpdir}/`basename ${0}` "$@"; exit;}
