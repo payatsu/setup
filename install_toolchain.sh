@@ -1365,9 +1365,6 @@ set_src_directory()
 		eval ${_1}_src_dir=\${${_1}_src_base}/${_1}-\`echo \${${_1}_ver} \| sed -e 's/^v//'\`
 		eval ${_1}_bld_dir=\${${_1}_src_base}/${_1}-\`echo \${${_1}_ver} \| sed -e 's/^v//'\`-bld
 		;;
-	*)
-		eval ${_1}_src_dir_crs_ntv=\${${_1}_src_base}/${target}-\${${_1}_name}-crs-ntv
-		;;
 	esac
 }
 
@@ -1605,14 +1602,14 @@ EOF
 
 search_library()
 {
-	for dir in ${DESTDIR}${prefix}/lib64 ${DESTDIR}${prefix}/lib `LANG=C ${CC:-gcc} -print-search-dirs |
+	for dir in ${DESTDIR}${prefix}/lib64 ${DESTDIR}${prefix}/lib `LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
 		sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs realpath -eq`; do
 		[ -f ${dir}/${1} ] && echo ${dir}/${1} && return
 	done
 	return 1
 }
 
-get_library_path()
+print_library_dir()
 {
 	path=`search_library $@`
 	[ $? = 0 ] && dirname ${path} || return
@@ -1621,7 +1618,7 @@ get_library_path()
 search_header()
 {
 	for dir in ${DESTDIR}${prefix}/include \
-		`LANG=C ${CC:-gcc} -x c -E -v /dev/null -o /dev/null 2>&1 |
+		`LANG=C ${CC:-${host:+${host}-}gcc} -x c -E -v /dev/null -o /dev/null 2>&1 |
 			sed -e '/^#include /,/^End of search list.$/p;d' | xargs realpath -eq`; do
 		[ -d ${dir}${2:+/${2}} ] || continue
 		candidates=`find ${dir}${2:+/${2}} \( -type f -o -type l \) -name ${1} | sort`
@@ -1630,7 +1627,7 @@ search_header()
 	return 1
 }
 
-get_include_path()
+print_include_dir()
 {
 	path=`search_header $@`
 	[ $? = 0 ] && echo ${path} | sed -e "s%${2:+/${2}}/${1}\$%%" || return
@@ -1897,8 +1894,8 @@ install_native_pkg_config()
 	[ -f ${pkg_config_src_dir}/Makefile ] ||
 		(cd ${pkg_config_src_dir}
 		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
-			GLIB_CFLAGS="-I`get_include_path glib.h` -I`get_library_path libglib-2.0.so`/glib-2.0/include" \
-			GLIB_LIBS="-L`get_library_path libglib-2.0.so` -lglib-2.0") || return
+			GLIB_CFLAGS="-I`print_include_dir glib.h` -I`print_library_dir libglib-2.0.so`/glib-2.0/include" \
+			GLIB_LIBS="-L`print_library_dir libglib-2.0.so` -lglib-2.0") || return
 	make -C ${pkg_config_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${pkg_config_src_dir} -j ${jobs} -k check || return
@@ -2133,8 +2130,8 @@ install_native_binutils()
 			--enable-shared --enable-gold --enable-threads --enable-plugins \
 			--enable-compressed-debug-sections=all --enable-targets=all --enable-64-bit-bfd \
 			--with-sysroot=/ --with-system-zlib \
-			CFLAGS="${CFLAGS} -I`get_include_path zlib.h`" CXXFLAGS="${CXXFLAGS} -I`get_include_path zlib.h`" \
-			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
+			CFLAGS="${CFLAGS} -I`print_include_dir zlib.h`" CXXFLAGS="${CXXFLAGS} -I`print_include_dir zlib.h`" \
+			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`") || return
 	make -C ${binutils_bld_dir} -j 1 || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${binutils_bld_dir} -j 1 -k check || return
@@ -2157,8 +2154,8 @@ install_native_elfutils()
 		(cd ${elfutils_src_dir}
 		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			--disable-debuginfod \
-			CFLAGS="${CFLAGS} -I`get_include_path zlib.h`" \
-			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so` -lbz2") || return
+			CFLAGS="${CFLAGS} -I`print_include_dir zlib.h`" \
+			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -lbz2") || return
 	make -C ${elfutils_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${elfutils_src_dir} -j ${jobs} -k check || return
@@ -2298,7 +2295,7 @@ install_native_qemu()
 	unpack ${qemu_src_dir} || return
 	(cd ${qemu_src_dir}
 	./configure --prefix=${prefix} --cc=${CC:-gcc} --host-cc=${CC:-gcc} --cxx=${CXX:-g++} \
-		--extra-cflags=-I`get_include_path zlib.h` --extra-ldflags=-L`get_library_path libz.so`) || return
+		--extra-cflags=-I`print_include_dir zlib.h` --extra-ldflags=-L`print_library_dir libz.so`) || return
 	make -C ${qemu_src_dir} -j ${jobs} V=1 || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${qemu_src_dir} -j ${jobs} -k test || return
@@ -2605,8 +2602,8 @@ install_native_gdb()
 			--enable-targets=all --enable-64-bit-bfd --enable-tui \
 			--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${host} --without-guile --with-python=python3 \
 			--with-system-zlib --with-system-readline \
-			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so` -L`get_library_path libncurses.so`" \
-			host_configargs='--disable-rpath 'CFLAGS=\'"${CFLAGS} -I`get_include_path zlib.h` -I`get_include_path curses.h`"\') || return
+			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libncurses.so`" \
+			host_configargs='--disable-rpath 'CFLAGS=\'"${CFLAGS} -I`print_include_dir zlib.h` -I`print_include_dir curses.h`"\') || return
 	make -C ${gdb_bld_dir} -j ${jobs} V=1 || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gdb_bld_dir} -j ${jobs} -k check || return
@@ -2691,8 +2688,8 @@ install_native_libpng()
 	[ -f ${libpng_bld_dir}/Makefile ] ||
 		(cd ${libpng_bld_dir}
 		${libpng_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-			CPPFLAGS="${CPPFLAGS} -I`get_include_path zlib.h`" \
-			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
+			CPPFLAGS="${CPPFLAGS} -I`print_include_dir zlib.h`" \
+			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`") || return
 	make -C ${libpng_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libpng_bld_dir} -j ${jobs} -k check || return
@@ -3455,7 +3452,7 @@ install_native_global()
 	[ -f ${global_src_dir}/Makefile ] ||
 		(cd ${global_src_dir}
 		./configure --prefix=${prefix} --build=${build} --host=${host} \
-			--with-ncurses=`get_prefix curses.h` CPPFLAGS="${CPPFLAGS} -I`get_include_path curses.h`") || return
+			--with-ncurses=`get_prefix curses.h` CPPFLAGS="${CPPFLAGS} -I`print_include_dir curses.h`") || return
 	make -C ${global_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${global_src_dir} -j ${jobs} -k check || return
@@ -3475,8 +3472,8 @@ install_native_pcre()
 		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			--enable-pcre16 --enable-pcre32 --enable-jit --enable-utf --enable-unicode-properties \
 			--enable-newline-is-any --enable-pcregrep-libz --enable-pcregrep-libbz2 \
-			--enable-pcretest-libreadline CPPFLAGS="${CPPFLAGS} -I`get_include_path zlib.h`" \
-			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
+			--enable-pcretest-libreadline CPPFLAGS="${CPPFLAGS} -I`print_include_dir zlib.h`" \
+			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`") || return
 	make -C ${pcre_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${pcre_src_dir} -j ${jobs} -k check || return
@@ -3495,8 +3492,8 @@ install_native_pcre2()
 		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			--enable-pcre2-16 --enable-pcre2-32 --enable-jit --enable-newline-is-any \
 			--enable-pcre2grep-libz --enable-pcre2grep-libbz2 \
-			CPPFLAGS="${CPPFLAGS} -I`get_include_path bzlib.h`" \
-			LDFLAGS="${LDFLAGS} -L`get_library_path libbz2.so`") || return
+			CPPFLAGS="${CPPFLAGS} -I`print_include_dir bzlib.h`" \
+			LDFLAGS="${LDFLAGS} -L`print_library_dir libbz2.so`") || return
 	make -C ${pcre2_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${pcre2_src_dir} -j ${jobs} -k check || return
@@ -3519,9 +3516,9 @@ install_native_the_silver_searcher()
 		(cd ${the_silver_searcher_src_dir}
 		update_pkg_config_path
 		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`" LIBS=-lz \
-			PCRE_CFLAGS=-I`get_include_path pcre.h` PCRE_LIBS="-L`get_library_path libpcre.so` -lpcre" \
-			LZMA_CFLAGS=-I`get_include_path lzma.h` LZMA_LIBS="-L`get_library_path liblzma.so` -llzma") || return
+			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`" LIBS=-lz \
+			PCRE_CFLAGS=-I`print_include_dir pcre.h` PCRE_LIBS="-L`print_library_dir libpcre.so` -lpcre" \
+			LZMA_CFLAGS=-I`print_include_dir lzma.h` LZMA_LIBS="-L`print_library_dir liblzma.so` -llzma") || return
 	make -C ${the_silver_searcher_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${the_silver_searcher_src_dir} -j ${jobs} -k check || return
@@ -3821,7 +3818,7 @@ install_native_tmux()
 	[ -f ${tmux_src_dir}/Makefile ] ||
 		(cd ${tmux_src_dir}
 		./configure --prefix=${prefix} --build=${build} --host=${host} \
-			CPPFLAGS="${CPPFLAGS} -I`get_include_path curses.h`" LIBTINFO_LIBS=-ltinfo) || return
+			CPPFLAGS="${CPPFLAGS} -I`print_include_dir curses.h`" LIBTINFO_LIBS=-ltinfo) || return
 	make -C ${tmux_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${tmux_src_dir} -j ${jobs} -k check || return
@@ -3838,7 +3835,7 @@ install_native_expect()
 	[ -f ${expect_src_dir}/Makefile ] ||
 		(cd ${expect_src_dir}
 		./configure --prefix=${prefix} --build=${build} --enable-threads \
-			--enable-64bit --with-tcl=`get_library_path tclConfig.sh`) || return
+			--enable-64bit --with-tcl=`print_library_dir tclConfig.sh`) || return
 	make -C ${expect_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${expect_src_dir} -j ${jobs} -k check || return
@@ -4252,7 +4249,7 @@ install_native_subversion()
 		(cd ${subversion_src_dir}
 		./configure --prefix=${prefix} --build=${build} --with-zlib=`get_prefix zlib.h` \
 			--with-sqlite=`get_prefix sqlite3.h` --with-lz4=internal ${strip:+--enable-optimize} \
-			LDFLAGS="${LDFLAGS} -L`get_library_path libiconv.so`" LIBS=-liconv) || return
+			LDFLAGS="${LDFLAGS} -L`print_library_dir libiconv.so`" LIBS=-liconv) || return
 	make -C ${subversion_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${subversion_src_dir} -j ${jobs} -k check || return
@@ -4306,9 +4303,9 @@ install_native_cmake()
 		(cd ${cmake_src_dir}
 		./bootstrap --prefix=${prefix} --parallel=${jobs} \
 			--system-curl --system-zlib --system-bzip2 --system-liblzma -- \
-			-DCURL_INCLUDE_DIR=`get_include_path curl.h curl` -DCURL_LIBRARY=`search_library libcurl.so` \
-			-DBZIP2_INCLUDE_DIR=`get_include_path bzlib.h` -DBZIP2_LIBRARIES=`search_library libbz2.so` \
-			-DLIBLZMA_INCLUDE_DIR=`get_include_path lzma.h` -DLIBLZMA_LIBRARY=`search_library liblzma.so`) || return
+			-DCURL_INCLUDE_DIR=`print_include_dir curl.h curl` -DCURL_LIBRARY=`search_library libcurl.so` \
+			-DBZIP2_INCLUDE_DIR=`print_include_dir bzlib.h` -DBZIP2_LIBRARIES=`search_library libbz2.so` \
+			-DLIBLZMA_INCLUDE_DIR=`print_include_dir lzma.h` -DLIBLZMA_LIBRARY=`search_library liblzma.so`) || return
 	make -C ${cmake_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${cmake_src_dir} -j ${jobs} -k test || return
@@ -4377,7 +4374,7 @@ install_native_libedit()
 	[ -f ${libedit_src_dir}/Makefile ] ||
 		(cd ${libedit_src_dir}
 		./configure --prefix=${prefix} --build=${build} --host=${host} \
-			--disable-silent-rules CFLAGS="${CFLAGS} -I`get_include_path curses.h`") || return
+			--disable-silent-rules CFLAGS="${CFLAGS} -I`print_include_dir curses.h`") || return
 	make -C ${libedit_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libedit_src_dir} -j ${jobs} -k check || return
@@ -4581,8 +4578,8 @@ install_native_lldb()
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON \
-		-DCMAKE_C_FLAGS="${CFLAGS} -I`get_include_path Version.h clang/Basic`" \
-		-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`get_include_path curses.h` -I`get_include_path histedit.h`" \
+		-DCMAKE_C_FLAGS="${CFLAGS} -I`print_include_dir Version.h clang/Basic`" \
+		-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`print_include_dir curses.h` -I`print_include_dir histedit.h`" \
 		-DLLDB_TEST_C_COMPILER=${CC:-gcc} -DLLDB_TEST_CXX_COMPILER=${CXX:-g++} || return
 	cmake --build ${lldb_bld_dir} -v -j ${jobs} || return
 	cmake --install ${lldb_bld_dir} -v ${strip:+--${strip}} || return
@@ -4646,9 +4643,9 @@ install_cross_binutils()
 			`echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' || echo --enable-compressed-debug-sections=all` \
 			--enable-targets=all --enable-64-bit-bfd \
 			--with-sysroot=${sysroot} --with-system-zlib \
-			CFLAGS="${CFLAGS} -I`get_include_path zlib.h` -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
-			CXXFLAGS="${CXXFLAGS} -I`get_include_path zlib.h` -Wno-error=unused-function" \
-			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so`") || return
+			CFLAGS="${CFLAGS} -I`print_include_dir zlib.h` -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
+			CXXFLAGS="${CXXFLAGS} -I`print_include_dir zlib.h` -Wno-error=unused-function" \
+			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`") || return
 	make -C ${binutils_bld_dir_crs} -j 1 || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${binutils_bld_dir_crs} -j 1 -k check || return
@@ -4884,8 +4881,8 @@ install_cross_gdb()
 			--enable-targets=all --enable-64-bit-bfd --enable-tui \
 			--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${target} --without-guile --with-python=python3 \
 			--with-system-zlib --with-system-readline --with-sysroot=${sysroot} \
-			LDFLAGS="${LDFLAGS} -L`get_library_path libz.so` -L`get_library_path libncurses.so`" \
-			host_configargs='--disable-rpath 'CFLAGS=\'"${CFLAGS} -I`get_include_path zlib.h` -I`get_include_path curses.h`"\') || return
+			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libncurses.so`" \
+			host_configargs='--disable-rpath 'CFLAGS=\'"${CFLAGS} -I`print_include_dir zlib.h` -I`print_include_dir curses.h`"\') || return
 	make -C ${gdb_bld_dir_crs} -j ${jobs} V=1 || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gdb_bld_dir_crs} -j ${jobs} -k check || return
@@ -4915,7 +4912,7 @@ install_native_Python()
 			--enable-shared --enable-optimizations --enable-ipv6 \
 			--with-universal-archs=all --with-lto --with-system-expat --with-system-ffi \
 			--with-signal-module --with-threads --with-doc-strings \
-			--with-tsc --with-pymalloc --with-ensurepip LDFLAGS="${LDFLAGS} -L`get_library_path libssl.so`") || return
+			--with-tsc --with-pymalloc --with-ensurepip LDFLAGS="${LDFLAGS} -L`print_library_dir libssl.so`") || return
 	make -C ${Python_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${Python_src_dir} -j ${jobs} -k test || return
@@ -5147,8 +5144,8 @@ install_native_gc()
 	[ -f ${gc_src_dir}/Makefile ] ||
 		(cd ${gc_src_dir}
 		./configure --prefix=${prefix} -build=${build} --host=${host} --disable-silent-rules \
-			ATOMIC_OPS_CFLAGS=-I`get_include_path atomic_ops.h` \
-			ATOMIC_OPS_LIBS=-L`get_library_path libatomic_ops.so`) || return
+			ATOMIC_OPS_CFLAGS=-I`print_include_dir atomic_ops.h` \
+			ATOMIC_OPS_LIBS=-L`print_library_dir libatomic_ops.so`) || return
 	make -C ${gc_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gc_src_dir} -j ${jobs} check || return
@@ -5169,9 +5166,9 @@ install_native_guile()
 		(cd ${guile_src_dir}
 		./configure --prefix=${prefix} -build=${build} --host=${host} \
 			--disable-silent-rules --with-libunistring-prefix=`get_prefix unistr.h` \
-			LIBFFI_CFLAGS=-I`get_include_path ffi.h` LIBFFI_LIBS="-L`get_library_path libffi.so` -lffi" \
-			BDW_GC_CFLAGS="-I`get_include_path gc.h gc` -DHAVE_GC_SET_FINALIZER_NOTIFIER -DHAVE_GC_GET_HEAP_USAGE_SAFE -DHAVE_GC_GET_FREE_SPACE_DIVISOR -DHAVE_GC_SET_FINALIZE_ON_DEMAND" \
-			BDW_GC_LIBS="-L`get_library_path libgc.so` -lgc") || return
+			LIBFFI_CFLAGS=-I`print_include_dir ffi.h` LIBFFI_LIBS="-L`print_library_dir libffi.so` -lffi" \
+			BDW_GC_CFLAGS="-I`print_include_dir gc.h gc` -DHAVE_GC_SET_FINALIZER_NOTIFIER -DHAVE_GC_GET_HEAP_USAGE_SAFE -DHAVE_GC_GET_FREE_SPACE_DIVISOR -DHAVE_GC_SET_FINALIZE_ON_DEMAND" \
+			BDW_GC_LIBS="-L`print_library_dir libgc.so` -lgc") || return
 	make -C ${guile_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${guile_src_dir} -j ${jobs} -k check || return
@@ -5235,8 +5232,8 @@ install_native_lua()
  	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
 EOF
 	make -C ${lua_src_dir} -j ${jobs} \
-		MYCFLAGS="${CFLAGS} -I`get_include_path readline.h readline`" \
-		MYLDFLAGS="${LDFLAGS} -L`get_library_path libreadline.so` -L`get_library_path libncurses.so`" \
+		MYCFLAGS="${CFLAGS} -I`print_include_dir readline.h readline`" \
+		MYLDFLAGS="${LDFLAGS} -L`print_library_dir libreadline.so` -L`print_library_dir libncurses.so`" \
 		MYLIBS=-lncurses linux || return # XXX linuxにしか対応していない。
 	[ "${enable_check}" != yes ] ||
 		make -C ${lua_src_dir} -j ${jobs} -k test || return
@@ -5410,7 +5407,7 @@ install_native_opencv()
 	fetch opencv_contrib || return
 	unpack ${opencv_contrib_src_dir} || return
 	mkdir -pv ${opencv_bld_dir} || return
-	libdirs="-L`get_library_path libpng.so` -L`get_library_path libtiff.so` -L`get_library_path libjpeg.so` -L${prefix}/lib"
+	libdirs="-L`print_library_dir libpng.so` -L`print_library_dir libtiff.so` -L`print_library_dir libjpeg.so` -L${prefix}/lib"
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${opencv_src_dir} -B ${opencv_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
@@ -5653,28 +5650,6 @@ install_native_libbacktrace()
 		make -C ${libbacktrace_src_dir} -j ${jobs} -k check || return
 	make -C ${libbacktrace_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
-}
-
-install_crossed_binutils()
-{
-	[ \( `check_platform ${build} ${host} ${target}` = crossed  -a -x ${sysroot}/usr/bin/as${exe} -o \
-		 `check_platform ${build} ${host} ${target}` = canadian -a -x ${sysroot}/usr/bin/${target}-as${exe} \) -a "${force_install}" != yes ] && return
-	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
-	[ -f ${sysroot}/usr/include/zlib.h ] || install_crossed_native_zlib || return
-	fetch binutils || return
-	[ -d ${binutils_src_dir_crs_ntv} ] ||
-		(unpack ${binutils_src_dir} &&
-			mv -v ${binutils_src_dir} ${binutils_src_dir_crs_ntv}) || return
-	[ -f ${binutils_src_dir_crs_ntv}/Makefile ] ||
-		(cd ${binutils_src_dir_crs_ntv}
-		./configure --prefix=/usr --build=${build} --host=${host} --target=${target} \
-			--enable-shared --enable-gold --enable-threads --enable-plugins \
-			--enable-compressed-debug-sections=all --enable-targets=all --enable-64-bit-bfd \
-			--with-sysroot=/ --with-system-zlib \
-			CFLAGS="${CFLAGS} -I${sysroot}/usr/include -L${sysroot}/usr/lib -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
-			CXXFLAGS="${CXXFLAGS} -Wno-error=unused-function") || return
-	make -C ${binutils_src_dir_crs_ntv} -j 1 || return
-	make -C ${binutils_src_dir_crs_ntv} -j 1 DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
 
 install_crossed_gcc()
