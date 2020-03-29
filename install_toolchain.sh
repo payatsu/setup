@@ -2141,7 +2141,7 @@ install_native_binutils()
 	for b in addr2line ar as c++filt coffdump dlltool dllwrap dwp \
 		elfedit gprof ld ld.bfd ld.gold nm objcopy objdump ranlib \
 		readelf size srconv strings strip sysdump windmc windres; do
-		ln -fsv ${b} ${DESTDIR}${prefix}/bin/${host}-${b} || return
+		ln -fsv ${b} ${DESTDIR}${prefix}/bin/${target}-${b} || return
 	done
 }
 
@@ -2375,7 +2375,7 @@ install_native_mpfr()
 		make -C ${mpfr_bld_dir} -j ${jobs} -k check || return
 	make -C ${mpfr_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
-	sed -i -e /^dependency_libs=/s/\'.\*\'\$/\'\'/ ${prefix}/lib/libmpfr.la || return
+	sed -i -e /^dependency_libs=/s/\'.\*\'\$/\'\'/ ${DESTDIR}${prefix}/lib/libmpfr.la || return
 	# [XXX] mpcビルド時に、mpfrが依存しているgmpを参照しようとしてlibmpfr.laの不整合に
 	#       引っかからないようにするために、強行的にlibmpfr.la書き換えてる。
 }
@@ -2405,13 +2405,14 @@ install_native_isl()
 	search_header gmp.h > /dev/null || install_native_gmp || return
 	fetch isl || return
 	unpack ${isl_src_dir} || return
-	[ -f ${isl_src_dir}/Makefile ] ||
-		(cd ${isl_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${isl_src_dir} -j ${jobs} || return
+	mkdir -pv ${isl_bld_dir} || return
+	[ -f ${isl_bld_dir}/Makefile ] ||
+		(cd ${isl_bld_dir}
+		${isl_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${isl_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${isl_src_dir} -j ${jobs} -k check || return
-	make -C ${isl_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${isl_bld_dir} -j ${jobs} -k check || return
+	make -C ${isl_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
