@@ -1136,7 +1136,6 @@ install()
 		install_native_gcc || return
 		install_native_gdb || return;;
 	cross)
-		install_cross_binutils || return
 		install_cross_gcc || return;;
 	*)
 		echo install: no match: ${1} >&2; return 1;;
@@ -1193,7 +1192,7 @@ full()
 			|| echo \'$f\' failed.    | logger -p user.notice -t `basename ${0}`
 	done || return
 
-	for f in install_cross_binutils install_cross_gcc; do
+	for f in install_cross_gcc; do
 		$f \
 			&& echo \'$f\' succeeded. | logger -p user.notice -t `basename ${0}` \
 			|| echo \'$f\' failed.    | logger -p user.notice -t `basename ${0}`
@@ -1344,7 +1343,7 @@ set_src_directory()
 	eval ${_1}_bld_dir=\${${_1}_src_base}/\${${_1}_name}-bld-${host}`[ ${host} != ${target} ] && echo -${target}`
 
 	case ${1} in
-	binutils|glibc|newlib|mingw-w64)
+	glibc|newlib|mingw-w64)
 		eval ${_1}_bld_dir_crs=\${${_1}_src_base}/\${${_1}_name}-bld-${target}
 		eval ${_1}_bld_dir_crs_hdr=\${${_1}_src_base}/\${${_1}_name}-bld-${target}-hdr # mingw-w64 only.
 		;;
@@ -2124,8 +2123,10 @@ install_native_binutils()
 		(cd ${binutils_bld_dir}
 		${binutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --target=${target} \
 			--enable-shared --enable-gold --enable-threads --enable-plugins \
-			--enable-compressed-debug-sections=all --enable-targets=all --enable-64-bit-bfd \
-			--with-sysroot=/ --with-system-zlib \
+			`echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' || echo --enable-compressed-debug-sections=all` \
+			--enable-targets=all --enable-64-bit-bfd \
+			`check_platform ${build} ${host} ${target} | grep -qe '\<native\>' || echo --with-sysroot=${sysroot}` \
+			--with-system-zlib \
 			CFLAGS="${CFLAGS} -I`print_include_dir zlib.h`" CXXFLAGS="${CXXFLAGS} -I`print_include_dir zlib.h`" \
 			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`") || return
 	make -C ${binutils_bld_dir} -j 1 || return
@@ -2137,6 +2138,7 @@ install_native_binutils()
 	for b in addr2line ar as c++filt coffdump dlltool dllwrap dwp \
 		elfedit gprof ld ld.bfd ld.gold nm objcopy objdump ranlib \
 		readelf size srconv strings strip sysdump windmc windres; do
+		[ -f ${DESTDIR}${prefix}/bin/${target}-${b} ] && continue
 		ln -fsv ${b} ${DESTDIR}${prefix}/bin/${target}-${b} || return
 	done
 }
@@ -4626,36 +4628,11 @@ install_native_boost()
 	update_path || return
 }
 
-install_cross_binutils()
-{
-	[ -x ${prefix}/bin/${target}-as -a "${force_install}" != yes ] && return
-	[ `check_platform ${build} ${host} ${target}` = cross ] || return
-	search_header zlib.h > /dev/null || install_native_zlib || return
-	fetch binutils || return
-	unpack ${binutils_src_dir} || return
-	mkdir -pv ${binutils_bld_dir_crs} || return
-	[ -f ${binutils_bld_dir_crs}/Makefile ] ||
-		(cd ${binutils_bld_dir_crs}
-		${binutils_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
-			--enable-shared --enable-gold --enable-threads --enable-plugins \
-			`echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' || echo --enable-compressed-debug-sections=all` \
-			--enable-targets=all --enable-64-bit-bfd \
-			--with-sysroot=${sysroot} --with-system-zlib \
-			CFLAGS="${CFLAGS} -I`print_include_dir zlib.h` -Wno-error=unused-const-variable -Wno-error=misleading-indentation -Wno-error=shift-negative-value" \
-			CXXFLAGS="${CXXFLAGS} -I`print_include_dir zlib.h` -Wno-error=unused-function" \
-			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`") || return
-	make -C ${binutils_bld_dir_crs} -j 1 || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${binutils_bld_dir_crs} -j 1 -k check || return
-	make -C ${binutils_bld_dir_crs} -j 1 install${strip:+-${strip}} || return
-	update_path || return
-}
-
 install_cross_gcc_without_headers()
 {
 	[ -x ${prefix}/bin/${target}-gcc -a "${force_install}" != yes ] && return
 	[ `check_platform ${build} ${host} ${target}` = cross ] || return
-	which ${target}-as > /dev/null || install_cross_binutils || return
+	which ${target}-as > /dev/null || install_native_binutils || return
 	search_header gmp.h > /dev/null || install_native_gmp || return
 	search_header mpfr.h > /dev/null || install_native_mpfr || return
 	search_header mpc.h > /dev/null || install_native_mpc || return
@@ -4804,7 +4781,7 @@ install_mingw_w64_crt()
 install_cross_functional_gcc()
 {
 	[ `check_platform ${build} ${host} ${target}` = cross ] || return
-	which ${target}-as > /dev/null || install_cross_binutils || return
+	which ${target}-as > /dev/null || install_native_binutils || return
 	search_header gmp.h > /dev/null || install_native_gmp || return
 	search_header mpfr.h > /dev/null || install_native_mpfr || return
 	search_header mpc.h > /dev/null || install_native_mpc || return
