@@ -1137,8 +1137,7 @@ install()
 		install_native_gdb || return;;
 	cross)
 		install_cross_binutils || return
-		install_cross_gcc || return
-		install_cross_gdb || return;;
+		install_cross_gcc || return;;
 	*)
 		echo install: no match: ${1} >&2; return 1;;
 	esac
@@ -1194,7 +1193,7 @@ full()
 			|| echo \'$f\' failed.    | logger -p user.notice -t `basename ${0}`
 	done || return
 
-	for f in install_cross_binutils install_cross_gcc install_cross_gdb; do
+	for f in install_cross_binutils install_cross_gcc; do
 		$f \
 			&& echo \'$f\' succeeded. | logger -p user.notice -t `basename ${0}` \
 			|| echo \'$f\' failed.    | logger -p user.notice -t `basename ${0}`
@@ -1342,12 +1341,12 @@ set_src_directory()
 	eval [ "\${${_1}_ver}" = git ] && eval ${_1}_name=${1}.git
 
 	eval ${_1}_src_dir=\${${_1}_src_base}/\${${_1}_name}
-	eval ${_1}_bld_dir=\${${_1}_src_base}/\${${_1}_name}-bld-${host}
+	eval ${_1}_bld_dir=\${${_1}_src_base}/\${${_1}_name}-bld-${host}`[ ${host} != ${target} ] && echo -${target}`
 
 	case ${1} in
-	binutils|glibc|newlib|mingw-w64|gdb)
-		eval ${_1}_bld_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-bld
-		eval ${_1}_bld_dir_crs_hdr=\${${_1}_src_base}/${target}-\${${_1}_name}-bld-hdr # mingw-w64 only.
+	binutils|glibc|newlib|mingw-w64)
+		eval ${_1}_bld_dir_crs=\${${_1}_src_base}/\${${_1}_name}-bld-${target}
+		eval ${_1}_bld_dir_crs_hdr=\${${_1}_src_base}/\${${_1}_name}-bld-${target}-hdr # mingw-w64 only.
 		;;
 	gcc)
 		eval ${_1}_bld_dir_crs_1st=\${${_1}_src_base}/${target}-\${${_1}_name}-1st
@@ -2596,9 +2595,9 @@ install_native_gdb()
 	mkdir -pv ${gdb_bld_dir} || return
 	[ -f ${gdb_bld_dir}/Makefile ] ||
 		(cd ${gdb_bld_dir}
-		${gdb_src_dir}/configure --prefix=${prefix} --build=${build} \
+		${gdb_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --target=${target} \
 			--enable-targets=all --enable-64-bit-bfd --enable-tui \
-			--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${host} --without-guile --with-python=python3 \
+			--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${target} --without-guile --with-python=python3 \
 			--with-system-zlib --with-system-readline \
 			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libncurses.so`" \
 			host_configargs='--disable-rpath 'CFLAGS=\'"${CFLAGS} -I`print_include_dir zlib.h` -I`print_include_dir curses.h`"\') || return
@@ -2607,6 +2606,7 @@ install_native_gdb()
 		make -C ${gdb_bld_dir} -j ${jobs} -k check || return
 	make -C ${gdb_bld_dir} -j ${jobs} install || return
 	make -C ${gdb_bld_dir}/gdb -j ${jobs} install${strip:+-${strip}} || return
+	make -C ${gdb_bld_dir}/sim -j ${jobs} install || return
 }
 
 install_native_lcov()
@@ -4860,33 +4860,6 @@ install_cross_gcc()
 		rm -fv ${mingw_w64_bld_dir_crs}/Makefile || return
 		install_mingw_w64_crt || return;; # XXX: for --with-libraries, --with-tools to MinGW-w64
 	esac
-}
-
-install_cross_gdb()
-{
-	[ -x ${prefix}/bin/${target}-gdb -a "${force_install}" != yes ] && return
-	[ `check_platform ${build} ${host} ${target}` = cross ] || return
-	search_header readline.h readline > /dev/null || install_native_readline || return
-	search_header curses.h > /dev/null || install_native_ncurses || return
-	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`.so > /dev/null || install_native_Python || return
-	which makeinfo > /dev/null || install_native_texinfo || return
-	fetch gdb || return
-	unpack ${gdb_src_dir} || return
-	mkdir -pv ${gdb_bld_dir_crs} || return
-	[ -f ${gdb_bld_dir_crs}/Makefile ] ||
-		(cd ${gdb_bld_dir_crs}
-		${gdb_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
-			--enable-targets=all --enable-64-bit-bfd --enable-tui \
-			--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${target} --without-guile --with-python=python3 \
-			--with-system-zlib --with-system-readline --with-sysroot=${sysroot} \
-			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libncurses.so`" \
-			host_configargs='--disable-rpath 'CFLAGS=\'"${CFLAGS} -I`print_include_dir zlib.h` -I`print_include_dir curses.h`"\') || return
-	make -C ${gdb_bld_dir_crs} -j ${jobs} V=1 || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${gdb_bld_dir_crs} -j ${jobs} -k check || return
-	make -C ${gdb_bld_dir_crs} -j ${jobs} install || return
-	make -C ${gdb_bld_dir_crs}/gdb -j ${jobs} install${strip:+-${strip}} || return
-	make -C ${gdb_bld_dir_crs}/sim -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_Python2()
