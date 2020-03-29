@@ -1630,7 +1630,7 @@ print_include_dir()
 	[ $? = 0 ] && echo ${path} | sed -e "s%${2:+/${2}}/${1}\$%%" || return
 }
 
-get_prefix()
+print_prefix()
 {
 	path=`search_header $@`
 	[ $? = 0 ] && echo ${path} | sed -e 's/\/include\/.\+//' || return
@@ -2087,8 +2087,8 @@ install_native_gawk()
 	[ -f ${gawk_src_dir}/Makefile ] ||
 		(cd ${gawk_src_dir}
 		./configure --prefix=${prefix} --build=${build} --host=${host} --enable-static \
-			--with-readline=`get_prefix readline.h readline` \
-			--with-mpfr=`get_prefix mpfr.h`) || return
+			--with-readline=`print_prefix readline.h readline` \
+			--with-mpfr=`print_prefix mpfr.h`) || return
 	make -C ${gawk_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gawk_src_dir} -j ${jobs} -k check || return
@@ -2366,7 +2366,7 @@ install_native_mpfr()
 		(cd ${mpfr_bld_dir}
 		echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
 		${mpfr_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-			--with-gmp=`get_prefix gmp.h` ${enable_static_disable_shared}) || return
+			--with-gmp=`print_prefix gmp.h` ${enable_static_disable_shared}) || return
 	make -C ${mpfr_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${mpfr_bld_dir} -j ${jobs} -k check || return
@@ -2388,7 +2388,7 @@ install_native_mpc()
 		(cd ${mpc_bld_dir}
 		echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
 		${mpc_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` ${enable_static_disable_shared}) || return
+			--with-gmp=`print_prefix gmp.h` --with-mpfr=`print_prefix mpfr.h` ${enable_static_disable_shared}) || return
 	make -C ${mpc_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${mpc_bld_dir} -j ${jobs} -k check || return
@@ -2430,8 +2430,8 @@ install_native_gcc()
 	[ -f ${gcc_bld_dir}/Makefile ] ||
 		(cd ${gcc_bld_dir}
 		${gcc_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --target=${target} \
-			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
-			--with-isl=`get_prefix version.h isl` --with-system-zlib \
+			--with-gmp=`print_prefix gmp.h` --with-mpfr=`print_prefix mpfr.h` --with-mpc=`print_prefix mpc.h` \
+			--with-isl=`print_prefix version.h isl` --with-system-zlib \
 			--enable-languages=${languages} --disable-multilib --enable-linker-build-id --enable-libstdcxx-debug \
 			--program-suffix=-${gcc_base_ver} --enable-version-specific-runtime-libs \
 		) || return
@@ -3336,7 +3336,7 @@ install_native_vim()
 		(cd ${vim_src_dir}
 		./configure --prefix=${prefix} --build=${build} \
 			--with-features=huge --enable-fail-if-missing \
-			--enable-luainterp=dynamic --with-lua-prefix=`get_prefix lua.h` \
+			--enable-luainterp=dynamic --with-lua-prefix=`print_prefix lua.h` \
 			--enable-perlinterp=dynamic \
 			--enable-pythoninterp=dynamic \
 			--enable-python3interp=dynamic \
@@ -3450,7 +3450,7 @@ install_native_global()
 	[ -f ${global_src_dir}/Makefile ] ||
 		(cd ${global_src_dir}
 		./configure --prefix=${prefix} --build=${build} --host=${host} \
-			--with-ncurses=`get_prefix curses.h` CPPFLAGS="${CPPFLAGS} -I`print_include_dir curses.h`") || return
+			--with-ncurses=`print_prefix curses.h` CPPFLAGS="${CPPFLAGS} -I`print_include_dir curses.h`") || return
 	make -C ${global_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${global_src_dir} -j ${jobs} -k check || return
@@ -3976,7 +3976,7 @@ install_native_openssh()
 	unpack ${openssh_src_dir} || return
 	[ -f ${openssh_src_dir}/Makefile ] ||
 		(cd ${openssh_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --with-zlib=`get_prefix zlib.h`) || return
+		./configure --prefix=${prefix} --build=${build} --host=${host} --with-zlib=`print_prefix zlib.h`) || return
 	make -C ${openssh_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${openssh_src_dir} -j ${jobs} -k tests || return
@@ -4133,9 +4133,9 @@ install_native_git()
 	make -C ${git_src_dir} -j ${jobs} V=1 configure || return
 	(cd ${git_src_dir}
 	./configure --prefix=${prefix} --build=${build} \
-		--with-openssl=`get_prefix ssl.h openssl` --with-libpcre=`get_prefix pcre2.h` \
-		--with-iconv=`get_prefix iconv.h` --with-perl=`which perl` --with-python=`which python3` \
-		--with-zlib=`get_prefix zlib.h`) || return
+		--with-openssl=`print_prefix ssl.h openssl` --with-libpcre=`print_prefix pcre2.h` \
+		--with-iconv=`print_prefix iconv.h` --with-perl=`which perl` --with-python=`which python3` \
+		--with-zlib=`print_prefix zlib.h`) || return
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_src_dir}/Makefile || return
 	sed -i -e 's/^\(CC_LD_DYNPATH=\).\+/\1-L/' ${git_src_dir}/config.mak.autogen || return
 	make -C ${git_src_dir} -j 1       V=1 PROFILE=BUILD LDFLAGS="${LDFLAGS} -ldl" all || return
@@ -4210,8 +4210,8 @@ install_native_apr_util()
 	unpack ${apr_util_src_dir} || return
 	[ -f ${apr_util_src_dir}/Makefile ] ||
 		(cd ${apr_util_src_dir}
-		./configure --prefix=${prefix} --with-apr=`get_prefix apr.h apr-1` \
-			--with-crypto --with-openssl=`get_prefix ssl.h openssl` --with-sqlite3=`get_prefix sqlite3.h`) || return
+		./configure --prefix=${prefix} --with-apr=`print_prefix apr.h apr-1` \
+			--with-crypto --with-openssl=`print_prefix ssl.h openssl` --with-sqlite3=`print_prefix sqlite3.h`) || return
 	make -C ${apr_util_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${apr_util_src_dir} -j ${jobs} -k check || return
@@ -4245,8 +4245,8 @@ install_native_subversion()
 	unpack ${subversion_src_dir} || return
 	[ -f ${subversion_src_dir}/Makefile ] ||
 		(cd ${subversion_src_dir}
-		./configure --prefix=${prefix} --build=${build} --with-zlib=`get_prefix zlib.h` \
-			--with-sqlite=`get_prefix sqlite3.h` --with-lz4=internal ${strip:+--enable-optimize} \
+		./configure --prefix=${prefix} --build=${build} --with-zlib=`print_prefix zlib.h` \
+			--with-sqlite=`print_prefix sqlite3.h` --with-lz4=internal ${strip:+--enable-optimize} \
 			LDFLAGS="${LDFLAGS} -L`print_library_dir libiconv.so`" LIBS=-liconv) || return
 	make -C ${subversion_src_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
@@ -4537,7 +4537,7 @@ EOF
 		-DCMAKE_INSTALL_RPATH=';' -DENABLE_LINKER_BUILD_ID=ON \
 		-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
 		-DCLANG_DEFAULT_RTLIB=compiler-rt \
-		-DGCC_INSTALL_PREFIX=`get_prefix iostream c++` \
+		-DGCC_INSTALL_PREFIX=`print_prefix iostream c++` \
 		`which lld > /dev/null && echo -DCLANG_DEFAULT_LINKER=lld` || return
 	cmake --build ${clang_bld_dir} -v -j ${jobs} || return
 	cmake --install ${clang_bld_dir} -v ${strip:+--${strip}} || return
@@ -4668,8 +4668,8 @@ install_cross_gcc_without_headers()
 	[ -f ${gcc_bld_dir_crs_1st}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_1st}
 		${gcc_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
-			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
-			--with-isl=`get_prefix version.h isl` --with-system-zlib --enable-languages=c,c++ --disable-multilib \
+			--with-gmp=`print_prefix gmp.h` --with-mpfr=`print_prefix mpfr.h` --with-mpc=`print_prefix mpc.h` \
+			--with-isl=`print_prefix version.h isl` --with-system-zlib --enable-languages=c,c++ --disable-multilib \
 			--program-prefix=${target}- --program-suffix=-${gcc_base_ver} --enable-version-specific-runtime-libs \
 			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` --without-headers \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
@@ -4818,8 +4818,8 @@ install_cross_functional_gcc()
 	[ -f ${gcc_bld_dir_crs_2nd}/Makefile ] ||
 		(cd ${gcc_bld_dir_crs_2nd}
 		${gcc_src_dir}/configure --prefix=${prefix} --build=${build} --target=${target} \
-			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` --with-mpc=`get_prefix mpc.h` \
-			--with-isl=`get_prefix version.h isl` --with-system-zlib --enable-languages=${languages} --disable-multilib \
+			--with-gmp=`print_prefix gmp.h` --with-mpfr=`print_prefix mpfr.h` --with-mpc=`print_prefix mpc.h` \
+			--with-isl=`print_prefix version.h isl` --with-system-zlib --enable-languages=${languages} --disable-multilib \
 			--enable-linker-build-id --enable-libstdcxx-debug \
 			--program-prefix=${target}- --program-suffix=-${gcc_base_ver} --enable-version-specific-runtime-libs \
 			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` --with-sysroot=${sysroot}) || return
@@ -5163,7 +5163,7 @@ install_native_guile()
 	[ -f ${guile_src_dir}/Makefile ] ||
 		(cd ${guile_src_dir}
 		./configure --prefix=${prefix} -build=${build} --host=${host} \
-			--disable-silent-rules --with-libunistring-prefix=`get_prefix unistr.h` \
+			--disable-silent-rules --with-libunistring-prefix=`print_prefix unistr.h` \
 			LIBFFI_CFLAGS=-I`print_include_dir ffi.h` LIBFFI_LIBS="-L`print_library_dir libffi.so` -lffi" \
 			BDW_GC_CFLAGS="-I`print_include_dir gc.h gc` -DHAVE_GC_SET_FINALIZER_NOTIFIER -DHAVE_GC_GET_HEAP_USAGE_SAFE -DHAVE_GC_GET_FREE_SPACE_DIVISOR -DHAVE_GC_SET_FINALIZE_ON_DEMAND" \
 			BDW_GC_LIBS="-L`print_library_dir libgc.so` -lgc") || return
