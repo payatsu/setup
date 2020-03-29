@@ -1207,12 +1207,6 @@ full()
 		&& echo "'install_cross_gcc(mingw)'" succeeded. | logger -p user.notice -t `basename ${0}` \
 		|| echo "'install_cross_gcc(mingw)'" failed.    | logger -p user.notice -t `basename ${0}`
 
-	for f in `sed -e '/^install_crossed_native_[_[:alnum:]]\+()$/{s/()$//;p};d' ${0}`; do
-		(host=${target}; set_variables; $f) \
-			&& echo \'$f\' succeeded. | logger -p user.notice -t `basename ${0}` \
-			|| echo \'$f\' failed.    | logger -p user.notice -t `basename ${0}`
-	done || return
-
 	return 0
 }
 
@@ -2135,7 +2129,7 @@ install_native_binutils()
 	mkdir -pv ${binutils_bld_dir} || return
 	[ -f ${binutils_bld_dir}/Makefile ] ||
 		(cd ${binutils_bld_dir}
-		${binutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+		${binutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --target=${target} \
 			--enable-shared --enable-gold --enable-threads --enable-plugins \
 			--enable-compressed-debug-sections=all --enable-targets=all --enable-64-bit-bfd \
 			--with-sysroot=/ --with-system-zlib \
@@ -2376,12 +2370,17 @@ install_native_mpfr()
 	mkdir -pv ${mpfr_bld_dir} || return
 	[ -f ${mpfr_bld_dir}/Makefile ] ||
 		(cd ${mpfr_bld_dir}
-		${mpfr_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --with-gmp=`get_prefix gmp.h`) || return
+		echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
+		${mpfr_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+			--with-gmp=`get_prefix gmp.h` ${enable_static_disable_shared}) || return
 	make -C ${mpfr_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${mpfr_bld_dir} -j ${jobs} -k check || return
 	make -C ${mpfr_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
+	sed -i -e /^dependency_libs=/s/\'.\*\'\$/\'\'/ ${prefix}/lib/libmpfr.la || return
+	# [XXX] mpcビルド時に、mpfrが依存しているgmpを参照しようとしてlibmpfr.laの不整合に
+	#       引っかからないようにするために、強行的にlibmpfr.la書き換えてる。
 }
 
 install_native_mpc()
@@ -2393,8 +2392,9 @@ install_native_mpc()
 	mkdir -pv ${mpc_bld_dir} || return
 	[ -f ${mpc_bld_dir}/Makefile ] ||
 		(cd ${mpc_bld_dir}
+		echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && enable_static_disable_shared='--enable-static --disable-shared' || enable_static_disable_shared=''
 		${mpc_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h`) || return
+			--with-gmp=`get_prefix gmp.h` --with-mpfr=`get_prefix mpfr.h` ${enable_static_disable_shared}) || return
 	make -C ${mpc_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${mpc_bld_dir} -j ${jobs} -k check || return
@@ -2672,7 +2672,8 @@ install_native_zlib()
 	unpack ${zlib_src_dir} || return
 	mkdir -pv ${zlib_bld_dir} || return
 	(cd ${zlib_bld_dir}
-	eval `[ ${build} != ${host} ] && echo CHOST=${host}` ${zlib_src_dir}/configure --prefix=${prefix}) || return
+	echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && static=--static || static=''
+	eval `[ ${build} != ${host} ] && echo CHOST=${host}` ${zlib_src_dir}/configure --prefix=${prefix} ${static}) || return
 	make -C ${zlib_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${zlib_bld_dir} -j ${jobs} -k check || return
@@ -5676,57 +5677,6 @@ install_crossed_binutils()
 	make -C ${binutils_src_dir_crs_ntv} -j 1 DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
 
-install_crossed_native_gmp()
-{
-	[ -f ${sysroot}/usr/include/gmp.h -a "${force_install}" != yes ] && return
-	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
-	which m4 > /dev/null || install_native_m4 || return
-	fetch gmp || return
-	[ -d ${gmp_src_dir_crs_ntv} ] ||
-		(unpack ${gmp_src_dir} &&
-			mv -v ${gmp_src_dir} ${gmp_src_dir_crs_ntv}) || return
-	[ -f ${gmp_src_dir_crs_ntv}/Makefile ] ||
-		(cd ${gmp_src_dir_crs_ntv}
-		./configure --prefix=/usr --build=${build} --host=${host} --enable-cxx) || return
-	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} || return
-	make -C ${gmp_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
-}
-
-install_crossed_native_mpfr()
-{
-	[ -f ${sysroot}/usr/include/mpfr.h -a "${force_install}" != yes ] && return
-	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
-	install_crossed_native_gmp || return
-	fetch mpfr || return
-	[ -d ${mpfr_src_dir_crs_ntv} ] ||
-		(unpack ${mpfr_src_dir} &&
-			mv -v ${mpfr_src_dir} ${mpfr_src_dir_crs_ntv}) || return
-	[ -f ${mpfr_src_dir_crs_ntv}/Makefile ] ||
-		(cd ${mpfr_src_dir_crs_ntv}
-		./configure --prefix=/usr --build=${build} --host=${host} --with-gmp=${sysroot}/usr ${enable_static_disable_shared}) || return
-	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} || return
-	make -C ${mpfr_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
-	sed -i -e /^dependency_libs=/s/\'.\*\'\$/\'\'/ ${sysroot}/usr/lib/libmpfr.la || return
-	# [XXX] mpcビルド時に、mpfrが依存しているgmpを参照しようとしてlibmpfr.laの不整合に
-	#       引っかからないようにするために、強行的にlibmpfr.la書き換えてる。
-}
-
-install_crossed_native_mpc()
-{
-	[ -f ${sysroot}/usr/include/mpc.h -a "${force_install}" != yes ] && return
-	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
-	install_crossed_native_mpfr || return
-	fetch mpc || return
-	[ -d ${mpc_src_dir_crs_ntv} ] ||
-		(unpack ${mpc_src_dir} &&
-			mv -v ${mpc_src_dir} ${mpc_src_dir_crs_ntv}) || return
-	[ -f ${mpc_src_dir_crs_ntv}/Makefile ] ||
-		(cd ${mpc_src_dir_crs_ntv}
-		./configure --prefix=/usr --build=${build} --host=${host} --with-gmp=${sysroot}/usr --with-mpfr=${sysroot}/usr ${enable_static_disable_shared}) || return
-	make -C ${mpc_src_dir_crs_ntv} -j ${jobs} || return
-	make -C ${mpc_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
-}
-
 install_crossed_gcc()
 {
 	[ -x ${sysroot}/usr/bin/gcc${exe} -a "${force_install}" != yes ] && return
@@ -5751,54 +5701,6 @@ install_crossed_gcc()
 			CC_FOR_TARGET=${target}-gcc CXX_FOR_TARGET=${target}-g++ GOC_FOR_TARGET=${target}-gccgo) || return
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} || return
 	make -C ${gcc_bld_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
-}
-
-install_crossed_native_zlib()
-{
-	[ -f ${sysroot}/usr/include/zlib.h -a "${force_install}" != yes ] && return
-	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
-	fetch zlib || return
-	[ -d ${zlib_src_dir_crs_ntv} ] ||
-		(unpack ${zlib_src_dir} &&
-			mv -v ${zlib_src_dir} ${zlib_src_dir_crs_ntv}) || return
-	(cd ${zlib_src_dir_crs_ntv}
-	echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && static=--static || static=''
-	CC=${host}-gcc AR=${host}-ar RANLIB=${host}-ranlib ./configure --prefix=/usr ${static}) || return
-	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} || return
-	make -C ${zlib_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install || return
-}
-
-install_crossed_native_libpng()
-{
-	[ -f ${sysroot}/usr/include/png.h -a "${force_install}" != yes ] && return
-	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
-	install_crossed_native_zlib || return
-	fetch libpng || return
-	[ -d ${libpng_src_dir_crs_ntv} ] ||
-		(unpack ${libpng_src_dir} &&
-			mv -v ${libpng_src_dir} ${libpng_src_dir_crs_ntv}) || return
-	[ -f ${libpng_src_dir_crs_ntv}/Makefile ] ||
-		(cd ${libpng_src_dir_crs_ntv}
-		./configure --prefix=/usr --build=${build} --host=${target} \
-			CPPFLAGS="${CPPFLAGS} -I ${sysroot}/usr/include") || return
-	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} || return
-	make -C ${libpng_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
-}
-
-install_crossed_native_tiff()
-{
-	[ -f ${sysroot}/usr/include/tiffio.h -a "${force_install}" != yes ] && return
-	check_platform ${build} ${host} ${target} | grep -qe '^\(crossed\|canadian\)$' || return
-	fetch tiff || return
-	[ -d ${tiff_src_dir_crs_ntv} ] ||
-		(unpack ${tiff_src_dir} &&
-			mv -v ${tiff_src_dir} ${tiff_src_dir_crs_ntv}) || return
-	[ -f ${tiff_src_dir_crs_ntv}/Makefile ] ||
-		(cd ${tiff_src_dir_crs_ntv}
-		./configure --prefix=/usr --build=${build} --host=`echo ${target} | sed -e 's/arm[^-]\+/arm/'` \
-			CC=${target}-gcc CXX=${target}-g++ AS=${target}-as STRIP=${target}-strip RANLIB=${target}-ranlib) || return
-	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} || return
-	make -C ${tiff_src_dir_crs_ntv} -j ${jobs} DESTDIR=${sysroot} install${strip:+-${strip}} || return
 }
 
 realpath -e ${0} | grep -qe ^/tmp/ || { tmpdir=`mktemp -dp /tmp` && trap 'rm -fvr ${tmpdir}' EXIT HUP INT QUIT TERM && cp -v ${0} ${tmpdir} && sh -$- ${tmpdir}/`basename ${0}` "$@"; exit;}
