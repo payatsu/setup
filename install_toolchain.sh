@@ -1369,9 +1369,10 @@ set_variables()
 {
 	prefix=`realpath -m ${prefix}`
 	[ -n "${src}" ] && src=`realpath -m ${src}` || src=${prefix}/src
-	set_path_sh=${DESTDIR}${prefix}/set_path.sh
 	[ ${build} = ${host} ] && sysroot=${prefix}/${target}/sysroot || sysroot=${prefix}/${host}/sysroot
 	sysroot_mingw='C:/MinGW64'
+	[ ${build} = ${host} -o -n "${DESTDIR}" ] || export DESTDIR=${sysroot}
+	set_path_sh=${DESTDIR}${prefix}/set_path.sh
 	echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && exe=.exe || exe=''
 	[ -f /etc/issue ] && os=`head -n 1 /etc/issue | cut -d' ' -f1`
 	[ "${strip}" = strip ] || cmake_build_type=Debug
