@@ -2117,7 +2117,7 @@ install_native_make()
 
 install_native_binutils()
 {
-	[ -x ${prefix}/bin/as -a "${force_install}" != yes ] && return
+	[ -x ${prefix}/bin/${target}-as -a "${force_install}" != yes ] && return
 	search_header zlib.h > /dev/null || install_native_zlib || return
 	fetch binutils || return
 	unpack binutils || return
