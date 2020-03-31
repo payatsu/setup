@@ -121,7 +121,7 @@
 : ${openssl_ver:=1.1.1e}
 : ${openssh_ver:=8.1p1}
 : ${nghttp2_ver:=1.40.0}
-: ${curl_ver:=7.68.0}
+: ${curl_ver:=7.69.1}
 : ${expat_ver:=2.2.9}
 : ${asciidoc_ver:=8.6.9}
 : ${libxml2_ver:=2.9.9}
@@ -137,8 +137,8 @@
 : ${utf8proc_ver:=2.4.0}
 : ${subversion_ver:=1.13.0}
 : ${ninja_ver:=1.10.0}
-: ${meson_ver:=0.53.1}
-: ${cmake_ver:=3.16.4}
+: ${meson_ver:=0.54.0}
+: ${cmake_ver:=3.17.0}
 : ${bazel_ver:=2.2.0}
 : ${Bear_ver:=2.4.3}
 : ${ccache_ver:=3.7.7}
