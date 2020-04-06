@@ -1677,14 +1677,14 @@ install_native_tar()
 	which lzip > /dev/null || install_native_lzip || return
 	fetch tar || return
 	unpack tar || return
-	[ -f ${tar_src_dir}/Makefile ] ||
-		(cd ${tar_src_dir}
-		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} \
+	[ -f ${tar_bld_dir}/Makefile ] ||
+		(cd ${tar_bld_dir}
+		FORCE_UNSAFE_CONFIGURE=1 ${tar_src_dir}/configure --prefix=${prefix} \
 			--build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${tar_src_dir} -j ${jobs} || return
+	make -C ${tar_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${tar_src_dir} -j ${jobs} -k check || return
-	make -C ${tar_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${tar_bld_dir} -j ${jobs} -k check || return
+	make -C ${tar_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_cpio()
@@ -1692,13 +1692,13 @@ install_native_cpio()
 	[ -x ${prefix}/bin/cpio -a "${force_install}" != yes ] && return
 	fetch cpio || return
 	unpack cpio || return
-	[ -f ${cpio_src_dir}/Makefile ] ||
-		(cd ${cpio_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${cpio_src_dir} -j ${jobs} || return
+	[ -f ${cpio_bld_dir}/Makefile ] ||
+		(cd ${cpio_bld_dir}
+		${cpio_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${cpio_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${cpio_src_dir} -j ${jobs} -k check || return
-	make -C ${cpio_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${cpio_bld_dir} -j ${jobs} -k check || return
+	make -C ${cpio_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_xz()
@@ -1706,13 +1706,13 @@ install_native_xz()
 	[ -x ${prefix}/bin/xz -a "${force_install}" != yes ] && return
 	fetch xz || return
 	unpack xz || return
-	[ -f ${xz_src_dir}/Makefile ] ||
-		(cd ${xz_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${xz_src_dir} -j ${jobs} || return
+	[ -f ${xz_bld_dir}/Makefile ] ||
+		(cd ${xz_bld_dir}
+		${xz_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${xz_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${xz_src_dir} -j ${jobs} -k check || return
-	make -C ${xz_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${xz_bld_dir} -j ${jobs} -k check || return
+	make -C ${xz_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_bzip2()
