@@ -1859,8 +1859,8 @@ install_native_zstd()
 	[ -x ${prefix}/bin/zstd -a "${force_install}" != yes ] && return
 	fetch zstd || return
 	unpack zstd || return
-	make -C ${zstd_src_dir} -j ${jobs} || return
-	make -C ${zstd_src_dir} -j ${jobs} prefix=${prefix} install || return
+	make -C ${zstd_src_dir} -j ${jobs} CC=${host}-gcc || return
+	make -C ${zstd_src_dir} -j ${jobs} prefix=${DESTDIR}${prefix} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/zstd || return
