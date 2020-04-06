@@ -1491,7 +1491,7 @@ EOF
 		printf " %c %-${width}s" `echo "${column2}" | sed -e "${i}p;d"`
 		printf " %c %-${width}s" `echo "${column3}" | sed -e "${i}p;d"`
 		echo
-	done
+	done | tr -d '\0' | sed -e 's/ \+$//'
 }
 
 list_repositories()
