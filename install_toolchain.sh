@@ -1978,14 +1978,14 @@ install_native_m4()
 	[ -x ${prefix}/bin/m4 -a "${force_install}" != yes ] && return
 	fetch m4 || return
 	unpack m4 || return
-	[ -f ${m4_src_dir}/Makefile ] ||
-		(cd ${m4_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+	[ -f ${m4_bld_dir}/Makefile ] ||
+		(cd ${m4_bld_dir}
+		${m4_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules \
 			--enable-c++ --enable-changeword) || return
-	make -C ${m4_src_dir} -j ${jobs} || return
+	make -C ${m4_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${m4_src_dir} -j ${jobs} -k check || return
-	make -C ${m4_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${m4_bld_dir} -j ${jobs} -k check || return
+	make -C ${m4_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_autoconf()
@@ -1993,26 +1993,26 @@ install_native_autoconf()
 	[ -x ${prefix}/bin/autoconf -a "${force_install}" != yes ] && return
 	fetch autoconf || return
 	unpack autoconf || return
-	[ -f ${autoconf_src_dir}/Makefile ] ||
-		(cd ${autoconf_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${autoconf_src_dir} -j ${jobs} || return
+	[ -f ${autoconf_bld_dir}/Makefile ] ||
+		(cd ${autoconf_bld_dir}
+		${autoconf_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${autoconf_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${autoconf_src_dir} -j ${jobs} -k check || return
-	make -C ${autoconf_src_dir} -j ${jobs} install || return
+		make -C ${autoconf_bld_dir} -j ${jobs} -k check || return
+	make -C ${autoconf_bld_dir} -j ${jobs} install || return
 }
 
 install_native_autoconf_archive()
 {
 	fetch autoconf-archive || return
 	unpack autoconf-archive || return
-	[ -f ${autoconf_archive_src_dir}/Makefile ] ||
-		(cd ${autoconf_archive_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${autoconf_archive_src_dir} -j ${jobs} || return
+	[ -f ${autoconf_archive_bld_dir}/Makefile ] ||
+		(cd ${autoconf_archive_bld_dir}
+		${autoconf_archive_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${autoconf_archive_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${autoconf_archive_src_dir} -j ${jobs} -k check || return
-	make -C ${autoconf_archive_src_dir} -j ${jobs} install || return
+		make -C ${autoconf_archive_bld_dir} -j ${jobs} -k check || return
+	make -C ${autoconf_archive_bld_dir} -j ${jobs} install || return
 }
 
 install_native_automake()
@@ -2021,13 +2021,13 @@ install_native_automake()
 	which autoconf > /dev/null || install_native_autoconf || return
 	fetch automake || return
 	unpack automake || return
-	[ -f ${automake_src_dir}/Makefile ] ||
-		(cd ${automake_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${automake_src_dir} -j ${jobs} || return
+	[ -f ${automake_bld_dir}/Makefile ] ||
+		(cd ${automake_bld_dir}
+		${automake_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${automake_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${automake_src_dir} -j ${jobs} -k check || return
-	make -C ${automake_src_dir} -j ${jobs} install || return
+		make -C ${automake_bld_dir} -j ${jobs} -k check || return
+	make -C ${automake_bld_dir} -j ${jobs} install || return
 }
 
 install_native_autogen()
@@ -2037,15 +2037,15 @@ install_native_autogen()
 	search_header libguile.h > /dev/null || install_native_guile || return
 	fetch autogen || return
 	unpack autogen || return
-	[ -f ${autogen_src_dir}/Makefile ] ||
-		(cd ${autogen_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+	[ -f ${autogen_bld_dir}/Makefile ] ||
+		(cd ${autogen_bld_dir}
+		${autogen_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules \
 			--disable-rpath --disable-dependency-tracking \
 			CFLAGS="${CFLAGS} -Wno-error=implicit-fallthrough=") || return
-	make -C ${autogen_src_dir} -j ${jobs} || return
+	make -C ${autogen_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${autogen_src_dir} -j ${jobs} -k check || return
-	make -C ${autogen_src_dir} -j ${jobs} install || return
+		make -C ${autogen_bld_dir} -j ${jobs} -k check || return
+	make -C ${autogen_bld_dir} -j ${jobs} install || return
 	[ -z "${strip}" ] && return
 	for b in autogen columns getdefs xml2ag; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
@@ -2058,13 +2058,13 @@ install_native_libtool()
 	which flex > /dev/null || install_native_flex || return
 	fetch libtool || return
 	unpack libtool || return
-	[ -f ${libtool_src_dir}/Makefile ] ||
-		(cd ${libtool_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${libtool_src_dir} -j ${jobs} || return
+	[ -f ${libtool_bld_dir}/Makefile ] ||
+		(cd ${libtool_bld_dir}
+		${libtool_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libtool_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libtool_src_dir} -j ${jobs} -k check || return
-	make -C ${libtool_src_dir} -j ${jobs} install || return
+		make -C ${libtool_bld_dir} -j ${jobs} -k check || return
+	make -C ${libtool_bld_dir} -j ${jobs} install || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/lib/libltdl.so || return
 }
