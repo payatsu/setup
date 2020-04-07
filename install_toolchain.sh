@@ -5414,13 +5414,13 @@ install_native_libpcap()
 	which lex > /dev/null || which flex > /dev/null || install_native_flex || return
 	fetch libpcap || return
 	unpack libpcap || return
-	[ -f ${libpcap_src_dir}/Makefile ] ||
-		(cd ${libpcap_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${libpcap_src_dir} -j ${jobs} || return
+	[ -f ${libpcap_bld_dir}/Makefile ] ||
+		(cd ${libpcap_bld_dir}
+		${libpcap_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libpcap_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libpcap_src_dir} -j ${jobs} -k test || return
-	make -C ${libpcap_src_dir} -j ${jobs} install || return
+		make -C ${libpcap_bld_dir} -j ${jobs} -k test || return
+	make -C ${libpcap_bld_dir} -j ${jobs} install || return
 	update_path || return
 }
 
@@ -5430,13 +5430,13 @@ install_native_tcpdump()
 	search_header pcap.h pcap > /dev/null || install_native_libpcap || return
 	fetch tcpdump || return
 	unpack tcpdump || return
-	[ -f ${tcpdump_src_dir}/Makefile ] ||
-		(cd ${tcpdump_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${tcpdump_src_dir} -j ${jobs} || return
+	[ -f ${tcpdump_bld_dir}/Makefile ] ||
+		(cd ${tcpdump_bld_dir}
+		${tcpdump_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${tcpdump_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${tcpdump_src_dir} -j ${jobs} -k check || return
-	make -C ${tcpdump_src_dir} -j ${jobs} install || return
+		make -C ${tcpdump_bld_dir} -j ${jobs} -k check || return
+	make -C ${tcpdump_bld_dir} -j ${jobs} install || return
 }
 
 install_native_nmap()
@@ -5462,13 +5462,13 @@ install_native_npth()
 	[ -f ${prefix}/include/npth.h -a "${force_install}" != yes ] && return
 	fetch npth || return
 	unpack npth || return
-	[ -f ${npth_src_dir}/Makefile ] ||
-		(cd ${npth_src_dir}
-		./configure --prefix=${prefix}) || return
-	make -C ${npth_src_dir} -j ${jobs} || return
+	[ -f ${npth_bld_dir}/Makefile ] ||
+		(cd ${npth_bld_dir}
+		${npth_src_dir}/configure --prefix=${prefix}) || return
+	make -C ${npth_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${npth_src_dir} -j ${jobs} -k check || return
-	make -C ${npth_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${npth_bld_dir} -j ${jobs} -k check || return
+	make -C ${npth_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_libgpg_error()
@@ -5476,13 +5476,13 @@ install_native_libgpg_error()
 	[ -f ${prefix}/include/gpg-error.h -a "${force_install}" != yes ] && return
 	fetch libgpg-error || return
 	unpack libgpg-error || return
-	[ -f ${libgpg_error_src_dir}/Makefile ] ||
-		(cd ${libgpg_error_src_dir}
-		./configure --prefix=${prefix}) || return
-	make -C ${libgpg_error_src_dir} -j ${jobs} || return
+	[ -f ${libgpg_error_bld_dir}/Makefile ] ||
+		(cd ${libgpg_error_bld_dir}
+		${libgpg_error_src_dir}/configure --prefix=${prefix}) || return
+	make -C ${libgpg_error_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libgpg_error_src_dir} -j ${jobs} -k check || return
-	make -C ${libgpg_error_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libgpg_error_bld_dir} -j ${jobs} -k check || return
+	make -C ${libgpg_error_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_libgcrypt()
@@ -5491,13 +5491,13 @@ install_native_libgcrypt()
 	search_header gpg-error.h > /dev/null || install_native_libgpg_error || return
 	fetch libgcrypt || return
 	unpack libgcrypt || return
-	[ -f ${libgcrypt_src_dir}/Makefile ] ||
-		(cd ${libgcrypt_src_dir}
-		./configure --prefix=${prefix}) || return
-	make -C ${libgcrypt_src_dir} -j ${jobs} || return
+	[ -f ${libgcrypt_bld_dir}/Makefile ] ||
+		(cd ${libgcrypt_bld_dir}
+		${libgcrypt_src_dir}/configure --prefix=${prefix}) || return
+	make -C ${libgcrypt_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libgcrypt_src_dir} -j ${jobs} -k check || return
-	make -C ${libgcrypt_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libgcrypt_bld_dir} -j ${jobs} -k check || return
+	make -C ${libgcrypt_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_libksba()
@@ -5506,13 +5506,13 @@ install_native_libksba()
 	search_header gpg-error.h > /dev/null || install_native_libgpg_error || return
 	fetch libksba || return
 	unpack libksba || return
-	[ -f ${libksba_src_dir}/Makefile ] ||
-		(cd ${libksba_src_dir}
-		./configure --prefix=${prefix}) || return
-	make -C ${libksba_src_dir} -j ${jobs} || return
+	[ -f ${libksba_bld_dir}/Makefile ] ||
+		(cd ${libksba_bld_dir}
+		${libksba_src_dir}/configure --prefix=${prefix}) || return
+	make -C ${libksba_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libksba_src_dir} -j ${jobs} -k check || return
-	make -C ${libksba_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libksba_bld_dir} -j ${jobs} -k check || return
+	make -C ${libksba_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_libassuan()
@@ -5521,13 +5521,13 @@ install_native_libassuan()
 	search_header gpg-error.h > /dev/null || install_native_libgpg_error || return
 	fetch libassuan || return
 	unpack libassuan || return
-	[ -f ${libassuan_src_dir}/Makefile ] ||
-		(cd ${libassuan_src_dir}
-		./configure --prefix=${prefix}) || return
-	make -C ${libassuan_src_dir} -j ${jobs} || return
+	[ -f ${libassuan_bld_dir}/Makefile ] ||
+		(cd ${libassuan_bld_dir}
+		${libassuan_src_dir}/configure --prefix=${prefix}) || return
+	make -C ${libassuan_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libassuan_src_dir} -j ${jobs} -k check || return
-	make -C ${libassuan_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libassuan_bld_dir} -j ${jobs} -k check || return
+	make -C ${libassuan_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_gnupg()
@@ -5545,13 +5545,13 @@ install_native_gnupg()
 	search_header sqlite3.h > /dev/null || install_native_sqlite || return
 	fetch gnupg || return
 	unpack gnupg || return
-	[ -f ${gnupg_src_dir}/Makefile ] ||
-		(cd ${gnupg_src_dir}
-		./configure --prefix=${prefix} --enable-symcryptrun --enable-all-tests) || return
-	make -C ${gnupg_src_dir} -j ${jobs} || return
+	[ -f ${gnupg_bld_dir}/Makefile ] ||
+		(cd ${gnupg_bld_dir}
+		${gnupg_src_dir}/configure --prefix=${prefix} --enable-symcryptrun --enable-all-tests) || return
+	make -C ${gnupg_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${gnupg_src_dir} -j ${jobs} -k check || return
-	make -C ${gnupg_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${gnupg_bld_dir} -j ${jobs} -k check || return
+	make -C ${gnupg_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_protobuf()
