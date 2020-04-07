@@ -3551,15 +3551,15 @@ install_native_graphviz()
 	which swig > /dev/null || install_native_swig || return
 	fetch graphviz || return
 	unpack graphviz || return
-	[ -f ${graphviz_src_dir}/Makefile ] ||
-		(cd ${graphviz_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+	[ -f ${graphviz_bld_dir}/Makefile ] ||
+		(cd ${graphviz_bld_dir}
+		${graphviz_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules \
 			--enable-swig --enable-go --enable-guile --enable-lua --enable-perl --enable-python \
 			--enable-ruby --enable-tcl) || return
-	make -C ${graphviz_src_dir} -j ${jobs} || return
+	make -C ${graphviz_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${graphviz_src_dir} -j ${jobs} -k check || return
-	make -C ${graphviz_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${graphviz_bld_dir} -j ${jobs} -k check || return
+	make -C ${graphviz_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
