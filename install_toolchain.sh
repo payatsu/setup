@@ -4224,10 +4224,11 @@ install_native_utf8proc()
 	[ -f ${prefix}/include/utf8proc.h -a "${force_install}" != yes ] && return
 	fetch utf8proc || return
 	unpack utf8proc || return
-	make -C ${utf8proc_src_dir} -j ${jobs} CC=${host}-gcc || return
+	[ -f ${utf8proc_bld_dir}/Makefile ] || cp -Tvr ${utf8proc_src_dir} ${utf8proc_bld_dir} || return
+	make -C ${utf8proc_bld_dir} -j ${jobs} CC=${host}-gcc || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${utf8proc_src_dir} -j ${jobs} -k check || return
-	make -C ${utf8proc_src_dir} -j ${jobs} prefix=${prefix} install || return
+		make -C ${utf8proc_bld_dir} -j ${jobs} -k check || return
+	make -C ${utf8proc_bld_dir} -j ${jobs} prefix=${prefix} install || return
 }
 
 install_native_subversion()
@@ -4243,15 +4244,15 @@ install_native_subversion()
 	which ruby > /dev/null || install_native_ruby || return
 	fetch subversion || return
 	unpack subversion || return
-	[ -f ${subversion_src_dir}/Makefile ] ||
-		(cd ${subversion_src_dir}
-		./configure --prefix=${prefix} --build=${build} --with-zlib=`print_prefix zlib.h` \
+	[ -f ${subversion_bld_dir}/Makefile ] ||
+		(cd ${subversion_bld_dir}
+		${subversion_src_dir}/configure --prefix=${prefix} --build=${build} --with-zlib=`print_prefix zlib.h` \
 			--with-sqlite=`print_prefix sqlite3.h` --with-lz4=internal ${strip:+--enable-optimize} \
 			LDFLAGS="${LDFLAGS} -L`print_library_dir libiconv.so`" LIBS=-liconv) || return
-	make -C ${subversion_src_dir} -j ${jobs} || return
+	make -C ${subversion_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${subversion_src_dir} -j ${jobs} -k check || return
-	make -C ${subversion_src_dir} -j ${jobs} install || return
+		make -C ${subversion_bld_dir} -j ${jobs} -k check || return
+	make -C ${subversion_bld_dir} -j ${jobs} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	for b in svn svnadmin svnbench svndumpfilter svnfsfs svnlook svnmucc svnrdump svnserve svnsync svnversion; do
@@ -4264,10 +4265,11 @@ install_native_ninja()
 	[ -x ${prefix}/bin/ninja -a "${force_install}" != yes ] && return
 	fetch ninja || return
 	unpack ninja || return
-	[ -f ${ninja_src_dir}/ninja ] ||
-		(cd ${ninja_src_dir}
+	[ -f ${ninja_bld_dir}/configure.py ] || cp -Tvr ${ninja_src_dir} ${ninja_bld_dir} || return
+	[ -f ${ninja_bld_dir}/ninja ] ||
+		(cd ${ninja_bld_dir}
 		./configure.py --bootstrap --verbose) || return
-	command install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${ninja_src_dir}/ninja || return
+	command install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${ninja_bld_dir}/ninja || return
 }
 
 install_native_meson()
