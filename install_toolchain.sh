@@ -3651,13 +3651,14 @@ install_native_procps()
 	unpack procps || return
 	[ -f ${procps_src_dir}/configure ] ||
 		(cd ${procps_src_dir}; ./autogen.sh) || return
-	[ -f ${procps_src_dir}/Makefile ] ||
-		(cd ${procps_src_dir}
+	[ -f ${procps_bld_dir}/configure ] || cp -Tvr ${procps_src_dir} ${procps_bld_dir} || return
+	[ -f ${procps_bld_dir}/Makefile ] ||
+		(cd ${procps_bld_dir}
 		./configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
-	make -C ${procps_src_dir} -j ${jobs} || return
+	make -C ${procps_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${procps_src_dir} -j ${jobs} -k check || return
-	make -C ${procps_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${procps_bld_dir} -j ${jobs} -k check || return
+	make -C ${procps_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
