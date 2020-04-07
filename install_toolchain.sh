@@ -5448,13 +5448,14 @@ install_native_nmap()
 	[ -x ${prefix}/bin/nmap -a "${force_install}" != yes ] && return
 	fetch nmap || return
 	unpack nmap || return
-	[ -f ${nmap_src_dir}/Makefile ] ||
-		(cd ${nmap_src_dir}
+	[ -f ${nmap_bld_dir}/configure ] || cp -Tvr ${nmap_src_dir} ${nmap_bld_dir} || return
+	[ -f ${nmap_bld_dir}/Makefile ] ||
+		(cd ${nmap_bld_dir}
 		./configure --prefix=${prefix} --host=${host}) || return
-	make -C ${nmap_src_dir} -j ${jobs} || return
+	make -C ${nmap_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${nmap_src_dir} -j ${jobs} -k check || return
-	make -C ${nmap_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		make -C ${nmap_bld_dir} -j ${jobs} -k check || return
+	make -C ${nmap_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 	[ -z "${strip}" ] && return
 	for b in ncat nmap nping; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
