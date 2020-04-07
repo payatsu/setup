@@ -5579,13 +5579,14 @@ install_native_libbacktrace()
 {
 	[ -f ${prefix}/include/backtrace.h -a "${force_install}" != yes ] && return
 	fetch libbacktrace || return
-	[ -f ${libbacktrace_src_dir}/Makefile ] ||
-		(cd ${libbacktrace_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${libbacktrace_src_dir} -j ${jobs} || return
+	unpack libbacktrace || return
+	[ -f ${libbacktrace_bld_dir}/Makefile ] ||
+		(cd ${libbacktrace_bld_dir}
+		${libbacktrace_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${libbacktrace_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libbacktrace_src_dir} -j ${jobs} -k check || return
-	make -C ${libbacktrace_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libbacktrace_bld_dir} -j ${jobs} -k check || return
+	make -C ${libbacktrace_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
