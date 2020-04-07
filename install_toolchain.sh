@@ -177,7 +177,7 @@
 : ${nasm_ver:=2.14.02}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=master}
-: ${x265_ver:=2.9}
+: ${x265_ver:=3.2.1}
 : ${libav_ver:=11.9}
 : ${opencv_ver:=4.2.0}
 : ${opencv_contrib_ver:=4.2.0}
@@ -1327,7 +1327,7 @@ set_src_directory()
 		eval ${_1}_name=${1}.\${${_1}_ver};;
 	gtk)
 		eval ${_1}_name=${1}+-\${${_1}_ver};;
-	boost)
+	boost|x265)
 		eval ${_1}_name=${1}_\${${_1}_ver};;
 	rustc)
 		eval ${_1}_name=${1}-\${${_1}_ver}-src;;
@@ -5269,16 +5269,15 @@ install_native_x265()
 	which cmake > /dev/null || install_native_cmake || return
 	which yasm > /dev/null || install_native_yasm || return
 	fetch x265 || return
-	[ -d ${x265_src_dir} ] ||
-		(unpack x265 &&
-		mv -v ${x265_src_base}/x265_${x265_ver} ${x265_src_dir}) || return
-	(cd ${x265_src_dir}/source
-	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+	unpack x265 || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${x265_src_dir}/source -B ${x265_bld_dir} \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
-		-DNATIVE_BUILD=ON) || return
-	make -C ${x265_src_dir}/source -j ${jobs} || return
-	make -C ${x265_src_dir}/source -j ${jobs} install || return
+		-DNATIVE_BUILD=ON || return
+	cmake --build ${x265_bld_dir} -v -j ${jobs} || return
+	cmake --install ${x265_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
 
