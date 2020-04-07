@@ -4040,13 +4040,14 @@ install_native_asciidoc()
 	[ -x ${prefix}/bin/asciidoc -a "${force_install}" != yes ] && return
 	fetch asciidoc || return
 	unpack asciidoc || return
-	[ -f ${asciidoc_src_dir}/Makefile ] ||
-		(cd ${asciidoc_src_dir}
+	[ -f ${asciidoc_bld_dir}/configure ] || cp -Tvr ${asciidoc_src_dir} ${asciidoc_bld_dir} || return
+	[ -f ${asciidoc_bld_dir}/Makefile ] ||
+		(cd ${asciidoc_bld_dir}
 		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${asciidoc_src_dir} -j ${jobs} || return
+	make -C ${asciidoc_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${asciidoc_src_dir} -j ${jobs} -k test || return
-	make -C ${asciidoc_src_dir} -j ${jobs} install || return
+		make -C ${asciidoc_bld_dir} -j ${jobs} -k test || return
+	make -C ${asciidoc_bld_dir} -j ${jobs} install || return
 }
 
 install_native_libxml2()
@@ -4072,13 +4073,13 @@ install_native_libxslt()
 	search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
 	fetch libxslt || return
 	unpack libxslt || return
-	[ -f ${libxslt_src_dir}/Makefile ] ||
-		(cd ${libxslt_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-	make -C ${libxslt_src_dir} -j ${jobs} || return
+	[ -f ${libxslt_bld_dir}/Makefile ] ||
+		(cd ${libxslt_bld_dir}
+		${libxslt_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+	make -C ${libxslt_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libxslt_src_dir} -j ${jobs} -k check || return
-	make -C ${libxslt_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libxslt_bld_dir} -j ${jobs} -k check || return
+	make -C ${libxslt_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
