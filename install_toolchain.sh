@@ -4960,14 +4960,14 @@ install_native_perl()
 	[ -x ${prefix}/bin/perl -a "${force_install}" != yes ] && return
 	fetch perl || return
 	unpack perl || return
-	[ -f ${perl_src_dir}/Makefile ] ||
-		(cd ${perl_src_dir}
-		./Configure -de -Dprefix=${prefix} -Dcc=${CC:-gcc} \
-			-Dusethreads -Duse64bitint -Duse64bitall -Dusemorebits -Duseshrplib) || return
-	make -C ${perl_src_dir} -j 1 || return
+	[ -f ${perl_bld_dir}/Makefile ] ||
+		(cd ${perl_bld_dir}
+		${perl_src_dir}/Configure -de -Dprefix=${prefix} -Dcc=${CC:-gcc} \
+			-Dusethreads -Duse64bitint -Duse64bitall -Dusemorebits -Duseshrplib -Dmksymlinks) || return
+	make -C ${perl_bld_dir} -j 1 || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${perl_src_dir} -j ${jobs} -k test || return
-	make -C ${perl_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${perl_bld_dir} -j ${jobs} -k test || return
+	make -C ${perl_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	ln -fsv `find ${DESTDIR}${prefix}/lib -type f -name libperl.so | sed -e s%^${DESTDIR}${prefix}/lib/%%` ${DESTDIR}${prefix}/lib || return
 }
 
