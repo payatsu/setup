@@ -3711,13 +3711,13 @@ install_native_libpipeline()
 	[ -f ${prefix}/include/pipeline.h -a "${force_install}" != yes ] && return
 	fetch libpipeline || return
 	unpack libpipeline || return
-	[ -f ${libpipeline_src_dir}/Makefile ] ||
-		(cd ${libpipeline_src_dir}
-		./configure --prefix=${prefix} --host=${host} --disable-silent-rules --enable-static --disable-rpath) || return
-	make -C ${libpipeline_src_dir} -j ${jobs} || return
+	[ -f ${libpipeline_bld_dir}/Makefile ] ||
+		(cd ${libpipeline_bld_dir}
+		${libpipeline_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules --enable-static --disable-rpath) || return
+	make -C ${libpipeline_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libpipeline_src_dir} -j ${jobs} -k check || return
-	make -C ${libpipeline_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		make -C ${libpipeline_bld_dir} -j ${jobs} -k check || return
+	make -C ${libpipeline_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -3728,15 +3728,15 @@ install_native_man_db()
 	search_header pipeline.h > /dev/null || install_native_libpipeline || return
 	fetch man-db || return
 	unpack man-db || return
-	[ -f ${man_db_src_dir}/Makefile ] ||
-		(cd ${man_db_src_dir}
-		./configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+	[ -f ${man_db_bld_dir}/Makefile ] ||
+		(cd ${man_db_bld_dir}
+		${man_db_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 			--disable-setuid --enable-static --disable-rpath \
 			--without-systemdtmpfilesdir --without-systemdsystemunitdir) || return
-	make -C ${man_db_src_dir} -j ${jobs} || return
+	make -C ${man_db_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${man_db_src_dir} -j ${jobs} -k check || return
-	make -C ${man_db_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		make -C ${man_db_bld_dir} -j ${jobs} -k check || return
+	make -C ${man_db_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 }
 
 install_native_file()
@@ -3744,13 +3744,13 @@ install_native_file()
 	[ -x ${prefix}/bin/file -a "${force_install}" != yes ] && return
 	fetch file || return
 	unpack file || return
-	[ -f ${file_src_dir}/Makefile ] ||
-		(cd ${file_src_dir}
-		./configure --prefix=${prefix} --host=${host} --enable-static --disable-silent-rules) || return
-	make -C ${file_src_dir} -j ${jobs} || return
+	[ -f ${file_bld_dir}/Makefile ] ||
+		(cd ${file_bld_dir}
+		${file_src_dir}/configure --prefix=${prefix} --host=${host} --enable-static --disable-silent-rules) || return
+	make -C ${file_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${file_src_dir} -j ${jobs} check || return
-	make -C ${file_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		make -C ${file_bld_dir} -j ${jobs} check || return
+	make -C ${file_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -3759,13 +3759,13 @@ install_native_source_highlight()
 	[ -x ${prefix}/bin/source-highlight -a "${force_install}" != yes ] && return
 	fetch source-highlight || return
 	unpack source-highlight || return
-	[ -f ${source_highlight_src_dir}/Makefile ] ||
-		(cd ${source_highlight_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
-	make -C ${source_highlight_src_dir} -j ${jobs} || return
+	[ -f ${source_highlight_bld_dir}/Makefile ] ||
+		(cd ${source_highlight_bld_dir}
+		${source_highlight_src_dir}/configure --prefix=${prefix} --build=${build}) || return
+	make -C ${source_highlight_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${source_highlight_src_dir} -j ${jobs} -k check || return
-	make -C ${source_highlight_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${source_highlight_bld_dir} -j ${jobs} -k check || return
+	make -C ${source_highlight_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -3775,13 +3775,13 @@ install_native_screen()
 	search_header curses.h > /dev/null || install_native_ncurses || return
 	fetch screen || return
 	unpack screen || return
-	[ -f ${screen_src_dir}/Makefile ] ||
-		(cd ${screen_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} \
+	[ -f ${screen_bld_dir}/Makefile ] ||
+		(cd ${screen_bld_dir}
+		${screen_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			--enable-telnet --enable-colors256 --enable-rxvt_osc) || return
-	make -C ${screen_src_dir} -j ${jobs} || return
+	make -C ${screen_bld_dir} -j ${jobs} || return
 	mkdir -pv ${DESTDIR}${prefix}/share/screen/utf8encodings || return
-	make -C ${screen_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+	make -C ${screen_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/${screen_name} || return
 }
 
@@ -3790,13 +3790,13 @@ install_native_libevent()
 	[ -f ${prefix}/include/event2/event.h -a "${force_install}" != yes ] && return
 	fetch libevent || return
 	unpack libevent || return
-	[ -f ${libevent_src_dir}-stable/Makefile ] ||
-		(cd ${libevent_src_dir}-stable
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${libevent_src_dir}-stable -j ${jobs} || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${libevent_src_dir}-stable -j ${jobs} -k check || return
-	make -C ${libevent_src_dir}-stable -j ${jobs} install || return
+	[ -f ${libevent_bld_dir}/Makefile ] ||
+		(cd ${libevent_bld_dir}
+		${libevent_src_dir}-stable/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libevent_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != zes ] ||
+		make -C ${libevent_bld_dir} -j ${jobs} -k check || return
+	make -C ${libevent_bld_dir} -j ${jobs} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	for l in '' _core _extra _openssl _pthreads; do
