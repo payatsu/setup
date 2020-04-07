@@ -5171,13 +5171,14 @@ install_native_lua()
  $(LUA_T): $(LUA_O) $(LUA_A)
  	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
 EOF
-	make -C ${lua_src_dir} -j ${jobs} \
+	[ -f ${lua_bld_dir}/Makefile ] || cp -Tvr ${lua_src_dir} ${lua_bld_dir} || return
+	make -C ${lua_bld_dir} -j ${jobs} \
 		MYCFLAGS="${CFLAGS} -I`print_include_dir readline.h readline`" \
 		MYLDFLAGS="${LDFLAGS} -L`print_library_dir libreadline.so` -L`print_library_dir libncurses.so`" \
 		MYLIBS=-lncurses linux || return # XXX linuxにしか対応していない。
 	[ "${enable_check}" != yes ] ||
-		make -C ${lua_src_dir} -j ${jobs} -k test || return
-	make -C ${lua_src_dir} -j ${jobs} INSTALL_TOP=${DESTDIR}${prefix} install || return
+		make -C ${lua_bld_dir} -j ${jobs} -k test || return
+	make -C ${lua_bld_dir} -j ${jobs} INSTALL_TOP=${DESTDIR}${prefix} install || return
 	mv -v ${DESTDIR}${prefix}/lib/liblua.so ${DESTDIR}${prefix}/lib/liblua.so.`echo ${lua_ver} | cut -d. -f-2` || return
 	ln -fsv liblua.so.`echo ${lua_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/lib/liblua.so || return
 	update_path || return
@@ -5224,14 +5225,14 @@ install_native_nasm()
 	[ -x ${prefix}/bin/nasm -a "${force_install}" != yes ] && return
 	fetch nasm || return
 	unpack nasm || return
-	[ -f ${nasm_src_dir}/Makefile ] ||
-		(cd ${nasm_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${nasm_src_dir} -j ${jobs} || return
+	[ -f ${nasm_bld_dir}/Makefile ] ||
+		(cd ${nasm_bld_dir}
+		${nasm_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${nasm_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${nasm_src_dir} -j ${jobs} -k test || return
-	[ -z "${strip}" ] || make -C ${nasm_src_dir} -j ${jobs} strip || return
-	make -C ${nasm_src_dir} -j ${jobs} INSTALLROOT=${DESTDIR} install || return
+		make -C ${nasm_bld_dir} -j ${jobs} -k test || return
+	[ -z "${strip}" ] || make -C ${nasm_bld_dir} -j ${jobs} strip || return
+	make -C ${nasm_bld_dir} -j ${jobs} INSTALLROOT=${DESTDIR} install || return
 }
 
 install_native_yasm()
@@ -5239,13 +5240,13 @@ install_native_yasm()
 	[ -x ${prefix}/bin/yasm -a "${force_install}" != yes ] && return
 	fetch yasm || return
 	unpack yasm || return
-	[ -f ${yasm_src_dir}/Makefile ] ||
-		(cd ${yasm_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${yasm_src_dir} -j ${jobs} || return
+	[ -f ${yasm_bld_dir}/Makefile ] ||
+		(cd ${yasm_bld_dir}
+		${yasm_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${yasm_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${yasm_src_dir} -j ${jobs} -k check || return
-	make -C ${yasm_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${yasm_bld_dir} -j ${jobs} -k check || return
+	make -C ${yasm_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_x264()
