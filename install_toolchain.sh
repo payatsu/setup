@@ -3921,15 +3921,14 @@ install_native_e2fsprogs()
 	[ -x ${prefix}/bin/mkfs.ext2 -a "${force_install}" != yes ] && return
 	fetch e2fsprogs || return
 	unpack e2fsprogs || return
-	mkdir -pv ${e2fsprogs_src_dir}/build || return
-	[ -f ${e2fsprogs_src_dir}/build/Makefile ] ||
-		(cd ${e2fsprogs_src_dir}/build
-		../configure --prefix=${prefix} --host=${host} --enable-verbose-makecmds --enable-elf-shlibs) || return
-	make -C ${e2fsprogs_src_dir}/build -j 1 || return # -j '1' is for workaround
+	[ -f ${e2fsprogs_bld_dir}/Makefile ] ||
+		(cd ${e2fsprogs_bld_dir}
+		${e2fsprogs_src_dir}/configure --prefix=${prefix} --host=${host} --enable-verbose-makecmds --enable-elf-shlibs) || return
+	make -C ${e2fsprogs_bld_dir} -j 1 || return # -j '1' is for workaround
 	[ "${enable_check}" != yes ] ||
-		make -C ${e2fsprogs_src_dir}/build -j ${jobs} -k check || return
-	make -C ${e2fsprogs_src_dir}/build -j ${jobs} install || return
-	make -C ${e2fsprogs_src_dir}/build -j ${jobs} install-libs || return
+		make -C ${e2fsprogs_bld_dir} -j ${jobs} -k check || return
+	make -C ${e2fsprogs_bld_dir} -j ${jobs} install || return
+	make -C ${e2fsprogs_bld_dir} -j ${jobs} install-libs || return
 }
 
 install_native_squashfs()
@@ -3937,9 +3936,10 @@ install_native_squashfs()
 	[ -x ${prefix}/bin/mksquashfs -a "${force_install}" != yes ] && return
 	fetch squashfs || return
 	unpack squashfs || return
-	make -C ${squashfs_src_dir}/squashfs-tools -j ${jobs} XZ_SUPPORT=1 || return
+	[ -f ${squashfs_bld_dir}/Makefile ] || cp -Tvr ${squashfs_src_dir} ${squashfs_bld_dir} || return
+	make -C ${squashfs_bld_dir}/squashfs-tools -j ${jobs} XZ_SUPPORT=1 || return
 	mkdir -pv ${DESTDIR}${prefix}/bin || return
-	make -C ${squashfs_src_dir}/squashfs-tools -j ${jobs} INSTALL_DIR=${DESTDIR}${prefix}/bin install || return
+	make -C ${squashfs_bld_dir}/squashfs-tools -j ${jobs} INSTALL_DIR=${DESTDIR}${prefix}/bin install || return
 	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/mksquashfs ${DESTDIR}${prefix}/bin/unsquashfs || return
 }
 
