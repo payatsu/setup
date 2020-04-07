@@ -4299,17 +4299,17 @@ install_native_cmake()
 	search_header lzma.h > /dev/null || install_native_xz || return
 	fetch cmake || return
 	unpack cmake || return
-	[ -f ${cmake_src_dir}/Makefile ] ||
-		(cd ${cmake_src_dir}
-		./bootstrap --prefix=${prefix} --parallel=${jobs} \
+	[ -f ${cmake_bld_dir}/Makefile ] ||
+		(cd ${cmake_bld_dir}
+		${cmake_src_dir}/bootstrap --prefix=${prefix} --parallel=${jobs} \
 			--system-curl --system-zlib --system-bzip2 --system-liblzma -- \
 			-DCURL_INCLUDE_DIR=`print_include_dir curl.h curl` -DCURL_LIBRARY=`search_library libcurl.so` \
 			-DBZIP2_INCLUDE_DIR=`print_include_dir bzlib.h` -DBZIP2_LIBRARIES=`search_library libbz2.so` \
 			-DLIBLZMA_INCLUDE_DIR=`print_include_dir lzma.h` -DLIBLZMA_LIBRARY=`search_library liblzma.so`) || return
-	make -C ${cmake_src_dir} -j ${jobs} || return
+	make -C ${cmake_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${cmake_src_dir} -j ${jobs} -k test || return
-	make -C ${cmake_src_dir} -j ${jobs} install${strip:+/${strip}} || return
+		make -C ${cmake_bld_dir} -j ${jobs} -k test || return
+	make -C ${cmake_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 }
 
 install_native_bazel()
@@ -4353,13 +4353,13 @@ install_native_ccache()
 	[ -x ${prefix}/bin/ccache -a "${force_install}" != yes ] && return
 	fetch ccache || return
 	unpack ccache || return
-	[ -f ${ccache_src_dir}/Makefile ] ||
-		(cd ${ccache_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${ccache_src_dir} -j ${jobs} V=1 || return
+	[ -f ${ccache_bld_dir}/Makefile ] ||
+		(cd ${ccache_bld_dir}
+		${ccache_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${ccache_bld_dir} -j ${jobs} V=1 || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${ccache_src_dir} -j ${jobs} -k V=1 check || return
-	make -C ${ccache_src_dir} -j ${jobs} V=1 install || return
+		make -C ${ccache_bld_dir} -j ${jobs} -k V=1 check || return
+	make -C ${ccache_bld_dir} -j ${jobs} V=1 install || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/ccache || return
 }
@@ -4370,14 +4370,14 @@ install_native_libedit()
 	search_header curses.h > /dev/null || install_native_ncurses || return
 	fetch libedit || return
 	unpack libedit || return
-	[ -f ${libedit_src_dir}/Makefile ] ||
-		(cd ${libedit_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} \
+	[ -f ${libedit_bld_dir}/Makefile ] ||
+		(cd ${libedit_bld_dir}
+		${libedit_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			--disable-silent-rules CFLAGS="${CFLAGS} -I`print_include_dir curses.h`") || return
-	make -C ${libedit_src_dir} -j ${jobs} || return
+	make -C ${libedit_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libedit_src_dir} -j ${jobs} -k check || return
-	make -C ${libedit_src_dir} -j ${jobs} install || return
+		make -C ${libedit_bld_dir} -j ${jobs} -k check || return
+	make -C ${libedit_bld_dir} -j ${jobs} install || return
 	update_path || return
 }
 
@@ -4387,13 +4387,13 @@ install_native_swig()
 	search_header pcre.h > /dev/null || install_native_pcre || return
 	fetch swig || return
 	unpack swig || return
-	[ -f ${swig_src_dir}/Makefile ] ||
-		(cd ${swig_src_dir}
-		./configure --prefix=${prefix} --build=${build} --enable-cpp11-testing) || return
-	make -C ${swig_src_dir} -j ${jobs} || return
+	[ -f ${swig_bld_dir}/Makefile ] ||
+		(cd ${swig_bld_dir}
+		${swig_src_dir}/configure --prefix=${prefix} --build=${build} --enable-cpp11-testing) || return
+	make -C ${swig_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${swig_src_dir} -j ${jobs} -k check || return
-	make -C ${swig_src_dir} -j ${jobs} install || return
+		make -C ${swig_bld_dir} -j ${jobs} -k check || return
+	make -C ${swig_bld_dir} -j ${jobs} install || return
 	[ "${strip}" != strip ] && return
 	strip -v ${DESTDIR}${prefix}/bin/swig ${DESTDIR}${prefix}/bin/ccache-swig || return
 }
