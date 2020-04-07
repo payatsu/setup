@@ -4089,13 +4089,13 @@ install_native_xmlto()
 	search_header xslt.h libxslt > /dev/null || install_native_libxslt || return
 	fetch xmlto || return
 	unpack xmlto || return
-	[ -f ${xmlto_src_dir}/Makefile ] ||
-		(cd ${xmlto_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
-	make -C ${xmlto_src_dir} -j ${jobs} || return
+	[ -f ${xmlto_bld_dir}/Makefile ] ||
+		(cd ${xmlto_bld_dir}
+		${xmlto_src_dir}/configure --prefix=${prefix} --build=${build}) || return
+	make -C ${xmlto_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${xmlto_src_dir} -j ${jobs} -k check || return
-	make -C ${xmlto_src_dir} -j ${jobs} install || return
+		make -C ${xmlto_bld_dir} -j ${jobs} -k check || return
+	make -C ${xmlto_bld_dir} -j ${jobs} install || return
 }
 
 install_native_gettext()
@@ -4103,14 +4103,14 @@ install_native_gettext()
 	[ -x ${prefix}/bin/gettext -a "${force_install}" != yes ] && return
 	fetch gettext || return
 	unpack gettext || return
-	[ -f ${gettext_src_dir}/Makefile ] ||
-		(cd ${gettext_src_dir}
-		./configure --prefix=${prefix} --build=${build} \
+	[ -f ${gettext_bld_dir}/Makefile ] ||
+		(cd ${gettext_bld_dir}
+		${gettext_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--enable-threads --disable-rpath) || return
-	make -C ${gettext_src_dir} -j ${jobs} || return
+	make -C ${gettext_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${gettext_src_dir} -j ${jobs} -k check || return
-	make -C ${gettext_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${gettext_bld_dir} -j ${jobs} -k check || return
+	make -C ${gettext_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -4175,13 +4175,13 @@ install_native_sqlite()
 	[ -f ${prefix}/include/sqlite3.h -a "${force_install}" != yes ] && return
 	fetch sqlite-autoconf || return
 	unpack sqlite-autoconf || return
-	[ -f ${sqlite_autoconf_src_dir}/Makefile ] ||
-		(cd ${sqlite_autoconf_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${sqlite_autoconf_src_dir} -j ${jobs} || return
+	[ -f ${sqlite_autoconf_bld_dir}/Makefile ] ||
+		(cd ${sqlite_autoconf_bld_dir}
+		${sqlite_autoconf_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${sqlite_autoconf_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${sqlite_autoconf_src_dir} -j ${jobs} -k check || return
-	make -C ${sqlite_autoconf_src_dir} -j ${jobs} install || return
+		make -C ${sqlite_autoconf_bld_dir} -j ${jobs} -k check || return
+	make -C ${sqlite_autoconf_bld_dir} -j ${jobs} install || return
 	update_path || return
 }
 
@@ -4190,14 +4190,14 @@ install_native_apr()
 	[ -d ${prefix}/include/apr-1 -a "${force_install}" != yes ] && return
 	fetch apr || return
 	unpack apr || return
-	[ -f ${apr_src_dir}/Makefile ] ||
-		(cd ${apr_src_dir}
-		./configure --prefix=${prefix} --build=${build} \
+	[ -f ${apr_bld_dir}/Makefile ] ||
+		(cd ${apr_bld_dir}
+		${apr_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--enable-threads --enable-posix-shm --enable-other-child) || return
-	make -C ${apr_src_dir} -j ${jobs} || return
+	make -C ${apr_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${apr_src_dir} -j ${jobs} -k check || return
-	make -C ${apr_src_dir} -j ${jobs} install || return
+		make -C ${apr_bld_dir} -j ${jobs} -k check || return
+	make -C ${apr_bld_dir} -j ${jobs} install || return
 	update_path || return
 }
 
@@ -4208,14 +4208,14 @@ install_native_apr_util()
 	search_header sqlite3.h > /dev/null || install_native_sqlite || return
 	fetch apr-util || return
 	unpack apr-util || return
-	[ -f ${apr_util_src_dir}/Makefile ] ||
-		(cd ${apr_util_src_dir}
-		./configure --prefix=${prefix} --with-apr=`print_prefix apr.h apr-1` \
+	[ -f ${apr_util_bld_dir}/Makefile ] ||
+		(cd ${apr_util_bld_dir}
+		${apr_util_src_dir}/configure --prefix=${prefix} --with-apr=`print_prefix apr.h apr-1` \
 			--with-crypto --with-openssl=`print_prefix ssl.h openssl` --with-sqlite3=`print_prefix sqlite3.h`) || return
-	make -C ${apr_util_src_dir} -j ${jobs} || return
+	make -C ${apr_util_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${apr_util_src_dir} -j ${jobs} -k check || return
-	make -C ${apr_util_src_dir} -j ${jobs} install || return
+		make -C ${apr_util_bld_dir} -j ${jobs} -k check || return
+	make -C ${apr_util_bld_dir} -j ${jobs} install || return
 	update_path || return
 }
 
