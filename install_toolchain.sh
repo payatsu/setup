@@ -3811,14 +3811,14 @@ install_native_tmux()
 	search_header event.h event2 > /dev/null || install_native_libevent || return
 	fetch tmux || return
 	unpack tmux || return
-	[ -f ${tmux_src_dir}/Makefile ] ||
-		(cd ${tmux_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} \
+	[ -f ${tmux_bld_dir}/Makefile ] ||
+		(cd ${tmux_bld_dir}
+		${tmux_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			CPPFLAGS="${CPPFLAGS} -I`print_include_dir curses.h`" LIBTINFO_LIBS=-ltinfo) || return
-	make -C ${tmux_src_dir} -j ${jobs} || return
+	make -C ${tmux_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${tmux_src_dir} -j ${jobs} -k check || return
-	make -C ${tmux_src_dir} -j ${jobs} install || return
+		make -C ${tmux_bld_dir} -j ${jobs} -k check || return
+	make -C ${tmux_bld_dir} -j ${jobs} install || return
 	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/tmux || return
 }
 
@@ -3828,14 +3828,14 @@ install_native_expect()
 	search_library tclConfig.sh > /dev/null || install_native_tcl || return
 	fetch expect || return
 	unpack expect || return
-	[ -f ${expect_src_dir}/Makefile ] ||
-		(cd ${expect_src_dir}
-		./configure --prefix=${prefix} --build=${build} --enable-threads \
+	[ -f ${expect_bld_dir}/Makefile ] ||
+		(cd ${expect_bld_dir}
+		${expect_src_dir}/configure --prefix=${prefix} --build=${build} --enable-threads \
 			--enable-64bit --with-tcl=`print_library_dir tclConfig.sh`) || return
-	make -C ${expect_src_dir} -j ${jobs} || return
+	make -C ${expect_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${expect_src_dir} -j ${jobs} -k check || return
-	make -C ${expect_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		make -C ${expect_bld_dir} -j ${jobs} -k check || return
+	make -C ${expect_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 	ln -fsv ${expect_name}/lib${expect_name}.so ${DESTDIR}${prefix}/lib || return
 }
 
@@ -3845,13 +3845,13 @@ install_native_dejagnu()
 	which expect > /dev/null || install_native_expect || return
 	fetch dejagnu || return
 	unpack dejagnu || return
-	[ -f ${dejagnu_src_dir}/Makefile ] ||
-		(cd ${dejagnu_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
-	make -C ${dejagnu_src_dir} -j ${jobs} || return
+	[ -f ${dejagnu_bld_dir}/Makefile ] ||
+		(cd ${dejagnu_bld_dir}
+		${dejagnu_src_dir}/configure --prefix=${prefix} --build=${build}) || return
+	make -C ${dejagnu_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${dejagnu_src_dir} -j ${jobs} -k check || return
-	make -C ${dejagnu_src_dir} -j ${jobs} install || return
+		make -C ${dejagnu_bld_dir} -j ${jobs} -k check || return
+	make -C ${dejagnu_bld_dir} -j ${jobs} install || return
 }
 
 install_native_zsh()
@@ -3875,13 +3875,13 @@ install_native_bash()
 	[ -x ${prefix}/bin/bash -a "${force_install}" != yes ] && return
 	fetch bash || return
 	unpack bash || return
-	[ -f ${bash_src_dir}/Makefile ] ||
-		(cd ${bash_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-rpath) || return
-	make -C ${bash_src_dir} -j ${jobs} || return
+	[ -f ${bash_bld_dir}/Makefile ] ||
+		(cd ${bash_bld_dir}
+		${bash_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-rpath) || return
+	make -C ${bash_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${bash_src_dir} -j ${jobs} -k check || return
-	make -C ${bash_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		make -C ${bash_bld_dir} -j ${jobs} -k check || return
+	make -C ${bash_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 	update_path || return
 	ln -fsv bash ${DESTDIR}${prefix}/bin/sh || return
 }
@@ -3891,13 +3891,13 @@ install_native_inetutils()
 	[ -x ${prefix}/bin/telnet -a "${force_install}" != yes ] && return
 	fetch inetutils || return
 	unpack inetutils || return
-	[ -f ${inetutils_src_dir}/Makefile ] ||
-		(cd ${inetutils_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules LDFLAGS=-ltinfo) || return
-	make -C ${inetutils_src_dir} -j ${jobs} || return
+	[ -f ${inetutils_bld_dir}/Makefile ] ||
+		(cd ${inetutils_bld_dir}
+		${inetutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules LDFLAGS=-ltinfo) || return
+	make -C ${inetutils_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${inetutils_src_dir} -j ${jobs} -k check || return
-	make -C ${inetutils_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${inetutils_bld_dir} -j ${jobs} -k check || return
+	make -C ${inetutils_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_util_linux()
