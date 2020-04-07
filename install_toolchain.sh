@@ -2617,7 +2617,8 @@ install_native_lcov()
 	[ -x ${prefix}/bin/lcov -a "${force_install}" != yes ] && return
 	fetch lcov || return
 	unpack lcov || return
-	make -C ${lcov_src_dir} -j ${jobs} PREFIX=${DESTDIR}${prefix} install || return
+	[ -f ${lcov_bld_dir}/Makefile ] || cp -Tvr ${lcov_src_dir} ${lcov_bld_dir} || return
+	make -C ${lcov_bld_dir} -j ${jobs} PREFIX=${DESTDIR}${prefix} install || return
 }
 
 install_native_strace()
