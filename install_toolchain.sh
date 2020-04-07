@@ -2656,13 +2656,13 @@ install_native_valgrind()
 	[ -x ${prefix}/bin/valgrind -a "${force_install}" != yes ] && return
 	fetch valgrind || return
 	unpack valgrind || return
-	[ -f ${valgrind_src_dir}/Makefile ] ||
-		(cd ${valgrind_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
-	make -C ${valgrind_src_dir} -j ${jobs} || return
+	[ -f ${valgrind_bld_dir}/Makefile ] ||
+		(cd ${valgrind_bld_dir}
+		${valgrind_src_dir}/configure --prefix=${prefix} --build=${build}) || return
+	make -C ${valgrind_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${valgrind_src_dir} -j ${jobs} -k check || return
-	make -C ${valgrind_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${valgrind_bld_dir} -j ${jobs} -k check || return
+	make -C ${valgrind_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_zlib()
@@ -2751,13 +2751,13 @@ install_native_libXpm()
 	search_header Xlib.h X11 > /dev/null || install_native_libX11 || return
 	fetch libXpm || return
 	unpack libXpm || return
-	[ -f ${libXpm_src_dir}/Makefile ] ||
-		(cd ${libXpm_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-	make -C ${libXpm_src_dir} -j ${jobs} || return
+	[ -f ${libXpm_bld_dir}/Makefile ] ||
+		(cd ${libXpm_bld_dir}
+		${libXpm_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+	make -C ${libXpm_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libXpm_src_dir} -j ${jobs} -k check || return
-	make -C ${libXpm_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libXpm_bld_dir} -j ${jobs} -k check || return
+	make -C ${libXpm_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -2770,13 +2770,13 @@ install_native_libwebp()
 	search_header gif_lib.h > /dev/null || install_native_giflib || return
 	fetch libwebp || return
 	unpack libwebp || return
-	[ -f ${libwebp_src_dir}/Makefile ] ||
-		(cd ${libwebp_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${libwebp_src_dir} -j ${jobs} || return
+	[ -f ${libwebp_bld_dir}/Makefile ] ||
+		(cd ${libwebp_bld_dir}
+		${libwebp_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libwebp_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libwebp_src_dir} -j ${jobs} -k check || return
-	make -C ${libwebp_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libwebp_bld_dir} -j ${jobs} -k check || return
+	make -C ${libwebp_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -2785,13 +2785,13 @@ install_native_libffi()
 	[ -f ${prefix}/lib/libffi-*/include/ffi.h -a "${force_install}" != yes ] && return
 	fetch libffi || return
 	unpack libffi || return
-	[ -f ${libffi_src_dir}/Makefile ] ||
-		(cd ${libffi_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${libffi_src_dir} -j ${jobs} || return
+	[ -f ${libffi_bld_dir}/Makefile ] ||
+		(cd ${libffi_bld_dir}
+		${libffi_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${libffi_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libffi_src_dir} -j ${jobs} -k check || return
-	make -C ${libffi_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libffi_bld_dir} -j ${jobs} -k check || return
+	make -C ${libffi_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	[ -d ${DESTDIR}${prefix}/include ] || mkdir -pv ${DESTDIR}${prefix}/include || return
 	for f in `find ${DESTDIR}${prefix}/lib/${libffi_name}/include -type f -name '*.h'`; do
 		ln -fsv ../lib/${libffi_name}/include/`basename ${f}` ${DESTDIR}${prefix}/include/`basename ${f}` || return
