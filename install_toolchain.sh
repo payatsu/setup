@@ -5016,14 +5016,14 @@ install_native_libunistring()
 	[ -f ${prefix}/include/unistr.h -a "${force_install}" != yes ] && return
 	fetch libunistring || return
 	unpack libunistring || return
-	[ -f ${libunistring_src_dir}/Makefile ] ||
-		(cd ${libunistring_src_dir}
-		./configure --prefix=${prefix} -build=${build} --host=${host} \
+	[ -f ${libunistring_bld_dir}/Makefile ] ||
+		(cd ${libunistring_bld_dir}
+		${libunistring_src_dir}/configure --prefix=${prefix} -build=${build} --host=${host} \
 			--disable-rpath --disable-silent-rules) || return
-	make -C ${libunistring_src_dir} -j ${jobs} || return
+	make -C ${libunistring_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libunistring_src_dir} -j ${jobs} -k check || return
-	make -C ${libunistring_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libunistring_bld_dir} -j ${jobs} -k check || return
+	make -C ${libunistring_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -5033,13 +5033,13 @@ install_native_libidn2()
 	search_header unistr.h > /dev/null || install_native_libunistring || return
 	fetch libidn2 || return
 	unpack libidn2 || return
-	[ -f ${libidn2_src_dir}/Makefile ] ||
-		(cd ${libidn2_src_dir}
-		./configure --prefix=${prefix} --host=${host} --disable-silent-rules --disable-rpath) || return
-	make -C ${libidn2_src_dir} -j ${jobs} || return
+	[ -f ${libidn2_bld_dir}/Makefile ] ||
+		(cd ${libidn2_bld_dir}
+		${libidn2_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules --disable-rpath) || return
+	make -C ${libidn2_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libidn2_src_dir} -j ${jobs} -k check || return
-	make -C ${libidn2_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libidn2_bld_dir} -j ${jobs} -k check || return
+	make -C ${libidn2_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -5049,13 +5049,13 @@ install_native_libpsl()
 	search_header idn2.h > /dev/null || install_native_libidn2 || return
 	fetch libpsl || return
 	unpack libpsl || return
-	[ -f ${libpsl_src_dir}/Makefile ] ||
-		(cd ${libpsl_src_dir}
-		./configure --prefix=${prefix} --host=${host} --disable-silent-rules --disable-rpath) || return
-	make -C ${libpsl_src_dir} -j ${jobs} || return
+	[ -f ${libpsl_bld_dir}/Makefile ] ||
+		(cd ${libpsl_bld_dir}
+		${libpsl_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules --disable-rpath) || return
+	make -C ${libpsl_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libpsl_src_dir} -j ${jobs} -k check || return
-	make -C ${libpsl_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libpsl_bld_dir} -j ${jobs} -k check || return
+	make -C ${libpsl_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -5064,14 +5064,14 @@ install_native_libatomic_ops()
 	[ -f ${prefix}/include/atomic_ops.h -a "${force_install}" != yes ] && return
 	fetch libatomic_ops || return
 	unpack libatomic_ops || return
-	[ -f ${libatomic_ops_src_dir}/Makefile ] ||
-		(cd ${libatomic_ops_src_dir}
-		./configure --prefix=${prefix} -build=${build} --host=${host} --disable-silent-rules \
+	[ -f ${libatomic_ops_bld_dir}/Makefile ] ||
+		(cd ${libatomic_ops_bld_dir}
+		${libatomic_ops_src_dir}/configure --prefix=${prefix} -build=${build} --host=${host} --disable-silent-rules \
 			--enable-shared) || return
-	make -C ${libatomic_ops_src_dir} -j ${jobs} || return
+	make -C ${libatomic_ops_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libatomic_ops_src_dir} -j ${jobs} -k check || return
-	make -C ${libatomic_ops_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libatomic_ops_bld_dir} -j ${jobs} -k check || return
+	make -C ${libatomic_ops_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -5081,15 +5081,15 @@ install_native_gc()
 	search_header atomic_ops.h > /dev/null || install_native_libatomic_ops || return
 	fetch gc || return
 	unpack gc || return
-	[ -f ${gc_src_dir}/Makefile ] ||
-		(cd ${gc_src_dir}
-		./configure --prefix=${prefix} -build=${build} --host=${host} --disable-silent-rules \
+	[ -f ${gc_bld_dir}/Makefile ] ||
+		(cd ${gc_bld_dir}
+		${gc_src_dir}/configure --prefix=${prefix} -build=${build} --host=${host} --disable-silent-rules \
 			ATOMIC_OPS_CFLAGS=-I`print_include_dir atomic_ops.h` \
 			ATOMIC_OPS_LIBS=-L`print_library_dir libatomic_ops.so`) || return
-	make -C ${gc_src_dir} -j ${jobs} || return
+	make -C ${gc_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${gc_src_dir} -j ${jobs} check || return
-	make -C ${gc_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${gc_bld_dir} -j ${jobs} check || return
+	make -C ${gc_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -5102,17 +5102,17 @@ install_native_guile()
 	search_header gc.h > /dev/null || install_native_gc || return
 	fetch guile || return
 	unpack guile || return
-	[ -f ${guile_src_dir}/Makefile ] ||
-		(cd ${guile_src_dir}
-		./configure --prefix=${prefix} -build=${build} --host=${host} \
+	[ -f ${guile_bld_dir}/Makefile ] ||
+		(cd ${guile_bld_dir}
+		${guile_src_dir}/configure --prefix=${prefix} -build=${build} --host=${host} \
 			--disable-silent-rules --with-libunistring-prefix=`print_prefix unistr.h` \
 			LIBFFI_CFLAGS=-I`print_include_dir ffi.h` LIBFFI_LIBS="-L`print_library_dir libffi.so` -lffi" \
 			BDW_GC_CFLAGS="-I`print_include_dir gc.h gc` -DHAVE_GC_SET_FINALIZER_NOTIFIER -DHAVE_GC_GET_HEAP_USAGE_SAFE -DHAVE_GC_GET_FREE_SPACE_DIVISOR -DHAVE_GC_SET_FINALIZE_ON_DEMAND" \
 			BDW_GC_LIBS="-L`print_library_dir libgc.so` -lgc") || return
-	make -C ${guile_src_dir} -j ${jobs} || return
+	make -C ${guile_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${guile_src_dir} -j ${jobs} -k check || return
-	make -C ${guile_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${guile_bld_dir} -j ${jobs} -k check || return
+	make -C ${guile_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_lua()
