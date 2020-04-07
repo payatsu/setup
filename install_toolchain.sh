@@ -176,7 +176,7 @@
 : ${jdk_ver:=14}
 : ${nasm_ver:=2.14.02}
 : ${yasm_ver:=1.3.0}
-: ${x264_ver:=last-stable}
+: ${x264_ver:=master}
 : ${x265_ver:=2.9}
 : ${libav_ver:=11.9}
 : ${opencv_ver:=4.2.0}
@@ -1029,7 +1029,7 @@ fetch()
 				http://www.tortall.net/projects/yasm/releases/${yasm_name}.tar.gz || return;;
 		x264)
 			wget -O ${x264_src_dir}.tar.bz2 \
-				http://ftp.videolan.org/pub/x264/snapshots/`echo ${x264_ver} | tr - _`_x264.tar.bz2 || return;;
+				https://code.videolan.org/videolan/x264/-/archive/master/${x264_name}.tar.bz2 || return;;
 		x265)
 			wget -O ${x265_src_dir}.tar.gz \
 				http://ftp.videolan.org/pub/videolan/x265/x265_${x265_ver}.tar.gz || return;;
@@ -5252,17 +5252,14 @@ install_native_yasm()
 install_native_x264()
 {
 	[ -x ${prefix}/bin/x264 -a "${force_install}" != yes ] && return
-	which yasm > /dev/null || install_native_yasm || return
+	which nasm > /dev/null || install_native_nasm || return
 	fetch x264 || return
-	[ -d ${x264_src_dir} ] ||
-		(unpack x264 &&
-		mv -v ${x264_src_base}/x264-snapshot-* ${x264_src_dir}) || return
-	(cd ${x264_src_dir}
-	./configure --prefix=${prefix} \
-		--enable-shared --enable-static \
-		${strip:+--enable-strip}) || return
-	make -C ${x264_src_dir} -j ${jobs} || return
-	make -C ${x264_src_dir} -j ${jobs} install || return
+	unpack x264 || return
+	(cd ${x264_bld_dir}
+	${x264_src_dir}/configure --prefix=${prefix} \
+		--enable-shared --enable-static ${strip:+--enable-strip}) || return
+	make -C ${x264_bld_dir} -j ${jobs} || return
+	make -C ${x264_bld_dir} -j ${jobs} install || return
 	update_path || return
 }
 
