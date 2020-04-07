@@ -3331,8 +3331,9 @@ install_native_vim()
 	search_header ruby.h > /dev/null || install_native_ruby || return
 	fetch vim || return
 	unpack vim || return
-	[ -f ${vim_src_dir}/src/auto/config.h ] ||
-		(cd ${vim_src_dir}
+	[ -f ${vim_bld_dir}/configure ] || cp -Tvr ${vim_src_dir} ${vim_bld_dir} || return
+	[ -f ${vim_bld_dir}/src/auto/config.h ] ||
+		(cd ${vim_bld_dir}
 		./configure --prefix=${prefix} --build=${build} \
 			--with-features=huge --enable-fail-if-missing \
 			--enable-luainterp=dynamic --with-lua-prefix=`print_prefix lua.h` \
@@ -3344,7 +3345,7 @@ install_native_vim()
 			--enable-cscope --enable-terminal --enable-autoservername --enable-multibyte \
 			--enable-xim --enable-fontset --enable-gui=auto \
 		) || return
-	patch -N -p0 -d ${vim_src_dir} <<'EOF' || [ $? = 1 ] || return
+	patch -N -p0 -d ${vim_bld_dir} <<'EOF' || [ $? = 1 ] || return
 --- src/Makefile
 +++ src/Makefile
 @@ -1446,6 +1446,7 @@
@@ -3367,19 +3368,19 @@ EOF
 	sed -i -e '
 		/^LDFLAGS\>/s/-Wl,-rpath,[[:graph:]]\+//
 		/^PERL_LIBS\>/s/[[:graph:]]\+CORE//g
-		' ${vim_src_dir}/src/auto/config.mk || return
-	make -C ${vim_src_dir} -j ${jobs} || return
+		' ${vim_bld_dir}/src/auto/config.mk || return
+	make -C ${vim_bld_dir} -j ${jobs} || return
 	for l in ex rview rvim view; do
 		[ ! -h ${DESTDIR}${prefix}/bin/${l} ] || rm -fv ${DESTDIR}${prefix}/bin/${l} || return
 	done
-	make -C ${vim_src_dir} -j ${jobs} install || return
+	make -C ${vim_bld_dir} -j ${jobs} install || return
 	[ -f ${DESTDIR}${prefix}/bin/vi ] || ln -fsv vim ${DESTDIR}${prefix}/bin/vi || return
 	fetch vimdoc-ja || return
 	[ -d ${vimdoc_ja_src_dir} ] ||
 		(unpack vimdoc-ja &&
 		mv -v ${vimdoc_ja_src_base}/vimdoc-ja-master ${vimdoc_ja_src_dir}) || return
 	mkdir -pv ${DESTDIR}${prefix}/share/vim/vimfiles || return
-	cp -rvt ${DESTDIR}${prefix}/share/vim/vimfiles ${vimdoc_ja_src_dir}/* || return
+	cp -Tvr ${vimdoc_ja_src_dir} ${DESTDIR}${prefix}/share/vim/vimfiles || return
 	vim -i NONE -u NONE -N -c "helptags ${DESTDIR}${prefix}/share/vim/vimfiles/doc" -c qall || return
 }
 
