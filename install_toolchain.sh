@@ -3906,14 +3906,14 @@ install_native_util_linux()
 	[ -x ${prefix}/bin/hexdump -a "${force_install}" != yes ] && return
 	fetch util-linux || return
 	unpack util-linux || return
-	[ -f ${util_linux_src_dir}/Makefile ] ||
-		(cd ${util_linux_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+	[ -f ${util_linux_bld_dir}/Makefile ] ||
+		(cd ${util_linux_bld_dir}
+		${util_linux_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules \
 			--enable-write --disable-use-tty-group --with-bashcompletiondir=${prefix}/share/bash-completion) || return
-	make -C ${util_linux_src_dir} -j ${jobs} || return
+	make -C ${util_linux_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${util_linux_src_dir} -j ${jobs} -k check || return
-	make -C ${util_linux_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${util_linux_bld_dir} -j ${jobs} -k check || return
+	make -C ${util_linux_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_e2fsprogs()
