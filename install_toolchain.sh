@@ -3594,9 +3594,9 @@ install_native_plantuml()
 	fetch plantuml || return
 	mkdir -pv ${DESTDIR}${prefix}/bin || return
 	cp -fv ${plantuml_src_dir}.jar ${DESTDIR}${prefix}/bin/plantuml.jar || return
-	cat <<EOF > ${DESTDIR}${prefix}/bin/plantuml && chmod -v a+x ${DESTDIR}${prefix}/bin/plantuml || return
+	cat <<'EOF' > ${DESTDIR}${prefix}/bin/plantuml && chmod -v a+x ${DESTDIR}${prefix}/bin/plantuml || return
 #!/bin/sh -e
-exec java -Djava.awt.headless=true -jar \`dirname \${0}\`/plantuml.jar -graphvizdot \`which dot\` "\$@"
+exec java -Djava.awt.headless=true -jar `dirname ${0}`/plantuml.jar -graphvizdot `which dot` "$@"
 EOF
 	mkdir -pv ${DESTDIR}${prefix}/share/plantuml || return
 	cp -fv ${plantuml_src_dir}.pdf ${DESTDIR}${prefix}/share/plantuml/plantuml.pdf || return
