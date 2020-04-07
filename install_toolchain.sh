@@ -2110,14 +2110,14 @@ install_native_make()
 	[ -f ${make_src_dir}/configure ] ||
 		(fetch gnulib || return
 		cd ${make_src_dir}; ./bootstrap --gnulib-srcdir=${gnulib_src_dir}) || return
-	[ -f ${make_src_dir}/Makefile ] ||
-		(cd ${make_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} \
+	[ -f ${make_bld_dir}/Makefile ] ||
+		(cd ${make_bld_dir}
+		${make_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			--with-guile) || return
-	make -C ${make_src_dir} -j ${jobs} MAKE_MAINTAINER_MODE= || return
+	make -C ${make_bld_dir} -j ${jobs} MAKE_MAINTAINER_MODE= || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${make_src_dir} -j ${jobs} -k check || return
-	make -C ${make_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${make_bld_dir} -j ${jobs} -k check || return
+	make -C ${make_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_binutils()
