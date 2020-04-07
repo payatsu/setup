@@ -2155,16 +2155,16 @@ install_native_elfutils()
 	[ -x ${prefix}/bin/eu-addr2line -a "${force_install}" != yes ] && return
 	fetch elfutils || return
 	unpack elfutils || return
-	[ -f ${elfutils_src_dir}/Makefile ] ||
-		(cd ${elfutils_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+	[ -f ${elfutils_bld_dir}/Makefile ] ||
+		(cd ${elfutils_bld_dir}
+		${elfutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			--disable-debuginfod \
 			CFLAGS="${CFLAGS} -I`print_include_dir zlib.h`" \
 			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -lbz2") || return
-	make -C ${elfutils_src_dir} -j ${jobs} || return
+	make -C ${elfutils_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${elfutils_src_dir} -j ${jobs} -k check || return
-	make -C ${elfutils_src_dir} -j 1 install${strip:+-${strip}} || return
+		make -C ${elfutils_bld_dir} -j ${jobs} -k check || return
+	make -C ${elfutils_bld_dir} -j 1 install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -2175,13 +2175,13 @@ install_native_systemtap()
 	search_header libelf.h > /dev/null || install_native_elfutils || return
 	fetch systemtap || return
 	unpack systemtap || return
-	[ -f ${systemtap_src_dir}/Makefile ] ||
-		(cd ${systemtap_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${systemtap_src_dir} -j ${jobs} || return
+	[ -f ${systemtap_bld_dir}/Makefile ] ||
+		(cd ${systemtap_bld_dir}
+		${systemtap_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${systemtap_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${systemtap_src_dir} -j ${jobs} -k check || return
-	make -C ${systemtap_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${systemtap_bld_dir} -j ${jobs} -k check || return
+	make -C ${systemtap_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_ed()
@@ -2189,13 +2189,13 @@ install_native_ed()
 	[ -x ${prefix}/bin/ed -a "${force_install}" != yes ] && return
 	fetch ed || return
 	unpack ed || return
-	[ -f ${ed_src_dir}/Makefile ] ||
-		(cd ${ed_src_dir}
-		./configure --prefix=${prefix} CC=${host}-gcc) || return
-	make -C ${ed_src_dir} -j ${jobs} || return
+	[ -f ${ed_bld_dir}/Makefile ] ||
+		(cd ${ed_bld_dir}
+		${ed_src_dir}/configure --prefix=${prefix} CC=${host}-gcc) || return
+	make -C ${ed_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${ed_src_dir} -j ${jobs} -k check || return
-	make -C ${ed_src_dir} -j 1 install${strip:+-${strip}} || return
+		make -C ${ed_bld_dir} -j ${jobs} -k check || return
+	make -C ${ed_bld_dir} -j 1 install${strip:+-${strip}} || return
 }
 
 install_native_bc()
@@ -2204,13 +2204,13 @@ install_native_bc()
 	which ed > /dev/null || install_native_ed || return
 	fetch bc || return
 	unpack bc || return
-	[ -f ${bc_src_dir}/Makefile ] ||
-		(cd ${bc_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules --with-readline) || return
-	make -C ${bc_src_dir} -j ${jobs} || return
+	[ -f ${bc_bld_dir}/Makefile ] ||
+		(cd ${bc_bld_dir}
+		${bc_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules --with-readline) || return
+	make -C ${bc_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${bc_src_dir} -j ${jobs} -k check || return
-	make -C ${bc_src_dir} -j 1 install${strip:+-${strip}} || return
+		make -C ${bc_bld_dir} -j ${jobs} -k check || return
+	make -C ${bc_bld_dir} -j 1 install${strip:+-${strip}} || return
 }
 
 install_native_rsync()
@@ -2218,11 +2218,11 @@ install_native_rsync()
 	[ -x ${prefix}/bin/rsync -a "${force_install}" != yes ] && return
 	fetch rsync || return
 	unpack rsync || return
-	[ -f ${rsync_src_dir}/Makefile ] ||
-		(cd ${rsync_src_dir}
-		./configure --prefix=${prefix} --host=${host}) || return
-	make -C ${rsync_src_dir} -j ${jobs} || return
-	make -C ${rsync_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	[ -f ${rsync_bld_dir}/Makefile ] ||
+		(cd ${rsync_bld_dir}
+		${rsync_src_dir}/configure --prefix=${prefix} --host=${host}) || return
+	make -C ${rsync_bld_dir} -j ${jobs} || return
+	make -C ${rsync_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
