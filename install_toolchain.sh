@@ -4321,12 +4321,12 @@ install_native_bazel()
 	which javac > /dev/null || install_native_jdk || return
 	which python3 > /dev/null || install_native_Python || return
 	fetch bazel || return
-	[ -d ${bazel_src_dir} ] ||
-		unpack bazel ${bazel_src_dir} || return
-	(cd ${bazel_src_dir}
+	[ -d ${bazel_src_dir} ] || unpack bazel ${bazel_src_dir} || return
+	[ -f ${bazel_bld_dir}/compile.sh ] || cp -Tvr ${bazel_src_dir} ${bazel_bld_dir} || return
+	(cd ${bazel_bld_dir}
 	EXTRA_BAZEL_ARGS='--host_javabase=@local_jdk//:jdk' VERBOSE=yes bash ./compile.sh)
 	mkdir -pv ${DESTDI}${prefix}/bin || return
-	cp -v ${bazel_src_dir}/output/bazel ${DESTDIR}${prefix}/bin/bazel || return
+	cp -v ${bazel_bld_dir}/output/bazel ${DESTDIR}${prefix}/bin/bazel || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/bazel || return
