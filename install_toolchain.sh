@@ -2249,15 +2249,14 @@ install_native_kmod()
 	[ -x ${prefix}/bin/kmod -a "${force_install}" != yes ] && return
 	fetch kmod || return
 	unpack kmod || return
-
-	[ -f ${kmod_src_dir}/Makefile ] ||
-		(cd ${kmod_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+	[ -f ${kmod_bld_dir}/Makefile ] ||
+		(cd ${kmod_bld_dir}
+		${kmod_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			--enable-python --with-xz --with-zlib --with-openssl) || return
-	make -C ${kmod_src_dir} -j ${jobs} || return
+	make -C ${kmod_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${kmod_src_dir} -j ${jobs} -k check || return
-	make -C ${kmod_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${kmod_bld_dir} -j ${jobs} -k check || return
+	make -C ${kmod_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	for f in depmod insmod lsmod modinfo modprobe rmmod; do
 		ln -fsv kmod ${DESTDIR}${prefix}/bin/${f} || return
 	done
@@ -2312,13 +2311,13 @@ install_native_gperf()
 	[ -x ${prefix}/bin/gperf -a "${force_install}" != yes ] && return
 	fetch gperf || return
 	unpack gperf || return
-	[ -f ${gperf_src_dir}/Makefile ] ||
-		(cd ${gperf_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${gperf_src_dir} -j ${jobs} || return
+	[ -f ${gperf_bld_dir}/Makefile ] ||
+		(cd ${gperf_bld_dir}
+		${gperf_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${gperf_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${gperf_src_dir} -j ${jobs} -k check || return
-	make -C ${gperf_src_dir} -j ${jobs} install || return
+		make -C ${gperf_bld_dir} -j ${jobs} -k check || return
+	make -C ${gperf_bld_dir} -j ${jobs} install || return
 	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/gperf || return
 }
 
