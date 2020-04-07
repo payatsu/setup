@@ -5363,12 +5363,13 @@ install_native_googletest()
 	which cmake > /dev/null || install_native_cmake || return
 	fetch googletest || return
 	unpack googletest || return
-	(cd ${googletest_bld_dir}
-	cmake -DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${googletest_src_dir}/googletest -B ${googletest_bld_dir} \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DBUILD_SHARED_LIBS=ON ${googletest_src_dir}/googletest) || return
-	make -C ${googletest_bld_dir} -j ${jobs} || return
-	make -C ${googletest_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+		-DBUILD_SHARED_LIBS=ON || return
+	cmake --build ${googletest_bld_dir} -v -j ${jobs} || return
+	cmake --install ${googletest_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
 
