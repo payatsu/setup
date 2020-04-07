@@ -2074,13 +2074,13 @@ install_native_sed()
 	[ -x ${prefix}/bin/sed -a "${force_install}" != yes ] && return
 	fetch sed || return
 	unpack sed || return
-	[ -f ${sed_src_dir}/Makefile ] ||
-		(cd ${sed_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${sed_src_dir} -j ${jobs} || return
+	[ -f ${sed_bld_dir}/Makefile ] ||
+		(cd ${sed_bld_dir}
+		${sed_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${sed_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${sed_src_dir} -j ${jobs} -k check || return
-	make -C ${sed_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${sed_bld_dir} -j ${jobs} -k check || return
+	make -C ${sed_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_gawk()
@@ -2090,15 +2090,15 @@ install_native_gawk()
 	search_header mpfr.h > /dev/null || install_native_mpfr || return
 	fetch gawk || return
 	unpack gawk || return
-	[ -f ${gawk_src_dir}/Makefile ] ||
-		(cd ${gawk_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --enable-static \
+	[ -f ${gawk_bld_dir}/Makefile ] ||
+		(cd ${gawk_bld_dir}
+		${gawk_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-static \
 			--with-readline=`print_prefix readline.h readline` \
 			--with-mpfr=`print_prefix mpfr.h`) || return
-	make -C ${gawk_src_dir} -j ${jobs} || return
+	make -C ${gawk_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${gawk_src_dir} -j ${jobs} -k check || return
-	make -C ${gawk_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${gawk_bld_dir} -j ${jobs} -k check || return
+	make -C ${gawk_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_make()
