@@ -1878,14 +1878,14 @@ install_native_wget()
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch wget || return
 	unpack wget || return
-	[ -f ${wget_src_dir}/Makefile ] ||
-		(cd ${wget_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+	[ -f ${wget_bld_dir}/Makefile ] ||
+		(cd ${wget_bld_dir}
+		${wget_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			--disable-rpath --enable-threads --with-ssl=openssl) || return
-	make -C ${wget_src_dir} -j ${jobs} || return
+	make -C ${wget_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${wget_src_dir} -j ${jobs} -k check || return
-	make -C ${wget_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${wget_bld_dir} -j ${jobs} -k check || return
+	make -C ${wget_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_pkg_config()
@@ -1894,15 +1894,15 @@ install_native_pkg_config()
 	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return
 	fetch pkg-config || return
 	unpack pkg-config || return
-	[ -f ${pkg_config_src_dir}/Makefile ] ||
-		(cd ${pkg_config_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+	[ -f ${pkg_config_bld_dir}/Makefile ] ||
+		(cd ${pkg_config_bld_dir}
+		${pkg_config_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules \
 			GLIB_CFLAGS="-I`print_include_dir glib.h` -I`print_library_dir libglib-2.0.so`/glib-2.0/include" \
 			GLIB_LIBS="-L`print_library_dir libglib-2.0.so` -lglib-2.0") || return
-	make -C ${pkg_config_src_dir} -j ${jobs} || return
+	make -C ${pkg_config_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${pkg_config_src_dir} -j ${jobs} -k check || return
-	make -C ${pkg_config_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${pkg_config_bld_dir} -j ${jobs} -k check || return
+	make -C ${pkg_config_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_texinfo()
@@ -1910,13 +1910,13 @@ install_native_texinfo()
 	[ -x ${prefix}/bin/makeinfo -a "${force_install}" != yes ] && return
 	fetch texinfo || return
 	unpack texinfo || return
-	[ -f ${texinfo_src_dir}/Makefile ] ||
-		(cd ${texinfo_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${texinfo_src_dir} -j ${jobs} || return
+	[ -f ${texinfo_bld_dir}/Makefile ] ||
+		(cd ${texinfo_bld_dir}
+		${texinfo_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${texinfo_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${texinfo_src_dir} -j ${jobs} -k check || return
-	make -C ${texinfo_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${texinfo_bld_dir} -j ${jobs} -k check || return
+	make -C ${texinfo_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_coreutils()
@@ -1925,14 +1925,14 @@ install_native_coreutils()
 	search_header gmp.h > /dev/null || install_native_gmp || return
 	fetch coreutils || return
 	unpack coreutils || return
-	[ -f ${coreutils_src_dir}/Makefile ] ||
-		(cd ${coreutils_src_dir}
-		FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=${prefix} \
+	[ -f ${coreutils_bld_dir}/Makefile ] ||
+		(cd ${coreutils_bld_dir}
+		FORCE_UNSAFE_CONFIGURE=1 ${coreutils_src_dir}/configure --prefix=${prefix} \
 			--build=${build} --host=${host} --disable-silent-rules --enable-threads) || return
-	make -C ${coreutils_src_dir} -j ${jobs} || return
+	make -C ${coreutils_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${coreutils_src_dir} -j ${jobs} -k check || return
-	make -C ${coreutils_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${coreutils_bld_dir} -j ${jobs} -k check || return
+	make -C ${coreutils_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_busybox()
@@ -1950,11 +1950,11 @@ install_native_bison()
 	[ -x ${prefix}/bin/bison -a "${force_install}" != yes ] && return
 	fetch bison || return
 	unpack bison || return
-	[ -f ${bison_src_dir}/Makefile ] ||
-		(cd ${bison_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${bison_src_dir} -j ${jobs} || return
-	make -C ${bison_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	[ -f ${bison_bld_dir}/Makefile ] ||
+		(cd ${bison_bld_dir}
+		${bison_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${bison_bld_dir} -j ${jobs} || return
+	make -C ${bison_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_flex()
@@ -1963,13 +1963,13 @@ install_native_flex()
 	which yacc > /dev/null || install_native_bison || return
 	fetch flex || return
 	unpack flex || return
-	[ -f ${flex_src_dir}/Makefile ] ||
-		(cd ${flex_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${flex_src_dir} -j ${jobs} || return
+	[ -f ${flex_bld_dir}/Makefile ] ||
+		(cd ${flex_bld_dir}
+		${flex_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${flex_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${flex_src_dir} -j ${jobs} -k check || return
-	make -C ${flex_src_dir} -j ${jobs} install${strip:+-${strip}} install-man || return
+		make -C ${flex_bld_dir} -j ${jobs} -k check || return
+	make -C ${flex_bld_dir} -j ${jobs} install${strip:+-${strip}} install-man || return
 	update_path || return
 }
 
