@@ -2285,11 +2285,12 @@ install_native_u_boot()
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch u-boot || return
 	unpack u-boot || return
-	[ -f ${u_boot_src_dir}/.config ] ||
-		make -C ${u_boot_src_dir} -j ${jobs} V=1 sandbox_defconfig || return
-	make -C ${u_boot_src_dir} -j ${jobs} V=1 NO_SDL=1 tools || return
+	[ -f ${u_boot_bld_dir}/Makefile ] || cp -Tvr ${u_boot_src_dir} ${u_boot_bld_dir} || return
+	[ -f ${u_boot_bld_dir}/.config ] ||
+		make -C ${u_boot_bld_dir} -j ${jobs} V=1 sandbox_defconfig || return
+	make -C ${u_boot_bld_dir} -j ${jobs} V=1 NO_SDL=1 tools || return
 	mkdir -pv ${DESTDIR}${prefix}/bin || return
-	find ${u_boot_src_dir}/tools -maxdepth 1 -type f -perm /100 -exec install -vt ${DESTDIR}${prefix}/bin {} + || return
+	find ${u_boot_bld_dir}/tools -maxdepth 1 -type f -perm /100 -exec install -vt ${DESTDIR}${prefix}/bin {} + || return
 }
 
 install_native_qemu()
