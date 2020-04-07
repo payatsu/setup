@@ -3860,14 +3860,15 @@ install_native_zsh()
 	search_header curses.h > /dev/null || install_native_ncurses || return
 	fetch zsh || return
 	unpack zsh || return
-	[ -f ${zsh_src_dir}/Makefile ] ||
-		(cd ${zsh_src_dir}
+	[ -f ${zsh_bld_dir}/configure ] || cp -Tvr ${zsh_src_dir} ${zsh_bld_dir} || return
+	[ -f ${zsh_bld_dir}/Makefile ] ||
+		(cd ${zsh_bld_dir}
 		./configure --prefix=${prefix} --build=${build} --host=${host} \
 			--enable-multibyte --enable-unicode9 --with-tcsetpgrp) || return
-	make -C ${zsh_src_dir} -j ${jobs} || return
+	make -C ${zsh_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${zsh_src_dir} -j ${jobs} -k check || return
-	make -C ${zsh_src_dir} -j ${jobs} install || return
+		make -C ${zsh_bld_dir} -j ${jobs} -k check || return
+	make -C ${zsh_bld_dir} -j ${jobs} install || return
 }
 
 install_native_bash()
