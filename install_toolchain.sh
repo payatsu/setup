@@ -5563,13 +5563,13 @@ install_native_protobuf()
 	which make > /dev/null || install_native_make || return
 	fetch protobuf || return
 	unpack protobuf || return
-	[ -f ${protobuf_src_dir}/Makefile ] ||
-		(cd ${protobuf_src_dir}
-		./configure --prefix=${prefix} --disable-silent-rules) || return
-	make -C ${protobuf_src_dir} -j ${jobs} || return
+	[ -f ${protobuf_bld_dir}/Makefile ] ||
+		(cd ${protobuf_bld_dir}
+		${protobuf_src_dir}/configure --prefix=${prefix} --disable-silent-rules) || return
+	make -C ${protobuf_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${protobuf_src_dir} -j ${jobs} -k check || return
-	make -C ${protobuf_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${protobuf_bld_dir} -j ${jobs} -k check || return
+	make -C ${protobuf_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
