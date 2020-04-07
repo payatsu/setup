@@ -1720,27 +1720,28 @@ install_native_bzip2()
 	[ -x ${prefix}/bin/bzip2 -a "${force_install}" != yes ] && return
 	fetch bzip2 || return
 	unpack bzip2 || return
+	[ -f ${bzip2_bld_dir}/Makefile ] || cp -Tvr ${bzip2_src_dir} ${bzip2_bld_dir} || return
 	sed -i -e '
 		/^CFLAGS=/{
 			s/ -fPIC//g
 			s/$/ -fPIC/
 		}
-		s/ln -s -f \$(PREFIX)\/bin\//ln -s -f /' ${bzip2_src_dir}/Makefile || return
-	make -C ${bzip2_src_dir} -j ${jobs} \
+		s/ln -s -f \$(PREFIX)\/bin\//ln -s -f /' ${bzip2_bld_dir}/Makefile || return
+	make -C ${bzip2_bld_dir} -j ${jobs} \
 		CC=${host}-gcc AR=${host}-gcc-ar RANLIB=${host}-gcc-ranlib bzip2 bzip2recover || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${bzip2_src_dir} -j ${jobs} -k check || return
-	make -C ${bzip2_src_dir} -j ${jobs} PREFIX=${DESTDIR}${prefix} install || return
-	make -C ${bzip2_src_dir} -j ${jobs} clean || return
-	make -C ${bzip2_src_dir} -j ${jobs} -f Makefile-libbz2_so CC=${host}-gcc || return
+		make -C ${bzip2_bld_dir} -j ${jobs} -k check || return
+	make -C ${bzip2_bld_dir} -j ${jobs} PREFIX=${DESTDIR}${prefix} install || return
+	make -C ${bzip2_bld_dir} -j ${jobs} clean || return
+	make -C ${bzip2_bld_dir} -j ${jobs} -f Makefile-libbz2_so CC=${host}-gcc || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${bzip2_src_dir} -j ${jobs} -k check || return
-	cp -fv ${bzip2_src_dir}/libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib || return
+		make -C ${bzip2_bld_dir} -j ${jobs} -k check || return
+	cp -fv ${bzip2_bld_dir}/libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib || return
 	chmod -v a+r ${DESTDIR}${prefix}/lib/libbz2.so.${bzip2_ver} || return
 	ln -fsv libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib/libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` || return
 	ln -fsv libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/lib/libbz2.so || return
-	cp -fv ${bzip2_src_dir}/bzlib.h ${DESTDIR}${prefix}/include || return
-	cp -fv ${bzip2_src_dir}/bzlib_private.h ${DESTDIR}${prefix}/include || return
+	cp -fv ${bzip2_bld_dir}/bzlib.h ${DESTDIR}${prefix}/include || return
+	cp -fv ${bzip2_bld_dir}/bzlib_private.h ${DESTDIR}${prefix}/include || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	for b in bunzip2 bzcat bzip2 bzip2recover; do
