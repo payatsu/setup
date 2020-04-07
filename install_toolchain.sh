@@ -3607,13 +3607,13 @@ install_native_diffutils()
 	[ -x ${prefix}/bin/diff -a "${force_install}" != yes ] && return
 	fetch diffutils || return
 	unpack diffutils || return
-	[ -f ${diffutils_src_dir}/Makefile ] ||
-		(cd ${diffutils_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${diffutils_src_dir} -j ${jobs} || return
+	[ -f ${diffutils_bld_dir}/Makefile ] ||
+		(cd ${diffutils_bld_dir}
+		${diffutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${diffutils_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${diffutils_src_dir} -j ${jobs} -k check || return
-	make -C ${diffutils_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${diffutils_bld_dir} -j ${jobs} -k check || return
+	make -C ${diffutils_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_patch()
@@ -3621,13 +3621,13 @@ install_native_patch()
 	[ -x ${prefix}/bin/patch -a "${force_install}" != yes ] && return
 	fetch patch || return
 	unpack patch || return
-	[ -f ${patch_src_dir}/Makefile ] ||
-		(cd ${patch_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${patch_src_dir} -j ${jobs} || return
+	[ -f ${patch_bld_dir}/Makefile ] ||
+		(cd ${patch_bld_dir}
+		${patch_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${patch_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${patch_src_dir} -j ${jobs} -k check || return
-	make -C ${patch_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${patch_bld_dir} -j ${jobs} -k check || return
+	make -C ${patch_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_findutils()
@@ -3635,13 +3635,13 @@ install_native_findutils()
 	[ -x ${prefix}/bin/find -a "${force_install}" != yes ] && return
 	fetch findutils || return
 	unpack findutils || return
-	[ -f ${findutils_src_dir}/Makefile ] ||
-		(cd ${findutils_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules --enable-threads) || return
-	make -C ${findutils_src_dir} -j ${jobs} || return
+	[ -f ${findutils_bld_dir}/Makefile ] ||
+		(cd ${findutils_bld_dir}
+		${findutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules --enable-threads) || return
+	make -C ${findutils_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${findutils_src_dir} -j ${jobs} -k check || return
-	make -C ${findutils_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${findutils_bld_dir} -j ${jobs} -k check || return
+	make -C ${findutils_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_procps()
@@ -3667,13 +3667,13 @@ install_native_less()
 	search_header curses.h > /dev/null || install_native_ncurses || return
 	fetch less || return
 	unpack less || return
-	[ -f ${less_src_dir}/Makefile ] ||
-		(cd ${less_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${less_src_dir} -j ${jobs} || return
+	[ -f ${less_bld_dir}/Makefile ] ||
+		(cd ${less_bld_dir}
+		${less_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${less_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${less_src_dir} -j ${jobs} -k check || return
-	make -C ${less_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		make -C ${less_bld_dir} -j ${jobs} -k check || return
+	make -C ${less_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 }
 
 install_native_groff()
@@ -3681,13 +3681,13 @@ install_native_groff()
 	[ -x ${prefix}/bin/groff -a "${force_install}" != yes ] && return
 	fetch groff || return
 	unpack groff || return
-	[ -f ${groff_src_dir}/Makefile ] ||
-		(cd ${groff_src_dir}
-		./configure --prefix=${prefix} --host=${host} --disable-silent-rules --disable-rpath) || return
-	make -C ${groff_src_dir} -j ${jobs} || return
+	[ -f ${groff_bld_dir}/Makefile ] ||
+		(cd ${groff_bld_dir}
+		${groff_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules --disable-rpath) || return
+	make -C ${groff_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${groff_src_dir} -j ${jobs} -k check || return
-	make -C ${groff_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		make -C ${groff_bld_dir} -j ${jobs} -k check || return
+	make -C ${groff_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 }
 
 install_native_gdbm()
@@ -3695,13 +3695,13 @@ install_native_gdbm()
 	[ -f ${prefix}/include/gdbm.h -a "${force_install}" != yes ] && return
 	fetch gdbm || return
 	unpack gdbm || return
-	[ -f ${gdbm_src_dir}/Makefile ] ||
-		(cd ${gdbm_src_dir}
-		./configure --prefix=${prefix} --host=${host} --disable-silent-rules --disable-rpath) || return
-	make -C ${gdbm_src_dir} -j ${jobs} || return
+	[ -f ${gdbm_bld_dir}/Makefile ] ||
+		(cd ${gdbm_bld_dir}
+		${gdbm_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules --disable-rpath) || return
+	make -C ${gdbm_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${gdbm_src_dir} -j ${jobs} -k check || return
-	make -C ${gdbm_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		make -C ${gdbm_bld_dir} -j ${jobs} -k check || return
+	make -C ${gdbm_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 	update_path || return
 }
 
