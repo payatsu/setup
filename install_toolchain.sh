@@ -3393,14 +3393,13 @@ install_native_ctags()
 	fetch ctags || return
 	unpack ctags || return
 	[ -f ${ctags_src_dir}/configure ] ||
-		(cd ${ctags_src_dir}
-		./autogen.sh) || return
-	[ -f ${ctags_src_dir}/Makefile ] ||
-		(cd ${ctags_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+		(cd ${ctags_src_dir}; ./autogen.sh) || return
+	[ -f ${ctags_bld_dir}/Makefile ] ||
+		(cd ${ctags_bld_dir}
+		${ctags_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules \
 			LDFLAGS="${LDFLAGS} -liconv") || return
-	make -C ${ctags_src_dir} -j ${jobs} || return
-	make -C ${ctags_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	make -C ${ctags_bld_dir} -j ${jobs} || return
+	make -C ${ctags_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_neovim()
@@ -3432,13 +3431,13 @@ install_native_grep()
 	search_header pcre.h > /dev/null || install_native_pcre || return
 	fetch grep || return
 	unpack grep || return
-	[ -f ${grep_src_dir}/Makefile ] ||
-		(cd ${grep_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${grep_src_dir} -j ${jobs} || return
+	[ -f ${grep_bld_dir}/Makefile ] ||
+		(cd ${grep_bld_dir}
+		${grep_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${grep_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${grep_src_dir} -j ${jobs} -k check || return
-	make -C ${grep_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${grep_bld_dir} -j ${jobs} -k check || return
+	make -C ${grep_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_global()
@@ -3447,14 +3446,14 @@ install_native_global()
 	search_header curses.h > /dev/null || install_native_ncurses || return
 	fetch global || return
 	unpack global || return
-	[ -f ${global_src_dir}/Makefile ] ||
-		(cd ${global_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} \
+	[ -f ${global_bld_dir}/Makefile ] ||
+		(cd ${global_bld_dir}
+		${global_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			--with-ncurses=`print_prefix curses.h` CPPFLAGS="${CPPFLAGS} -I`print_include_dir curses.h`") || return
-	make -C ${global_src_dir} -j ${jobs} || return
+	make -C ${global_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${global_src_dir} -j ${jobs} -k check || return
-	make -C ${global_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${global_bld_dir} -j ${jobs} -k check || return
+	make -C ${global_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_pcre()
@@ -3465,17 +3464,17 @@ install_native_pcre()
 	search_header readline.h readline > /dev/null || install_native_readline || return
 	fetch pcre || return
 	unpack pcre || return
-	[ -f ${pcre_src_dir}/Makefile ] ||
-		(cd ${pcre_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+	[ -f ${pcre_bld_dir}/Makefile ] ||
+		(cd ${pcre_bld_dir}
+		${pcre_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			--enable-pcre16 --enable-pcre32 --enable-jit --enable-utf --enable-unicode-properties \
 			--enable-newline-is-any --enable-pcregrep-libz --enable-pcregrep-libbz2 \
 			--enable-pcretest-libreadline CPPFLAGS="${CPPFLAGS} -I`print_include_dir zlib.h`" \
 			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`") || return
-	make -C ${pcre_src_dir} -j ${jobs} || return
+	make -C ${pcre_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${pcre_src_dir} -j ${jobs} -k check || return
-	make -C ${pcre_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${pcre_bld_dir} -j ${jobs} -k check || return
+	make -C ${pcre_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -3485,17 +3484,17 @@ install_native_pcre2()
 	search_header bzlib.h > /dev/null || install_native_bzip2 || return
 	fetch pcre2 || return
 	unpack pcre2 || return
-	[ -f ${pcre2_src_dir}/Makefile ] ||
-		(cd ${pcre2_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+	[ -f ${pcre2_bld_dir}/Makefile ] ||
+		(cd ${pcre2_bld_dir}
+		${pcre2_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			--enable-pcre2-16 --enable-pcre2-32 --enable-jit --enable-newline-is-any \
 			--enable-pcre2grep-libz --enable-pcre2grep-libbz2 \
 			CPPFLAGS="${CPPFLAGS} -I`print_include_dir bzlib.h`" \
 			LDFLAGS="${LDFLAGS} -L`print_library_dir libbz2.so`") || return
-	make -C ${pcre2_src_dir} -j ${jobs} || return
+	make -C ${pcre2_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${pcre2_src_dir} -j ${jobs} -k check || return
-	make -C ${pcre2_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${pcre2_bld_dir} -j ${jobs} -k check || return
+	make -C ${pcre2_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -3508,19 +3507,18 @@ install_native_the_silver_searcher()
 	fetch the_silver_searcher || return
 	unpack the_silver_searcher || return
 	[ -f ${the_silver_searcher_src_dir}/configure ] ||
-		(cd ${the_silver_searcher_src_dir}
-		./autogen.sh) || return
-	[ -f ${the_silver_searcher_src_dir}/Makefile ] ||
-		(cd ${the_silver_searcher_src_dir}
+		(cd ${the_silver_searcher_src_dir}; ./autogen.sh) || return
+	[ -f ${the_silver_searcher_bld_dir}/Makefile ] ||
+		(cd ${the_silver_searcher_bld_dir}
 		update_pkg_config_path
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+		${the_silver_searcher_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`" LIBS=-lz \
 			PCRE_CFLAGS=-I`print_include_dir pcre.h` PCRE_LIBS="-L`print_library_dir libpcre.so` -lpcre" \
 			LZMA_CFLAGS=-I`print_include_dir lzma.h` LZMA_LIBS="-L`print_library_dir liblzma.so` -llzma") || return
-	make -C ${the_silver_searcher_src_dir} -j ${jobs} || return
+	make -C ${the_silver_searcher_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${the_silver_searcher_src_dir} -j ${jobs} -k check || return
-	make -C ${the_silver_searcher_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${the_silver_searcher_bld_dir} -j ${jobs} -k check || return
+	make -C ${the_silver_searcher_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
