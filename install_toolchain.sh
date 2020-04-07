@@ -5288,10 +5288,9 @@ install_native_libav()
 	search_header x264.h > /dev/null || install_native_x264 || return
 	search_header x265.h > /dev/null || install_native_x265 || return
 	fetch libav || return
-	[ -d ${libav_src_dir} ] ||
-		unpack libav || return
-	(cd ${libav_src_dir}
-	./configure --prefix=${prefix} --enable-gpl --enable-version3 --enable-nonfree --enable-shared \
+	unpack libav || return
+	(cd ${libav_bld_dir}
+	${libav_src_dir}/configure --prefix=${prefix} --enable-gpl --enable-version3 --enable-nonfree --enable-shared \
 		--enable-gray \
 		\
 		--enable-bzlib \
@@ -5328,8 +5327,8 @@ install_native_libav()
 		--enable-zlib \
 #		--enable-avisynth \
 	) || return
-	make -C ${libav_src_dir} -j ${jobs} || return
-	make -C ${libav_src_dir} -j ${jobs} install || return
+	make -C ${libav_bld_dir} -j ${jobs} || return
+	make -C ${libav_bld_dir} -j ${jobs} install || return
 }
 
 install_native_opencv()
