@@ -4582,6 +4582,7 @@ install_native_cling()
 	which cmake > /dev/null || install_native_cmake || return
 	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	fetch cling || return
+	unpack cling || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${cling_src_dir} -B ${cling_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
@@ -4597,6 +4598,7 @@ install_native_ccls()
 	which cmake > /dev/null || install_native_cmake || return
 	search_library libclang.so || install_native_clang || return
 	fetch ccls || return
+	unpack ccls || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${ccls_src_dir} -B ${ccls_bld_dir} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} || return
