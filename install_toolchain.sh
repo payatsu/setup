@@ -2464,14 +2464,14 @@ install_native_readline()
 	[ -f ${prefix}/include/readline/readline.h -a "${force_install}" != yes ] && return
 	fetch readline || return
 	unpack readline || return
-	[ -f ${readline_src_dir}/Makefile ] ||
-		(cd ${readline_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} \
+	[ -f ${readline_bld_dir}/Makefile ] ||
+		(cd ${readline_bld_dir}
+		${readline_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			--enable-multibyte --with-curses) || return
-	make -C ${readline_src_dir} -j ${jobs} || return
+	make -C ${readline_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${readline_src_dir} -j ${jobs} -k check || return
-	make -C ${readline_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		make -C ${readline_bld_dir} -j ${jobs} -k check || return
+	make -C ${readline_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	for l in libhistory libreadline; do
@@ -2516,21 +2516,21 @@ install_native_ncurses()
  | sed \
 EOF
 
-	[ -f ${ncurses_src_dir}/Makefile ] ||
-		(cd ${ncurses_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} \
+	[ -f ${ncurses_bld_dir}/Makefile ] ||
+		(cd ${ncurses_bld_dir}
+		${ncurses_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			--with-libtool --with-shared --with-cxx-shared --with-termlib \
 			--enable-termcap --enable-colors) || return
-	make -C ${ncurses_src_dir} -j 1 || return # XXX work around for parallel make
-	make -C ${ncurses_src_dir} -j ${jobs} install || return
-	make -C ${ncurses_src_dir} -j ${jobs} distclean || return
-	[ -f ${ncurses_src_dir}/Makefile ] ||
-		(cd ${ncurses_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} \
+	make -C ${ncurses_bld_dir} -j 1 || return # XXX work around for parallel make
+	make -C ${ncurses_bld_dir} -j ${jobs} install || return
+	make -C ${ncurses_bld_dir} -j ${jobs} distclean || return
+	[ -f ${ncurses_bld_dir}/Makefile ] ||
+		(cd ${ncurses_bld_dir}
+		${ncurses_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			--with-libtool --with-shared --with-cxx-shared --with-termlib \
 			--enable-termcap --enable-widec --enable-colors --with-pthread --enable-reentrant) || return
-	make -C ${ncurses_src_dir} -j 1 || return # XXX work around for parallel make
-	make -C ${ncurses_src_dir} -j ${jobs} install || return
+	make -C ${ncurses_bld_dir} -j 1 || return # XXX work around for parallel make
+	make -C ${ncurses_bld_dir} -j ${jobs} install || return
 	update_path || return
 	for h in `find ${DESTDIR}${prefix}/include/ncurses \( -type f -o -type l \) -name '*.h'`; do
 		ln -fsv `echo ${h} | sed -e "s%${DESTDIR}${prefix}/include/%%"` ${DESTDIR}${prefix}/include || return
@@ -2555,14 +2555,14 @@ install_native_popt()
 	[ -f ${prefix}/include/popt.h -a "${force_install}" != yes ] && return
 	fetch popt || return
 	unpack popt || return
-	[ -f ${popt_src_dir}/Makefile ] ||
-		(cd ${popt_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-rpath) || return
+	[ -f ${popt_bld_dir}/Makefile ] ||
+		(cd ${popt_bld_dir}
+		${popt_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-rpath) || return
 
-	make -C ${popt_src_dir} -j ${jobs} || return
+	make -C ${popt_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${popt_src_dir} -j ${jobs} -k check || return
-	make -C ${popt_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${popt_bld_dir} -j ${jobs} -k check || return
+	make -C ${popt_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -2577,13 +2577,13 @@ install_native_babeltrace()
 	fetch babeltrace || return
 	unpack babeltrace || return
 	[ -f ${babeltrace_src_dir}/configure ] || (cd ${babeltrace_src_dir}; ./bootstrap) || return
-	[ -f ${babeltrace_src_dir}/Makefile ] ||
-		(cd ${babeltrace_src_dir}
-		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-	make -C ${babeltrace_src_dir} -j ${jobs} || return
+	[ -f ${babeltrace_bld_dir}/Makefile ] ||
+		(cd ${babeltrace_bld_dir}
+		${babeltrace_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+	make -C ${babeltrace_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${babeltrace_src_dir} -j ${jobs} -k check || return
-	make -C ${babeltrace_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${babeltrace_bld_dir} -j ${jobs} -k check || return
+	make -C ${babeltrace_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -2625,13 +2625,13 @@ install_native_strace()
 	[ -x ${prefix}/bin/strace -a "${force_install}" != yes ] && return
 	fetch strace || return
 	unpack strace || return
-	[ -f ${strace_src_dir}/Makefile ] ||
-		(cd ${strace_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --enable-mpers=check) || return
-	make -C ${strace_src_dir} -j ${jobs} || return
+	[ -f ${strace_bld_dir}/Makefile ] ||
+		(cd ${strace_bld_dir}
+		${strace_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-mpers=check) || return
+	make -C ${strace_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${strace_src_dir} -j ${jobs} -k check || return
-	make -C ${strace_src_dir} -j ${jobs} install || return
+		make -C ${strace_bld_dir} -j ${jobs} -k check || return
+	make -C ${strace_bld_dir} -j ${jobs} install || return
 }
 
 install_native_ltrace()
@@ -2640,13 +2640,14 @@ install_native_ltrace()
 	search_library libelf.so > /dev/null || install_native_elfutils || return
 	fetch ltrace || return
 	unpack ltrace || return
-	[ -f ${ltrace_src_dir}/Makefile ] ||
-		(cd ${ltrace_src_dir}
-		./configure --prefix=${prefix} --build=${build}) || return
-	make -C ${ltrace_src_dir} -j ${jobs} || return
+	[ -f ${ltrace_bld_dir}/Makefile ] ||
+		(cd ${ltrace_bld_dir}
+		${ltrace_src_dir}/configure --prefix=${prefix} --build=${build} \
+		CFLAGS="${CFLAGS} -Wno-error") || return
+	make -C ${ltrace_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${ltrace_src_dir} -j ${jobs} -k check || return
-	make -C ${ltrace_src_dir} -j ${jobs} install || return
+		make -C ${ltrace_bld_dir} -j ${jobs} -k check || return
+	make -C ${ltrace_bld_dir} -j ${jobs} install || return
 }
 
 install_native_valgrind()
