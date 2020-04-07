@@ -1940,9 +1940,9 @@ install_native_busybox()
 	[ -x ${prefix}/busybox/bin/busybox -a "${force_install}" != yes ] && return
 	fetch busybox || return
 	unpack busybox || return
-	make -C ${busybox_src_dir} -j ${jobs} V=1 defconfig || return
-	make -C ${busybox_src_dir} -j ${jobs} V=1 || return
-	make -C ${busybox_src_dir} -j ${jobs} CONFIG_PREFIX=${DESTDIR}${prefix}/busybox install || return
+	make -C ${busybox_src_dir} -j ${jobs} V=1 O=${busybox_bld_dir} defconfig || return
+	make -C ${busybox_bld_dir} -j ${jobs} V=1 || return
+	make -C ${busybox_bld_dir} -j ${jobs} CONFIG_PREFIX=${DESTDIR}${prefix}/busybox install || return
 }
 
 install_native_bison()
