@@ -3973,13 +3973,13 @@ install_native_openssh()
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch openssh || return
 	unpack openssh || return
-	[ -f ${openssh_src_dir}/Makefile ] ||
-		(cd ${openssh_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --with-zlib=`print_prefix zlib.h`) || return
-	make -C ${openssh_src_dir} -j ${jobs} || return
+	[ -f ${openssh_bld_dir}/Makefile ] ||
+		(cd ${openssh_bld_dir}
+		${openssh_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --with-zlib=`print_prefix zlib.h`) || return
+	make -C ${openssh_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${openssh_src_dir} -j ${jobs} -k tests || return
-	make -C ${openssh_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		make -C ${openssh_bld_dir} -j ${jobs} -k tests || return
+	make -C ${openssh_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 }
 
 install_native_nghttp2()
@@ -3988,11 +3988,11 @@ install_native_nghttp2()
 	which pkg-config > /dev/null || install_native_pkg_config || return
 	fetch nghttp2 || return
 	unpack nghttp2 || return
-	[ -f ${nghttp2_src_dir}/Makefile ] ||
-		(cd ${nghttp2_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules --enable-lib-only) || return
-	make -C ${nghttp2_src_dir} -j ${jobs} || return
-	make -C ${nghttp2_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	[ -f ${nghttp2_bld_dir}/Makefile ] ||
+		(cd ${nghttp2_bld_dir}
+		${nghttp2_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules --enable-lib-only) || return
+	make -C ${nghttp2_bld_dir} -j ${jobs} || return
+	make -C ${nghttp2_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -4002,16 +4002,16 @@ install_native_curl()
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch curl || return
 	unpack curl || return
-	(cd ${curl_src_dir}
-	./configure --prefix=${prefix} --build=${build} --host=${host} \
+	(cd ${curl_bld_dir}
+	${curl_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 		--enable-optimize --disable-silent-rules \
 		--enable-http --enable-ftp --enable-file \
 		--enable-ldap --enable-ldaps --enable-rtsp --enable-proxy \
 		--enable-dict --enable-telnet --enable-tftp --enable-pop3 \
 		--enable-imap --enable-smb --enable-smtp --enable-gopher \
 		--enable-manual --enable-ipv6 --with-ssl) || return
-	make -C ${curl_src_dir} -j ${jobs} || return
-	make -C ${curl_src_dir} -j ${jobs} install || return
+	make -C ${curl_bld_dir} -j ${jobs} || return
+	make -C ${curl_bld_dir} -j ${jobs} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/curl || return
@@ -4022,13 +4022,13 @@ install_native_expat()
 	[ -f ${prefix}/include/expat.h -a "${force_install}" != yes ] && return
 	fetch expat || return
 	unpack expat || return
-	[ -f ${expat_src_dir}/Makefile ] ||
-		(cd ${expat_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${expat_src_dir} -j ${jobs} || return
+	[ -f ${expat_bld_dir}/Makefile ] ||
+		(cd ${expat_bld_dir}
+		${expat_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${expat_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${expat_src_dir} -j ${jobs} -k check || return
-	make -C ${expat_src_dir} -j ${jobs} INSTALL_ROOT=${DESTDIR} install || return
+		make -C ${expat_bld_dir} -j ${jobs} -k check || return
+	make -C ${expat_bld_dir} -j ${jobs} INSTALL_ROOT=${DESTDIR} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/xmlwf || return
@@ -4055,14 +4055,14 @@ install_native_libxml2()
 	search_header Python.h > /dev/null || install_native_Python || return
 	fetch libxml2 || return
 	unpack libxml2 || return
-	[ -f ${libxml2_src_dir}/Makefile ] ||
-		(cd ${libxml2_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} \
+	[ -f ${libxml2_bld_dir}/Makefile ] ||
+		(cd ${libxml2_bld_dir}
+		${libxml2_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			--without-python --disable-silent-rules) || return
-	make -C ${libxml2_src_dir} -j ${jobs} || return
+	make -C ${libxml2_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libxml2_src_dir} -j ${jobs} -k check || return
-	make -C ${libxml2_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libxml2_bld_dir} -j ${jobs} -k check || return
+	make -C ${libxml2_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
