@@ -2269,8 +2269,9 @@ install_native_dtc()
 	which swig > /dev/null || install_native_swig || return
 	fetch dtc || return
 	unpack dtc || return
-	make -C ${dtc_src_dir} -j 1 V=1 || return # XXX work around for parallel make
-	make -C ${dtc_src_dir} -j 1 V=1 PREFIX=${DESTDIR}${prefix} install || return # XXX work around for parallel make
+	[ -f ${dtc_bld_dir}/Makefile ] || cp -Tvr ${dtc_src_dir} ${dtc_bld_dir} || return
+	make -C ${dtc_bld_dir} -j 1 V=1 || return # XXX work around for parallel make
+	make -C ${dtc_bld_dir} -j 1 V=1 PREFIX=${DESTDIR}${prefix} install || return # XXX work around for parallel make
 	[ "${strip}" != strip ] && return
 	for b in convert-dtsv0 dtc fdtdump fdtget fdtoverlay fdtput; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
