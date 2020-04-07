@@ -3288,15 +3288,15 @@ install_native_emacs()
 	unpack emacs || return
 	[ -f ${emacs_src_dir}/configure ] ||
 		(cd ${emacs_src_dir}; ./autogen.sh) || return
-	[ -f ${emacs_src_dir}/Makefile ] ||
-		(cd ${emacs_src_dir}
+	[ -f ${emacs_bld_dir}/Makefile ] ||
+		(cd ${emacs_bld_dir}
 		CPPFLAGS="${CPPFLAGS} -I${prefix}/include" LDFLAGS="${LDFLAGS} -L${prefix}/lib" \
-			./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			${emacs_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules \
 			--with-modules --without-gnutls) || return
-	make -C ${emacs_src_dir} -j ${jobs} || return
+	make -C ${emacs_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${emacs_src_dir} -j ${jobs} -k check || return
-	make -C ${emacs_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${emacs_bld_dir} -j ${jobs} -k check || return
+	make -C ${emacs_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_libiconv()
@@ -3304,13 +3304,13 @@ install_native_libiconv()
 	[ -x ${prefix}/bin/iconv -a "${force_install}" != yes ] && return
 	fetch libiconv || return
 	unpack libiconv || return
-	[ -f ${libiconv_src_dir}/Makefile ] ||
-		(cd ${libiconv_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --enable-static) || return
-	make -C ${libiconv_src_dir} -j ${jobs} || return
+	[ -f ${libiconv_bld_dir}/Makefile ] ||
+		(cd ${libiconv_bld_dir}
+		${libiconv_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-static) || return
+	make -C ${libiconv_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${libiconv_src_dir} -j ${jobs} -k check || return
-	make -C ${libiconv_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${libiconv_bld_dir} -j ${jobs} -k check || return
+	make -C ${libiconv_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	for l in libcharset libiconv; do
