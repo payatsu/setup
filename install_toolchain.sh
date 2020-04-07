@@ -1769,8 +1769,9 @@ install_native_zip()
 	[ -x ${prefix}/bin/zip -a "${force_install}" != yes ] && return
 	fetch zip || return
 	unpack zip || return
-	make -C ${zip_src_dir} -f unix/Makefile -j ${jobs} CC=${host}-gcc BIND=${host}-gcc AS=${host}-as generic || return
-	make -C ${zip_src_dir} -f unix/Makefile -j ${jobs} prefix=${DESTDIR}${prefix} install || return
+	[ -f ${zip_bld_dir}/unix/Makefile ] || cp -Tvr ${zip_src_dir} ${zip_bld_dir} || return
+	make -C ${zip_bld_dir} -f unix/Makefile -j ${jobs} CC=${host}-gcc BIND=${host}-gcc AS=${host}-as generic || return
+	make -C ${zip_bld_dir} -f unix/Makefile -j ${jobs} prefix=${DESTDIR}${prefix} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	for b in zip zipcloak zipnote zipsplit; do
@@ -1783,8 +1784,9 @@ install_native_unzip()
 	[ -x ${prefix}/bin/unzip -a "${force_install}" != yes ] && return
 	fetch unzip || return
 	unpack unzip || return
-	make -C ${unzip_src_dir} -f unix/Makefile -j ${jobs} CC=${host}-gcc AS=${host}-gcc LOCAL_UNZIP=-DNO_LCHMOD generic || return
-	make -C ${unzip_src_dir} -f unix/Makefile -j ${jobs} prefix=${DESTDIR}${prefix} install || return
+	[ -f ${unzip_bld_dir}/unix/Makefile ] || cp -Tvr ${unzip_src_dir} ${unzip_bld_dir} || return
+	make -C ${unzip_bld_dir} -f unix/Makefile -j ${jobs} CC=${host}-gcc AS=${host}-gcc LOCAL_UNZIP=-DNO_LCHMOD generic || return
+	make -C ${unzip_bld_dir} -f unix/Makefile -j ${jobs} prefix=${DESTDIR}${prefix} install || return
 	update_path || return
 }
 
@@ -1849,8 +1851,9 @@ install_native_lz4()
 	[ -x ${prefix}/bin/lz4 -a "${force_install}" != yes ] && return
 	fetch lz4 || return
 	unpack lz4 || return
-	make -C ${lz4_src_dir} -j ${jobs} V=1 CC=${host}-gcc || return
-	make -C ${lz4_src_dir} -j ${jobs} V=1 PREFIX=${prefix} install || return
+	[ -f ${lz4_bld_dir}/Makefile ] || cp -Tvr ${lz4_src_dir} ${lz4_bld_dir} || return
+	make -C ${lz4_bld_dir} -j ${jobs} V=1 CC=${host}-gcc || return
+	make -C ${lz4_bld_dir} -j ${jobs} V=1 PREFIX=${prefix} install || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/lz4 || return
 }
@@ -1860,8 +1863,9 @@ install_native_zstd()
 	[ -x ${prefix}/bin/zstd -a "${force_install}" != yes ] && return
 	fetch zstd || return
 	unpack zstd || return
-	make -C ${zstd_src_dir} -j ${jobs} CC=${host}-gcc || return
-	make -C ${zstd_src_dir} -j ${jobs} prefix=${DESTDIR}${prefix} install || return
+	[ -f ${zstd_bld_dir}/Makefile ] || cp -Tvr ${zstd_src_dir} ${zstd_bld_dir} || return
+	make -C ${zstd_bld_dir} -j ${jobs} CC=${host}-gcc || return
+	make -C ${zstd_bld_dir} -j ${jobs} prefix=${DESTDIR}${prefix} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/zstd || return
