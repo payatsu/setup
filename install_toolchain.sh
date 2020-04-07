@@ -4844,17 +4844,17 @@ install_native_Python()
 	search_header ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch Python || return
 	unpack Python || return
-	[ -f ${Python_src_dir}/Makefile ] ||
-		(cd ${Python_src_dir}
-		./configure --prefix=${prefix} --build=${build} --enable-universalsdk \
+	[ -f ${Python_bld_dir}/Makefile ] ||
+		(cd ${Python_bld_dir}
+		${Python_src_dir}/configure --prefix=${prefix} --build=${build} --enable-universalsdk \
 			--enable-shared --enable-optimizations --enable-ipv6 \
 			--with-universal-archs=all --with-lto --with-system-expat --with-system-ffi \
 			--with-signal-module --with-threads --with-doc-strings \
 			--with-tsc --with-pymalloc --with-ensurepip LDFLAGS="${LDFLAGS} -L`print_library_dir libssl.so`") || return
-	make -C ${Python_src_dir} -j ${jobs} || return
+	make -C ${Python_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${Python_src_dir} -j ${jobs} -k test || return
-	make -C ${Python_src_dir} -j ${jobs} install || return
+		make -C ${Python_bld_dir} -j ${jobs} -k test || return
+	make -C ${Python_bld_dir} -j ${jobs} install || return
 	update_path || return
 	pip`echo ${Python_ver} | cut -d. -f1` install -U pip || return
 	[ -z "${strip}" ] && return
@@ -4915,21 +4915,21 @@ install_native_ruby()
 	[ -x ${prefix}/bin/ruby -a "${force_install}" != yes ] && return
 	fetch ruby || return
 	unpack ruby || return
-	[ -f ${ruby_src_dir}/Makefile ] ||
-		(cd ${ruby_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} \
+	[ -f ${ruby_bld_dir}/Makefile ] ||
+		(cd ${ruby_bld_dir}
+		${ruby_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			--disable-silent-rules --enable-multiarch --enable-shared \
 			--with-compress-debug-sections) || return
-	make -C ${ruby_src_dir} -j ${jobs} V=1 || return
+	make -C ${ruby_bld_dir} -j ${jobs} V=1 || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${ruby_src_dir} -j ${jobs} -k V=1 check || return
-	make -C ${ruby_src_dir} -j ${jobs} V=1 install || return
+		make -C ${ruby_bld_dir} -j ${jobs} -k V=1 check || return
+	make -C ${ruby_bld_dir} -j ${jobs} V=1 install || return
 	update_path || return
 	gem update || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/ruby || return
-	strip -v ${DESTDIR}${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_src_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/libruby.so || return
-	find ${DESTDIR}${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_src_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/ruby/`echo ${ruby_ver} | cut -d. -f-2`.0 -type f -name '*.so' -exec strip -v {} + || return
+	strip -v ${DESTDIR}${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_bld_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/libruby.so || return
+	find ${DESTDIR}${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_bld_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/ruby/`echo ${ruby_ver} | cut -d. -f-2`.0 -type f -name '*.so' -exec strip -v {} + || return
 }
 
 install_native_go()
@@ -4974,20 +4974,22 @@ install_native_tcl()
 	[ -x ${prefix}/bin/tclsh -a "${force_install}" != yes ] && return
 	fetch tcl || return
 	unpack tcl || return
-	[ -f ${tcl_src_dir}/unix/Makefile ] ||
-		(cd ${tcl_src_dir}/unix
-		./configure --prefix=${prefix} -build=${build} --host=${host} \
+	[ -f ${tcl_bld_dir}/Makefile ] ||
+		(cd ${tcl_bld_dir}
+		${tcl_src_dir}/unix/configure --prefix=${prefix} -build=${build} --host=${host} \
 			--disable-silent-rules --enable-64bit --enable-man-symlinks --disable-rpath) || return
-	make -C ${tcl_src_dir}/unix -j ${jobs} || return
+	make -C ${tcl_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${tcl_src_dir}/unix -j ${jobs} -k test || return
-	make -C ${tcl_src_dir}/unix -j ${jobs} install || return
-	make -C ${tcl_src_dir}/unix -j ${jobs} install-private-headers || return
+		make -C ${tcl_bld_dir} -j ${jobs} -k test || return
+	make -C ${tcl_bld_dir} -j ${jobs} install || return
+	make -C ${tcl_bld_dir} -j ${jobs} install-private-headers || return
 	update_path || return
 	ln -fsv tclsh`echo ${tcl_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/bin/tclsh || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/tclsh || return
+	chmod -v u+w ${DESTDIR}${prefix}/lib/libtcl`echo ${tcl_ver} | cut -d. -f-2`.so || return
 	strip -v ${DESTDIR}${prefix}/lib/libtcl`echo ${tcl_ver} | cut -d. -f-2`.so || return
+	chmod -v u-w ${DESTDIR}${prefix}/lib/libtcl`echo ${tcl_ver} | cut -d. -f-2`.so || return
 }
 
 install_native_tk()
@@ -4996,14 +4998,14 @@ install_native_tk()
 	search_library tclConfig.sh > /dev/null || install_native_tcl || return
 	fetch tk || return
 	unpack tk || return
-	[ -f ${tk_src_dir}/unix/Makefile ] ||
-		(cd ${tk_src_dir}/unix
-		./configure --prefix=${prefix} -build=${build} \
+	[ -f ${tk_bld_dir}/Makefile ] ||
+		(cd ${tk_bld_dir}
+		${tk_src_dir}/unix/configure --prefix=${prefix} -build=${build} \
 			--disable-silent-rules --enable-64bit --enable-man-symlinks --disable-rpath) || return
-	make -C ${tk_src_dir}/unix -j ${jobs} || return
+	make -C ${tk_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${tk_src_dir}/unix -j ${jobs} -k test || return
-	make -C ${tk_src_dir}/unix -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${tk_bld_dir} -j ${jobs} -k test || return
+	make -C ${tk_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	ln -fsv wish`echo ${tk_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/bin/wish || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/lib/libtk`echo ${tk_ver} | cut -d. -f-2`.so || return
