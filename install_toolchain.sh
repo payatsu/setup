@@ -5192,13 +5192,14 @@ install_native_node()
 	[ -x ${prefix}/bin/node -a "${force_install}" != yes ] && return
 	fetch node || return
 	unpack node || return
-	(cd ${node_src_dir}
+	[ -f ${node_bld_dir}/configure ] || cp -Tvr ${node_src_dir} ${node_bld_dir} || return
+	(cd ${node_bld_dir}
 	./configure --prefix=${prefix} `which ninja > /dev/null && echo --ninja`) || return
-	make -C ${node_src_dir} -j ${jobs} V=1 || return
+	make -C ${node_bld_dir} -j ${jobs} V=1 || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${node_src_dir} test-only || return
-	make -C ${node_src_dir} -j ${jobs} doc || return
-	make -C ${node_src_dir} -j ${jobs} install || return
+		make -C ${node_bld_dir} test-only || return
+	make -C ${node_bld_dir} -j ${jobs} doc || return
+	make -C ${node_bld_dir} -j ${jobs} install || return
 }
 
 install_native_jdk()
