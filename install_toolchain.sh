@@ -3948,15 +3948,16 @@ install_native_openssl()
 	[ -d ${prefix}/include/openssl -a "${force_install}" != yes ] && return
 	fetch openssl || return
 	unpack openssl || return
-	(cd ${openssl_src_dir}
-	MACHINE=`echo ${host} | cut -d- -f1` SYSTEM=Linux ./config --prefix=${prefix} shared) || return
-	make -C ${openssl_src_dir} -j 1 CROSS_COMPILE=${host}- || return # XXX work around for parallel make
+	(cd ${openssl_bld_dir}
+	MACHINE=`echo ${host} | cut -d- -f1` SYSTEM=Linux \
+		${openssl_src_dir}/config --prefix=${prefix} shared) || return
+	make -C ${openssl_bld_dir} -j 1 CROSS_COMPILE=${host}- || return # XXX work around for parallel make
 	[ "${enable_check}" != yes ] ||
-		make -C ${openssl_src_dir} -j 1 -k test || return # XXX work around for parallel make
+		make -C ${openssl_bld_dir} -j 1 -k test || return # XXX work around for parallel make
 	mkdir -pv ${DESTDIR}${prefix}/ssl || return
 	rm -fv ${DESTDIR}${prefix}/ssl/certs || return
 	ln -fsv /etc/ssl/certs ${DESTDIR}${prefix}/ssl/certs || return
-	make -C ${openssl_src_dir} -j 1 DESTDIR=${DESTDIR} install || return # XXX work around for parallel make
+	make -C ${openssl_bld_dir} -j 1 DESTDIR=${DESTDIR} install || return # XXX work around for parallel make
 	mkdir -pv ${DESTDIR}${prefix}/lib/pkgconfig || return
 	for f in libcrypto.pc libssl.pc openssl.pc; do
 		[ ! -f ${DESTDIR}${prefix}/lib64/pkgconfig/${f} ] || ln -fsv ../../lib64/pkgconfig/${f} ${DESTDIR}${prefix}/lib/pkgconfig || return
