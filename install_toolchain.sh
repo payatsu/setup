@@ -1755,13 +1755,13 @@ install_native_gzip()
 	[ -x ${prefix}/bin/gzip -a "${force_install}" != yes ] && return
 	fetch gzip || return
 	unpack gzip || return
-	[ -f ${gzip_src_dir}/Makefile ] ||
-		(cd ${gzip_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${gzip_src_dir} -j ${jobs} || return
+	[ -f ${gzip_bld_dir}/Makefile ] ||
+		(cd ${gzip_bld_dir}
+		${gzip_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${gzip_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${gzip_src_dir} -j ${jobs} -k check || return
-	make -C ${gzip_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${gzip_bld_dir} -j ${jobs} -k check || return
+	make -C ${gzip_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_zip()
@@ -1793,13 +1793,13 @@ install_native_lzip()
 	[ -x ${prefix}/bin/lzip -a "${force_install}" != yes ] && return
 	fetch lzip || return
 	unpack lzip || return
-	[ -f ${lzip_src_dir}/Makefile ] ||
-		(cd ${lzip_src_dir}
-		./configure --prefix=${prefix} CXX=${host}-g++) || return
-	make -C ${lzip_src_dir} -j ${jobs} || return
+	[ -f ${lzip_bld_dir}/Makefile ] ||
+		(cd ${lzip_bld_dir}
+		${lzip_src_dir}/configure --prefix=${prefix} CXX=${host}-g++) || return
+	make -C ${lzip_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${lzip_src_dir} -j ${jobs} -k check || return
-	make -C ${lzip_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${lzip_bld_dir} -j ${jobs} -k check || return
+	make -C ${lzip_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_lunzip()
@@ -1807,13 +1807,13 @@ install_native_lunzip()
 	[ -x ${prefix}/bin/lunzip -a "${force_install}" != yes ] && return
 	fetch lunzip || return
 	unpack lunzip || return
-	[ -f ${lunzip_src_dir}/Makefile ] ||
-		(cd ${lunzip_src_dir}
-		./configure --prefix=${prefix} CC=${host}-gcc) || return
-	make -C ${lunzip_src_dir} -j ${jobs} || return
+	[ -f ${lunzip_bld_dir}/Makefile ] ||
+		(cd ${lunzip_bld_dir}
+		${lunzip_src_dir}/configure --prefix=${prefix} CC=${host}-gcc) || return
+	make -C ${lunzip_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${lunzip_src_dir} -j ${jobs} -k check || return
-	make -C ${lunzip_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${lunzip_bld_dir} -j ${jobs} -k check || return
+	make -C ${lunzip_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_lzo()
@@ -1821,13 +1821,13 @@ install_native_lzo()
 	[ -f ${prefix}/include/lzo/lzo1.h -a "${force_install}" != yes ] && return
 	fetch lzo || return
 	unpack lzo || return
-	[ -f ${lzo_src_dir}/Makefile ] ||
-		(cd ${lzo_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules --enable-shared) || return
-	make -C ${lzo_src_dir} -j ${jobs} || return
+	[ -f ${lzo_bld_dir}/Makefile ] ||
+		(cd ${lzo_bld_dir}
+		${lzo_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules --enable-shared) || return
+	make -C ${lzo_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${lzo_src_dir} -j ${jobs} -k test || return
-	make -C ${lzo_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+		make -C ${lzo_bld_dir} -j ${jobs} -k test || return
+	make -C ${lzo_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -1837,11 +1837,11 @@ install_native_lzop()
 	search_header lzo1.h lzo > /dev/null || install_native_lzo || return
 	fetch lzop || return
 	unpack lzop || return
-	[ -f ${lzop_src_dir}/Makefile ] ||
-		(cd ${lzop_src_dir}
-		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${lzop_src_dir} -j ${jobs} || return
-	make -C ${lzop_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	[ -f ${lzop_bld_dir}/Makefile ] ||
+		(cd ${lzop_bld_dir}
+		${lzop_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${lzop_bld_dir} -j ${jobs} || return
+	make -C ${lzop_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_lz4()
