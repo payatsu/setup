@@ -4316,7 +4316,7 @@ install_native_bazel()
 	(cd ${bazel_bld_dir}
 	EXTRA_BAZEL_ARGS='--host_javabase=@local_jdk//:jdk' VERBOSE=yes bash ./compile.sh)
 	mkdir -pv ${DESTDI}${prefix}/bin || return
-	cp -v ${bazel_bld_dir}/output/bazel ${DESTDIR}${prefix}/bin/bazel || return
+	cp -fv ${bazel_bld_dir}/output/bazel ${DESTDIR}${prefix}/bin/bazel || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/bazel || return
