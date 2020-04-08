@@ -83,7 +83,7 @@
 : ${emacs_ver:=26.3}
 : ${libiconv_ver:=1.15}
 : ${vim_ver:=8.2.0391}
-: ${vimdoc_ja_ver:=dummy}
+: ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.4.3}
 : ${grep_ver:=3.4}
@@ -1321,8 +1321,6 @@ set_src_directory()
 		eval ${_1}_name=${1}`eval echo \\${${_1}_ver} | tr -d .`;;
 	jpeg)
 		eval ${_1}_name=${1}src.\${${_1}_ver};;
-	vimdoc-ja)
-		eval ${_1}_name=${1};;
 	plantuml)
 		eval ${_1}_name=${1}.\${${_1}_ver};;
 	gtk)
@@ -3369,9 +3367,7 @@ EOF
 	make -C ${vim_bld_dir} -j ${jobs} install || return
 	[ -f ${DESTDIR}${prefix}/bin/vi ] || ln -fsv vim ${DESTDIR}${prefix}/bin/vi || return
 	fetch vimdoc-ja || return
-	[ -d ${vimdoc_ja_src_dir} ] ||
-		(unpack vimdoc-ja &&
-		mv -v ${vimdoc_ja_src_base}/vimdoc-ja-master ${vimdoc_ja_src_dir}) || return
+	unpack vimdoc-ja || return
 	mkdir -pv ${DESTDIR}${prefix}/share/vim/vimfiles || return
 	cp -Tvr ${vimdoc_ja_src_dir} ${DESTDIR}${prefix}/share/vim/vimfiles || return
 	vim -i NONE -u NONE -N -c "helptags ${DESTDIR}${prefix}/share/vim/vimfiles/doc" -c qall || return
