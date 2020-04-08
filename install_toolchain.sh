@@ -1609,7 +1609,7 @@ update_path()
 	source_path || return
 }
 
-search_library()
+print_library_path()
 {
 	for dir in ${DESTDIR}${prefix}/lib64 ${DESTDIR}${prefix}/lib `LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
 		sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs realpath -eq`; do
@@ -1620,7 +1620,7 @@ search_library()
 
 print_library_dir()
 {
-	path=`search_library $@`
+	path=`print_library_path $@`
 	[ $? = 0 ] && dirname ${path} || return
 }
 
@@ -2592,7 +2592,7 @@ install_native_gdb()
 	[ -x ${prefix}/bin/gdb -a "${force_install}" != yes ] && return
 	print_header_path readline.h readline > /dev/null || install_native_readline || return
 	print_header_path curses.h > /dev/null || install_native_ncurses || return
-	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`.so > /dev/null || install_native_Python || return
+	print_library_path libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`.so > /dev/null || install_native_Python || return
 	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gdb || return
 	unpack gdb || return
@@ -2638,7 +2638,7 @@ install_native_strace()
 install_native_ltrace()
 {
 	[ -x ${prefix}/bin/ltrace -a "${force_install}" != yes ] && return
-	search_library libelf.so > /dev/null || install_native_elfutils || return
+	print_library_path libelf.so > /dev/null || install_native_elfutils || return
 	fetch ltrace || return
 	unpack ltrace || return
 	[ -f ${ltrace_bld_dir}/Makefile ] ||
@@ -3324,10 +3324,10 @@ install_native_vim()
 	print_header_path curses.h > /dev/null || install_native_ncurses || return
 	which gettext > /dev/null || install_native_gettext || return
 	print_header_path lua.h > /dev/null || install_native_lua || return
-	search_library libperl.so > /dev/null || install_native_perl || return
+	print_library_path libperl.so > /dev/null || install_native_perl || return
 	print_header_path Python.h python`python --version 2>&1 | grep -oe '[[:digit:]]\.[[:digit:]]'` > /dev/null || (install_native_Python2) || return
 	print_header_path Python.h python`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'` > /dev/null || install_native_Python || return
-	search_library tclConfig.sh > /dev/null || install_native_tcl || return
+	print_library_path tclConfig.sh > /dev/null || install_native_tcl || return
 	print_header_path ruby.h > /dev/null || install_native_ruby || return
 	fetch vim || return
 	unpack vim || return
@@ -3389,7 +3389,7 @@ install_native_ctags()
 	[ -x ${prefix}/bin/ctags -a "${force_install}" != yes ] &&
 		${prefix}/bin/ctags --version | grep -qe '\<Universal Ctags\>' && return
 	which pkg-config > /dev/null || install_native_pkg_config || return
-	search_library libiconv.so > /dev/null || install_native_libiconv || return
+	print_library_path libiconv.so > /dev/null || install_native_libiconv || return
 	fetch ctags || return
 	unpack ctags || return
 	[ -f ${ctags_src_dir}/configure ] ||
@@ -3825,7 +3825,7 @@ install_native_tmux()
 install_native_expect()
 {
 	[ -x ${prefix}/bin/expect -a "${force_install}" != yes ] && return
-	search_library tclConfig.sh > /dev/null || install_native_tcl || return
+	print_library_path tclConfig.sh > /dev/null || install_native_tcl || return
 	fetch expect || return
 	unpack expect || return
 	[ -f ${expect_bld_dir}/Makefile ] ||
@@ -4304,9 +4304,9 @@ install_native_cmake()
 		(cd ${cmake_bld_dir}
 		${cmake_src_dir}/bootstrap --prefix=${prefix} --parallel=${jobs} \
 			--system-curl --system-zlib --system-bzip2 --system-liblzma -- \
-			-DCURL_INCLUDE_DIR=`print_include_dir curl.h curl` -DCURL_LIBRARY=`search_library libcurl.so` \
-			-DBZIP2_INCLUDE_DIR=`print_include_dir bzlib.h` -DBZIP2_LIBRARIES=`search_library libbz2.so` \
-			-DLIBLZMA_INCLUDE_DIR=`print_include_dir lzma.h` -DLIBLZMA_LIBRARY=`search_library liblzma.so`) || return
+			-DCURL_INCLUDE_DIR=`print_include_dir curl.h curl` -DCURL_LIBRARY=`print_library_path libcurl.so` \
+			-DBZIP2_INCLUDE_DIR=`print_include_dir bzlib.h` -DBZIP2_LIBRARIES=`print_library_path libbz2.so` \
+			-DLIBLZMA_INCLUDE_DIR=`print_include_dir lzma.h` -DLIBLZMA_LIBRARY=`print_library_path liblzma.so`) || return
 	make -C ${cmake_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${cmake_bld_dir} -j ${jobs} -k test || return
@@ -4459,7 +4459,7 @@ install_native_libcxxabi()
 {
 	[ -e ${prefix}/lib/libc++abi.so -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
-	search_library libunwind.so > /dev/null || install_native_libunwind || return
+	print_library_path libunwind.so > /dev/null || install_native_libunwind || return
 	print_header_path llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	fetch libcxx || return
 	unpack libcxx || return
@@ -4480,7 +4480,7 @@ install_native_libcxx()
 {
 	[ -e ${prefix}/lib/libc++.so -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
-	search_library libc++abi.so > /dev/null || install_native_libcxxabi || return
+	print_library_path libc++abi.so > /dev/null || install_native_libcxxabi || return
 	fetch libcxxabi || return
 	unpack libcxxabi || return
 	fetch libcxx || return
@@ -4504,8 +4504,8 @@ install_native_clang()
 	which cmake > /dev/null || install_native_cmake || return
 	print_header_path llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	print_header_path allocator_interface.h sanitizer > /dev/null || install_native_compiler_rt || return
-	search_library libunwind.so > /dev/null || install_native_libunwind || return
-	search_library libc++abi.so > /dev/null || install_native_libcxxabi || return
+	print_library_path libunwind.so > /dev/null || install_native_libunwind || return
+	print_library_path libc++abi.so > /dev/null || install_native_libcxxabi || return
 	print_header_path iostream c++/v1 > /dev/null || install_native_libcxx || return
 	fetch clang || return
 	unpack clang || return
@@ -4597,7 +4597,7 @@ install_native_ccls()
 {
 	[ -x ${prefix}/bin/ccls -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
-	search_library libclang.so || install_native_clang || return
+	print_library_path libclang.so || install_native_clang || return
 	fetch ccls || return
 	unpack ccls || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -4998,7 +4998,7 @@ install_native_tcl()
 install_native_tk()
 {
 	[ -x ${prefix}/bin/wish -a "${force_install}" != yes ] && return
-	search_library tclConfig.sh > /dev/null || install_native_tcl || return
+	print_library_path tclConfig.sh > /dev/null || install_native_tcl || return
 	fetch tk || return
 	unpack tk || return
 	[ -f ${tk_bld_dir}/Makefile ] ||
