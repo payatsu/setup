@@ -35,7 +35,7 @@ RUN \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} "fetch ${pkgs} clang-tools-extra vimdoc-ja mingw-w64"
 RUN \
 for p in `echo ${pkgs} | tr - _` ctags; do \
-	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} install_native_${p} clean convert_archives || exit; \
+	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} install_native_${p} clean shrink_archives || exit; \
 done
 RUN \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_native_binutils install_cross_gcc clean
@@ -83,7 +83,7 @@ ENV LANG=ja_JP.utf8 SHELL=${prefix}/bin/zsh USER=${USER}
 CMD exec ${SHELL} -l
 RUN \
 sudo mv -v ${prefix}/lib/rustlib/uninstall.sh . && \
-${prefix}/install_toolchain.sh -p tmp -j ${njobs} install_native_rustup clean convert_archives && \
+${prefix}/install_toolchain.sh -p tmp -j ${njobs} install_native_rustup clean shrink_archives && \
 sudo cp -vr tmp/src/rustup ${prefix}/src && \
 sudo mv -v uninstall.sh ${prefix}/lib/rustlib && \
 rm -vr tmp && \

@@ -1225,7 +1225,7 @@ archive()
 # Archive related files.
 {
 	[ ${src} = `dirname ${0}` ] || cp -fv ${0} ${src} || return
-	convert_archives || return
+	shrink_archives || return
 	tar cJvf `echo ${prefix} | sed -e 's+/$++'`.tar.xz \
 		-C `dirname ${prefix}` `basename ${prefix}` || return
 }
@@ -1437,7 +1437,18 @@ check_platform()
 	esac
 }
 
-convert_archives()
+check_archive()
+{
+	[ -f ${1}.tar.gz  -a -s ${1}.tar.gz  ] && return
+	[ -f ${1}.tar.bz2 -a -s ${1}.tar.bz2 ] && return
+	[ -f ${1}.tar.xz  -a -s ${1}.tar.xz  ] && return
+	[ -f ${1}.tar.lz  -a -s ${1}.tar.lz  ] && return
+	[ -f ${1}.zip     -a -s ${1}.zip     ] && return
+	[ -f ${1}.jar     -a -s ${1}.jar     ] && return
+	return 1
+}
+
+shrink_archives()
 {
 	which xz > /dev/null || return
 	! which gzip  > /dev/null || find ${src} -mindepth 2 -maxdepth 2 -name '*.tar.gz'  -exec sh -c 'xzfile=`echo {} | sed -e "s/\\.gz\$/.xz/"`;  [ -f ${xzfile} ] && exit 0; echo converting {} into ${xzfile} ...; gzip  -cd {} | xz -T '${jobs}' -cv > ${xzfile}' \; -delete || return
@@ -1450,7 +1461,7 @@ archive_sources()
 {
 	fetch || return
 	clean || return
-	convert_archives || return
+	shrink_archives || return
 	tar cJvf ${src}.tar.xz -C `dirname ${src}` `basename ${src}`
 }
 
@@ -1657,17 +1668,6 @@ install_prerequisites()
 	*) echo 'Your operating system is not supported, sorry :-(' >&2; return 1;;
 	esac
 	prerequisites_have_been_already_installed=yes
-}
-
-check_archive()
-{
-	[ -f ${1}.tar.gz  -a -s ${1}.tar.gz  ] && return
-	[ -f ${1}.tar.bz2 -a -s ${1}.tar.bz2 ] && return
-	[ -f ${1}.tar.xz  -a -s ${1}.tar.xz  ] && return
-	[ -f ${1}.tar.lz  -a -s ${1}.tar.lz  ] && return
-	[ -f ${1}.zip     -a -s ${1}.zip     ] && return
-	[ -f ${1}.jar     -a -s ${1}.jar     ] && return
-	return 1
 }
 
 install_native_tar()
