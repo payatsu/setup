@@ -737,14 +737,14 @@ fetch()
 			wget -O ${rsync_src_dir}.tar.gz \
 				https://download.samba.org/pub/rsync/src/${rsync_name}.tar.gz || return;;
 		linux)
-			case `echo ${linux_ver} | cut -d. -f1,2` in
+			case `print_version linux` in
 			2.6)     linux_major_ver=v2.6;;
 			3.*)     linux_major_ver=v3.x;;
-			[456].*) linux_major_ver=v`echo ${linux_ver} | cut -d. -f1`.x;;
+			[456].*) linux_major_ver=v`print_version linux 1`.x;;
 			*)       echo unsupported linux version >&2; return 1;;
 			esac
 			wget -O ${linux_src_dir}.tar.xz \
-				https://www.kernel.org/pub/linux/kernel/${linux_major_ver:-v`echo ${linux_ver} | cut -d. -f1`.x}/${linux_name}.tar.xz || return;;
+				https://www.kernel.org/pub/linux/kernel/${linux_major_ver:-v`print_version linux 1`.x}/${linux_name}.tar.xz || return;;
 		kmod)
 			wget -O ${kmod_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/utils/kernel/kmod/${kmod_name}.tar.xz || return;;
@@ -881,7 +881,7 @@ fetch()
 				https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return;;
 		util-linux)
 			wget -O ${util_linux_src_dir}.tar.xz \
-				https://kernel.org/pub/linux/utils/util-linux/v`echo ${util_linux_ver} | cut -d. -f1,2`/${util_linux_name}.tar.xz || return;;
+				https://kernel.org/pub/linux/utils/util-linux/v`print_version util-linux`/${util_linux_name}.tar.xz || return;;
 		e2fsprogs)
 			wget -O ${e2fsprogs_src_dir}.tar.gz \
 				https://sourceforge.net/projects/e2fsprogs/files/e2fsprogs/v${e2fsprogs_ver}/${e2fsprogs_name}.tar.gz/download || return;;
@@ -943,7 +943,7 @@ fetch()
 				https://github.com/mesonbuild/meson/archive/${meson_ver}.tar.gz || return;;
 		cmake)
 			wget -O ${cmake_src_dir}.tar.gz \
-				https://cmake.org/files/v`echo ${cmake_ver} | cut -d. -f1,2`/${cmake_name}.tar.gz || return;;
+				https://cmake.org/files/v`print_version cmake`/${cmake_name}.tar.gz || return;;
 		bazel)
 			wget -O ${bazel_src_dir}.zip \
 				https://github.com/bazelbuild/bazel/releases/download/${bazel_ver}/${bazel_name}-dist.zip || return;;
@@ -992,7 +992,7 @@ fetch()
 				https://github.com/rust-lang/rustup/archive/${rustup_ver}.tar.gz || return;;
 		ruby)
 			wget -O ${ruby_src_dir}.tar.xz \
-				http://cache.ruby-lang.org/pub/ruby/`echo ${ruby_ver} | cut -d. -f-2`/${ruby_name}.tar.xz || return;;
+				http://cache.ruby-lang.org/pub/ruby/`print_version ruby`/${ruby_name}.tar.xz || return;;
 		go)
 			wget -O ${go_src_dir}.tar.gz \
 				https://storage.googleapis.com/golang/go${go_ver}.src.tar.gz || return;;
@@ -1019,7 +1019,7 @@ fetch()
 				https://nodejs.org/dist/v${node_ver}/node-v${node_ver}.tar.gz || return;;
 		jdk)
 			wget -O ${jdk_src_dir}.tar.gz \
-				`wget -O- https://jdk.java.net/\`echo ${jdk_ver} | cut -d. -f1\` |
+				`wget -O- https://jdk.java.net/\`print_version jdk 1\` |
 					grep -oe 'https://download\.java\.net/java/GA/jdk'${jdk_ver}'/.\+/GPL/open'${jdk_name}'_linux-x64_bin\.tar\.gz' | uniq` || return;;
 		nasm)
 			wget -O ${nasm_src_dir}.tar.xz \
@@ -1092,10 +1092,10 @@ fetch()
 				https://www.cairographics.org/releases/\${${_p:-pixman}_name}.tar.gz || return;;
 		glib|pango|gdk-pixbuf|atk|gobject-introspection)
 			eval wget -O \${${_p}_src_dir}.tar.xz \
-				http://ftp.gnome.org/pub/gnome/sources/${p:-glib}/\`echo \${${_p:-glib}_ver} \| cut -d. -f-2\`/\${${_p:-glib}_name}.tar.xz || return;;
+				http://ftp.gnome.org/pub/gnome/sources/${p:-glib}/\`print_version ${p:-glib}\`/\${${_p:-glib}_name}.tar.xz || return;;
 		gtk)
 			eval wget -O \${${_p}_src_dir}.tar.xz \
-				http://ftp.gnome.org/pub/gnome/sources/gtk+/\`echo \${${_p:-gtk}_ver} \| cut -d. -f-2\`/\${${_p:-gtk}_name}.tar.xz || return;;
+				http://ftp.gnome.org/pub/gnome/sources/gtk+/\`print_version ${p:-gtk}\`/\${${_p:-gtk}_name}.tar.xz || return;;
 		webkitgtk)
 			wget -O ${webkitgtk_src_dir}.tar.xz \
 				https://webkitgtk.org/releases/${webkitgtk_name}.tar.xz || return;;
@@ -1648,6 +1648,12 @@ print_prefix()
 	[ $? = 0 ] && echo ${path} | sed -e 's/\/include\/.\+//' || return
 }
 
+print_version()
+{
+	_1=`echo ${1} | tr - _`
+	eval echo \${${_1}_ver} | cut -d. -f-${2:-2}
+}
+
 install_prerequisites()
 {
 	[ -n "${prerequisites_have_been_already_installed}" ] && return
@@ -1738,8 +1744,8 @@ install_native_bzip2()
 		make -C ${bzip2_bld_dir} -j ${jobs} -k check || return
 	cp -fv ${bzip2_bld_dir}/libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib || return
 	chmod -v a+r ${DESTDIR}${prefix}/lib/libbz2.so.${bzip2_ver} || return
-	ln -fsv libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib/libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` || return
-	ln -fsv libbz2.so.`echo ${bzip2_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/lib/libbz2.so || return
+	ln -fsv libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib/libbz2.so.`print_version bzip2` || return
+	ln -fsv libbz2.so.`print_version bzip2` ${DESTDIR}${prefix}/lib/libbz2.so || return
 	cp -fv ${bzip2_bld_dir}/bzlib.h ${DESTDIR}${prefix}/include || return
 	cp -fv ${bzip2_bld_dir}/bzlib_private.h ${DESTDIR}${prefix}/include || return
 	update_path || return
@@ -2276,7 +2282,7 @@ install_native_dtc()
 	for b in convert-dtsv0 dtc fdtdump fdtget fdtoverlay fdtput; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
-	strip -v ${DESTDIR}${prefix}/lib/libfdt-`echo ${dtc_ver} | cut -d. -f-2`.0.so || return
+	strip -v ${DESTDIR}${prefix}/lib/libfdt-`print_version dtc`.0.so || return
 }
 
 install_native_u_boot()
@@ -2536,8 +2542,8 @@ EOF
 		ln -fsv `echo ${h} | sed -e "s%${DESTDIR}${prefix}/include/%%"` ${DESTDIR}${prefix}/include || return
 	done
 	rm -fv ${DESTDIR}${prefix}/lib/libncurses.so || return
-	echo 'INPUT(libncurses.so.'`echo ${ncurses_ver} | cut -d. -f1`' -ltinfo)' > ${DESTDIR}${prefix}/lib/libncurses.so || return
-	echo 'INPUT(libncurses.so.'`echo ${ncurses_ver} | cut -d. -f1`' -ltinfo)' > ${DESTDIR}${prefix}/lib/libcurses.so || return
+	echo 'INPUT(libncurses.so.'`print_version ncurses 1`' -ltinfo)' > ${DESTDIR}${prefix}/lib/libncurses.so || return
+	echo 'INPUT(libncurses.so.'`print_version ncurses 1`' -ltinfo)' > ${DESTDIR}${prefix}/lib/libcurses.so || return
 	for ext in a la; do
 		ln -fsv libncurses.${ext} ${DESTDIR}${prefix}/lib/libcurses.${ext} || return
 	done
@@ -4859,12 +4865,12 @@ install_native_Python()
 		make -C ${Python_bld_dir} -j ${jobs} -k test || return
 	make -C ${Python_bld_dir} -j ${jobs} install || return
 	update_path || return
-	pip`echo ${Python_ver} | cut -d. -f1` install -U pip || return
+	pip`print_version Python 1` install -U pip || return
 	[ -z "${strip}" ] && return
-	for v in `echo ${Python_ver} | cut -d. -f-2` `echo ${Python_ver} | cut -d. -f-2`m; do
+	for v in `print_version Python` `print_version Python`m; do
 		[ ! -f ${DESTDIR}${prefix}/bin/python${v} ] || strip -v ${DESTDIR}${prefix}/bin/python${v} || return
 	done
-	for soname_v in `echo ${Python_ver} | cut -d. -f1`.so `echo ${Python_ver} | cut -d. -f-2`.so.1.0 `echo ${Python_ver} | cut -d. -f-2`m.so.1.0; do
+	for soname_v in `print_version Python 1`.so `print_version Python`.so.1.0 `print_version Python`m.so.1.0; do
 		[ ! -f ${DESTDIR}${prefix}/lib/libpython${soname_v} ] ||
 			(chmod -v u+w ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
 			strip -v ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
@@ -4932,7 +4938,7 @@ install_native_ruby()
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/ruby || return
 	strip -v ${DESTDIR}${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_bld_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/libruby.so || return
-	find ${DESTDIR}${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_bld_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/ruby/`echo ${ruby_ver} | cut -d. -f-2`.0 -type f -name '*.so' -exec strip -v {} + || return
+	find ${DESTDIR}${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_bld_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/ruby/`print_version ruby`.0 -type f -name '*.so' -exec strip -v {} + || return
 }
 
 install_native_go()
@@ -4987,12 +4993,12 @@ install_native_tcl()
 	make -C ${tcl_bld_dir} -j ${jobs} install || return
 	make -C ${tcl_bld_dir} -j ${jobs} install-private-headers || return
 	update_path || return
-	ln -fsv tclsh`echo ${tcl_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/bin/tclsh || return
+	ln -fsv tclsh`print_version tcl` ${DESTDIR}${prefix}/bin/tclsh || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/tclsh || return
-	chmod -v u+w ${DESTDIR}${prefix}/lib/libtcl`echo ${tcl_ver} | cut -d. -f-2`.so || return
-	strip -v ${DESTDIR}${prefix}/lib/libtcl`echo ${tcl_ver} | cut -d. -f-2`.so || return
-	chmod -v u-w ${DESTDIR}${prefix}/lib/libtcl`echo ${tcl_ver} | cut -d. -f-2`.so || return
+	chmod -v u+w ${DESTDIR}${prefix}/lib/libtcl`print_version tcl`.so || return
+	strip -v ${DESTDIR}${prefix}/lib/libtcl`print_version tcl`.so || return
+	chmod -v u-w ${DESTDIR}${prefix}/lib/libtcl`print_version tcl`.so || return
 }
 
 install_native_tk()
@@ -5009,9 +5015,9 @@ install_native_tk()
 	[ "${enable_check}" != yes ] ||
 		make -C ${tk_bld_dir} -j ${jobs} -k test || return
 	make -C ${tk_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
-	ln -fsv wish`echo ${tk_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/bin/wish || return
+	ln -fsv wish`print_version tk` ${DESTDIR}${prefix}/bin/wish || return
 	[ -z "${strip}" ] && return
-	strip -v ${DESTDIR}${prefix}/lib/libtk`echo ${tk_ver} | cut -d. -f-2`.so || return
+	strip -v ${DESTDIR}${prefix}/lib/libtk`print_version tk`.so || return
 }
 
 install_native_libunistring()
@@ -5182,8 +5188,8 @@ EOF
 	[ "${enable_check}" != yes ] ||
 		make -C ${lua_bld_dir} -j ${jobs} -k test || return
 	make -C ${lua_bld_dir} -j ${jobs} INSTALL_TOP=${DESTDIR}${prefix} install || return
-	mv -v ${DESTDIR}${prefix}/lib/liblua.so ${DESTDIR}${prefix}/lib/liblua.so.`echo ${lua_ver} | cut -d. -f-2` || return
-	ln -fsv liblua.so.`echo ${lua_ver} | cut -d. -f-2` ${DESTDIR}${prefix}/lib/liblua.so || return
+	mv -v ${DESTDIR}${prefix}/lib/liblua.so ${DESTDIR}${prefix}/lib/liblua.so.`print_version lua` || return
+	ln -fsv liblua.so.`print_version lua` ${DESTDIR}${prefix}/lib/liblua.so || return
 	update_path || return
 	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/lua ${DESTDIR}${prefix}/bin/luac || return
 }
@@ -5337,7 +5343,7 @@ install_native_libav()
 
 install_native_opencv()
 {
-	[ -f ${prefix}/include/opencv`echo ${opencv_ver} | cut -d. -f1`/opencv2/opencv.hpp -a "${force_install}" != yes ] && return
+	[ -f ${prefix}/include/opencv`print_version opencv 1`/opencv2/opencv.hpp -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	print_header_path png.h > /dev/null || install_native_libpng || return # systemのlibpngだと古くて新規インストール必須かも。
 	print_header_path tiff.h > /dev/null || install_native_tiff || return
@@ -5389,8 +5395,8 @@ install_native_fzf()
 	cp -fv ${fzf_src_dir}/bin/fzf ${DESTDIR}${prefix}/bin/fzf || return
 	cp -fv ${fzf_src_dir}/bin/fzf-tmux ${DESTDIR}${prefix}/bin/fzf-tmux || return
 	mkdir -pv ${DESTDIR}${prefix}/share/man && cp -fvr ${fzf_src_dir}/man/man1 ${DESTDIR}${prefix}/share/man || return
-	mkdir -pv ${DESTDIR}${prefix}/share/vim/vim`echo ${vim_ver} | cut -d. -f-2 | tr -d .`/plugin || return
-	cp -fv ${fzf_src_dir}/plugin/fzf.vim ${DESTDIR}${prefix}/share/vim/vim`echo ${vim_ver} | cut -d. -f-2 | tr -d .`/plugin || return
+	mkdir -pv ${DESTDIR}${prefix}/share/vim/vim`print_version vim | tr -d .`/plugin || return
+	cp -fv ${fzf_src_dir}/plugin/fzf.vim ${DESTDIR}${prefix}/share/vim/vim`print_version vim | tr -d .`/plugin || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/fzf || return
 }
