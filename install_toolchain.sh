@@ -1535,26 +1535,6 @@ update_pkg_config_path()
 	export PKG_CONFIG_PATH
 }
 
-source_path()
-{
-	while getopts f arg; do
-		case ${arg} in
-		f) force_set=yes;;
-		esac
-	done
-	shift `expr ${OPTIND} - 1`
-	! check_platform ${build} ${host} ${target} | grep -qe '\<native\>\|\<cross\>' || . ${set_path_sh} || return
-	unset force_set
-}
-
-update_path()
-{
-	update_library_search_path || return
-	update_pkg_config_path || return
-	generate_shell_run_command ${set_path_sh} || return
-	source_path || return
-}
-
 generate_shell_run_command()
 {
 	mkdir -pv `dirname ${1}` || return
@@ -1596,6 +1576,26 @@ EOF
 }
 func_place_holder
 EOF
+}
+
+source_path()
+{
+	while getopts f arg; do
+		case ${arg} in
+		f) force_set=yes;;
+		esac
+	done
+	shift `expr ${OPTIND} - 1`
+	! check_platform ${build} ${host} ${target} | grep -qe '\<native\>\|\<cross\>' || . ${set_path_sh} || return
+	unset force_set
+}
+
+update_path()
+{
+	update_library_search_path || return
+	update_pkg_config_path || return
+	generate_shell_run_command ${set_path_sh} || return
+	source_path || return
 }
 
 search_library()
