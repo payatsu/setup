@@ -5017,7 +5017,9 @@ install_native_tk()
 	make -C ${tk_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	ln -fsv wish`print_version tk` ${DESTDIR}${prefix}/bin/wish || return
 	[ -z "${strip}" ] && return
+	chmod -v u+w ${DESTDIR}${prefix}/lib/libtk`print_version tk`.so || return
 	strip -v ${DESTDIR}${prefix}/lib/libtk`print_version tk`.so || return
+	chmod -v u-w ${DESTDIR}${prefix}/lib/libtk`print_version tk`.so || return
 }
 
 install_native_libunistring()
