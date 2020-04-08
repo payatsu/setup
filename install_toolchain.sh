@@ -4420,9 +4420,8 @@ install_native_compiler_rt()
 		-DCMAKE_INSTALL_RPATH=';' -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ || return
 	cmake --build ${compiler_rt_bld_dir} -v -j ${jobs} || return
 	cmake --install ${compiler_rt_bld_dir} -v ${strip:+--${strip}} || return
-	mkdir -pv ${DESTDIR}${prefix}/lib/clang/`llvm-config --version | grep -oe '^\(\.\?[[:digit:]]\+\)\{3\}'`/lib || return
-	rm -fvr ${DESTDIR}${prefix}/lib/clang/`llvm-config --version | grep -oe '^\(\.\?[[:digit:]]\+\)\{3\}'`/lib/linux || return
-	mv -v ${DESTDIR}${prefix}/lib/linux ${DESTDIR}${prefix}/lib/clang/`llvm-config --version | grep -oe '^\(\.\?[[:digit:]]\+\)\{3\}'`/lib || return # XXX: workaround for mismatch between clang search path and compiler-rt installation path.
+	mkdir -pv ${DESTDIR}${prefix}/lib/clang/`llvm-config --version`/lib || return
+	cp -Tfvr ${DESTDIR}${prefix}/lib/linux ${DESTDIR}${prefix}/lib/clang/`llvm-config --version`/lib/linux || return # XXX: workaround for mismatch between clang search path and compiler-rt installation path.
 	update_path || return
 }
 
