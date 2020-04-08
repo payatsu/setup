@@ -4939,9 +4939,7 @@ install_native_go()
 	(cd ${go_src_dir}/src
 	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=`go version | grep -qe gccgo && echo ${DESTDIR}${prefix}/go` \
 		GOROOT_FINAL=${DESTDIR}${prefix}/go bash -x ${go_src_dir}/src/make.bash -v) || return
-	[ ! -d ${DESTDIR}${prefix}/go ] || rm -fvr ${DESTDIR}${prefix}/go || return
-	mkdir -pv ${DESTDIR}${prefix} || return
-	mv -v ${go_src_dir} ${DESTDIR}${prefix}/go || return
+	cp -Tfvr ${go_src_dir} ${DESTDIR}${prefix}/go || return
 	update_path || return
 	GOPATH=${DESTDIR}${prefix}/.go go get golang.org/x/tools/cmd/... || return
 }
@@ -5174,7 +5172,7 @@ EOF
 	[ "${enable_check}" != yes ] ||
 		make -C ${lua_bld_dir} -j ${jobs} -k test || return
 	make -C ${lua_bld_dir} -j ${jobs} INSTALL_TOP=${DESTDIR}${prefix} install || return
-	mv -v ${DESTDIR}${prefix}/lib/liblua.so ${DESTDIR}${prefix}/lib/liblua.so.`print_version lua` || return
+	cp -fv ${DESTDIR}${prefix}/lib/liblua.so ${DESTDIR}${prefix}/lib/liblua.so.`print_version lua` || return
 	ln -fsv liblua.so.`print_version lua` ${DESTDIR}${prefix}/lib/liblua.so || return
 	update_path || return
 	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/lua ${DESTDIR}${prefix}/bin/luac || return
@@ -5200,8 +5198,7 @@ install_native_jdk()
 	[ -x ${prefix}/bin/javac -a "${force_install}" != yes ] && return
 	fetch jdk || return
 	unpack jdk || return
-	rm -fvr ${DESTDIR}${prefix}/jdk || return
-	cp -vr ${jdk_src_dir} ${DESTDIR}${prefix}/jdk || return
+	cp -Tfvr ${jdk_src_dir} ${DESTDIR}${prefix}/jdk || return
 	mkdir -pv ${DESTDIR}${prefix}/bin || return
 	for f in `find ${DESTDIR}${prefix}/jdk/bin -type f`; do
 		ln -fsv `echo ${f} | sed -e "s%${DESTDIR}${prefix}/jdk/bin%../jdk/bin%"` ${DESTDIR}${prefix}/bin/`basename ${f}` || return
@@ -5380,7 +5377,8 @@ install_native_fzf()
 	mkdir -pv ${DESTDIR}${prefix}/bin || return
 	cp -fv ${fzf_src_dir}/bin/fzf ${DESTDIR}${prefix}/bin/fzf || return
 	cp -fv ${fzf_src_dir}/bin/fzf-tmux ${DESTDIR}${prefix}/bin/fzf-tmux || return
-	mkdir -pv ${DESTDIR}${prefix}/share/man && cp -fvr ${fzf_src_dir}/man/man1 ${DESTDIR}${prefix}/share/man || return
+	mkdir -pv ${DESTDIR}${prefix}/share/man || return
+	cp -Tfvr ${fzf_src_dir}/man/man1 ${DESTDIR}${prefix}/share/man/man1 || return
 	mkdir -pv ${DESTDIR}${prefix}/share/vim/vim`print_version vim | tr -d .`/plugin || return
 	cp -fv ${fzf_src_dir}/plugin/fzf.vim ${DESTDIR}${prefix}/share/vim/vim`print_version vim | tr -d .`/plugin || return
 	[ -z "${strip}" ] && return
