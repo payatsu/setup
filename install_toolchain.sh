@@ -1624,7 +1624,7 @@ print_library_dir()
 	[ $? = 0 ] && dirname ${path} || return
 }
 
-search_header()
+print_header_path()
 {
 	for dir in ${DESTDIR}${prefix}/include \
 		`LANG=C ${CC:-${host:+${host}-}gcc} -x c -E -v /dev/null -o /dev/null 2>&1 |
@@ -1638,13 +1638,13 @@ search_header()
 
 print_include_dir()
 {
-	path=`search_header $@`
+	path=`print_header_path $@`
 	[ $? = 0 ] && echo ${path} | sed -e "s%${2:+/${2}}/${1}\$%%" || return
 }
 
 print_prefix()
 {
-	path=`search_header $@`
+	path=`print_header_path $@`
 	[ $? = 0 ] && echo ${path} | sed -e 's/\/include\/.\+//' || return
 }
 
@@ -1836,7 +1836,7 @@ install_native_lzo()
 install_native_lzop()
 {
 	[ -x ${prefix}/bin/lzop -a "${force_install}" != yes ] && return
-	search_header lzo1.h lzo > /dev/null || install_native_lzo || return
+	print_header_path lzo1.h lzo > /dev/null || install_native_lzo || return
 	fetch lzop || return
 	unpack lzop || return
 	[ -f ${lzop_bld_dir}/Makefile ] ||
@@ -1874,8 +1874,8 @@ install_native_zstd()
 install_native_wget()
 {
 	[ -x ${prefix}/bin/wget -a "${force_install}" != yes ] && return
-	search_header libpsl.h > /dev/null || install_native_libpsl || return
-	search_header ssl.h openssl > /dev/null || install_native_openssl || return
+	print_header_path libpsl.h > /dev/null || install_native_libpsl || return
+	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch wget || return
 	unpack wget || return
 	[ -f ${wget_bld_dir}/Makefile ] ||
@@ -1891,7 +1891,7 @@ install_native_wget()
 install_native_pkg_config()
 {
 	[ -x ${prefix}/bin/pkg-config -a "${force_install}" != yes ] && return
-	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return
+	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
 	fetch pkg-config || return
 	unpack pkg-config || return
 	[ -f ${pkg_config_bld_dir}/Makefile ] ||
@@ -1922,7 +1922,7 @@ install_native_texinfo()
 install_native_coreutils()
 {
 	[ -x ${prefix}/bin/cat -a "${force_install}" != yes ] && return
-	search_header gmp.h > /dev/null || install_native_gmp || return
+	print_header_path gmp.h > /dev/null || install_native_gmp || return
 	fetch coreutils || return
 	unpack coreutils || return
 	[ -f ${coreutils_bld_dir}/Makefile ] ||
@@ -2034,7 +2034,7 @@ install_native_autogen()
 {
 	[ -x ${prefix}/bin/autogen -a "${force_install}" != yes ] && return
 	which pkg-config > /dev/null || install_native_pkg_config || return
-	search_header libguile.h > /dev/null || install_native_guile || return
+	print_header_path libguile.h > /dev/null || install_native_guile || return
 	fetch autogen || return
 	unpack autogen || return
 	[ -f ${autogen_bld_dir}/Makefile ] ||
@@ -2086,8 +2086,8 @@ install_native_sed()
 install_native_gawk()
 {
 	[ -x ${prefix}/bin/gawk -a "${force_install}" != yes ] && return
-	search_header readline.h readline > /dev/null || install_native_readline || return
-	search_header mpfr.h > /dev/null || install_native_mpfr || return
+	print_header_path readline.h readline > /dev/null || install_native_readline || return
+	print_header_path mpfr.h > /dev/null || install_native_mpfr || return
 	fetch gawk || return
 	unpack gawk || return
 	[ -f ${gawk_bld_dir}/Makefile ] ||
@@ -2104,7 +2104,7 @@ install_native_gawk()
 install_native_make()
 {
 	[ -x ${prefix}/bin/make -a "${force_install}" != yes ] && return
-	search_header libguile.h > /dev/null || install_native_guile || return
+	print_header_path libguile.h > /dev/null || install_native_guile || return
 	fetch make || return
 	unpack make || return
 	[ -f ${make_src_dir}/configure ] ||
@@ -2123,7 +2123,7 @@ install_native_make()
 install_native_binutils()
 {
 	[ -x ${prefix}/bin/${target}-as -a "${force_install}" != yes ] && return
-	search_header zlib.h > /dev/null || install_native_zlib || return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
 	fetch binutils || return
 	unpack binutils || return
 	[ -f ${binutils_bld_dir}/Makefile ] ||
@@ -2172,7 +2172,7 @@ install_native_systemtap()
 {
 	[ -x ${prefix}/bin/stap -a "${force_install}" != yes ] && return
 	which cpio > /dev/null || install_native_cpio || return
-	search_header libelf.h > /dev/null || install_native_elfutils || return
+	print_header_path libelf.h > /dev/null || install_native_elfutils || return
 	fetch systemtap || return
 	unpack systemtap || return
 	[ -f ${systemtap_bld_dir}/Makefile ] ||
@@ -2282,7 +2282,7 @@ install_native_dtc()
 install_native_u_boot()
 {
 	[ -x ${prefix}/bin/mkimage -a "${force_install}" != yes ] && return
-	search_header ssl.h openssl > /dev/null || install_native_openssl || return
+	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch u-boot || return
 	unpack u-boot || return
 	[ -f ${u_boot_bld_dir}/Makefile ] || cp -Tvr ${u_boot_src_dir} ${u_boot_bld_dir} || return
@@ -2365,7 +2365,7 @@ install_native_gmp()
 install_native_mpfr()
 {
 	[ -f ${prefix}/include/mpfr.h -a "${force_install}" != yes ] && return
-	search_header gmp.h > /dev/null || install_native_gmp || return
+	print_header_path gmp.h > /dev/null || install_native_gmp || return
 	fetch mpfr || return
 	unpack mpfr || return
 	[ -f ${mpfr_bld_dir}/Makefile ] ||
@@ -2386,7 +2386,7 @@ install_native_mpfr()
 install_native_mpc()
 {
 	[ -f ${prefix}/include/mpc.h -a "${force_install}" != yes ] && return
-	search_header mpfr.h > /dev/null || install_native_mpfr || return
+	print_header_path mpfr.h > /dev/null || install_native_mpfr || return
 	fetch mpc || return
 	unpack mpc || return
 	[ -f ${mpc_bld_dir}/Makefile ] ||
@@ -2404,7 +2404,7 @@ install_native_mpc()
 install_native_isl()
 {
 	[ -f ${prefix}/include/isl/version.h -a "${force_install}" != yes ] && return
-	search_header gmp.h > /dev/null || install_native_gmp || return
+	print_header_path gmp.h > /dev/null || install_native_gmp || return
 	fetch isl || return
 	unpack isl || return
 	[ -f ${isl_bld_dir}/Makefile ] ||
@@ -2420,11 +2420,11 @@ install_native_isl()
 install_native_gcc()
 {
 	[ -x ${prefix}/bin/gcc -a "${force_install}" != yes ] && return
-	search_header zlib.h > /dev/null || install_native_zlib || return
-	search_header gmp.h > /dev/null || install_native_gmp || return
-	search_header mpfr.h > /dev/null || install_native_mpfr || return
-	search_header mpc.h > /dev/null || install_native_mpc || return
-	search_header version.h isl > /dev/null || install_native_isl || return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path gmp.h > /dev/null || install_native_gmp || return
+	print_header_path mpfr.h > /dev/null || install_native_mpfr || return
+	print_header_path mpc.h > /dev/null || install_native_mpc || return
+	print_header_path version.h isl > /dev/null || install_native_isl || return
 	which perl > /dev/null || install_native_perl || return
 	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gcc || return
@@ -2569,11 +2569,11 @@ install_native_popt()
 install_native_babeltrace()
 {
 	[ -x ${prefix}/bin/babeltrace -a "${force_install}" != yes ] && return
-	search_header pcre.h > /dev/null || install_native_pcre || return
-	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return
-	search_header uuid.h uuid > /dev/null || install_native_util_linux || return
-	search_header popt.h > /dev/null || install_native_popt || return
-	search_header libelf.h > /dev/null || install_native_elfutils || return
+	print_header_path pcre.h > /dev/null || install_native_pcre || return
+	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
+	print_header_path uuid.h uuid > /dev/null || install_native_util_linux || return
+	print_header_path popt.h > /dev/null || install_native_popt || return
+	print_header_path libelf.h > /dev/null || install_native_elfutils || return
 	fetch babeltrace || return
 	unpack babeltrace || return
 	[ -f ${babeltrace_src_dir}/configure ] || (cd ${babeltrace_src_dir}; ./bootstrap) || return
@@ -2590,8 +2590,8 @@ install_native_babeltrace()
 install_native_gdb()
 {
 	[ -x ${prefix}/bin/gdb -a "${force_install}" != yes ] && return
-	search_header readline.h readline > /dev/null || install_native_readline || return
-	search_header curses.h > /dev/null || install_native_ncurses || return
+	print_header_path readline.h readline > /dev/null || install_native_readline || return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
 	search_library libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`.so > /dev/null || install_native_Python || return
 	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gdb || return
@@ -2683,7 +2683,7 @@ install_native_zlib()
 install_native_libpng()
 {
 	[ -f ${prefix}/include/png.h -a "${force_install}" != yes ] && return
-	search_header zlib.h > /dev/null || install_native_zlib || return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
 	fetch libpng || return
 	unpack libpng || return
 	[ -f ${libpng_bld_dir}/Makefile ] ||
@@ -2746,9 +2746,9 @@ install_native_giflib()
 install_native_libXpm()
 {
 	[ -f ${prefix}/include/X11/xpm.h -a "${force_install}" != yes ] && return
-	search_header Xproto.h X11 > /dev/null || install_native_xproto || return
-	search_header XKBproto.h X11 > /dev/null || install_native_kbproto || return
-	search_header Xlib.h X11 > /dev/null || install_native_libX11 || return
+	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
+	print_header_path XKBproto.h X11 > /dev/null || install_native_kbproto || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
 	fetch libXpm || return
 	unpack libXpm || return
 	[ -f ${libXpm_bld_dir}/Makefile ] ||
@@ -2764,10 +2764,10 @@ install_native_libXpm()
 install_native_libwebp()
 {
 	[ -f ${prefix}/include/webp/decode.h -a "${force_install}" != yes ] && return
-	search_header png.h > /dev/null || install_native_libpng || return
-	search_header tiff.h > /dev/null || install_native_tiff || return
-	search_header jpeglib.h > /dev/null || install_native_jpeg || return
-	search_header gif_lib.h > /dev/null || install_native_giflib || return
+	print_header_path png.h > /dev/null || install_native_libpng || return
+	print_header_path tiff.h > /dev/null || install_native_tiff || return
+	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return
+	print_header_path gif_lib.h > /dev/null || install_native_giflib || return
 	fetch libwebp || return
 	unpack libwebp || return
 	[ -f ${libwebp_bld_dir}/Makefile ] ||
@@ -2805,9 +2805,9 @@ install_native_libffi()
 install_native_glib()
 {
 	[ -f ${prefix}/include/glib-2.0/glib.h -a "${force_install}" != yes ] && return
-	search_header iconv.h > /dev/null || install_native_libiconv || return
-	search_header ffi.h > /dev/null || install_native_libffi || return
-	search_header pcre.h > /dev/null || install_native_pcre || return
+	print_header_path iconv.h > /dev/null || install_native_libiconv || return
+	print_header_path ffi.h > /dev/null || install_native_libffi || return
+	print_header_path pcre.h > /dev/null || install_native_pcre || return
 	which meson > /dev/null || install_native_meson || return
 	fetch glib || return
 	unpack glib || return
@@ -2850,8 +2850,8 @@ install_native_glib()
 #install_native_pango()
 #{
 #	[ -f ${prefix}/include/pango-1.0/pango/pango.h -a "${force_install}" != yes ] && return
-#	search_header cairo.h cairo > /dev/null || install_native_cairo || return
-#	search_header pixman.h pixman-1.0 > /dev/null || install_native_pixman || return
+#	print_header_path cairo.h cairo > /dev/null || install_native_cairo || return
+#	print_header_path pixman.h pixman-1.0 > /dev/null || install_native_pixman || return
 #	fetch pango || return
 #	unpack pango || return
 #	[ -f ${pango_src_dir}/Makefile ] ||
@@ -2866,7 +2866,7 @@ install_native_glib()
 #install_native_gdk_pixbuf()
 #{
 #	[ -f ${prefix}/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h -a "${force_install}" != yes ] && return
-#	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return
+#	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
 #	fetch gdk-pixbuf || return
 #	unpack gdk-pixbuf || return
 #	[ -f ${gdk_pixbuf_src_dir}/Makefile ] ||
@@ -2882,7 +2882,7 @@ install_native_glib()
 #install_native_atk()
 #{
 #	[ -f ${prefix}/include/atk-1.0/atk/atk.h -a "${force_install}" != yes ] && return
-#	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return
+#	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
 #	fetch atk || return
 #	unpack atk || return
 #	[ -f ${atk_src_dir}/Makefile ] ||
@@ -2898,7 +2898,7 @@ install_native_glib()
 #install_native_gobject_introspection()
 #{
 #	[ -d ${prefix}/include/gobject-introspection-1.0 -a "${force_install}" != yes ] && return
-#	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return
+#	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
 #	fetch gobject-introspection || return
 #	unpack gobject-introspection || return
 #	[ -f ${gobject_introspection_src_dir}/Makefile ] ||
@@ -2940,10 +2940,10 @@ install_native_glib()
 #install_native_libX11()
 #{
 #	[ -f ${prefix}/include/X11/Xlib.h -a "${force_install}" != yes ] && return
-#	search_header XI.h X11/extensions > /dev/null || install_native_inputproto || return
-#	search_header Xtrans.h X11/Xtrans > /dev/null || install_native_xtrans || return
-#	search_header lbx.h X11/extensions > /dev/null || install_native_xextproto || return
-#	search_header xcb.h xcb > /dev/null || install_native_libxcb || return
+#	print_header_path XI.h X11/extensions > /dev/null || install_native_inputproto || return
+#	print_header_path Xtrans.h X11/Xtrans > /dev/null || install_native_xtrans || return
+#	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
+#	print_header_path xcb.h xcb > /dev/null || install_native_libxcb || return
 #	fetch libX11 || return
 #	unpack libX11 || return
 #	[ -f ${libX11_src_dir}/Makefile ] ||
@@ -2997,7 +2997,7 @@ install_native_glib()
 #install_native_libXext()
 #{
 #	[ -f ${prefix}/include/X11/extensions/Xext.h -a "${force_install}" != yes ] && return
-#	search_header lbx.h X11/extensions > /dev/null || install_native_xextproto || return
+#	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
 #	fetch libXext || return
 #	unpack libXext || return
 #	[ -f ${libXext_src_dir}/Makefile ] ||
@@ -3024,7 +3024,7 @@ install_native_glib()
 #install_native_libXfixes()
 #{
 #	[ -f ${prefix}/include/X11/extensions/Xfixes.h -a "${force_install}" != yes ] && return
-#	search_header xfixesproto.h X11/extensions > /dev/null || install_native_fixesproto || return
+#	print_header_path xfixesproto.h X11/extensions > /dev/null || install_native_fixesproto || return
 #	fetch libXfixes || return
 #	unpack libXfixes || return
 #	[ -f ${libXfixes_src_dir}/Makefile ] ||
@@ -3051,8 +3051,8 @@ install_native_glib()
 #install_native_libXdamage()
 #{
 #	[ -f ${prefix}/include/X11/extensions/Xdamage.h -a "${force_install}" != yes ] && return
-#	search_header damageproto.h X11/extensions > /dev/null || install_native_damageproto || return
-#	search_header Xfixes.h X11/extensions > /dev/null || install_native_libXfixes || return
+#	print_header_path damageproto.h X11/extensions > /dev/null || install_native_damageproto || return
+#	print_header_path Xfixes.h X11/extensions > /dev/null || install_native_libXfixes || return
 #	fetch libXdamage || return
 #	unpack libXdamage || return
 #	[ -f ${libXdamage_src_dir}/Makefile ] ||
@@ -3128,7 +3128,7 @@ install_native_glib()
 #install_native_libdrm()
 #{
 #	[ -f ${prefix}/include/xf86drm.h -a "${force_install}" != yes ] && return
-#	search_header pciaccess.h > /dev/null || install_native_libpciaccess || return
+#	print_header_path pciaccess.h > /dev/null || install_native_libpciaccess || return
 #	fetch libdrm || return
 #	unpack libdrm || return
 #	[ -f ${libdrm_src_dir}/Makefile ] ||
@@ -3192,17 +3192,17 @@ install_native_glib()
 #install_native_mesa()
 #{
 #	[ -f ${prefix}/include/GL/gl.h -a "${force_install}" != yes ] && return
-#	search_header glxproto.h GL > /dev/null || install_native_glproto || return
-#	search_header xf86drm.h > /dev/null || install_native_libdrm || return
-#	search_header dri2proto.h X11/extensions > /dev/null || install_native_dri2proto || return
-#	search_header dri3proto.h X11/extensions > /dev/null || install_native_dri3proto || return
-#	search_header presentproto.h X11/extensions > /dev/null || install_native_presentproto || return
+#	print_header_path glxproto.h GL > /dev/null || install_native_glproto || return
+#	print_header_path xf86drm.h > /dev/null || install_native_libdrm || return
+#	print_header_path dri2proto.h X11/extensions > /dev/null || install_native_dri2proto || return
+#	print_header_path dri3proto.h X11/extensions > /dev/null || install_native_dri3proto || return
+#	print_header_path presentproto.h X11/extensions > /dev/null || install_native_presentproto || return
 #	[ -d ${prefix}/share/xcb ] || install_native_xcb_proto || return
-#	search_header xcb.h xcb > /dev/null || install_native_libxcb || return
-#	search_header xshmfence.h X11 > /dev/null || install_native_libxshmfence || return
-#	search_header Xext.h X11/extensions > /dev/null || install_native_libXext || return
-#	search_header Xdamage.h X11/extensions > /dev/null || install_native_libXdamage || return
-#	search_header Xlib.h X11 > /dev/null || install_native_libX11 || return
+#	print_header_path xcb.h xcb > /dev/null || install_native_libxcb || return
+#	print_header_path xshmfence.h X11 > /dev/null || install_native_libxshmfence || return
+#	print_header_path Xext.h X11/extensions > /dev/null || install_native_libXext || return
+#	print_header_path Xdamage.h X11/extensions > /dev/null || install_native_libXdamage || return
+#	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
 #	fetch mesa || return
 #	unpack mesa || return
 #	[ -f ${mesa_src_dir}/Makefile ] ||
@@ -3216,7 +3216,7 @@ install_native_glib()
 #install_native_libepoxy()
 #{
 #	[ -f ${prefix}/include/epoxy/egl.h -a "${force_install}" != yes ] && return
-#	search_header Core.h X11 > /dev/null || install_native_libXt || return
+#	print_header_path Core.h X11 > /dev/null || install_native_libXt || return
 #	fetch libepoxy || return
 #	unpack libepoxy || return
 #	[ -f ${libepoxy_src_dir}/Makefile ] ||
@@ -3230,12 +3230,12 @@ install_native_glib()
 #install_native_gtk()
 #{
 #	[ -f ${prefix}/include/gtk-3.0/gtk/gtk.h -a "${force_install}" != yes ] && return
-#	search_header glib.h glib-2.0 > /dev/null || install_native_glib || return
-#	search_header pango.h pango-1.0/pango > /dev/null || install_native_pango || return
-#	search_header gdk-pixbuf.h gdk-pixbuf-2.0/gdk-pixbuf > /dev/null || install_native_gdk_pixbuf || return
-#	search_header atk.h atk-1.0/atk > /dev/null || install_native_atk || return
-#	search_header giversionmacros.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return
-#	search_header egl.h epoxy > /dev/null || install_native_libepoxy || return
+#	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
+#	print_header_path pango.h pango-1.0/pango > /dev/null || install_native_pango || return
+#	print_header_path gdk-pixbuf.h gdk-pixbuf-2.0/gdk-pixbuf > /dev/null || install_native_gdk_pixbuf || return
+#	print_header_path atk.h atk-1.0/atk > /dev/null || install_native_atk || return
+#	print_header_path giversionmacros.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return
+#	print_header_path egl.h epoxy > /dev/null || install_native_libepoxy || return
 #	fetch gtk || return
 #	unpack gtk || return
 #	[ -f ${gtk_src_dir}/Makefile ] ||
@@ -3251,13 +3251,13 @@ install_native_glib()
 #install_native_webkitgtk()
 #{
 ##	[ -x ${prefix}/bin/gawk -a "${force_install}" != yes ] && return
-#	search_header gtk.h gtk-3.0/gtk > /dev/null || install_native_gtk || return
-#	search_header sqlite3.h > /dev/null || install_native_sqlite || return
-#	search_header png.h > /dev/null || install_native_libpng || return
-#	search_header tiff.h > /dev/null || install_native_tiff || return
-#	search_header jpeglib.h > /dev/null || install_native_jpeg || return
-#	search_header gif_lib.h > /dev/null || install_native_giflib || return
-#	search_header decode.h webp > /dev/null || install_native_libwebp || return
+#	print_header_path gtk.h gtk-3.0/gtk > /dev/null || install_native_gtk || return
+#	print_header_path sqlite3.h > /dev/null || install_native_sqlite || return
+#	print_header_path png.h > /dev/null || install_native_libpng || return
+#	print_header_path tiff.h > /dev/null || install_native_tiff || return
+#	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return
+#	print_header_path gif_lib.h > /dev/null || install_native_giflib || return
+#	print_header_path decode.h webp > /dev/null || install_native_libwebp || return
 #	fetch webkitgtk || return
 #	unpack webkitgtk || return
 #	[ -f ${webkitgtk_bld_dir}/Makefile ] ||
@@ -3277,13 +3277,13 @@ install_native_glib()
 install_native_emacs()
 {
 	[ -x ${prefix}/bin/emacs -a "${force_install}" != yes ] && return
-	search_header curses.h > /dev/null || install_native_ncurses || return
-	search_header zlib.h > /dev/null || install_native_zlib || return
-	search_header png.h > /dev/null || install_native_libpng || return
-	search_header tiff.h > /dev/null || install_native_tiff || return
-	search_header jpeglib.h > /dev/null || install_native_jpeg || return
-	search_header gif_lib.h > /dev/null || install_native_giflib || return
-	search_header xpm.h X11 > /dev/null || install_native_libXpm || return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path png.h > /dev/null || install_native_libpng || return
+	print_header_path tiff.h > /dev/null || install_native_tiff || return
+	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return
+	print_header_path gif_lib.h > /dev/null || install_native_giflib || return
+	print_header_path xpm.h X11 > /dev/null || install_native_libXpm || return
 	fetch emacs || return
 	unpack emacs || return
 	[ -f ${emacs_src_dir}/configure ] ||
@@ -3321,14 +3321,14 @@ install_native_libiconv()
 install_native_vim()
 {
 	[ -x ${prefix}/bin/vim -a "${force_install}" != yes ] && return
-	search_header curses.h > /dev/null || install_native_ncurses || return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
 	which gettext > /dev/null || install_native_gettext || return
-	search_header lua.h > /dev/null || install_native_lua || return
+	print_header_path lua.h > /dev/null || install_native_lua || return
 	search_library libperl.so > /dev/null || install_native_perl || return
-	search_header Python.h python`python --version 2>&1 | grep -oe '[[:digit:]]\.[[:digit:]]'` > /dev/null || (install_native_Python2) || return
-	search_header Python.h python`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'` > /dev/null || install_native_Python || return
+	print_header_path Python.h python`python --version 2>&1 | grep -oe '[[:digit:]]\.[[:digit:]]'` > /dev/null || (install_native_Python2) || return
+	print_header_path Python.h python`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'` > /dev/null || install_native_Python || return
 	search_library tclConfig.sh > /dev/null || install_native_tcl || return
-	search_header ruby.h > /dev/null || install_native_ruby || return
+	print_header_path ruby.h > /dev/null || install_native_ruby || return
 	fetch vim || return
 	unpack vim || return
 	[ -f ${vim_bld_dir}/configure ] || cp -Tvr ${vim_src_dir} ${vim_bld_dir} || return
@@ -3428,7 +3428,7 @@ install_native_dein()
 install_native_grep()
 {
 	[ -x ${prefix}/bin/grep -a "${force_install}" != yes ] && return
-	search_header pcre.h > /dev/null || install_native_pcre || return
+	print_header_path pcre.h > /dev/null || install_native_pcre || return
 	fetch grep || return
 	unpack grep || return
 	[ -f ${grep_bld_dir}/Makefile ] ||
@@ -3443,7 +3443,7 @@ install_native_grep()
 install_native_global()
 {
 	[ -x ${prefix}/bin/global -a "${force_install}" != yes ] && return
-	search_header curses.h > /dev/null || install_native_ncurses || return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
 	fetch global || return
 	unpack global || return
 	[ -f ${global_bld_dir}/Makefile ] ||
@@ -3459,9 +3459,9 @@ install_native_global()
 install_native_pcre()
 {
 	[ -f ${prefix}/include/pcre.h -a "${force_install}" != yes ] && return
-	search_header zlib.h > /dev/null || install_native_zlib || return
-	search_header bzlib.h > /dev/null || install_native_bzip2 || return
-	search_header readline.h readline > /dev/null || install_native_readline || return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path bzlib.h > /dev/null || install_native_bzip2 || return
+	print_header_path readline.h readline > /dev/null || install_native_readline || return
 	fetch pcre || return
 	unpack pcre || return
 	[ -f ${pcre_bld_dir}/Makefile ] ||
@@ -3481,7 +3481,7 @@ install_native_pcre()
 install_native_pcre2()
 {
 	[ -f ${prefix}/include/pcre2.h -a "${force_install}" != yes ] && return
-	search_header bzlib.h > /dev/null || install_native_bzip2 || return
+	print_header_path bzlib.h > /dev/null || install_native_bzip2 || return
 	fetch pcre2 || return
 	unpack pcre2 || return
 	[ -f ${pcre2_bld_dir}/Makefile ] ||
@@ -3501,9 +3501,9 @@ install_native_pcre2()
 install_native_the_silver_searcher()
 {
 	[ -x ${prefix}/bin/ag -a "${force_install}" != yes ] && return
-	search_header pcre.h > /dev/null || install_native_pcre || return
-	search_header zlib.h > /dev/null || install_native_zlib || return
-	search_header lzma.h > /dev/null || install_native_xz || return
+	print_header_path pcre.h > /dev/null || install_native_pcre || return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path lzma.h > /dev/null || install_native_xz || return
 	fetch the_silver_searcher || return
 	unpack the_silver_searcher || return
 	[ -f ${the_silver_searcher_src_dir}/configure ] ||
@@ -3665,7 +3665,7 @@ install_native_procps()
 install_native_less()
 {
 	[ -x ${prefix}/bin/less -a "${force_install}" != yes ] && return
-	search_header curses.h > /dev/null || install_native_ncurses || return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
 	fetch less || return
 	unpack less || return
 	[ -f ${less_bld_dir}/Makefile ] ||
@@ -3724,8 +3724,8 @@ install_native_libpipeline()
 install_native_man_db()
 {
 	[ -x ${prefix}/bin/man -a "${force_install}" != yes ] && return
-	search_header gdbm.h > /dev/null || install_native_gdbm || return
-	search_header pipeline.h > /dev/null || install_native_libpipeline || return
+	print_header_path gdbm.h > /dev/null || install_native_gdbm || return
+	print_header_path pipeline.h > /dev/null || install_native_libpipeline || return
 	fetch man-db || return
 	unpack man-db || return
 	[ -f ${man_db_bld_dir}/Makefile ] ||
@@ -3772,7 +3772,7 @@ install_native_source_highlight()
 install_native_screen()
 {
 	[ -x ${prefix}/bin/screen -a "${force_install}" != yes ] && return
-	search_header curses.h > /dev/null || install_native_ncurses || return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
 	fetch screen || return
 	unpack screen || return
 	[ -f ${screen_bld_dir}/Makefile ] ||
@@ -3807,8 +3807,8 @@ install_native_libevent()
 install_native_tmux()
 {
 	[ -x ${prefix}/bin/tmux -a "${force_install}" != yes ] && return
-	search_header curses.h > /dev/null || install_native_ncurses || return
-	search_header event.h event2 > /dev/null || install_native_libevent || return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
+	print_header_path event.h event2 > /dev/null || install_native_libevent || return
 	fetch tmux || return
 	unpack tmux || return
 	[ -f ${tmux_bld_dir}/Makefile ] ||
@@ -3857,7 +3857,7 @@ install_native_dejagnu()
 install_native_zsh()
 {
 	[ -x ${prefix}/bin/zsh -a "${force_install}" != yes ] && return
-	search_header curses.h > /dev/null || install_native_ncurses || return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
 	fetch zsh || return
 	unpack zsh || return
 	[ -f ${zsh_bld_dir}/configure ] || cp -Tvr ${zsh_src_dir} ${zsh_bld_dir} || return
@@ -3970,8 +3970,8 @@ install_native_openssl()
 install_native_openssh()
 {
 	[ -x ${prefix}/bin/ssh -a "${force_install}" != yes ] && return
-	search_header zlib.h > /dev/null || install_native_zlib || return
-	search_header ssl.h openssl > /dev/null || install_native_openssl || return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch openssh || return
 	unpack openssh || return
 	[ -f ${openssh_bld_dir}/Makefile ] ||
@@ -4000,7 +4000,7 @@ install_native_nghttp2()
 install_native_curl()
 {
 	[ -x ${prefix}/bin/curl -a "${force_install}" != yes ] && return
-	search_header ssl.h openssl > /dev/null || install_native_openssl || return
+	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch curl || return
 	unpack curl || return
 	(cd ${curl_bld_dir}
@@ -4054,7 +4054,7 @@ install_native_asciidoc()
 install_native_libxml2()
 {
 	[ -d ${prefix}/include/libxml2 -a "${force_install}" != yes ] && return
-	search_header Python.h > /dev/null || install_native_Python || return
+	print_header_path Python.h > /dev/null || install_native_Python || return
 	fetch libxml2 || return
 	unpack libxml2 || return
 	[ -f ${libxml2_bld_dir}/Makefile ] ||
@@ -4071,7 +4071,7 @@ install_native_libxml2()
 install_native_libxslt()
 {
 	[ -d ${prefix}/include/libxslt -a "${force_install}" != yes ] && return
-	search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
+	print_header_path xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
 	fetch libxslt || return
 	unpack libxslt || return
 	[ -f ${libxslt_bld_dir}/Makefile ] ||
@@ -4087,7 +4087,7 @@ install_native_libxslt()
 install_native_xmlto()
 {
 	[ -x ${prefix}/bin/xmlto -a "${force_install}" != yes ] && return
-	search_header xslt.h libxslt > /dev/null || install_native_libxslt || return
+	print_header_path xslt.h libxslt > /dev/null || install_native_libxslt || return
 	fetch xmlto || return
 	unpack xmlto || return
 	[ -f ${xmlto_bld_dir}/Makefile ] ||
@@ -4119,11 +4119,11 @@ install_native_git()
 {
 	[ -x ${prefix}/bin/git -a "${force_install}" != yes ] && return
 	which autoconf > /dev/null || install_native_autoconf || return
-	search_header zlib.h > /dev/null || install_native_zlib || return
-	search_header ssl.h openssl > /dev/null || install_native_openssl || return
-	search_header curl.h curl > /dev/null || install_native_curl || return
-	search_header expat.h > /dev/null || install_native_expat || return
-	search_header pcre2.h > /dev/null || install_native_pcre2 || return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
+	print_header_path curl.h curl > /dev/null || install_native_curl || return
+	print_header_path expat.h > /dev/null || install_native_expat || return
+	print_header_path pcre2.h > /dev/null || install_native_pcre2 || return
 	which asciidoc > /dev/null || install_native_asciidoc || return
 	which xmlto > /dev/null || install_native_xmlto || install_native_git_manpages || return
 	which msgfmt > /dev/null || install_native_gettext || return
@@ -4205,8 +4205,8 @@ install_native_apr()
 install_native_apr_util()
 {
 	[ -f ${prefix}/include/apr-1/apu.h -a "${force_install}" != yes ] && return
-	search_header apr.h apr-1 > /dev/null || install_native_apr || return
-	search_header sqlite3.h > /dev/null || install_native_sqlite || return
+	print_header_path apr.h apr-1 > /dev/null || install_native_apr || return
+	print_header_path sqlite3.h > /dev/null || install_native_sqlite || return
 	fetch apr-util || return
 	unpack apr-util || return
 	[ -f ${apr_util_bld_dir}/Makefile ] ||
@@ -4235,11 +4235,11 @@ install_native_utf8proc()
 install_native_subversion()
 {
 	[ -x ${prefix}/bin/svn -a "${force_install}" != yes ] && return
-	search_header apr.h apr-1 > /dev/null || install_native_apr || return
-	search_header apu.h apr-1 > /dev/null || install_native_apr_util || return
-	search_header zlib.h > /dev/null || install_native_zlib || return
-	search_header ssl.h openssl > /dev/null || install_native_openssl || return
-	search_header utf8proc.h > /dev/null || install_native_utf8proc || return
+	print_header_path apr.h apr-1 > /dev/null || install_native_apr || return
+	print_header_path apu.h apr-1 > /dev/null || install_native_apr_util || return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
+	print_header_path utf8proc.h > /dev/null || install_native_utf8proc || return
 	which python3 > /dev/null || install_native_Python || return
 	which perl > /dev/null || install_native_perl || return
 	which ruby > /dev/null || install_native_ruby || return
@@ -4294,10 +4294,10 @@ sys.exit(int(not d in sys.path))" || update_path || return
 install_native_cmake()
 {
 	[ -x ${prefix}/bin/cmake -a "${force_install}" != yes ] && return
-	search_header curl.h curl > /dev/null || install_native_curl || return
-	search_header zlib.h > /dev/null || install_native_zlib || return
-	search_header bzlib.h > /dev/null || install_native_bzip2 || return
-	search_header lzma.h > /dev/null || install_native_xz || return
+	print_header_path curl.h curl > /dev/null || install_native_curl || return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path bzlib.h > /dev/null || install_native_bzip2 || return
+	print_header_path lzma.h > /dev/null || install_native_xz || return
 	fetch cmake || return
 	unpack cmake || return
 	[ -f ${cmake_bld_dir}/Makefile ] ||
@@ -4368,7 +4368,7 @@ install_native_ccache()
 install_native_libedit()
 {
 	[ -f ${prefix}/include/histedit.h -a "${force_install}" != yes ] && return
-	search_header curses.h > /dev/null || install_native_ncurses || return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
 	fetch libedit || return
 	unpack libedit || return
 	[ -f ${libedit_bld_dir}/Makefile ] ||
@@ -4385,7 +4385,7 @@ install_native_libedit()
 install_native_swig()
 {
 	[ -x ${prefix}/bin/swig -a "${force_install}" != yes ] && return
-	search_header pcre.h > /dev/null || install_native_pcre || return
+	print_header_path pcre.h > /dev/null || install_native_pcre || return
 	fetch swig || return
 	unpack swig || return
 	[ -f ${swig_bld_dir}/Makefile ] ||
@@ -4421,7 +4421,7 @@ install_native_compiler_rt()
 {
 	[ -d ${prefix}/include/sanitizer -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
-	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
+	print_header_path llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	fetch compiler-rt || return
 	unpack compiler-rt || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -4460,7 +4460,7 @@ install_native_libcxxabi()
 	[ -e ${prefix}/lib/libc++abi.so -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	search_library libunwind.so > /dev/null || install_native_libunwind || return
-	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
+	print_header_path llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	fetch libcxx || return
 	unpack libcxx || return
 	fetch libcxxabi || return
@@ -4502,11 +4502,11 @@ install_native_clang()
 {
 	[ -x ${prefix}/bin/clang -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
-	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
-	search_header allocator_interface.h sanitizer > /dev/null || install_native_compiler_rt || return
+	print_header_path llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
+	print_header_path allocator_interface.h sanitizer > /dev/null || install_native_compiler_rt || return
 	search_library libunwind.so > /dev/null || install_native_libunwind || return
 	search_library libc++abi.so > /dev/null || install_native_libcxxabi || return
-	search_header iostream c++/v1 > /dev/null || install_native_libcxx || return
+	print_header_path iostream c++/v1 > /dev/null || install_native_libcxx || return
 	fetch clang || return
 	unpack clang || return
 	fetch clang-tools-extra || return
@@ -4559,9 +4559,9 @@ install_native_lldb()
 {
 	[ -x ${prefix}/bin/lldb -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
-	search_header curses.h > /dev/null || install_native_ncurses || return
-	search_header histedit.h > /dev/null || install_native_libedit || return
-	search_header xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
+	print_header_path histedit.h > /dev/null || install_native_libedit || return
+	print_header_path xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
 	which swig > /dev/null || install_native_swig || return
 	fetch lldb || return
 	unpack lldb || return
@@ -4581,7 +4581,7 @@ install_native_cling()
 {
 	[ -x ${prefix}/bin/cling -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
-	search_header llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
+	print_header_path llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	fetch cling || return
 	unpack cling || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -4610,7 +4610,7 @@ install_native_ccls()
 install_native_boost()
 {
 	[ -d ${prefix}/include/boost -a "${force_install}" != yes ] && return
-	search_header bzlib.h > /dev/null || install_native_bzip2 || return
+	print_header_path bzlib.h > /dev/null || install_native_bzip2 || return
 	fetch boost || return
 	unpack boost || return
 	(cd ${boost_src_dir}
@@ -4626,10 +4626,10 @@ install_cross_gcc_without_headers()
 	[ -x ${prefix}/bin/${target}-gcc -a "${force_install}" != yes ] && return
 	[ `check_platform ${build} ${host} ${target}` = cross ] || return
 	which ${target}-as > /dev/null || install_native_binutils || return
-	search_header gmp.h > /dev/null || install_native_gmp || return
-	search_header mpfr.h > /dev/null || install_native_mpfr || return
-	search_header mpc.h > /dev/null || install_native_mpc || return
-	search_header version.h isl > /dev/null || install_native_isl || return
+	print_header_path gmp.h > /dev/null || install_native_gmp || return
+	print_header_path mpfr.h > /dev/null || install_native_mpfr || return
+	print_header_path mpc.h > /dev/null || install_native_mpc || return
+	print_header_path version.h isl > /dev/null || install_native_isl || return
 	which perl > /dev/null || install_native_perl || return
 	fetch gcc || return
 	unpack gcc || return
@@ -4775,10 +4775,10 @@ install_cross_functional_gcc()
 {
 	[ `check_platform ${build} ${host} ${target}` = cross ] || return
 	which ${target}-as > /dev/null || install_native_binutils || return
-	search_header gmp.h > /dev/null || install_native_gmp || return
-	search_header mpfr.h > /dev/null || install_native_mpfr || return
-	search_header mpc.h > /dev/null || install_native_mpc || return
-	search_header version.h isl > /dev/null || install_native_isl || return
+	print_header_path gmp.h > /dev/null || install_native_gmp || return
+	print_header_path mpfr.h > /dev/null || install_native_mpfr || return
+	print_header_path mpc.h > /dev/null || install_native_mpc || return
+	print_header_path version.h isl > /dev/null || install_native_isl || return
 	which perl > /dev/null || install_native_perl || return
 	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gcc || return
@@ -4842,9 +4842,9 @@ install_native_Python2()
 install_native_Python()
 {
 	[ -x ${prefix}/bin/python3 -a "${force_install}" != yes ] && return
-	search_header expat.h > /dev/null || install_native_expat || return
-	search_header ffi.h > /dev/null || install_native_libffi || return
-	search_header ssl.h openssl > /dev/null || install_native_openssl || return
+	print_header_path expat.h > /dev/null || install_native_expat || return
+	print_header_path ffi.h > /dev/null || install_native_libffi || return
+	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch Python || return
 	unpack Python || return
 	[ -f ${Python_bld_dir}/Makefile ] ||
@@ -4880,7 +4880,7 @@ install_native_rustc()
 	which curl > /dev/null || install_native_curl || return
 	which git > /dev/null || install_native_git || return
 	which pkg-config > /dev/null || install_native_pkg_config || return
-	search_header ssl.h openssl > /dev/null || install_native_openssl || return
+	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch rustc || return
 	unpack rustc || return
 	(cd ${rustc_src_dir}
@@ -5033,7 +5033,7 @@ install_native_libunistring()
 install_native_libidn2()
 {
 	[ -f ${prefix}/include/idn2.h -a "${force_install}" != yes ] && return
-	search_header unistr.h > /dev/null || install_native_libunistring || return
+	print_header_path unistr.h > /dev/null || install_native_libunistring || return
 	fetch libidn2 || return
 	unpack libidn2 || return
 	[ -f ${libidn2_bld_dir}/Makefile ] ||
@@ -5049,7 +5049,7 @@ install_native_libidn2()
 install_native_libpsl()
 {
 	[ -f ${prefix}/include/libpsl.h -a "${force_install}" != yes ] && return
-	search_header idn2.h > /dev/null || install_native_libidn2 || return
+	print_header_path idn2.h > /dev/null || install_native_libidn2 || return
 	fetch libpsl || return
 	unpack libpsl || return
 	[ -f ${libpsl_bld_dir}/Makefile ] ||
@@ -5081,7 +5081,7 @@ install_native_libatomic_ops()
 install_native_gc()
 {
 	[ -f ${prefix}/include/gc.h -a "${force_install}" != yes ] && return
-	search_header atomic_ops.h > /dev/null || install_native_libatomic_ops || return
+	print_header_path atomic_ops.h > /dev/null || install_native_libatomic_ops || return
 	fetch gc || return
 	unpack gc || return
 	[ -f ${gc_bld_dir}/Makefile ] ||
@@ -5099,10 +5099,10 @@ install_native_gc()
 install_native_guile()
 {
 	[ -x ${prefix}/bin/guile -a "${force_install}" != yes ] && return
-	search_header gmp.h > /dev/null || install_native_gmp || return
-	search_header unistr.h > /dev/null || install_native_libunistring || return
-	search_header ffi.h > /dev/null || install_native_libffi || return
-	search_header gc.h > /dev/null || install_native_gc || return
+	print_header_path gmp.h > /dev/null || install_native_gmp || return
+	print_header_path unistr.h > /dev/null || install_native_libunistring || return
+	print_header_path ffi.h > /dev/null || install_native_libffi || return
+	print_header_path gc.h > /dev/null || install_native_gc || return
 	fetch guile || return
 	unpack guile || return
 	[ -f ${guile_bld_dir}/Makefile ] ||
@@ -5121,7 +5121,7 @@ install_native_guile()
 install_native_lua()
 {
 	[ -x ${prefix}/bin/lua -a "${force_install}" != yes ] && return
-	search_header readline.h readline > /dev/null || install_native_readline || return
+	print_header_path readline.h readline > /dev/null || install_native_readline || return
 	fetch lua || return
 	unpack lua || return
 	patch -N -p0 -d ${lua_src_dir} <<'EOF' || [ $? = 1 ] || return
@@ -5289,8 +5289,8 @@ install_native_libav()
 {
 	[ -x ${prefix}/bin/avconv -a "${force_install}" != yes ] && return
 	which yasm > /dev/null || install_native_yasm || return
-	search_header x264.h > /dev/null || install_native_x264 || return
-	search_header x265.h > /dev/null || install_native_x265 || return
+	print_header_path x264.h > /dev/null || install_native_x264 || return
+	print_header_path x265.h > /dev/null || install_native_x265 || return
 	fetch libav || return
 	unpack libav || return
 	(cd ${libav_bld_dir}
@@ -5339,9 +5339,9 @@ install_native_opencv()
 {
 	[ -f ${prefix}/include/opencv`echo ${opencv_ver} | cut -d. -f1`/opencv2/opencv.hpp -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
-	search_header png.h > /dev/null || install_native_libpng || return # systemのlibpngだと古くて新規インストール必須かも。
-	search_header tiff.h > /dev/null || install_native_tiff || return
-	search_header jpeglib.h > /dev/null || install_native_jpeg || return # systemのlibjpegだと古くて新規インストール必須かも。
+	print_header_path png.h > /dev/null || install_native_libpng || return # systemのlibpngだと古くて新規インストール必須かも。
+	print_header_path tiff.h > /dev/null || install_native_tiff || return
+	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return # systemのlibjpegだと古くて新規インストール必須かも。
 	fetch opencv || return
 	unpack opencv || return
 	fetch opencv_contrib || return
@@ -5431,7 +5431,7 @@ install_native_libpcap()
 install_native_tcpdump()
 {
 	[ -x ${prefix}/sbin/tcpdump -a "${force_install}" != yes ] && return
-	search_header pcap.h pcap > /dev/null || install_native_libpcap || return
+	print_header_path pcap.h pcap > /dev/null || install_native_libpcap || return
 	fetch tcpdump || return
 	unpack tcpdump || return
 	[ -f ${tcpdump_bld_dir}/Makefile ] ||
@@ -5493,7 +5493,7 @@ install_native_libgpg_error()
 install_native_libgcrypt()
 {
 	[ -f ${prefix}/include/gcrypt.h -a "${force_install}" != yes ] && return
-	search_header gpg-error.h > /dev/null || install_native_libgpg_error || return
+	print_header_path gpg-error.h > /dev/null || install_native_libgpg_error || return
 	fetch libgcrypt || return
 	unpack libgcrypt || return
 	[ -f ${libgcrypt_bld_dir}/Makefile ] ||
@@ -5508,7 +5508,7 @@ install_native_libgcrypt()
 install_native_libksba()
 {
 	[ -f ${prefix}/include/ksba.h -a "${force_install}" != yes ] && return
-	search_header gpg-error.h > /dev/null || install_native_libgpg_error || return
+	print_header_path gpg-error.h > /dev/null || install_native_libgpg_error || return
 	fetch libksba || return
 	unpack libksba || return
 	[ -f ${libksba_bld_dir}/Makefile ] ||
@@ -5523,7 +5523,7 @@ install_native_libksba()
 install_native_libassuan()
 {
 	[ -f ${prefix}/include/assuan.h -a "${force_install}" != yes ] && return
-	search_header gpg-error.h > /dev/null || install_native_libgpg_error || return
+	print_header_path gpg-error.h > /dev/null || install_native_libgpg_error || return
 	fetch libassuan || return
 	unpack libassuan || return
 	[ -f ${libassuan_bld_dir}/Makefile ] ||
@@ -5538,16 +5538,16 @@ install_native_libassuan()
 install_native_gnupg()
 {
 	[ -x ${prefix}/bin/gpg -a "${force_install}" != yes ] && return
-	search_header npth.h > /dev/null || install_native_npth || return
-	search_header gpg-error.h > /dev/null || install_native_libgpg_error || return
-	search_header gcrypt.h > /dev/null || install_native_libgcrypt || return
-	search_header ksba.h > /dev/null || install_native_libksba || return
-	search_header assuan.h > /dev/null || install_native_libassuan || return
-	search_header zlib.h > /dev/null || install_native_zlib || return
-	search_header bzlib.h > /dev/null || install_native_bzip2 || return
-	search_header curses.h > /dev/null || install_native_ncurses || return
-	search_header readline.h readline > /dev/null || install_native_readline || return
-	search_header sqlite3.h > /dev/null || install_native_sqlite || return
+	print_header_path npth.h > /dev/null || install_native_npth || return
+	print_header_path gpg-error.h > /dev/null || install_native_libgpg_error || return
+	print_header_path gcrypt.h > /dev/null || install_native_libgcrypt || return
+	print_header_path ksba.h > /dev/null || install_native_libksba || return
+	print_header_path assuan.h > /dev/null || install_native_libassuan || return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path bzlib.h > /dev/null || install_native_bzip2 || return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
+	print_header_path readline.h readline > /dev/null || install_native_readline || return
+	print_header_path sqlite3.h > /dev/null || install_native_sqlite || return
 	fetch gnupg || return
 	unpack gnupg || return
 	[ -f ${gnupg_bld_dir}/Makefile ] ||
