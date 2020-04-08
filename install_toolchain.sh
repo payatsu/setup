@@ -1354,10 +1354,6 @@ set_src_directory()
 		eval ${_1}_bld_dir_crs_1st=\${${_1}_src_base}/${target}-\${${_1}_name}-1st
 		eval ${_1}_bld_dir_crs_2nd=\${${_1}_src_base}/${target}-\${${_1}_name}-2nd
 		;;
-	linux)
-		eval ${_1}_src_dir_ntv=\${${_1}_src_base}/\${${_1}_name}-src
-		eval ${_1}_src_dir_crs=\${${_1}_src_base}/${target}-\${${_1}_name}-src
-		;;
 	jpeg)
 		eval ${_1}_src_dir=\${${_1}_src_base}/${_1}-\`echo \${${_1}_ver} \| sed -e 's/^v//'\`
 		eval ${_1}_bld_dir=\${${_1}_src_base}/${_1}-\`echo \${${_1}_ver} \| sed -e 's/^v//'\`-bld-${host}`[ ${host} != ${target} ] && echo -${target}`
@@ -2235,18 +2231,18 @@ install_native_rsync()
 install_native_linux_header()
 {
 	fetch linux || return
-	[ -d ${linux_src_dir_ntv} ] ||
-		(unpack linux &&
-			mv -v ${linux_src_dir} ${linux_src_dir_ntv}) || return
-	make -C ${linux_src_dir_ntv} -j ${jobs} V=1 mrproper || return
+	unpack linux || return
+	make -C ${linux_src_dir} -j ${jobs} V=1 O=${linux_bld_dir} mrproper || return
 	case ${host} in
 	arm*)        native_linux_arch=arm;;
+	aarch64*)    native_linux_arch=arm64;;
 	i?86*)       native_linux_arch=x86;;
 	microblaze*) native_linux_arch=microblaze;;
+	nios2*)      native_linux_arch=nios2;;
 	x86_64*)     native_linux_arch=x86;;
 	*) echo Unknown build architecture: ${host} >&2; return 1;;
 	esac
-	make -C ${linux_src_dir_ntv} -j ${jobs} V=1 \
+	make -C ${linux_src_dir} -j ${jobs} V=1 O=${linux_bld_dir} \
 		ARCH=${native_linux_arch} INSTALL_HDR_PATH=${DESTDIR}${prefix} headers_install || return
 }
 
@@ -4672,11 +4668,9 @@ install_cross_linux_header()
 	[ -d ${sysroot}/usr/include/linux -a "${force_install}" != yes ] && return
 	which ${target}-gcc > /dev/null || install_cross_gcc_without_headers || return
 	fetch linux || return
-	[ -d ${linux_src_dir_crs} ] ||
-		(unpack linux &&
-			mv -v ${linux_src_dir} ${linux_src_dir_crs}) || return
-	make -C ${linux_src_dir_crs} -j ${jobs} V=1 mrproper || return
-	make -C ${linux_src_dir_crs} -j ${jobs} V=1 \
+	unpack linux || return
+	make -C ${linux_src_dir} -j ${jobs} V=1 O=${linux_bld_dir} mrproper || return
+	make -C ${linux_src_dir} -j ${jobs} V=1 O=${linux_bld_dir} \
 		ARCH=${cross_linux_arch} INSTALL_HDR_PATH=${DESTDIR}${sysroot}/usr headers_install || return
 }
 
