@@ -1374,13 +1374,13 @@ set_variables()
 	[ "${strip}" = strip ] || cmake_build_type=Debug
 
 	case ${target} in
-	arm*)        cross_linux_arch=arm;;
-	aarch64*)    cross_linux_arch=arm64;;
-	i?86*)       cross_linux_arch=x86;;
-	microblaze*) cross_linux_arch=microblaze;;
-	nios2*)      cross_linux_arch=nios2;;
-	x86_64*)     cross_linux_arch=x86;;
-	*)           cross_linux_arch=unknown; echo Unknown target architecture: ${target} >&2;;
+	arm*)        linux_arch=arm;;
+	aarch64*)    linux_arch=arm64;;
+	i?86*)       linux_arch=x86;;
+	microblaze*) linux_arch=microblaze;;
+	nios2*)      linux_arch=nios2;;
+	x86_64*)     linux_arch=x86;;
+	*)           linux_arch=unknown; echo Unknown target architecture: ${target} >&2;;
 	esac
 
 	for pkg in `sed -e '
@@ -2233,17 +2233,8 @@ install_native_linux_header()
 	fetch linux || return
 	unpack linux || return
 	make -C ${linux_src_dir} -j ${jobs} V=1 O=${linux_bld_dir} mrproper || return
-	case ${host} in
-	arm*)        native_linux_arch=arm;;
-	aarch64*)    native_linux_arch=arm64;;
-	i?86*)       native_linux_arch=x86;;
-	microblaze*) native_linux_arch=microblaze;;
-	nios2*)      native_linux_arch=nios2;;
-	x86_64*)     native_linux_arch=x86;;
-	*) echo Unknown build architecture: ${host} >&2; return 1;;
-	esac
 	make -C ${linux_src_dir} -j ${jobs} V=1 O=${linux_bld_dir} \
-		ARCH=${native_linux_arch} INSTALL_HDR_PATH=${DESTDIR}${prefix} headers_install || return
+		ARCH=${linux_arch} INSTALL_HDR_PATH=${DESTDIR}${prefix} headers_install || return
 }
 
 install_native_kmod()
@@ -4671,7 +4662,7 @@ install_cross_linux_header()
 	unpack linux || return
 	make -C ${linux_src_dir} -j ${jobs} V=1 O=${linux_bld_dir} mrproper || return
 	make -C ${linux_src_dir} -j ${jobs} V=1 O=${linux_bld_dir} \
-		ARCH=${cross_linux_arch} INSTALL_HDR_PATH=${DESTDIR}${sysroot}/usr headers_install || return
+		ARCH=${linux_arch} INSTALL_HDR_PATH=${DESTDIR}${sysroot}/usr headers_install || return
 }
 
 install_cross_glibc()
@@ -4683,7 +4674,7 @@ install_cross_glibc()
 	fetch glibc || return
 	unpack glibc || return
 
-	[ ${cross_linux_arch} != microblaze ] ||
+	[ ${linux_arch} != microblaze ] ||
 		patch -N -p0 -d ${glibc_src_dir} <<EOF || [ $? = 1 ] || return
 --- sysdeps/unix/sysv/linux/microblaze/sysdep.h
 +++ sysdeps/unix/sysv/linux/microblaze/sysdep.h
