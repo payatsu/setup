@@ -1280,7 +1280,7 @@ reset()
 # Reset '${prefix}' except '${prefix}/src'.
 {
 	clean || return
-	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src ! -name .git -exec rm -fvr '{}' +
+	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src ! -name .git -exec sh -c 'chmod -Rv u+w {}; rm -fvr {}' \;
 	[ `whoami` = root ] && rm -fv /etc/ld.so.conf.d/`basename ${prefix}`.conf
 	[ `whoami` = root ] && ldconfig || true
 }
