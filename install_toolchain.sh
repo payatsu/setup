@@ -160,7 +160,7 @@
 : ${Python2_ver:=2.7.17}
 : ${rustc_ver:=1.42.0}
 : ${rustup_ver:=1.21.1}
-: ${ruby_ver:=2.7.0}
+: ${ruby_ver:=2.7.1}
 : ${go_ver:=1.14.1}
 : ${perl_ver:=5.30.1}
 : ${tcl_ver:=8.6.9}
@@ -4935,10 +4935,13 @@ install_native_ruby()
 	make -C ${ruby_bld_dir} -j ${jobs} V=1 install || return
 	update_path || return
 	gem update || return
+	mkdir -pv ${DESTDIR}${prefix}/lib/pkgconfig || return
+	ruby_platform=`grep -e '^arch =' -m 1 ${ruby_bld_dir}/Makefile | grep -oe '[[:graph:]]\+$'`
+	ln -fsv ${ruby_platform}/pkgconfig/ruby-`print_version ruby`.pc ${DESTDIR}${prefix}/lib/pkgconfig || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/ruby || return
-	strip -v ${DESTDIR}${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_bld_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/libruby.so || return
-	find ${DESTDIR}${prefix}/lib/`grep -e '^arch =' -m 1 ${ruby_bld_dir}/Makefile | grep -oe '[[:graph:]]\+$'`/ruby/`print_version ruby`.0 -type f -name '*.so' -exec strip -v {} + || return
+	strip -v ${DESTDIR}${prefix}/lib/${ruby_platform}/libruby.so || return
+	find ${DESTDIR}${prefix}/lib/${ruby_platform}/ruby/`print_version ruby`.0 -type f -name '*.so' -exec strip -v {} + || return
 }
 
 install_native_go()
