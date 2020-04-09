@@ -4698,7 +4698,7 @@ EOF
 	[ -f ${glibc_bld_dir_crs}/Makefile ] ||
 		(cd ${glibc_bld_dir_crs}
 		${glibc_src_dir}/configure --prefix=/usr --build=${build} --host=${target} \
-			--with-headers=${DESTDIR}${sysroot}/usr/include CFLAGS="${CFLAGS} -Wno-error=parentheses -O2" \
+			--with-headers=${DESTDIR}${sysroot}/usr/include \
 			libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return
 	make -C ${glibc_bld_dir_crs} -j ${jobs} DESTDIR=${DESTDIR}${sysroot} install-headers || return
 	make -C ${glibc_bld_dir_crs} -j ${jobs} AR=${target}-ar || return
