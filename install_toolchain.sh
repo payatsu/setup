@@ -2041,7 +2041,7 @@ install_native_autogen()
 		(cd ${autogen_bld_dir}
 		${autogen_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules \
 			--disable-rpath --disable-dependency-tracking \
-			CFLAGS="${CFLAGS} -Wno-error=implicit-fallthrough=") || return
+			CFLAGS="${CFLAGS} -Wno-error") || return
 	make -C ${autogen_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${autogen_bld_dir} -j ${jobs} -k check || return
