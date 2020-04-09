@@ -161,7 +161,7 @@
 : ${rustc_ver:=1.42.0}
 : ${rustup_ver:=1.21.1}
 : ${ruby_ver:=2.7.1}
-: ${go_ver:=1.14.1}
+: ${go_ver:=1.14.2}
 : ${perl_ver:=5.30.1}
 : ${tcl_ver:=8.6.9}
 : ${tk_ver:=8.6.9}
