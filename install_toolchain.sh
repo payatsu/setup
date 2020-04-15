@@ -31,7 +31,7 @@
 : ${texinfo_ver:=6.7}
 : ${coreutils_ver:=8.32}
 : ${busybox_ver:=1.31.1}
-: ${bison_ver:=3.5.1}
+: ${bison_ver:=3.5.4}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
@@ -40,7 +40,7 @@
 : ${autogen_ver:=5.18.16}
 : ${libtool_ver:=2.4.6}
 : ${sed_ver:=4.8}
-: ${gawk_ver:=5.0.1}
+: ${gawk_ver:=5.1.0}
 : ${gnulib_ver:=git}
 : ${make_ver:=4.3}
 : ${binutils_ver:=2.34}
