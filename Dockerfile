@@ -12,9 +12,9 @@ gawk cpio xz zip unzip lzip lunzip lzo lzop lz4 zstd file groff gdbm libpipeline
 pcre swig libffi openssl Python2 Python libxml2 libiconv ninja meson glib pkg-config nghttp2 curl cmake Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx clang libedit lldb \
 ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux popt babeltrace gdb make \
-strace autogen gettext pcre2 asciidoc git openssh go rustc zsh bash screen libevent tmux lua vim neovim global \
+autogen gettext pcre2 asciidoc git openssh go rustc zsh bash screen libevent tmux lua vim neovim global \
 the_silver_searcher the_platinum_searcher gperf highway fzf graphviz jdk plantuml jq protobuf rsync dtc \
-libpng tiff jpeg giflib"
+strace systemtap libpng tiff jpeg giflib"
 
 RUN \
 apt-get update && apt-get upgrade -y && \
