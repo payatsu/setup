@@ -30,7 +30,7 @@ ca-certificates \
 xmlto \
 libxt-dev \
 libxaw7-dev libxpm-dev
-COPY install_toolchain.sh ${prefix}/install_toolchain.sh
+COPY install_toolchain.sh ${prefix}/
 RUN \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} "fetch ${pkgs} clang-tools-extra vimdoc-ja mingw-w64"
 RUN \
@@ -39,7 +39,7 @@ for p in `echo ${pkgs} | tr - _` ctags; do \
 done
 RUN \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_native_binutils install_cross_gcc clean
-COPY Dockerfile ${prefix}/Dockerfile
+COPY Dockerfile ${prefix}/
 
 FROM ${baseimage} AS dev
 ARG prefix
@@ -48,8 +48,8 @@ ARG USER=dev
 ARG njobs
 
 COPY --from=builder ${prefix} ${prefix}
-COPY --from=builder /etc/ld.so.conf.d/${prefixbase}.conf /etc/ld.so.conf.d/${prefixbase}.conf
-COPY --from=builder /etc/ld.so.conf.d/${prefixbase}.gcc.conf /etc/ld.so.conf.d/${prefixbase}.gcc.conf
+COPY --from=builder /etc/ld.so.conf.d/${prefixbase}.conf /etc/ld.so.conf.d/
+COPY --from=builder /etc/ld.so.conf.d/${prefixbase}.gcc.conf /etc/ld.so.conf.d/
 COPY dotfiles /etc/skel
 RUN \
 ldconfig && \
