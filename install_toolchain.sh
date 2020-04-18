@@ -222,7 +222,7 @@
 : ${libepoxy_ver:=1.3.1}
 : ${glib_ver:=2.60.1}
 : ${cairo_ver:=1.14.6}
-: ${pixman_ver:=0.34.0}
+: ${pixman_ver:=0.38.4}
 : ${pango_ver:=1.40.3}
 : ${gdk_pixbuf_ver:=2.36.0}
 : ${atk_ver:=2.22.0}
@@ -2824,19 +2824,19 @@ install_native_glib()
 #	make -C ${cairo_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 #	update_path || return
 #}
-#
-#install_native_pixman()
-#{
-#	[ -f ${prefix}/include/pixman-1.0/pixman.h -a "${force_install}" != yes ] && return
-#	fetch pixman || return
-#	unpack pixman || return
-#	[ -f ${pixman_src_dir}/Makefile ] ||
-#		(cd ${pixman_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${pixman_src_dir} -j ${jobs} || return
-#	make -C ${pixman_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
+
+install_native_pixman()
+{
+	[ -f ${prefix}/include/pixman-1.0/pixman.h -a "${force_install}" != yes ] && return
+	fetch pixman || return
+	unpack pixman || return
+	[ -f ${pixman_bld_dir}/Makefile ] ||
+		(cd ${pixman_bld_dir}
+		${pixman_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${pixman_bld_dir} -j ${jobs} || return
+	make -C ${pixman_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
 #
 #install_native_pango()
 #{
