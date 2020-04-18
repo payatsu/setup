@@ -2288,6 +2288,7 @@ install_native_qemu()
 {
 	[ -x ${prefix}/bin/qemu-img -a "${force_install}" != yes ] && return
 	which pkg-config > /dev/null || install_native_pkg_config || return
+	print_header_path pixman.h pixman-1.0 > /dev/null || install_native_pixman || return
 	fetch qemu || return
 	unpack qemu || return
 	(cd ${qemu_src_dir}
