@@ -128,7 +128,7 @@
 : ${libxslt_ver:=1.1.34}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.20.1}
-: ${git_ver:=2.26.1}
+: ${git_ver:=2.26.2}
 : ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=5.0.2}
 : ${sqlite_autoconf_ver:=3310100}
@@ -157,7 +157,7 @@
 : ${ccls_ver:=git}
 : ${boost_ver:=1_72_0}
 : ${Python_ver:=3.8.2}
-: ${Python2_ver:=2.7.17}
+: ${Python2_ver:=2.7.18}
 : ${rustc_ver:=1.42.0}
 : ${rustup_ver:=1.21.1}
 : ${ruby_ver:=2.7.1}
