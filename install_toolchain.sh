@@ -96,6 +96,7 @@
 : ${graphviz_ver:=2.40.1}
 : ${doxygen_ver:=1.8.16}
 : ${freetype_ver:=2.9.1}
+: ${fontconfig_ver:=2.13.1}
 : ${plantuml_ver:=1.2019.3}
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
@@ -469,6 +470,8 @@ help()
 		Specify the version of Doxygen you want, currently '${doxygen_ver}'.
 	freetype_ver
 		Specify the version of FreeType you want, currently '${freetype_ver}'.
+	fontconfig_ver
+		Specify the version of Fontconfig you want, currently '${fontconfig_ver}'.
 	plantuml_ver
 		Specify the version of PlantUML you want, currently '${plantuml_ver}'.
 	diffutils_ver
@@ -851,6 +854,9 @@ fetch()
 		freetype)
 			wget -O ${freetype_src_dir}.tar.bz2 \
 				https://download.savannah.gnu.org/releases/freetype/${freetype_name}.tar.bz2 || return;;
+		fontconfig)
+			wget -O ${fontconfig_src_dir}.tar.bz2 \
+				https://www.freedesktop.org/software/fontconfig/release/${fontconfig_name}.tar.bz2 || return;;
 		plantuml)
 			wget --trust-server-names -O ${plantuml_src_dir}.jar \
 				https://sourceforge.net/projects/plantuml/files/${plantuml_name}.jar/download || return
@@ -3595,6 +3601,22 @@ install_native_freetype()
 	[ "${enable_check}" != yes ] ||
 		make -C ${freetype_bld_dir} -j ${jobs} -k check || return
 	make -C ${freetype_bld_dir} -j ${jobs} RC= install || return
+	update_path || return
+}
+
+install_native_fontconfig()
+{
+	[ -f ${prefix}/include/fontconfig/fontconfig.h -a "${force_install}" != yes ] && return
+	fetch fontconfig || return
+	unpack fontconfig || return
+	[ -f ${fontconfig_bld_dir}/Makefile ] ||
+		(cd ${fontconfig_bld_dir}
+		${fontconfig_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+			--enable-static --disable-rpath) || return
+	make -C ${fontconfig_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${fontconfig_bld_dir} -j ${jobs} -k check || return
+	make -C ${fontconfig_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
