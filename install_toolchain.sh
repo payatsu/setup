@@ -95,6 +95,7 @@
 : ${highway_ver:=1.1.0}
 : ${graphviz_ver:=2.40.1}
 : ${doxygen_ver:=1.8.16}
+: ${freetype_ver:=2.9.1}
 : ${plantuml_ver:=1.2019.3}
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
@@ -466,6 +467,8 @@ help()
 		Specify the version of Graphviz you want, currently '${graphviz_ver}'.
 	doxygen_ver
 		Specify the version of Doxygen you want, currently '${doxygen_ver}'.
+	freetype_ver
+		Specify the version of FreeType you want, currently '${freetype_ver}'.
 	plantuml_ver
 		Specify the version of PlantUML you want, currently '${plantuml_ver}'.
 	diffutils_ver
@@ -845,6 +848,9 @@ fetch()
 		doxygen)
 			wget -O ${doxygen_src_dir}.tar.gz \
 				https://github.com/doxygen/doxygen/archive/Release_`echo ${doxygen_ver} | tr . _`.tar.gz || return;;
+		freetype)
+			wget -O ${freetype_src_dir}.tar.bz2 \
+				https://download.savannah.gnu.org/releases/freetype/${freetype_name}.tar.bz2 || return;;
 		plantuml)
 			wget --trust-server-names -O ${plantuml_src_dir}.jar \
 				https://sourceforge.net/projects/plantuml/files/${plantuml_name}.jar/download || return
@@ -3575,6 +3581,21 @@ install_native_doxygen()
 	[ "${enable_check}" != yes ] ||
 		cmake --build ${doxygen_bld_dir} -v -j ${jobs} --target tests || return
 	cmake --install ${doxygen_bld_dir} -v ${strip:+--${strip}} || return
+}
+
+install_native_freetype()
+{
+	[ -f ${prefix}/include/freetype2/ft2build.h -a "${force_install}" != yes ] && return
+	fetch freetype || return
+	unpack freetype || return
+	(cd ${freetype_bld_dir}
+	${freetype_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+		--enable-freetype-config) || return
+	make -C ${freetype_bld_dir} -j ${jobs} RC= || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${freetype_bld_dir} -j ${jobs} -k check || return
+	make -C ${freetype_bld_dir} -j ${jobs} RC= install || return
+	update_path || return
 }
 
 install_native_plantuml()
