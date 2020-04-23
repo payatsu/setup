@@ -160,7 +160,7 @@
 : ${boost_ver:=1_72_0}
 : ${Python_ver:=3.8.2}
 : ${Python2_ver:=2.7.18}
-: ${rustc_ver:=1.42.0}
+: ${rustc_ver:=1.43.0}
 : ${rustup_ver:=1.21.1}
 : ${ruby_ver:=2.7.1}
 : ${go_ver:=1.14.2}
