@@ -120,7 +120,7 @@
 : ${util_linux_ver:=2.35.1}
 : ${e2fsprogs_ver:=1.45.6}
 : ${squashfs_ver:=4.4}
-: ${openssl_ver:=1.1.1e}
+: ${openssl_ver:=1.1.1g}
 : ${openssh_ver:=8.1p1}
 : ${nghttp2_ver:=1.40.0}
 : ${curl_ver:=7.69.1}
