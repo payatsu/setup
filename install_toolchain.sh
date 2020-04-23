@@ -3624,6 +3624,8 @@ install_native_plantuml()
 {
 	[ -x ${prefix}/bin/plantuml -a "${force_install}" != yes ] && return
 	which dot > /dev/null || install_native_graphviz || return
+	print_library_path libfreetype.so > /dev/null || install_native_freetype || return
+	print_library_path libfontconfig.so > /dev/null || install_native_fontconfig || return
 	fetch plantuml || return
 	mkdir -pv ${DESTDIR}${prefix}/bin || return
 	cp -fv ${plantuml_src_dir}.jar ${DESTDIR}${prefix}/bin/plantuml.jar || return

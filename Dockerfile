@@ -13,8 +13,8 @@ pcre swig libffi openssl Python2 Python libxml2 libiconv ninja meson glib pkg-co
 llvm lld compiler-rt libunwind libcxxabi libcxx clang libedit lldb \
 ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux popt babeltrace gdb make \
 autogen gettext pcre2 asciidoc git openssh go rustc zsh bash screen libevent tmux lua vim neovim global \
-the_silver_searcher the_platinum_searcher gperf highway fzf graphviz jdk plantuml jq protobuf rsync dtc \
-strace systemtap libpcap tcpdump nmap libpng tiff jpeg giflib"
+the_silver_searcher the_platinum_searcher gperf highway fzf graphviz jdk freetype fontconfig plantuml \
+jq protobuf rsync dtc strace systemtap libpcap tcpdump nmap libpng tiff jpeg giflib"
 
 RUN \
 apt-get update && apt-get upgrade -y && \
@@ -63,6 +63,7 @@ ca-certificates \
 libxt6 \
 libxaw7 libxpm4 \
 sudo \
+fonts-ricty-diminished \
 && \
 rm -v /etc/skel/install.sh /etc/skel/seq.puml && \
 echo . ${prefix}/set_path.sh > /etc/skel/.sh/.local.pre && \
