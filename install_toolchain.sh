@@ -869,7 +869,7 @@ fetch()
 		libpipeline|man-db)
 			for compress_format in xz gz; do
 				eval wget -O \${${_p}_src_dir}.tar.${compress_format:-xz} \
-					http://download.savannah.nongnu.org/releases/${p:-man-db}/\${${_p}_name}.tar.${compress_format} \
+					http://download.savannah.nongnu.org/releases/${p:-man-db}/\${${_p:-man_db}_name}.tar.${compress_format} \
 					&& break \
 					|| eval rm -v \${${_p}_src_dir}.tar.${compress_format:-xz}
 			done || return;;
@@ -1568,6 +1568,7 @@ func_place_holder()
 			&& PATH=${p}`echo ${PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//;s/^./:&/"` \
 			|| PATH=${p}${PATH:+:${PATH}}
 	done
+	unset p
 	echo ${GOPATH} | tr : '\n' | grep -qe ^${prefix}/.go\$ \
 		&& export GOPATH=${prefix}/.go`echo ${GOPATH} | sed -e 's%\(^\|:\)'${prefix}'/.go\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//;s/^./:&/'` \
 		|| export GOPATH=${prefix}/.go${GOPATH:+:${GOPATH}}
