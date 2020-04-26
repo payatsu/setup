@@ -143,7 +143,7 @@
 : ${cmake_ver:=3.17.0}
 : ${bazel_ver:=2.2.0}
 : ${Bear_ver:=2.4.3}
-: ${ccache_ver:=3.7.7}
+: ${ccache_ver:=3.7.9}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=4.0.1}
 : ${llvm_ver:=10.0.0}
@@ -1223,7 +1223,6 @@ full()
 clean()
 # Delete no longer required source trees.
 {
-	[ "${enable_ccache}" != yes ] || ccache -C > /dev/null || return
 	[ ! -d ${src} ] && return
 	find ${src} -mindepth 2 -maxdepth 2 \
 		! -name '*.tar.gz' ! -name '*.tar.bz2' ! -name '*.tar.xz' ! -name '*.tar.lz' ! -name '*.zip' \
@@ -1292,6 +1291,7 @@ reset()
 # Reset '${prefix}' except '${prefix}/src'.
 {
 	clean || return
+	[ "${enable_ccache}" != yes ] || ccache -C > /dev/null || return
 	find ${prefix} -mindepth 1 -maxdepth 1 ! -name src ! -name .git -exec sh -c 'chmod -Rv u+w {}; rm -fvr {}' \;
 	[ `whoami` = root ] && rm -fv /etc/ld.so.conf.d/`basename ${prefix}`.conf
 	[ `whoami` = root ] && ldconfig || true
@@ -1422,8 +1422,8 @@ set_variables()
 	[ -f ${set_path_sh} ] || generate_shell_run_command ${set_path_sh} || true
 	[ ! -f ${set_path_sh} ] || source_path || return
 	echo ${PATH} | tr : '\n' | grep -qe ^/sbin\$ || PATH=/sbin:${PATH}
-	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${src}/.ccache CCACHE_BASEDIR=${src} && ! mkdir -pv ${src} && return 1
-	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-gcc}" CXX="ccache ${CXX:-g++}"
+	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${HOME}/.ccache CCACHE_BASEDIR=${src} && ! mkdir -pv ${src} && return 1
+	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-${host:+${host}-}gcc}" CXX="ccache ${CXX:-${host:+${host}-}g++}"
 	[ "${enable_ccache}" = yes ] || ! echo ${CC} | grep -qe ccache || export CC=`echo ${CC} | sed -e 's/ccache //'` CXX=`echo ${CXX} | sed -e 's/ccache //'`
 	update_pkg_config_path || return
 }
