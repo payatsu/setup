@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:experimental
+
 ARG baseimage=ubuntu:18.04
 ARG prefix=/usr/local
 ARG prefixbase=local
@@ -33,11 +35,11 @@ libxaw7-dev libxpm-dev
 COPY install_toolchain.sh ${prefix}/
 RUN \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} "fetch ${pkgs} clang-tools-extra vimdoc-ja mingw-w64"
-RUN \
+RUN --mount=type=cache,target=/root/.ccache \
 for p in `echo ${pkgs} | tr - _` ctags; do \
 	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} install_native_${p} clean shrink_archives || exit; \
 done
-RUN \
+RUN --mount=type=cache,target=/root/.ccache \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_native_binutils install_cross_gcc clean
 COPY Dockerfile ${prefix}/
 
@@ -50,7 +52,6 @@ ARG njobs
 COPY --from=builder ${prefix} ${prefix}
 COPY --from=builder /etc/ld.so.conf.d/${prefixbase}.conf /etc/ld.so.conf.d/
 COPY --from=builder /etc/ld.so.conf.d/${prefixbase}.gcc.conf /etc/ld.so.conf.d/
-COPY dotfiles /etc/skel
 RUN \
 ldconfig && \
 apt-get update && apt-get upgrade -y && \
@@ -65,7 +66,7 @@ libxaw7 libxpm4 \
 sudo \
 fonts-ricty-diminished \
 && \
-rm -v /etc/skel/install.sh /etc/skel/seq.puml && \
+wget -O- https://github.com/payatsu/dotfiles/releases/latest/download/dotfiles.tar.gz | tar xzvf - -C /etc/skel --no-same-owner --no-same-permissions && \
 echo . ${prefix}/set_path.sh > /etc/skel/.sh/.local.pre && \
 echo . '${HOME}'/.sh/.local.pre > /etc/skel/.zsh/.zshrc.local.pre && \
 echo . '${HOME}'/.sh/.local.pre > /etc/skel/.bash/.bashrc.local.pre && \
