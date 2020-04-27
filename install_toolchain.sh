@@ -1434,6 +1434,7 @@ set_variables()
 		set_src_directory ${pkg}
 	done
 
+	update_ccache_wrapper || return
 	[ -f ${set_path_sh} ] || update_shell_run_command ${set_path_sh} || true
 	[ ! -f ${set_path_sh} ] || source_path || return
 	echo ${PATH} | tr : '\n' | grep -qe ^/sbin\$ || PATH=/sbin:${PATH}
@@ -1537,12 +1538,21 @@ EOF
 update_ccache_wrapper()
 {
 	! which ccache > /dev/null && return
-	ccache_wrapper_dir=${prefix}/ccache
-	mkdir -pv ${ccache_wrapper_dir} || return
+
+	while getopts f arg; do
+		case ${arg} in
+		f) force_update=yes;;
+		esac
+	done
+	shift `expr ${OPTIND} - 1`
+
+	mkdir -pv ${prefix}/lib/ccache || return
 	find `echo ${PATH} | tr : ' '` -maxdepth 1 ! -type d -executable -regextype posix-extended \( \
 			-regex '^/.+/(([^-]+-){2,4})?g(cc|\+\+)' \
 			-o -name clang -o -name clang++ \
-		\) -exec basename \{\} \; 2> /dev/null | sort | uniq | sed -e s"%^%ln -fsv `which ccache` ${ccache_wrapper_dir}/%" | sh
+		\) -exec basename \{\} \; 2> /dev/null | sort | uniq | \
+			sed -e s"%^.\\+\$%[ \"${force_update}\" != yes -a -f ${prefix}/lib/ccache/& ] || ln -fsv `which ccache` ${prefix}/lib/ccache/&%;s/\$/ || return/" | sh || return
+	unset force_update
 }
 
 write_if_not_match()
@@ -1586,7 +1596,7 @@ prefix=prefix_place_holder
 host=host_place_holder
 func_place_holder()
 {
-	for p in ${prefix}/cling/bin ${prefix}/bin ${prefix}/sbin ${prefix}/go/bin; do
+	for p in ${prefix}/cling/bin ${prefix}/bin ${prefix}/sbin ${prefix}/go/bin ${prefix}/lib/ccache; do
 		[ -d ${p} ] || continue
 		echo ${p} | grep -qe "/usr/local/s\?bin" && continue
 		echo ${PATH} | tr : '\n' | grep -qe ^${p}\$ \
@@ -4425,6 +4435,8 @@ install_native_ccache()
 	[ "${enable_check}" != yes ] ||
 		make -C ${ccache_bld_dir} -j ${jobs} -k V=1 check || return
 	make -C ${ccache_bld_dir} -j ${jobs} V=1 install || return
+	update_path || return
+	update_ccache_wrapper -f || return
 	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/ccache || return
 }
