@@ -24,7 +24,7 @@ echo Asia/Tokyo > /etc/timezone && \
 DEBIAN_FRONTEND=noninteractive \
 apt-get install -y --no-install-recommends tzdata && \
 apt-get install -y --no-install-recommends \
-wget xz-utils \
+wget xz-utils ccache \
 make gcc g++ \
 texinfo \
 pkg-config \
@@ -33,13 +33,11 @@ xmlto \
 libxt-dev \
 libxaw7-dev libxpm-dev
 COPY install_toolchain.sh ${prefix}/
-RUN \
-${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} "fetch ${pkgs} clang-tools-extra vimdoc-ja mingw-w64"
-RUN --mount=type=cache,target=/root/.ccache \
+RUN --mount=type=cache,target=/root/.ccache --mount=type=cache,target=${prefix}/src \
+${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} "fetch ${pkgs} clang-tools-extra vimdoc-ja mingw-w64" && \
 for p in `echo ${pkgs} | tr - _` ctags; do \
 	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} install_native_${p} clean shrink_archives || exit; \
-done
-RUN --mount=type=cache,target=/root/.ccache \
+done && \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_native_binutils install_cross_gcc clean
 COPY Dockerfile ${prefix}/
 
