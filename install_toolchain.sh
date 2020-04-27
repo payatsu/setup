@@ -1278,7 +1278,7 @@ deploy()
 docker()
 # Build Docker container.
 {
-	command docker build -t dev --build-arg username=${USER} --build-arg njobs=${jobs} .
+	DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker-compose build --build-arg njobs=${jobs} dev || return
 }
 
 list()
