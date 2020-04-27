@@ -1249,7 +1249,7 @@ deb()
 	for pkg in $@; do
 		${pkg} || return
 	done
-	generate_shell_run_command ${set_path_sh}
+	update_shell_run_command ${set_path_sh}
 	unset DESTDIR
 	mkdir -pv ${deb_prefix}/DEBIAN || return
 	cat <<EOF > ${deb_prefix}/DEBIAN/control || return
@@ -1371,6 +1371,21 @@ set_src_directory()
 	esac
 }
 
+setup_ccache()
+{
+	[ "${enable_ccache}" != yes ] && return
+	which ccache || { echo command not found: ccache >&2; return 1;}
+	mkdir -pv ${src} || return
+	export USE_CCACHE=1 CCACHE_DIR=${HOME}/.ccache CCACHE_BASEDIR=${src}
+	echo ${CC} | grep -qe ccache || export CC="ccache ${CC:-${host:+${host}-}gcc}" CXX="ccache ${CXX:-${host:+${host}-}g++}"
+}
+
+teardown_ccache()
+{
+	[ "${enable_ccache}" = yes ] && return
+	echo ${CC} | grep -qe ccache && export CC=`echo ${CC} | sed -e 's/ccache //'` CXX=`echo ${CXX} | sed -e 's/ccache //'` || true
+}
+
 set_variables()
 {
 	prefix=`realpath -m ${prefix}`
@@ -1419,12 +1434,11 @@ set_variables()
 		set_src_directory ${pkg}
 	done
 
-	[ -f ${set_path_sh} ] || generate_shell_run_command ${set_path_sh} || true
+	[ -f ${set_path_sh} ] || update_shell_run_command ${set_path_sh} || true
 	[ ! -f ${set_path_sh} ] || source_path || return
 	echo ${PATH} | tr : '\n' | grep -qe ^/sbin\$ || PATH=/sbin:${PATH}
-	[ "${enable_ccache}" = yes ] && export USE_CCACHE=1 CCACHE_DIR=${HOME}/.ccache CCACHE_BASEDIR=${src} && ! mkdir -pv ${src} && return 1
-	[ "${enable_ccache}" = yes ] && ! echo ${CC} | grep -qe ccache && export CC="ccache ${CC:-${host:+${host}-}gcc}" CXX="ccache ${CXX:-${host:+${host}-}g++}"
-	[ "${enable_ccache}" = yes ] || ! echo ${CC} | grep -qe ccache || export CC=`echo ${CC} | sed -e 's/ccache //'` CXX=`echo ${CXX} | sed -e 's/ccache //'`
+	setup_ccache || return
+	teardown_ccache # never fails
 	update_pkg_config_path || return
 }
 
@@ -1520,6 +1534,17 @@ EOF
 		tr ' ' '\n' | grep -oe '^\(https\?\|git\|ftp\)://[[:graph:]]\+'
 }
 
+update_ccache_wrapper()
+{
+	! which ccache > /dev/null && return
+	ccache_wrapper_dir=${prefix}/ccache
+	mkdir -pv ${ccache_wrapper_dir} || return
+	find `echo ${PATH} | tr : ' '` -maxdepth 1 ! -type d -executable -regextype posix-extended \( \
+			-regex '^/.+/(([^-]+-){2,4})?g(cc|\+\+)' \
+			-o -name clang -o -name clang++ \
+		\) -exec basename \{\} \; 2> /dev/null | sort | uniq | sed -e s"%^%ln -fsv `which ccache` ${ccache_wrapper_dir}/%" | sh
+}
+
 write_if_not_match()
 {
 	[ ! -d ${2} ] && return
@@ -1552,7 +1577,7 @@ update_pkg_config_path()
 	export PKG_CONFIG_PATH
 }
 
-generate_shell_run_command()
+update_shell_run_command()
 {
 	mkdir -pv `dirname ${1}` || return
 	func_name=`basename ${1} | tr . _ | tr -cd '[:alpha:]_'`
@@ -1612,7 +1637,7 @@ update_path()
 {
 	update_library_search_path || return
 	update_pkg_config_path || return
-	generate_shell_run_command ${set_path_sh} || return
+	update_shell_run_command ${set_path_sh} || return
 	source_path || return
 }
 
