@@ -88,7 +88,7 @@ sudo cp -vr tmp/src/rustup ${prefix}/src && \
 sudo mv -v uninstall.sh ${prefix}/lib/rustlib && \
 rm -vr tmp && \
 ./.cargo/bin/rustup completions zsh | sudo tee ${prefix}/share/zsh/site-functions/_rustup > /dev/null && \
-./.cargo/bin/rustup component add rls && \
+./.cargo/bin/rustup component add rls rust-analysis rust-src && \
 echo colorscheme jellybeans > .vim/vimrc.local.vim && \
 vim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .vim/vimrc -U NONE -i NONE -V1 -e -s && \
 nvim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .config/nvim/init.vim -U NONE -i NONE -V1 -e -s
