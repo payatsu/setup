@@ -157,7 +157,7 @@
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
-: ${boost_ver:=1_72_0}
+: ${boost_ver:=1_73_0}
 : ${Python_ver:=3.8.2}
 : ${Python2_ver:=2.7.18}
 : ${rustc_ver:=1.43.0}
