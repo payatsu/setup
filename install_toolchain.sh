@@ -62,7 +62,7 @@
 : ${mpfr_ver:=4.0.2}
 : ${mpc_ver:=1.1.0}
 : ${isl_ver:=0.20}
-: ${gcc_ver:=9.3.0}
+: ${gcc_ver:=10.1.0}
 : ${readline_ver:=8.0}
 : ${ncurses_ver:=6.2}
 : ${popt_ver:=1.16}
@@ -160,7 +160,7 @@
 : ${boost_ver:=1_73_0}
 : ${Python_ver:=3.8.2}
 : ${Python2_ver:=2.7.18}
-: ${rustc_ver:=1.43.0}
+: ${rustc_ver:=1.43.1}
 : ${rustup_ver:=1.21.1}
 : ${ruby_ver:=2.7.1}
 : ${go_ver:=1.14.2}
