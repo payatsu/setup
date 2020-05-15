@@ -158,12 +158,12 @@
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
 : ${boost_ver:=1_73_0}
-: ${Python_ver:=3.8.2}
+: ${Python_ver:=3.8.3}
 : ${Python2_ver:=2.7.18}
 : ${rustc_ver:=1.43.1}
 : ${rustup_ver:=1.21.1}
 : ${ruby_ver:=2.7.1}
-: ${go_ver:=1.14.2}
+: ${go_ver:=1.14.3}
 : ${perl_ver:=5.30.1}
 : ${tcl_ver:=8.6.9}
 : ${tk_ver:=8.6.9}
