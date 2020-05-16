@@ -688,10 +688,16 @@ fetch()
 					eval git clone --depth 1 \
 						https://git.savannah.gnu.org/git/${p}.git \${${_p}_src_dir} || return
 					case ${p} in
-					make)
+					gperf|emacs|gettext|libunistring|guile)
+						(eval cd \${${_p}_src_dir}; ./autogen.sh) || return;;
+					libiconv)
 						(fetch gnulib) || return
-						(eval cd \${${_p}_src_dir}; ./bootstrap --gnulib-srcdir=${gnulib_src_dir}) || return
-						;;
+						(eval cd \${${_p}_src_dir}; GNULIB_SRCDIR=${gnulib_src_dir} ./autogen.sh) || return;;
+					tar|cpio|automake|libtool|gdbm)
+						(eval cd \${${_p}_src_dir}; ./bootstrap) || return;;
+					gzip|wget|coreutils|bison|sed|make|grep|diffutils|patch|findutils|groff|inetutils)
+						(fetch gnulib) || return
+						(eval cd \${${_p}_src_dir}; ./bootstrap --gnulib-srcdir=${gnulib_src_dir} --no-git) || return;;
 					esac
 					;;
 				esac
@@ -3333,8 +3339,6 @@ install_native_emacs()
 	print_header_path xpm.h X11 > /dev/null || install_native_libXpm || return
 	fetch emacs || return
 	unpack emacs || return
-	[ -f ${emacs_src_dir}/configure ] ||
-		(cd ${emacs_src_dir}; ./autogen.sh) || return
 	[ -f ${emacs_bld_dir}/Makefile ] ||
 		(cd ${emacs_bld_dir}
 		CPPFLAGS="${CPPFLAGS} -I${prefix}/include" LDFLAGS="${LDFLAGS} -L${prefix}/lib" \
