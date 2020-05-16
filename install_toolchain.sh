@@ -121,7 +121,7 @@
 : ${e2fsprogs_ver:=1.45.6}
 : ${squashfs_ver:=4.4}
 : ${openssl_ver:=1.1.1g}
-: ${openssh_ver:=8.1p1}
+: ${openssh_ver:=8.2p1}
 : ${nghttp2_ver:=1.40.0}
 : ${curl_ver:=7.69.1}
 : ${expat_ver:=2.2.9}
@@ -140,7 +140,7 @@
 : ${subversion_ver:=1.13.0}
 : ${ninja_ver:=1.10.0}
 : ${meson_ver:=0.54.0}
-: ${cmake_ver:=3.17.0}
+: ${cmake_ver:=3.17.2}
 : ${bazel_ver:=2.2.0}
 : ${Bear_ver:=2.4.3}
 : ${ccache_ver:=3.7.9}
