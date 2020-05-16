@@ -15,7 +15,7 @@
 
 : ${tar_ver:=1.32}
 : ${cpio_ver:=2.13}
-: ${xz_ver:=5.2.4}
+: ${xz_ver:=5.2.5}
 : ${bzip2_ver:=1.0.8}
 : ${gzip_ver:=1.10}
 : ${zip_ver:=3.0}
