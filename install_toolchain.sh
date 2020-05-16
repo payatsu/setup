@@ -686,7 +686,14 @@ fetch()
 						git://sourceware.org/git/binutils-gdb.git \${${_p}_src_dir} || return;;
 				*)
 					eval git clone --depth 1 \
-						https://git.savannah.gnu.org/git/${p}.git \${${_p}_src_dir} || return;;
+						https://git.savannah.gnu.org/git/${p}.git \${${_p}_src_dir} || return
+					case ${p} in
+					make)
+						(fetch gnulib) || return
+						(eval cd \${${_p}_src_dir}; ./bootstrap --gnulib-srcdir=${gnulib_src_dir}) || return
+						;;
+					esac
+					;;
 				esac
 			} || for compress_format in xz bz2 gz lz; do
 				eval wget -O \${${_p}_src_dir}.tar.${compress_format} \
@@ -2158,9 +2165,6 @@ install_native_make()
 	print_header_path libguile.h > /dev/null || install_native_guile || return
 	fetch make || return
 	unpack make || return
-	[ -f ${make_src_dir}/configure ] ||
-		(fetch gnulib || return
-		cd ${make_src_dir}; ./bootstrap --gnulib-srcdir=${gnulib_src_dir}) || return
 	[ -f ${make_bld_dir}/Makefile ] ||
 		(cd ${make_bld_dir}
 		${make_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
