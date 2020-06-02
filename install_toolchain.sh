@@ -130,7 +130,7 @@
 : ${libxslt_ver:=1.1.34}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.20.1}
-: ${git_ver:=2.26.2}
+: ${git_ver:=2.27.0}
 : ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=5.0.2}
 : ${sqlite_autoconf_ver:=3310100}
@@ -163,7 +163,7 @@
 : ${rustc_ver:=1.43.1}
 : ${rustup_ver:=1.21.1}
 : ${ruby_ver:=2.7.1}
-: ${go_ver:=1.14.3}
+: ${go_ver:=1.14.4}
 : ${perl_ver:=5.30.1}
 : ${tcl_ver:=8.6.9}
 : ${tk_ver:=8.6.9}
