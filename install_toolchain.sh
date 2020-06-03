@@ -132,7 +132,7 @@
 : ${gettext_ver:=0.20.1}
 : ${git_ver:=2.27.0}
 : ${git_manpages_ver:=${git_ver}}
-: ${mercurial_ver:=5.0.2}
+: ${mercurial_ver:=5.4}
 : ${sqlite_autoconf_ver:=3310100}
 : ${apr_ver:=1.7.0}
 : ${apr_util_ver:=1.6.1}
