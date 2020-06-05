@@ -114,7 +114,7 @@
 : ${tmux_ver:=3.0a}
 : ${expect_ver:=5.45.4}
 : ${dejagnu_ver:=1.6.2}
-: ${zsh_ver:=5.7.1}
+: ${zsh_ver:=5.8}
 : ${bash_ver:=5.0}
 : ${inetutils_ver:=1.9.4}
 : ${util_linux_ver:=2.35.1}
