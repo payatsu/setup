@@ -160,7 +160,7 @@
 : ${boost_ver:=1_73_0}
 : ${Python_ver:=3.8.3}
 : ${Python2_ver:=2.7.18}
-: ${rustc_ver:=1.43.1}
+: ${rustc_ver:=1.44.0}
 : ${rustup_ver:=1.21.1}
 : ${ruby_ver:=2.7.1}
 : ${go_ver:=1.14.4}
@@ -4979,7 +4979,7 @@ install_native_rustc()
 	./x.py install -j ${jobs}) || return
 	[ -z "${strip}" ] && return
 	for b in cargo cargo-clippy cargo-fmt cargo-miri clippy-driver miri rls rustc rustdoc rustfmt; do
-		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		[ ! -f ${DESTDIR}${prefix}/bin/${b} ] || strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 	update_path || return
 }
