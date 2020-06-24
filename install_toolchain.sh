@@ -164,7 +164,7 @@
 : ${rustup_ver:=1.21.1}
 : ${ruby_ver:=2.7.1}
 : ${go_ver:=1.14.4}
-: ${perl_ver:=5.30.1}
+: ${perl_ver:=5.30.3}
 : ${tcl_ver:=8.6.9}
 : ${tk_ver:=8.6.9}
 : ${libunistring_ver:=0.9.10}
