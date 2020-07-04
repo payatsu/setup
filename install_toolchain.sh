@@ -3626,8 +3626,8 @@ install_native_graphviz()
 	[ -f ${graphviz_bld_dir}/Makefile ] ||
 		(cd ${graphviz_bld_dir}
 		${graphviz_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules \
-			--enable-swig --enable-go --enable-guile --enable-lua --enable-perl --enable-python \
-			--enable-ruby --enable-tcl) || return
+			--enable-swig --enable-go --enable-guile --enable-perl --enable-python \
+			--enable-ruby --enable-tcl --disable-lua --disable-php) || return
 	make -C ${graphviz_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${graphviz_bld_dir} -j ${jobs} -k check || return
