@@ -94,6 +94,7 @@
 : ${the_platinum_searcher_ver:=2.2.0}
 : ${highway_ver:=1.1.0}
 : ${graphviz_ver:=2.40.1}
+: ${ghostscript_ver:=9.52}
 : ${doxygen_ver:=1.8.16}
 : ${freetype_ver:=2.9.1}
 : ${fontconfig_ver:=2.13.1}
@@ -464,6 +465,8 @@ help()
 		Specify the version of the platinum searcher you want, currently '${the_platinum_searcher_ver}'.
 	highway_ver
 		Specify the version of highway you want, currently '${highway_ver}'.
+	ghostscript_ver
+		Specify the version of Ghostscript you want, currently '${ghostscript_ver}'.
 	graphviz_ver
 		Specify the version of Graphviz you want, currently '${graphviz_ver}'.
 	doxygen_ver
@@ -858,6 +861,9 @@ fetch()
 		highway)
 			wget -O ${highway_src_dir}.tar.gz \
 				https://github.com/tkengo/highway/archive/v${highway_ver}.tar.gz || return;;
+		ghostscript)
+			wget -O ${ghostscript_src_dir}.tar.xz \
+				https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs`echo ${ghostscript_ver} | tr -d .`/${ghostscript_name}.tar.xz || return;;
 		graphviz)
 			wget -O ${graphviz_src_dir}.tar.gz \
 				https://graphviz.gitlab.io/pub/graphviz/stable/SOURCES/graphviz.tar.gz || return;;
@@ -3592,6 +3598,23 @@ install_native_highway()
 				${highway_src_dir}/tools/build.sh || return
 	(cd ${highway_src_dir}
 	./tools/build.sh) || return
+}
+
+install_native_ghostscript()
+{
+	[ -x ${prefix}/bin/gs -a "${force_install}" != yes ] && return
+	print_header_path tiff.h > /dev/null || install_native_tiff || return
+	fetch ghostscript || return
+	unpack ghostscript || return
+	[ -f ${ghostscript_bld_dir}/Makefile ] ||
+		(cd ${ghostscript_bld_dir}
+		${ghostscript_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+			--enable-dynamic --with-system-libtiff) || return
+	make -C ${ghostscript_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${ghostscript_bld_dir} -j ${jobs} -k check || return
+	make -C ${ghostscript_bld_dir} -j ${jobs} install || return
+	update_path || return
 }
 
 install_native_graphviz()
