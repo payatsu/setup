@@ -184,18 +184,18 @@
 : ${opencv_ver:=4.2.0}
 : ${opencv_contrib_ver:=4.2.0}
 : ${googletest_ver:=1.8.1}
-: ${fzf_ver:=0.20.0}
+: ${fzf_ver:=0.21.1}
 : ${jq_ver:=1.6}
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
 : ${nmap_ver:=7.80}
 : ${npth_ver:=1.6}
-: ${libgpg_error_ver:=1.37}
+: ${libgpg_error_ver:=1.38}
 : ${libgcrypt_ver:=1.8.5}
-: ${libksba_ver:=1.3.5}
+: ${libksba_ver:=1.4.0}
 : ${libassuan_ver:=2.5.3}
 : ${gnupg_ver:=2.2.20}
-: ${protobuf_ver:=3.11.3}
+: ${protobuf_ver:=3.12.3}
 : ${libbacktrace_ver:=git}
 
 # TODO X11周りのインストールは未着手。
