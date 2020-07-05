@@ -82,7 +82,7 @@
 : ${libffi_ver:=3.3}
 : ${emacs_ver:=26.3}
 : ${libiconv_ver:=1.15}
-: ${vim_ver:=8.2.0884}
+: ${vim_ver:=8.2.1127}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.4.3}
@@ -93,12 +93,12 @@
 : ${the_silver_searcher_ver:=2.2.0}
 : ${the_platinum_searcher_ver:=2.2.0}
 : ${highway_ver:=1.1.0}
-: ${graphviz_ver:=2.40.1}
 : ${ghostscript_ver:=9.52}
+: ${graphviz_ver:=2.44.1}
 : ${doxygen_ver:=1.8.16}
 : ${freetype_ver:=2.9.1}
 : ${fontconfig_ver:=2.13.1}
-: ${plantuml_ver:=1.2019.3}
+: ${plantuml_ver:=1.2020.15}
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
 : ${findutils_ver:=4.7.0}
@@ -866,7 +866,7 @@ fetch()
 				https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs`echo ${ghostscript_ver} | tr -d .`/${ghostscript_name}.tar.xz || return;;
 		graphviz)
 			wget -O ${graphviz_src_dir}.tar.gz \
-				https://graphviz.gitlab.io/pub/graphviz/stable/SOURCES/graphviz.tar.gz || return;;
+				https://www2.graphviz.org/Packages/stable/portable_source/${graphviz_name}.tar.gz || return;;
 		doxygen)
 			wget -O ${doxygen_src_dir}.tar.gz \
 				https://github.com/doxygen/doxygen/archive/Release_`echo ${doxygen_ver} | tr . _`.tar.gz || return;;
