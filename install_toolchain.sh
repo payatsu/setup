@@ -174,7 +174,7 @@
 : ${libatomic_ops_ver:=7.6.10}
 : ${gc_ver:=7.6.12}
 : ${guile_ver:=2.2.7}
-: ${lua_ver:=5.4.0}
+: ${lua_ver:=5.3.5}
 : ${node_ver:=12.16.1}
 : ${jdk_ver:=14.0.1}
 : ${nasm_ver:=2.14.02}
@@ -5247,22 +5247,22 @@ install_native_lua()
 +++ src/Makefile
 @@ -6,7 +6,7 @@
  # Your platform. See PLATS for possible values.
- PLAT= guess
+ PLAT= none
 
 -CC= gcc -std=gnu99
 +CC= gcc -std=gnu99 -fPIC
- CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
+ CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
  LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
  LIBS= -lm $(SYSLIBS) $(MYLIBS)
-@@ -33,6 +33,7 @@
- PLATS= guess aix bsd c89 freebsd generic linux linux-readline macosx mingw posix solaris
+@@ -29,6 +29,7 @@
+ PLATS= aix bsd c89 freebsd generic linux macosx mingw posix solaris
 
  LUA_A=	liblua.a
 +LUA_SO=	liblua.so
- CORE_O=	lapi.o lcode.o lctype.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o lmem.o lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o ltm.o lundump.o lvm.o lzio.o
- LIB_O=	lauxlib.o lbaselib.o lcorolib.o ldblib.o liolib.o lmathlib.o loadlib.o loslib.o lstrlib.o ltablib.o lutf8lib.o linit.o
- BASE_O= $(CORE_O) $(LIB_O) $(MYOBJS)
-@@ -44,7 +45,7 @@
+ CORE_O=	lapi.o lcode.o lctype.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o \
+ 	lmem.o lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o \
+ 	ltm.o lundump.o lvm.o lzio.o
+@@ -43,7 +44,7 @@
  LUAC_O=	luac.o
 
  ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O)
@@ -5271,7 +5271,7 @@ install_native_lua()
  ALL_A= $(LUA_A)
 
  # Targets start here.
-@@ -60,6 +61,9 @@
+@@ -59,6 +60,9 @@
  	$(AR) $@ $(BASE_O)
  	$(RANLIB) $@
 
