@@ -76,7 +76,7 @@
 : ${libpng_ver:=1.6.37}
 : ${tiff_ver:=4.1.0}
 : ${jpeg_ver:=v9c}
-: ${giflib_ver:=5.1.4}
+: ${giflib_ver:=5.2.1}
 : ${libXpm_ver:=3.5.11}
 : ${libwebp_ver:=1.0.0}
 : ${libffi_ver:=3.3}
@@ -829,8 +829,8 @@ fetch()
 			wget -O ${jpeg_src_dir}.tar.gz \
 				http://www.ijg.org/files/${jpeg_name}.tar.gz || return;;
 		giflib)
-			wget --trust-server-names -O ${giflib_src_dir}.tar.bz2 \
-				https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.bz2/download || return;;
+			wget --trust-server-names -O ${giflib_src_dir}.tar.gz \
+				https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.gz/download || return;;
 		libwebp)
 			wget -O ${libwebp_src_dir}.tar.gz \
 				https://storage.googleapis.com/downloads.webmproject.org/releases/webp/${libwebp_name}.tar.gz || return;;
@@ -2792,14 +2792,16 @@ install_native_giflib()
 	[ -f ${prefix}/include/gif_lib.h -a "${force_install}" != yes ] && return
 	fetch giflib || return
 	unpack giflib || return
-	[ -f ${giflib_bld_dir}/Makefile ] ||
-		(cd ${giflib_bld_dir}
-		${giflib_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${giflib_bld_dir} -j ${jobs} || return
+	[ -f ${giflib_bld_dir}/Makefile ] || cp -Tvr ${giflib_src_dir} ${giflib_bld_dir} || return
+	make -C ${giflib_bld_dir} -j ${jobs} CC=${CC:-${host:+${host}-}gcc} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${giflib_bld_dir} -j ${jobs} -k check || return
-	make -C ${giflib_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	make -C ${giflib_bld_dir} -j ${jobs} install PREFIX=${prefix} || return
 	update_path || return
+	[ "${strip}" != strip ] && return
+	for b in gif2rgb  gifbuild  gifclrmp  giffix  giftext  giftool; do
+		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+	done
 }
 
 install_native_libXpm()
