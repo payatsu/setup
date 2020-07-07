@@ -1415,7 +1415,7 @@ set_variables()
 	set_path_sh=${DESTDIR}${prefix}/set_path.sh
 	echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && exe=.exe || exe=''
 	[ -f /etc/issue ] && os=`head -n 1 /etc/issue | cut -d' ' -f1`
-	[ "${strip}" = strip ] || cmake_build_type=Debug
+	[ -z "${strip}" ] || cmake_build_type=Debug
 
 	case ${target} in
 	arm*)        linux_arch=arm;;
@@ -2330,7 +2330,7 @@ install_native_dtc()
 	[ -f ${dtc_bld_dir}/Makefile ] || cp -Tvr ${dtc_src_dir} ${dtc_bld_dir} || return
 	(unset CFLAGS; make -C ${dtc_bld_dir} -j 1 V=1) || return # XXX work around for parallel make
 	(unset CFLAGS; make -C ${dtc_bld_dir} -j 1 V=1 PREFIX=${DESTDIR}${prefix} install) || return # XXX work around for parallel make
-	[ "${strip}" != strip ] && return
+	[ -z "${strip}" ] && return
 	for b in convert-dtsv0 dtc fdtdump fdtget fdtoverlay fdtput; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
@@ -2798,7 +2798,7 @@ install_native_giflib()
 		make -C ${giflib_bld_dir} -j ${jobs} -k check || return
 	make -C ${giflib_bld_dir} -j ${jobs} install PREFIX=${prefix} || return
 	update_path || return
-	[ "${strip}" != strip ] && return
+	[ -z "${strip}" ] && return
 	for b in gif2rgb  gifbuild  gifclrmp  giffix  giftext  giftool; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
@@ -2876,7 +2876,7 @@ install_native_glib()
 	ninja -v -C ${glib_src_dir}/_build || return
 	ninja -v -C ${glib_src_dir}/_build install || return
 	update_path || return
-	[ "${strip}" != strip ] && return
+	[ -z "${strip}" ] && return
 	for b in gapplication gdbus gio gio-launch-desktop gio-querymodules glib-compile-resources glib-compile-schemas gobject-query gresource gsettings gtester; do
 		strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
@@ -4506,7 +4506,7 @@ install_native_swig()
 	[ "${enable_check}" != yes ] ||
 		make -C ${swig_bld_dir} -j ${jobs} -k check || return
 	make -C ${swig_bld_dir} -j ${jobs} install || return
-	[ "${strip}" != strip ] && return
+	[ -z "${strip}" ] && return
 	strip -v ${DESTDIR}${prefix}/bin/swig ${DESTDIR}${prefix}/bin/ccache-swig || return
 }
 
