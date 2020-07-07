@@ -3617,6 +3617,8 @@ install_native_ghostscript()
 		make -C ${ghostscript_bld_dir} -j ${jobs} -k check || return
 	make -C ${ghostscript_bld_dir} -j ${jobs} install || return
 	update_path || return
+	[ -z "${strip}" ] && return
+	strip -v ${DESTDIR}${prefix}/bin/gs || return
 }
 
 install_native_graphviz()
