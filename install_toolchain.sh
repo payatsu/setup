@@ -192,7 +192,7 @@
 : ${nmap_ver:=7.80}
 : ${npth_ver:=1.6}
 : ${libgpg_error_ver:=1.38}
-: ${libgcrypt_ver:=1.8.5}
+: ${libgcrypt_ver:=1.8.6}
 : ${libksba_ver:=1.4.0}
 : ${libassuan_ver:=2.5.3}
 : ${gnupg_ver:=2.2.20}
@@ -5581,6 +5581,7 @@ install_native_npth()
 	[ "${enable_check}" != yes ] ||
 		make -C ${npth_bld_dir} -j ${jobs} -k check || return
 	make -C ${npth_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_libgpg_error()
@@ -5595,6 +5596,7 @@ install_native_libgpg_error()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libgpg_error_bld_dir} -j ${jobs} -k check || return
 	make -C ${libgpg_error_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_libgcrypt()
@@ -5610,6 +5612,7 @@ install_native_libgcrypt()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libgcrypt_bld_dir} -j ${jobs} -k check || return
 	make -C ${libgcrypt_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_libksba()
@@ -5625,6 +5628,7 @@ install_native_libksba()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libksba_bld_dir} -j ${jobs} -k check || return
 	make -C ${libksba_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_libassuan()
@@ -5640,6 +5644,7 @@ install_native_libassuan()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libassuan_bld_dir} -j ${jobs} -k check || return
 	make -C ${libassuan_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_gnupg()
