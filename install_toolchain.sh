@@ -184,6 +184,7 @@
 : ${libav_ver:=11.9}
 : ${opencv_ver:=4.2.0}
 : ${opencv_contrib_ver:=4.2.0}
+: ${v4l_utils_ver:=1.20.0}
 : ${googletest_ver:=1.8.1}
 : ${fzf_ver:=0.21.1}
 : ${jq_ver:=1.6}
@@ -627,6 +628,8 @@ help()
 		Specify the version of OpenCV you want, currently '${opencv_ver}'.
 	opencv_contrib_ver
 		Specify the version of OpenCV contrib you want, currently '${opencv_contrib_ver}'.
+	v4l_utils_ver
+		Specify the version of v4l-utils you want, currently '${v4l_utils_ver}'.
 	googletest_ver
 		Specify the version of google test you want, currently '${googletest_ver}'.
 	fzf_ver
@@ -1070,6 +1073,9 @@ fetch()
 		opencv|opencv_contrib)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://github.com/opencv/${_p:-opencv}/archive/\${${_p:-opencv}_ver}.tar.gz || return;;
+		v4l-utils)
+			wget -O ${v4l_utils_src_dir}.tar.bz2 \
+				https://linuxtv.org/downloads/v4l-utils/${v4l_utils_name}.tar.bz2 || return;;
 		googletest)
 			wget -O ${googletest_src_dir}.tar.gz \
 				https://github.com/google/googletest/archive/release-${googletest_ver}.tar.gz || return;;
@@ -1447,6 +1453,7 @@ set_variables()
 			s/xcb_proto/xcb-proto/
 			s/gdk_pixbuf/gdk-pixbuf/
 			s/gobject_introspection/gobject-introspection/
+			s/v4l_utils/v4l-utils/
 			p
 		}
 		d' ${0}`; do
@@ -5468,6 +5475,22 @@ install_native_opencv()
 		-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_src_dir}/modules || return
 	cmake --build ${opencv_bld_dir} -v -j ${jobs} || return
 	cmake --install ${opencv_bld_dir} -v ${strip:+--${strip}} || return
+	update_path || return
+}
+
+install_native_v4l_utils()
+{
+	[ -x ${prefix}/bin/v4l2-ctl -a "${force_install}" != yes ] && return
+	fetch v4l-utils || return
+	unpack v4l-utils || return
+	[ -f ${v4l_utils_bld_dir}/Makefile ] ||
+		(cd ${v4l_utils_bld_dir}
+		${v4l_utils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+			--disable-rpath ) || return
+	make -C ${v4l_utils_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${v4l_utils_bld_dir} -j ${jobs} -k check || return
+	make -C ${v4l_utils_bld_dir} -j 1 -k install${strip:+-${strip}} || true # '-k': workaround for 'install-data-local' fails in utils/keytable/bpf_protocols
 	update_path || return
 }
 
