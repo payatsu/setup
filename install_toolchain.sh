@@ -185,6 +185,7 @@
 : ${opencv_ver:=4.2.0}
 : ${opencv_contrib_ver:=4.2.0}
 : ${v4l_utils_ver:=1.20.0}
+: ${yavta_ver:=git}
 : ${googletest_ver:=1.8.1}
 : ${fzf_ver:=0.21.1}
 : ${jq_ver:=1.6}
@@ -630,6 +631,8 @@ help()
 		Specify the version of OpenCV contrib you want, currently '${opencv_contrib_ver}'.
 	v4l_utils_ver
 		Specify the version of v4l-utils you want, currently '${v4l_utils_ver}'.
+	yavta_ver
+		Specify the version of yavta you want, currently '${yavta_ver}'.
 	googletest_ver
 		Specify the version of google test you want, currently '${googletest_ver}'.
 	fzf_ver
@@ -1076,6 +1079,9 @@ fetch()
 		v4l-utils)
 			wget -O ${v4l_utils_src_dir}.tar.bz2 \
 				https://linuxtv.org/downloads/v4l-utils/${v4l_utils_name}.tar.bz2 || return;;
+		yavta)
+			git clone --depth 1 \
+				git://git.ideasonboard.org/yavta.git ${yavta_src_dir} || return;;
 		googletest)
 			wget -O ${googletest_src_dir}.tar.gz \
 				https://github.com/google/googletest/archive/release-${googletest_ver}.tar.gz || return;;
@@ -5492,6 +5498,19 @@ install_native_v4l_utils()
 		make -C ${v4l_utils_bld_dir} -j ${jobs} -k check || return
 	make -C ${v4l_utils_bld_dir} -j 1 -k install${strip:+-${strip}} || true # '-k': workaround for 'install-data-local' fails in utils/keytable/bpf_protocols
 	update_path || return
+}
+
+install_native_yavta()
+{
+	[ -x ${prefix}/bin/yavta -a "${force_install}" != yes ] && return
+	fetch yavta || return
+	unpack yavta || return
+	[ -f ${yavta_bld_dir}/Makefile ] || cp -Tvr ${yavta_src_dir} ${yavta_bld_dir} || return
+	make -C ${yavta_bld_dir} -j ${jobs} CROSS_COMPILE=${host:+${host}-} || return
+	command install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${yavta_bld_dir}/yavta || return
+	update_path || return
+	[ -z "${strip}" ] && return
+	strip -v ${DESTDIR}${prefix}/bin/yavta || return
 }
 
 install_native_googletest()
