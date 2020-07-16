@@ -59,7 +59,7 @@
 : ${newlib_ver:=3.1.0}
 : ${mingw_w64_ver:=5.0.4}
 : ${gmp_ver:=6.2.0}
-: ${mpfr_ver:=4.0.2}
+: ${mpfr_ver:=4.1.0}
 : ${mpc_ver:=1.1.0}
 : ${isl_ver:=0.20}
 : ${gcc_ver:=10.1.0}
@@ -164,7 +164,7 @@
 : ${rustc_ver:=1.44.0}
 : ${rustup_ver:=1.21.1}
 : ${ruby_ver:=2.7.1}
-: ${go_ver:=1.14.4}
+: ${go_ver:=1.14.5}
 : ${perl_ver:=5.30.3}
 : ${tcl_ver:=8.6.9}
 : ${tk_ver:=8.6.9}
@@ -176,7 +176,7 @@
 : ${guile_ver:=2.2.7}
 : ${lua_ver:=5.3.5}
 : ${node_ver:=12.16.1}
-: ${jdk_ver:=14.0.1}
+: ${jdk_ver:=14.0.2}
 : ${nasm_ver:=2.14.02}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=master}
