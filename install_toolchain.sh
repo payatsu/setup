@@ -161,8 +161,8 @@
 : ${boost_ver:=1_73_0}
 : ${Python_ver:=3.8.3}
 : ${Python2_ver:=2.7.18}
-: ${rustc_ver:=1.44.0}
-: ${rustup_ver:=1.21.1}
+: ${rustc_ver:=1.45.0}
+: ${rustup_ver:=1.22.1}
 : ${ruby_ver:=2.7.1}
 : ${go_ver:=1.14.5}
 : ${perl_ver:=5.30.3}
