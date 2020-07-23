@@ -62,7 +62,7 @@
 : ${mpfr_ver:=4.1.0}
 : ${mpc_ver:=1.1.0}
 : ${isl_ver:=0.20}
-: ${gcc_ver:=10.1.0}
+: ${gcc_ver:=10.2.0}
 : ${readline_ver:=8.0}
 : ${ncurses_ver:=6.2}
 : ${popt_ver:=1.16}
