@@ -42,8 +42,8 @@ init()
 {
 	: ${linux_ver:=5.5.13}
 	: ${jobs:=`grep -ce '^processor\>' /proc/cpuinfo`}
-	: ${ARCH:=arm}
-	: ${CROSS_COMPILE:=arm-none-linux-gnueabi-}
+	: ${ARCH:=`uname -m`}
+	: ${CROSS_COMPILE:=`gcc -dumpmachine`-}
 	: ${O:=../linux-${linux_ver}-`echo ${CROSS_COMPILE} | sed -e 's/-$//'`}
 	: ${prefix:=`pwd`/`basename ${CROSS_COMPILE} -`}
 	make_opts="-j ${jobs} V=1 W=1 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} O=${O} objtree=${O} INSTALL_MOD_PATH=${O}"
