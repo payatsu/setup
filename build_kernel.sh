@@ -6,30 +6,35 @@ help()
 [NAME]
 	`basename ${0}` - build kernel
 [SYNOPSIS]
-	`basename ${0}` [-c] [-d] [-g] [-h] [-k] [-m] [-M] [-p] [-s] [-t] [-v]
+	`basename ${0}` [--help] [-v|--verbose] [-k|--kernel]
+		[-h|--headers] [-m|--modules] [-t|--tags] [-d|--document]
+		[--my-module]
+		[-p|--perf] [-g|--gpio] [-s|--spi] [-c|--cgroup]
 [OPTIONS]
-	-c
-		install cgroup.
-	-d
-		build documents.
-	-g
-		install gpio.
-	-h
-		install headers.
-	-k
-		build kernel.
-	-m
-		install modules.
-	-M
-		create my module.
-	-p
-		install perf.
-	-s
-		install spi.
-	-t
-		create tags.
-	-v
-		log verbosely.
+		--help
+			show this help.
+		-v --verbose
+			log verbosely.
+		-k --kernel
+			build kernel.
+		-h --headers
+			install kernel headers.
+		-m --modules
+			install kernel modules.
+		-t --tags
+			create tags.
+		-d --document
+			build documents.
+		--my-module
+			create your own module.
+		-p --perf
+			install perf.
+		-g --gpio
+			install gpio.
+		-s --spi
+			install spi.
+		-c --cgroup
+			install cgroup.
 EOF
 }
 
@@ -54,7 +59,7 @@ prepare()
 			grep -e '^ /' | xargs readlink -e` \( -type f -o -type l \) -name 'curses.h' > /dev/null 2>&1 ||
 				apt install -y libncurses5-dev || return
 	}
-	[ -z "${tags_create}" ] || which ctags > /dev/null 2>&1 || apt install -y exuberant-ctags || return
+	[ -z "${tags_generate}" ] || which ctags > /dev/null 2>&1 || apt install -y exuberant-ctags || return
 	[ -z "${perf_install}" ] || {
 		which xmlto > /dev/null 2>&1 || apt install -y xmlto || return
 		which asciidoc > /dev/null 2>&1 || apt install -y asciidoc || return
@@ -94,7 +99,7 @@ build()
 	}
 	[ -z "${modules_install}" ] || make ${make_opts} modules_install || return
 	[ -z "${headers_install}" ] || make ${make_opts} headers_install || return
-	[ -z "${tags_create}" ] || make ${make_opts} tags gtags || return
+	[ -z "${tags_generate}" ] || make ${make_opts} tags gtags || return
 	[ -z "${cgroup_install}" ] || {
 		make ${make_opts} -C tools cgroup || return
 	}
@@ -151,37 +156,33 @@ EOF
 
 main()
 {
-	cgroup_install=
-	documents_build=
-	gpio_install=
-	headers_install=
+	verbose=
 	kernel_build=
+	headers_install=
 	modules_install=
+	tags_generate=
+	documents_build=
 	mymodule_create=
 	perf_install=
+	gpio_install=
 	spi_install=
-	tags_create=
-	verbose=
-	while getopts cdghkmMpstv arg; do
-		case ${arg} in
-		c) cgroup_install=yes;;
-		d) documents_build=yes;;
-		g) gpio_install=yes;;
-		h) headers_install=yes;;
-		k) kernel_build=yes;;
-		m) modules_install=yes;;
-		M) mymodule_create=yes;;
-		p) perf_install=yes;;
-		s) spi_install=yes;;
-		t) tags_create=yes;;
-		v) verbose=yes;;
-		\?) help 2>&1; exit 1;;
-		esac
-	done
-	shift `expr ${OPTIND} - 1`
+	cgroup_install=
 	while [ $# -gt 0 ]; do
 		case ${1} in
+		--help) help; exit 0;;
+		-v|--verbose)  verbose=yes;;
+		-k|--kernel)   kernel_build=yes;;
+		-h|--headers)  headers_install=yes;;
+		-m|--modules)  modules_install=yes;;
+		-t|--tags)     tags_generate=yes;;
+		-d|--document) documents_build=yes;;
+		--my-module)   mymodule_create=yes;;
+		-p|--perf)     perf_install=yes;;
+		-g|--gpio)     gpio_install=yes;;
+		-s|--spi)      spi_install=yes;;
+		-c|--cgroup)   cgroup_install=yes;;
 		*=*) eval "${1}";;
+		-*|--*) echo unknown option \'${1}\'. try \'--help\'. >&2; exit 1;;
 		esac
 		shift
 	done
