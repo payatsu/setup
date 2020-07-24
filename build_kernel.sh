@@ -39,10 +39,9 @@ init()
 	: ${jobs:=`grep -ce '^processor\>' /proc/cpuinfo`}
 	: ${ARCH:=arm}
 	: ${CROSS_COMPILE:=arm-none-linux-gnueabi-}
-	: ${INSTALL_HDR_PATH:=./usr}
-	: ${INSTALL_MOD_PATH:=/}
+	: ${O:=../linux-${linux_ver}-`echo ${CROSS_COMPILE} | sed -e 's/-$//'`}
 	: ${prefix:=`pwd`/`basename ${CROSS_COMPILE} -`}
-	make_opts="-j ${jobs} V=1 W=1 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} INSTALL_HDR_PATH=${INSTALL_HDR_PATH} INSTALL_MOD_PATH=${INSTALL_MOD_PATH}"
+	make_opts="-j ${jobs} V=1 W=1 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} O=${O} objtree=${O} INSTALL_MOD_PATH=${O}"
 }
 
 prepare()
@@ -50,7 +49,7 @@ prepare()
 	[ -z "${kernel_build}" ] || {
 		which ed > /dev/null 2>&1 || apt install -y ed || return
 		which bc > /dev/null 2>&1 || apt install -y bc || return
-		find `echo | LANG=C ${CC:-gcc} -x c -v -E - -o /dev/null 2>&1 |
+		find `echo | LANG=C ${CC:-${CROSS_COMPILE:+${CROSS_COMPILE}gcc}} -x c -v -E - -o /dev/null 2>&1 |
 			sed -e '/^#include "\.\.\." search starts here:$/,/^End of search list\.$/p;d' |
 			grep -e '^ /' | xargs readlink -e` \( -type f -o -type l \) -name 'curses.h' > /dev/null 2>&1 ||
 				apt install -y libncurses5-dev || return
