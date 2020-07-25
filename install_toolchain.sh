@@ -1640,7 +1640,8 @@ func_place_holder()
 		&& export GOPATH=${prefix}/.go`echo ${GOPATH} | sed -e 's%\(^\|:\)'${prefix}'/.go\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//;s/^./:&/'` \
 		|| export GOPATH=${prefix}/.go${GOPATH:+:${GOPATH}}
 	[ ${prefix} = /usr/local -a "${force_set}" != yes ] && return
-	for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/lib/gcc/${host} ] && find ${prefix}/lib/gcc/${host} -mindepth 1 -maxdepth 1 -type d -name '*.?.?' | sort -rV | head -n 1`; do
+	for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/${host} ] && find ${prefix}/${host} -mindepth 2 -maxdepth 2 -type d -name lib` \
+		`[ -d ${prefix}/lib/gcc/${host} ] && find ${prefix}/lib/gcc/${host} -mindepth 1 -maxdepth 1 -type d -name '*.?.?' | sort -rV | head -n 1`; do
 		[ -d ${p} ] || continue
 		echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ \
 			&& export LD_LIBRARY_PATH=${p}`echo ${LD_LIBRARY_PATH} | sed -e "s%\(^\|:\)${p}\(\$\|:\)%\1\2%g;s/::/:/g;s/^://;s/:\$//;s/^./:&/"` \
