@@ -42,7 +42,7 @@ EOF
 
 init()
 {
-	: ${linux_ver:=5.5.13}
+	: ${linux_ver:=5.7.10}
 	: ${jobs:=`grep -ce '^processor\>' /proc/cpuinfo`}
 	: ${ARCH:=`uname -m`}
 	: ${CROSS_COMPILE:=`gcc -dumpmachine`-}

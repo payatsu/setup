@@ -49,7 +49,7 @@
 : ${ed_ver:=1.16}
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
-: ${linux_ver:=5.5.13}
+: ${linux_ver:=5.7.10}
 : ${kmod_ver:=27}
 : ${dtc_ver:=1.6.0}
 : ${u_boot_ver:=2019.07}
