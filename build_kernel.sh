@@ -14,7 +14,9 @@ help()
 		--help
 			show this help.
 		-v --verbose
-			log verbosely.
+			enable verbose log output. this is default.
+		-q --quiet
+			disable verbose log output.
 		-k --kernel
 			build kernel.
 		-h --headers
@@ -156,7 +158,7 @@ EOF
 
 main()
 {
-	verbose=
+	verbose=yes
 	kernel_build=
 	headers_install=
 	modules_install=
@@ -171,6 +173,7 @@ main()
 		case ${1} in
 		--help) help; exit 0;;
 		-v|--verbose)  verbose=yes;;
+		-q|--quiet)    verbose=;;
 		-k|--kernel)   kernel_build=yes;;
 		-h|--headers)  headers_install=yes;;
 		-m|--modules)  modules_install=yes;;
