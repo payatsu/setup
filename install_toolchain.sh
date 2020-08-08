@@ -3652,7 +3652,7 @@ install_native_graphviz()
 	make -C ${graphviz_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${graphviz_bld_dir} -j ${jobs} -k check || return
-	make -C ${graphviz_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	make -C ${graphviz_bld_dir} -j 1 install${strip:+-${strip}} || return # XXX work around for parallel make
 	update_path || return
 }
 
