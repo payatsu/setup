@@ -1045,9 +1045,12 @@ fetch()
 		libpsl)
 			wget -O ${libpsl_src_dir}.tar.gz \
 				https://github.com/rockdaboot/libpsl/releases/download/${libpsl_name}/${libpsl_name}.tar.gz || return;;
-		libatomic_ops|gc)
-			eval wget -O \${${_p}_src_dir}.tar.gz \
-				https://www.hboehm.info/gc/gc_source/\${${_p:-libatomic_ops}_name}.tar.gz || return;;
+		gc)
+			wget -O ${gc_src_dir}.tar.gz \
+				https://github.com/ivmai/bdwgc/releases/download/v${gc_ver}/${gc_name}.tar.gz || return;;
+		libatomic_ops)
+			wget -O ${libatomic_ops_src_dir}.tar.gz \
+				https://github.com/ivmai/libatomic_ops/releases/download/v${libatomic_ops_ver}/${libatomic_ops_name}.tar.gz || return;;
 		lua)
 			wget -O ${lua_src_dir}.tar.gz \
 				http://www.lua.org/ftp/${lua_name}.tar.gz || return;;
