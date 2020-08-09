@@ -31,7 +31,7 @@
 : ${texinfo_ver:=6.7}
 : ${coreutils_ver:=8.32}
 : ${busybox_ver:=1.31.1}
-: ${bison_ver:=3.6.1}
+: ${bison_ver:=3.7.1}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
@@ -55,7 +55,7 @@
 : ${u_boot_ver:=2019.07}
 : ${qemu_ver:=4.2.0}
 : ${gperf_ver:=3.1}
-: ${glibc_ver:=2.31}
+: ${glibc_ver:=2.32}
 : ${newlib_ver:=3.1.0}
 : ${mingw_w64_ver:=5.0.4}
 : ${gmp_ver:=6.2.0}
