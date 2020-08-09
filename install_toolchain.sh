@@ -4928,7 +4928,7 @@ install_cross_functional_gcc()
 		ln -fsv ${target}-${b}-${gcc_base_ver}.1 ${DESTDIR}${prefix}/share/man/man1/${target}-${b}.1 || return
 	done
 	for d in lib lib64; do
-		for e in a so; do
+		for e in a so so.1; do
 			[ -f ${DESTDIR}${prefix}/lib/gcc/${target}/${d}/libgcc_s.${e} ] || continue
 			ln -fsv ../${d}/libgcc_s.${e} ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_base_ver} || return # XXX work around for --enable-version-specific-runtime-libs
 		done
