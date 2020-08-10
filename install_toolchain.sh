@@ -2485,7 +2485,9 @@ install_native_isl()
 	unpack isl || return
 	[ -f ${isl_bld_dir}/Makefile ] ||
 		(cd ${isl_bld_dir}
-		${isl_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		${isl_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+			--with-gmp-prefix=`print_prefix gmp.h` \
+			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`" LIBS=-lgmp) || return
 	make -C ${isl_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${isl_bld_dir} -j ${jobs} -k check || return
