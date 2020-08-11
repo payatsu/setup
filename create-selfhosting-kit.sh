@@ -26,6 +26,7 @@
 : ${bison_ver:=3.7.1}
 : ${flex_ver:=2.6.4}
 : ${libtool_ver:=2.4.6}
+: ${pkg_config_ver:=0.29.2}
 
 : ${screen_ver:=4.8.0}
 : ${vim_ver:=8.2.1127}
@@ -111,6 +112,9 @@ fetch()
 	flex)
 		wget -O ${flex_src_dir}.tar.gz \
 			https://github.com/westes/flex/releases/download/v${flex_ver}/${flex_name}.tar.gz || return;;
+	pkg-config)
+		wget -O ${pkg_config_src_dir}.tar.gz \
+			https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
 	vim)
 		wget -O ${vim_src_dir}.tar.gz \
 			http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return;;
@@ -606,6 +610,23 @@ EOF
 		[ -z "${strip}" ] && return
 		strip -v ${DESTDIR}${prefix}/lib/libltdl.so || return
 		;;
+	pkg-config)
+		[ -x ${DESTDIR}${prefix}/bin/pkg-config -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${pkg_config_bld_dir}/Makefile -a -f ${pkg_config_bld_dir}/glib/Makefile ] ||
+			(cd ${pkg_config_bld_dir}
+			${pkg_config_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--with-internal-glib \
+				glib_cv_stack_grows=no \
+				glib_cv_uscore=no \
+				ac_cv_func_posix_getpwuid_r=yes \
+				ac_cv_func_posix_getgrgid_r=yes) || return
+		make -C ${pkg_config_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${pkg_config_bld_dir} -j ${jobs} -k check || return
+		make -C ${pkg_config_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
 	vim)
 		[ -x ${DESTDIR}${prefix}/bin/vim -a "${force_install}" != yes ] && return
 		print_header_path curses.h > /dev/null || ${0} ncurses || return
@@ -697,7 +718,11 @@ main()
 	DESTDIR=`readlink -m selfhosting-kit/products`
 	languages=c,c++,go
 
-	for p in "${@:-`grep -oPe '(?<=^: \\${)\w+(?=_ver)' ${0} | sed -e 's/source_highlight/source-highlight/;s/vimdoc_ja/vimdoc-ja/'`}"; do
+	for p in "${@:-`grep -oPe '(?<=^: \\${)\w+(?=_ver)' ${0} | sed -e '
+			s/source_highlight/source-highlight/
+			s/pkg_config/pkg-config/
+			s/vimdoc_ja/vimdoc-ja/
+			'`}"; do
 		init ${p} || return
 		build ${p} || return
 	done
