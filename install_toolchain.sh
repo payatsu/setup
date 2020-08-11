@@ -1814,12 +1814,12 @@ install_native_bzip2()
 		}
 		s/ln -s -f \$(PREFIX)\/bin\//ln -s -f /' ${bzip2_bld_dir}/Makefile || return
 	make -C ${bzip2_bld_dir} -j ${jobs} \
-		CC="${CC:-${host:+${host}-}gcc}" AR=${host}-gcc-ar RANLIB=${host}-gcc-ranlib bzip2 bzip2recover || return
+		CC=${CC:-${host:+${host}-}gcc} AR=${host}-gcc-ar RANLIB=${host}-gcc-ranlib bzip2 bzip2recover || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${bzip2_bld_dir} -j ${jobs} -k check || return
 	make -C ${bzip2_bld_dir} -j ${jobs} PREFIX=${DESTDIR}${prefix} install || return
 	make -C ${bzip2_bld_dir} -j ${jobs} clean || return
-	make -C ${bzip2_bld_dir} -j ${jobs} -f Makefile-libbz2_so CC="${CC:-${host:+${host}-}gcc}" || return
+	make -C ${bzip2_bld_dir} -j ${jobs} -f Makefile-libbz2_so CC=${CC:-${host:+${host}-}gcc} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${bzip2_bld_dir} -j ${jobs} -k check || return
 	cp -fv ${bzip2_bld_dir}/libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib || return
@@ -1856,7 +1856,7 @@ install_native_zip()
 	fetch zip || return
 	unpack zip || return
 	[ -f ${zip_bld_dir}/unix/Makefile ] || cp -Tvr ${zip_src_dir} ${zip_bld_dir} || return
-	make -C ${zip_bld_dir} -f unix/Makefile -j ${jobs} CC="${CC:-${host:+${host}-}gcc}" BIND=${host}-gcc AS=${host}-as generic || return
+	make -C ${zip_bld_dir} -f unix/Makefile -j ${jobs} CC=${CC:-${host:+${host}-}gcc} BIND=${host}-gcc AS=${host}-as generic || return
 	make -C ${zip_bld_dir} -f unix/Makefile -j ${jobs} prefix=${DESTDIR}${prefix} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
@@ -1871,7 +1871,7 @@ install_native_unzip()
 	fetch unzip || return
 	unpack unzip || return
 	[ -f ${unzip_bld_dir}/unix/Makefile ] || cp -Tvr ${unzip_src_dir} ${unzip_bld_dir} || return
-	make -C ${unzip_bld_dir} -f unix/Makefile -j ${jobs} CC="${CC:-${host:+${host}-}gcc}" AS=${host}-gcc LOCAL_UNZIP=-DNO_LCHMOD generic || return
+	make -C ${unzip_bld_dir} -f unix/Makefile -j ${jobs} CC=${CC:-${host:+${host}-}gcc} AS=${host}-gcc LOCAL_UNZIP=-DNO_LCHMOD generic || return
 	make -C ${unzip_bld_dir} -f unix/Makefile -j ${jobs} prefix=${DESTDIR}${prefix} install || return
 	update_path || return
 }
@@ -1883,7 +1883,7 @@ install_native_lzip()
 	unpack lzip || return
 	[ -f ${lzip_bld_dir}/Makefile ] ||
 		(cd ${lzip_bld_dir}
-		${lzip_src_dir}/configure --prefix=${prefix} CXX="${CXX:-${host:+${host}-}g++}") || return
+		${lzip_src_dir}/configure --prefix=${prefix} CXX=${CXX:-${host:+${host}-}g++}) || return
 	make -C ${lzip_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${lzip_bld_dir} -j ${jobs} -k check || return
@@ -1897,7 +1897,7 @@ install_native_lunzip()
 	unpack lunzip || return
 	[ -f ${lunzip_bld_dir}/Makefile ] ||
 		(cd ${lunzip_bld_dir}
-		${lunzip_src_dir}/configure --prefix=${prefix} CC="${CC:-${host:+${host}-}gcc}") || return
+		${lunzip_src_dir}/configure --prefix=${prefix} CC=${CC:-${host:+${host}-}gcc}) || return
 	make -C ${lunzip_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${lunzip_bld_dir} -j ${jobs} -k check || return
@@ -1938,7 +1938,7 @@ install_native_lz4()
 	fetch lz4 || return
 	unpack lz4 || return
 	[ -f ${lz4_bld_dir}/Makefile ] || cp -Tvr ${lz4_src_dir} ${lz4_bld_dir} || return
-	make -C ${lz4_bld_dir} -j ${jobs} V=1 CC="${CC:-${host:+${host}-}gcc}" || return
+	make -C ${lz4_bld_dir} -j ${jobs} V=1 CC=${CC:-${host:+${host}-}gcc} || return
 	for f in lz4c lz4cat unlz4; do
 		rm -fv ${DESTDIR}${prefix}/bin/${f} || return
 	done
@@ -1953,7 +1953,7 @@ install_native_zstd()
 	fetch zstd || return
 	unpack zstd || return
 	[ -f ${zstd_bld_dir}/Makefile ] || cp -Tvr ${zstd_src_dir} ${zstd_bld_dir} || return
-	make -C ${zstd_bld_dir} -j ${jobs} CC="${CC:-${host:+${host}-}gcc}" || return
+	make -C ${zstd_bld_dir} -j ${jobs} CC=${CC:-${host:+${host}-}gcc} || return
 	make -C ${zstd_bld_dir} -j ${jobs} prefix=${DESTDIR}${prefix} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
@@ -2277,7 +2277,7 @@ install_native_ed()
 	unpack ed || return
 	[ -f ${ed_bld_dir}/Makefile ] ||
 		(cd ${ed_bld_dir}
-		${ed_src_dir}/configure --prefix=${prefix} CC="${CC:-${host:+${host}-}gcc}") || return
+		${ed_src_dir}/configure --prefix=${prefix} CC=${CC:-${host:+${host}-}gcc}) || return
 	make -C ${ed_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${ed_bld_dir} -j ${jobs} -k check || return
@@ -2378,7 +2378,7 @@ install_native_qemu()
 	fetch qemu || return
 	unpack qemu || return
 	(cd ${qemu_src_dir}
-	./configure --prefix=${prefix} --cc="${CC:-${host:+${host}-}gcc}" --host-cc="${CC:-${host:+${host}-}gcc}" --cxx="${CXX:-${host:+${host}-}g++}" \
+	./configure --prefix=${prefix} --cc=${CC:-${host:+${host}-}gcc} --host-cc=${CC:-${host:+${host}-}gcc} --cxx=${CXX:-${host:+${host}-}g++} \
 		--extra-cflags=-I`print_header_dir zlib.h` --extra-ldflags=-L`print_library_dir libz.so`) || return
 	make -C ${qemu_src_dir} -j ${jobs} V=1 || return
 	[ "${enable_check}" != yes ] ||
@@ -3345,7 +3345,7 @@ install_native_pixman()
 #	[ -f ${webkitgtk_bld_dir}/Makefile ] ||
 #		(cd ${webkitgtk_bld_dir}
 #		update_pkg_config_path
-#		cmake -DCMAKE_C_COMPILER="${CC:-${host:+${host}-}gcc}" -DCMAKE_CXX_COMPILER="${CXX:-${host:+${host}-}g++}" \
+#		cmake -DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} -DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 #			-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} -L${prefix}/lib" \
 #			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 #			-DPORT=GTK -DENABLE_CREDENTIAL_STORAGE=OFF \
@@ -4356,7 +4356,7 @@ install_native_utf8proc()
 	fetch utf8proc || return
 	unpack utf8proc || return
 	[ -f ${utf8proc_bld_dir}/Makefile ] || cp -Tvr ${utf8proc_src_dir} ${utf8proc_bld_dir} || return
-	make -C ${utf8proc_bld_dir} -j ${jobs} CC="${CC:-${host:+${host}-}gcc}" || return
+	make -C ${utf8proc_bld_dir} -j ${jobs} CC=${CC:-${host:+${host}-}gcc} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${utf8proc_bld_dir} -j ${jobs} -k check || return
 	make -C ${utf8proc_bld_dir} -j ${jobs} prefix=${prefix} install || return
@@ -5094,7 +5094,7 @@ install_native_perl()
 	unpack perl || return
 	[ -f ${perl_bld_dir}/Makefile ] ||
 		(cd ${perl_bld_dir}
-		${perl_src_dir}/Configure -de -Dprefix=${prefix} -Dcc="${CC:-${host:+${host}-}gcc}" \
+		${perl_src_dir}/Configure -de -Dprefix=${prefix} -Dcc=${CC:-${host:+${host}-}gcc} \
 			-Dusethreads -Duse64bitint -Duse64bitall -Dusemorebits -Duseshrplib -Dmksymlinks) || return
 	make -C ${perl_bld_dir} -j 1 || return
 	[ "${enable_check}" != yes ] ||
