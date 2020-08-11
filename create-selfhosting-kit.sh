@@ -136,7 +136,7 @@ unpack()
 
 print_library_path()
 {
-	for d in ${DESTDIR}${prefix}/lib64 ${DESTDIR}${prefix}/lib `LANG=C ${CC:-${target:+${target}-}gcc} -print-search-dirs |
+	for d in ${DESTDIR}${prefix}/lib64 ${DESTDIR}${prefix}/lib `LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
 		sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs realpath -eq`; do
 		[ -d ${d}${2:+/${2}} ] || continue
 		candidates=`find ${d}${2:+/${2}} \( -type f -o -type l \) -name ${1} | sort`
@@ -154,7 +154,7 @@ print_library_dir()
 print_header_path()
 {
 	for d in ${DESTDIR}${prefix}/include \
-		`LANG=C ${CC:-${target:+${target}-}gcc} -x c -E -v /dev/null -o /dev/null 2>&1 |
+		`LANG=C ${CC:-${host:+${host}-}gcc} -x c -E -v /dev/null -o /dev/null 2>&1 |
 			sed -e '/^#include /,/^End of search list.$/p;d' | xargs realpath -eq`; do
 		[ -d ${d}${2:+/${2}} ] || continue
 		candidates=`find ${d}${2:+/${2}} \( -type f -o -type l \) -name ${1} | sort`
