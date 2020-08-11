@@ -1691,7 +1691,9 @@ print_library_path()
 {
 	for dir in ${DESTDIR}${prefix}/lib64 ${DESTDIR}${prefix}/lib `LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
 		sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs realpath -eq`; do
-		[ -f ${dir}/${1} ] && echo ${dir}/${1} && return
+		[ -d ${dir}${2:+/${2}} ] || continue
+		candidates=`find ${dir}${2:+/${2}} \( -type f -o -type l \) -name ${1} | sort`
+		[ -n "${candidates}" ] && echo "${candidates}" | head -n 1 && return
 	done
 	return 1
 }
