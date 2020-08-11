@@ -80,7 +80,7 @@
 : ${libXpm_ver:=3.5.11}
 : ${libwebp_ver:=1.0.0}
 : ${libffi_ver:=3.3}
-: ${emacs_ver:=26.3}
+: ${emacs_ver:=27.1}
 : ${libiconv_ver:=1.15}
 : ${vim_ver:=8.2.1127}
 : ${vimdoc_ja_ver:=master}
