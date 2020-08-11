@@ -4933,6 +4933,7 @@ install_cross_functional_gcc()
 		for e in a so so.1; do
 			[ -f ${DESTDIR}${prefix}/lib/gcc/${target}/${d}/libgcc_s.${e} ] || continue
 			ln -fsv ../${d}/libgcc_s.${e} ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_base_ver} || return # XXX work around for --enable-version-specific-runtime-libs
+			cp -fv ${DESTDIR}${prefix}/lib/gcc/${target}/${d}/libgcc_s.${e} ${sysroot}/usr/lib || return
 		done
 	done
 	update_path || return
