@@ -2670,6 +2670,7 @@ install_native_babeltrace()
 install_native_gdb()
 {
 	[ -x ${prefix}/bin/gdb -a "${force_install}" != yes ] && return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
 	print_header_path readline.h readline > /dev/null || install_native_readline || return
 	print_header_path curses.h > /dev/null || install_native_ncurses || return
 	print_library_path libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`.so > /dev/null || install_native_Python || return
