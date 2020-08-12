@@ -55,6 +55,7 @@
 : ${host:=aarch64-linux-gnu}
 : ${jobs:=4}
 : ${strip:=strip}
+: ${cleanup:=no}
 
 init()
 {
@@ -1144,6 +1145,13 @@ EOF
 	return 0
 }
 
+cleanup()
+{
+	[ "${cleanup}" != yes ] && return
+	eval rm -fvr \${${_1}_src_dir} || return
+	eval rm -fvr \${${_1}_bld_dir} || return
+}
+
 main()
 {
 	${host}-gcc --version > /dev/null || return
@@ -1153,8 +1161,17 @@ main()
 	mkdir -pv selfhosting-kit || return
 	src_dir=`readlink -m selfhosting-kit/src`
 	DESTDIR=`readlink -m selfhosting-kit/products`
+
 	languages=c,c++
 	which ${host}-gccgo > /dev/null && languages=${languages},go
+
+	while [ $# -gt 0 ]; do
+		case ${1} in
+		--cleanup) cleanup=yes;;
+		*) break;;
+		esac
+		shift
+	done
 
 	for p in ${@:-`grep -oPe '(?<=^: \\${)\w+(?=_ver)' ${0} | sed -e '
 			s/source_highlight/source-highlight/
@@ -1164,6 +1181,7 @@ main()
 			'`}; do
 		init ${p} || return
 		build ${p} || return
+		cleanup ${p} || return
 	done
 }
 
