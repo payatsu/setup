@@ -1008,6 +1008,7 @@ EOF
 				s!^\(libdir='\)\(${prefix}\)!\1${DESTDIR}\2!
 				" {} + || return
 	done
+	return 0
 }
 
 main()
@@ -1021,12 +1022,12 @@ main()
 	DESTDIR=`readlink -m selfhosting-kit/products`
 	languages=c,c++,go
 
-	for p in "${@:-`grep -oPe '(?<=^: \\${)\w+(?=_ver)' ${0} | sed -e '
+	for p in ${@:-`grep -oPe '(?<=^: \\${)\w+(?=_ver)' ${0} | sed -e '
 			s/source_highlight/source-highlight/
 			s/util_linux/util-linux/
 			s/pkg_config/pkg-config/
 			s/vimdoc_ja/vimdoc-ja/
-			'`}"; do
+			'`}; do
 		init ${p} || return
 		build ${p} || return
 	done
