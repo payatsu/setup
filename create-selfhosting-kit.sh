@@ -64,7 +64,7 @@ init()
 	esac
 	eval ${_1}_src_base=${src_dir}/${1}
 	eval ${_1}_src_dir=${src_dir}/${1}/\${${_1}_name}
-	eval ${_1}_bld_dir=${src_dir}/${1}/\${${_1}_name}-${target}
+	eval ${_1}_bld_dir=${src_dir}/${1}/\${${_1}_name}-${host}
 }
 
 check_archive()
@@ -529,7 +529,7 @@ EOF
 		unpack ${1} || return
 		(cd ${boost_src_dir}
 		./bootstrap.sh --prefix=${DESTDIR}${prefix} --with-toolset=gcc &&
-  		sed -i -e "/^    using gcc /s//&: : ${target}-gcc /" project-config.jam &&
+		sed -i -e "/^    using gcc /s//&: : ${host}-gcc /" project-config.jam &&
 		./b2 --prefix=${DESTDIR}${prefix} --build-dir=${boost_bld_dir} \
 			--layout=system --build-type=minimal -j ${jobs} -q \
 			include=${prefix}/include library-path=${prefix}/lib install) || return
@@ -1047,14 +1047,15 @@ EOF
 
 main()
 {
+	${host}-gcc --version > /dev/null || return
 	build=`gcc -dumpmachine`
 	target=${host}
-	${target}-gcc --version > /dev/null || return
 
 	mkdir -pv selfhosting-kit || return
 	src_dir=`readlink -m selfhosting-kit/src`
 	DESTDIR=`readlink -m selfhosting-kit/products`
-	languages=c,c++,go
+	languages=c,c++
+	which ${host}-gccgo > /dev/null && languages=${languages},go
 
 	for p in ${@:-`grep -oPe '(?<=^: \\${)\w+(?=_ver)' ${0} | sed -e '
 			s/source_highlight/source-highlight/
