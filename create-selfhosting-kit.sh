@@ -460,7 +460,7 @@ build()
 		strip -v ${DESTDIR}${prefix}/lib/libexpat.so || return
 		;;
 	libffi)
-		[ -f ${DESTDIR}${prefix}/lib/libffi-*/include/ffi.h -a "${force_install}" != yes ] && return
+		[ -f ${DESTDIR}${prefix}/include/ffi.h -a "${force_install}" != yes ] && return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libffi_bld_dir}/Makefile ] ||
@@ -560,7 +560,7 @@ EOF
 		make -C ${source_highlight_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} -k || true
 		;;
 	bzip2)
-		[ -x $DESTDIR}${prefix}/bin/bzip2 -a "${force_install}" != yes ] && return
+		[ -x ${DESTDIR}${prefix}/bin/bzip2 -a "${force_install}" != yes ] && return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${bzip2_bld_dir}/Makefile ] || cp -Tvr ${bzip2_src_dir} ${bzip2_bld_dir} || return
@@ -1039,6 +1039,7 @@ EOF
 		${0} vimdoc-ja || return
 		;;
 	vimdoc-ja)
+		[ -d ${DESTDIR}${prefix}/share/vim/vimfiles -a "${force_install}" != yes ] && return
 		fetch ${1} || return
 		unpack ${1} || return
 		mkdir -pv ${DESTDIR}${prefix}/share/vim/vimfiles || return
