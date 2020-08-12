@@ -2865,7 +2865,7 @@ install_native_libwebp()
 
 install_native_libffi()
 {
-	[ -f ${prefix}/lib/libffi-*/include/ffi.h -a "${force_install}" != yes ] && return
+	[ -f ${prefix}/include/ffi.h -a "${force_install}" != yes ] && return
 	fetch libffi || return
 	unpack libffi || return
 	[ -f ${libffi_bld_dir}/Makefile ] ||
