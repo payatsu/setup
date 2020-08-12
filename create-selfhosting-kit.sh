@@ -21,6 +21,7 @@
 : ${xz_ver:=5.2.5}
 : ${elfutils_ver:=0.178}
 : ${pcre_ver:=8.43}
+: ${pcre2_ver:=10.32}
 : ${util_linux_ver:=2.35.1}
 : ${popt_ver:=1.16}
 : ${glib_ver:=2.59.0}
@@ -37,6 +38,8 @@
 : ${flex_ver:=2.6.4}
 : ${libtool_ver:=2.4.6}
 : ${pkg_config_ver:=0.29.2}
+: ${curl_ver:=7.69.1}
+: ${git_ver:=2.28.0}
 
 : ${screen_ver:=4.8.0}
 : ${vim_ver:=8.2.1127}
@@ -163,6 +166,12 @@ fetch()
 	pkg-config)
 		wget -O ${pkg_config_src_dir}.tar.gz \
 			https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
+	curl)
+		wget -O ${curl_src_dir}.tar.bz2 \
+			https://curl.haxx.se/download/${curl_name}.tar.bz2 || return;;
+	git)
+		wget -O ${git_src_dir}.tar.xz \
+			https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return;;
 	vim)
 		wget -O ${vim_src_dir}.tar.gz \
 			http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return;;
@@ -172,7 +181,7 @@ fetch()
 	ruby)
 		wget -O ${ruby_src_dir}.tar.xz \
 			http://cache.ruby-lang.org/pub/ruby/`print_version ruby`/${ruby_name}.tar.xz || return;;
-	*) echo not implemented. can not fetch \'${1}\'. 2>&1; return 1;;
+	*) echo ERROR: not implemented. can not fetch \'${1}\'. 2>&1; return 1;;
 	esac
 }
 
@@ -632,6 +641,23 @@ EOF
 			make -C ${pcre_bld_dir} -j ${jobs} -k check || return
 		make -C ${pcre_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
+	pcre2)
+		[ -f ${DESTDIR}${prefix}/include/pcre2.h -a "${force_install}" != yes ] && return
+		print_header_path bzlib.h > /dev/null || ${0} bzip2 || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${pcre2_bld_dir}/Makefile ] ||
+			(cd ${pcre2_bld_dir}
+			${pcre2_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--enable-pcre2-16 --enable-pcre2-32 --enable-jit --enable-newline-is-any \
+				--enable-pcre2grep-libz --enable-pcre2grep-libbz2 \
+				CPPFLAGS="${CPPFLAGS} -I`print_header_dir bzlib.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libbz2.so`") || return
+		make -C ${pcre2_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${pcre2_bld_dir} -j ${jobs} -k check || return
+		make -C ${pcre2_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
 	util-linux)
 		[ -x ${DESTDIR}${prefix}/bin/hexdump -a "${force_install}" != yes ] && return
 		fetch ${1} || return
@@ -794,9 +820,26 @@ EOF
 		make -C ${screen_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/${screen_name} || return
 		;;
-	m4|perl)
+	m4)
 		# TODO: not implemented.
-		echo \'${1}\' can not be installed with this script yet. skipped. 2>&1
+		echo WARNING: not implemented. can not build \'${1}\'. skipped. 2>&1
+		;;
+	perl)
+		echo WARNING: not implemented. can not build \'${1}\'. skipped. 2>&1
+		return 0
+
+		[ -x ${DESTDIR}${prefix}/bin/perl -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${perl_bld_dir}/Makefile ] ||
+			(cd ${perl_bld_dir}
+			${perl_src_dir}/Configure -de -Dusecrosscompile -Dprefix=${prefix} -Dcc=${CC:-${host:+${host}-}gcc} \
+				-Dusethreads -Duse64bitint -Duse64bitall -Dusemorebits -Duseshrplib -Dmksymlinks) || return
+		make -C ${perl_bld_dir} -j 1 || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${perl_bld_dir} -j ${jobs} -k test || return
+		make -C ${perl_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		ln -fsv `find ${DESTDIR}${prefix}/lib -type f -name libperl.so | sed -e s%^${DESTDIR}${prefix}/lib/%%` ${DESTDIR}${prefix}/lib || return
 		;;
 	autoconf)
 		[ -x ${DESTDIR}${prefix}/bin/autoconf -a "${force_install}" != yes ] && return
@@ -877,6 +920,61 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${pkg_config_bld_dir} -j ${jobs} -k check || return
 		make -C ${pkg_config_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	curl)
+		[ -x ${DESTDIR}${prefix}/bin/curl -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} zlib || return
+		print_header_path ssl.h openssl > /dev/null || ${0} openssl || return
+		fetch ${1} || return
+		unpack ${1} || return
+		(cd ${curl_bld_dir}
+		${curl_src_dir}/configure --prefix=${prefix} --host=${host} \
+			--enable-optimize --disable-silent-rules \
+			--enable-http --enable-ftp --enable-file \
+			--enable-ldap --enable-ldaps --enable-rtsp --enable-proxy \
+			--enable-dict --enable-telnet --enable-tftp --enable-pop3 \
+			--enable-imap --enable-smb --enable-smtp --enable-gopher \
+			--enable-manual --enable-ipv6 --enable-openssl-auto-load-config \
+			--enable-sspi --enable-crypto-auth --enable-tls-srp \
+			--enable-unix-sockets --enable-cookies --enable-http-auth \
+			--enable-doh --enable-mime --enable-dateparse --enable-netrc \
+			--enable-progress-meter --enable-dnsshuffle --enable-alt-svc \
+			--with-zlib=`print_prefix zlib.h` \
+			--with-ssl=`print_prefix ssl.h openssl`) || return
+		make -C ${curl_bld_dir} -j ${jobs} || return
+		make -C ${curl_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		[ -z "${strip}" ] && return
+		strip -v ${DESTDIR}${prefix}/bin/curl || return
+		;;
+	git)
+		[ -x ${DESTDIR}${prefix}/bin/git -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} zlib || return
+		print_header_path ssl.h openssl > /dev/null || ${0} openssl || return
+		print_header_path curl.h curl > /dev/null || ${0} curl || return
+		print_header_path expat.h > /dev/null || ${0} expat || return
+		print_header_path pcre2.h > /dev/null || ${0} pcre2 || return
+		fetch ${1} || return
+		unpack ${1} || return
+		make -C ${git_src_dir} -j ${jobs} V=1 configure || return
+		(cd ${git_src_dir}
+		./configure --prefix=${prefix} --host=${host} \
+			--with-openssl=`print_prefix ssl.h openssl` --with-libpcre=`print_prefix pcre2.h` \
+			--with-curl=`print_prefix curl.h curl` --with-expat=`print_prefix expat.h` \
+			--with-perl=perl --with-python=python3 --with-zlib=`print_prefix zlib.h` \
+			ac_cv_iconv_omits_bom=no \
+			ac_cv_fread_reads_directories=yes \
+			ac_cv_snprintf_returns_bogus=no \
+			) || return
+		sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_src_dir}/Makefile || return
+		sed -i -e 's/^\(CC_LD_DYNPATH=\).\+/\1-L/' ${git_src_dir}/config.mak.autogen || return
+		make -C ${git_src_dir} -j 1       V=1 LDFLAGS="${LDFLAGS} -ldl" all || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${git_src_dir} -j ${jobs} -k V=1 test || return
+		make -C ${git_src_dir} -j ${jobs} V=1 DESTDIR=${DESTDIR} ${strip} install || return
+		[ -z "${strip}" ] && return
+		for b in git git-receive-pack git-upload-archive git-upload-pack; do
+			strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		done
 		;;
 	vim)
 		[ -x ${DESTDIR}${prefix}/bin/vim -a "${force_install}" != yes ] && return
@@ -1029,7 +1127,7 @@ EOF
 		strip -v ${DESTDIR}${prefix}/lib/${ruby_platform}/libruby.so || return
 		find ${DESTDIR}${prefix}/lib/${ruby_platform}/ruby/`print_version ruby`.0 -type f -name '*.so' -exec strip -v {} + || return
 		;;
-	*) echo not implemented. can not build \'${1}\'. 2>&1; return 1;;
+	*) echo ERROR: not implemented. can not build \'${1}\'. 2>&1; return 1;;
 	esac
 	for d in lib lib64; do
 		[ -d ${DESTDIR}${prefix}/${d} ] || continue
