@@ -46,6 +46,8 @@
 : ${patch_ver:=2.7.6}
 : ${global_ver:=6.6.4}
 
+: ${ruby_ver:=2.7.1}
+
 : ${prefix:=/usr/local}
 : ${host:=aarch64-linux-gnu}
 : ${jobs:=4}
@@ -167,6 +169,9 @@ fetch()
 	vimdoc-ja)
 		wget -O ${vimdoc_ja_src_dir}.tar.gz \
 			https://github.com/vim-jp/vimdoc-ja/archive/master.tar.gz || return;;
+	ruby)
+		wget -O ${ruby_src_dir}.tar.xz \
+			http://cache.ruby-lang.org/pub/ruby/`print_version ruby`/${ruby_name}.tar.xz || return;;
 	*) echo not implemented. can not fetch \'${1}\'. 2>&1; return 1;;
 	esac
 }
@@ -994,6 +999,35 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${global_bld_dir} -j ${jobs} -k check || return
 		make -C ${global_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	ruby)
+		[ -x ${DESTDIR}${prefix}/bin/ruby -a "${force_install}" != yes ] && return
+		print_header_path gmp.h > /dev/null || ${0} gmp || return
+		print_header_path zlib.h > /dev/null || ${0} zlib || return
+		print_header_path readline.h readline > /dev/null || ${0} readline || return
+		print_header_path ssl.h openssl > /dev/null || ${0} openssl || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${ruby_bld_dir}/Makefile ] ||
+			(cd ${ruby_bld_dir}
+			${ruby_src_dir}/configure --prefix=${prefix} --host=${host} \
+				--disable-silent-rules --enable-multiarch --enable-shared \
+				--with-compress-debug-sections \
+				--with-zlib-dir=`print_prefix zlib.h` \
+				--with-readline-dir=`print_prefix readline.h readline` \
+				--with-openssl-dir=`print_prefix ssl.h openssl` \
+				) || return
+		make -C ${ruby_bld_dir} -j ${jobs} V=1 SHELL=bash || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${ruby_bld_dir} -j ${jobs} -k V=1 check || return
+		make -C ${ruby_bld_dir} -j ${jobs} V=1 DESTDIR=${DESTDIR} install || return
+		mkdir -pv ${DESTDIR}${prefix}/lib/pkgconfig || return
+		ruby_platform=`grep -e '^arch =' -m 1 ${ruby_bld_dir}/Makefile | grep -oe '[[:graph:]]\+$'`
+		ln -fsv ${ruby_platform}/pkgconfig/ruby-`print_version ruby`.pc ${DESTDIR}${prefix}/lib/pkgconfig || return
+		[ -z "${strip}" ] && return
+		strip -v ${DESTDIR}${prefix}/bin/ruby || return
+		strip -v ${DESTDIR}${prefix}/lib/${ruby_platform}/libruby.so || return
+		find ${DESTDIR}${prefix}/lib/${ruby_platform}/ruby/`print_version ruby`.0 -type f -name '*.so' -exec strip -v {} + || return
 		;;
 	*) echo not implemented. can not build \'${1}\'. 2>&1; return 1;;
 	esac
