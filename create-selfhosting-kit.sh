@@ -17,7 +17,17 @@
 : ${Python_ver:=3.8.5}
 : ${boost_ver:=1_73_0}
 : ${source_highlight_ver:=3.1.9}
+: ${bzip2_ver:=1.0.8}
+: ${xz_ver:=5.2.5}
+: ${elfutils_ver:=0.178}
+: ${pcre_ver:=8.43}
+: ${util_linux_ver:=2.35.1}
+: ${popt_ver:=1.16}
+: ${glib_ver:=2.59.0}
+: ${babeltrace_ver:=1.5.6}
 : ${gdb_ver:=9.2}
+: ${strace_ver:=5.5}
+: ${systemtap_ver:=4.2}
 
 : ${m4_ver:=1.4.18}
 : ${perl_ver:=5.30.3}
@@ -31,10 +41,15 @@
 : ${screen_ver:=4.8.0}
 : ${vim_ver:=8.2.1127}
 : ${vimdoc_ja_ver:=master}
+: ${grep_ver:=3.4}
+: ${diffutils_ver:=3.7}
+: ${patch_ver:=2.7.6}
+: ${global_ver:=6.6.4}
 
 : ${prefix:=/usr/local}
 : ${host:=aarch64-linux-gnu}
 : ${jobs:=4}
+: ${strip:=strip}
 
 init()
 {
@@ -69,7 +84,8 @@ fetch()
 	zlib)
 		wget -O ${zlib_src_dir}.tar.xz \
 			http://zlib.net/${zlib_name}.tar.xz || return;;
-	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|screen|m4|autoconf|automake|bison|libtool)
+	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|screen|m4|autoconf|automake|\
+	bison|libtool|grep|diffutils|patch|global)
 		for compress_format in xz bz2 gz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
 				https://ftp.gnu.org/gnu/${1}/\${${_1}_name}.tar.${compress_format} \
@@ -106,6 +122,36 @@ fetch()
 	source-highlight)
 		wget -O ${source_highlight_src_dir}.tar.gz \
 			https://ftp.gnu.org/gnu/src-highlite/${source_highlight_name}.tar.gz || return;;
+	bzip2)
+		wget -O ${bzip2_src_dir}.tar.gz \
+			https://www.sourceware.org/pub/bzip2/${bzip2_name}.tar.gz || return;;
+	xz)
+		wget -O ${xz_src_dir}.tar.bz2 \
+			http://tukaani.org/xz/${xz_name}.tar.bz2 || return;;
+	elfutils)
+		wget -O ${elfutils_src_dir}.tar.bz2 \
+			https://sourceware.org/elfutils/ftp/${elfutils_ver}/${elfutils_name}.tar.bz2 || return;;
+	pcre|pcre2)
+		eval wget -O \${${_1}_src_dir}.tar.bz2 \
+			https://ftp.pcre.org/pub/pcre/\${${_1}_name}.tar.bz2 || return;;
+	util-linux)
+		wget -O ${util_linux_src_dir}.tar.xz \
+			https://kernel.org/pub/linux/utils/util-linux/v`print_version util-linux`/${util_linux_name}.tar.xz || return;;
+	popt)
+		wget -O ${popt_src_dir}.tar.gz \
+			http://anduin.linuxfromscratch.org/BLFS/popt/${popt_name}.tar.gz || return;;
+	glib)
+		wget -O ${glib_src_dir}.tar.xz \
+			http://ftp.gnome.org/pub/gnome/sources/glib/`print_version glib`/${glib_name}.tar.xz || return;;
+	babeltrace)
+		wget -O ${babeltrace_src_dir}.tar.gz \
+			https://github.com/efficios/babeltrace/archive/v${babeltrace_ver}.tar.gz || return;;
+	strace)
+		wget -O ${strace_src_dir}.tar.xz \
+			https://strace.io/files/${strace_ver}/${strace_name}.tar.xz || return;;
+	systemtap)
+		wget -O ${systemtap_src_dir}.tar.gz \
+			https://sourceware.org/systemtap/ftp/releases/${systemtap_name}.tar.gz || return;;
 	perl)
 		wget -O ${perl_src_dir}.tar.gz \
 			http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return;;
@@ -499,12 +545,177 @@ EOF
 			make -C ${source_highlight_bld_dir} -j ${jobs} -k check || return
 		make -C ${source_highlight_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} -k || true
 		;;
+	bzip2)
+		[ -x $DESTDIR}${prefix}/bin/bzip2 -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${bzip2_bld_dir}/Makefile ] || cp -Tvr ${bzip2_src_dir} ${bzip2_bld_dir} || return
+		sed -i -e '
+			/^CFLAGS=/{
+				s/ -fPIC//g
+				s/$/ -fPIC/
+			}
+			s/ln -s -f \$(PREFIX)\/bin\//ln -s -f /' ${bzip2_bld_dir}/Makefile || return
+		make -C ${bzip2_bld_dir} -j ${jobs} \
+			CC=${CC:-${host:+${host}-}gcc} AR=${host}-gcc-ar RANLIB=${host}-gcc-ranlib bzip2 bzip2recover || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${bzip2_bld_dir} -j ${jobs} -k check || return
+		make -C ${bzip2_bld_dir} -j ${jobs} PREFIX=${DESTDIR}${prefix} install || return
+		make -C ${bzip2_bld_dir} -j ${jobs} clean || return
+		make -C ${bzip2_bld_dir} -j ${jobs} -f Makefile-libbz2_so CC=${CC:-${host:+${host}-}gcc} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${bzip2_bld_dir} -j ${jobs} -k check || return
+		cp -fv ${bzip2_bld_dir}/libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib || return
+		chmod -v a+r ${DESTDIR}${prefix}/lib/libbz2.so.${bzip2_ver} || return
+		ln -fsv libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib/libbz2.so.`print_version bzip2` || return
+		ln -fsv libbz2.so.`print_version bzip2` ${DESTDIR}${prefix}/lib/libbz2.so || return
+		cp -fv ${bzip2_bld_dir}/bzlib.h ${DESTDIR}${prefix}/include || return
+		cp -fv ${bzip2_bld_dir}/bzlib_private.h ${DESTDIR}${prefix}/include || return
+		[ -z "${strip}" ] && return
+		for b in bunzip2 bzcat bzip2 bzip2recover; do
+			strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		done
+		strip -v ${DESTDIR}${prefix}/lib/libbz2.so || return
+		;;
+	xz)
+		[ -x ${DESTDIR}${prefix}/bin/xz -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${xz_bld_dir}/Makefile ] ||
+			(cd ${xz_bld_dir}
+			${xz_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+		make -C ${xz_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${xz_bld_dir} -j ${jobs} -k check || return
+		make -C ${xz_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	elfutils)
+		[ -x ${DESTDIR}${prefix}/bin/eu-addr2line -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} zlib || return
+		print_header_path bzlib.h > /dev/null || ${0} bzip2 || return
+		print_header_path lzma.h > /dev/null || ${0} xz || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${elfutils_bld_dir}/Makefile ] ||
+			(cd ${elfutils_bld_dir}
+			${elfutils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--disable-debuginfod \
+				CFLAGS="${CFLAGS} -I`print_header_dir zlib.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`" \
+				LIBS="${LIBS} -lz -lbz2 -llzma") || return
+		make -C ${elfutils_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${elfutils_bld_dir} -j ${jobs} -k check || return
+		make -C ${elfutils_bld_dir} -j 1 DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	pcre)
+		[ -f ${DESTDIR}${prefix}/include/pcre.h -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} zlib || return
+		print_header_path bzlib.h > /dev/null || ${0} bzip2 || return
+		print_header_path readline.h readline > /dev/null || ${0} readline || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${pcre_bld_dir}/Makefile ] ||
+			(cd ${pcre_bld_dir}
+			${pcre_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--enable-pcre16 --enable-pcre32 --enable-jit --enable-utf --enable-unicode-properties \
+				--enable-newline-is-any --enable-pcregrep-libz --enable-pcregrep-libbz2 \
+				CPPFLAGS="${CPPFLAGS} -I`print_header_dir zlib.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`") || return
+		make -C ${pcre_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${pcre_bld_dir} -j ${jobs} -k check || return
+		make -C ${pcre_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	util-linux)
+		[ -x ${DESTDIR}${prefix}/bin/hexdump -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${util_linux_bld_dir}/Makefile ] ||
+			(cd ${util_linux_bld_dir}
+			${util_linux_src_dir}/configure --prefix=${prefix} --host=${host} --build=${build} --disable-silent-rules \
+				--enable-write --disable-use-tty-group --with-bashcompletiondir=${prefix}/share/bash-completion \
+				PKG_CONFIG_LIBDIR=) || return
+		make -C ${util_linux_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${util_linux_bld_dir} -j ${jobs} -k check || return
+		make -C ${util_linux_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} -k || true
+		;;
+	popt)
+		[ -f ${DESTDIR}${prefix}/include/popt.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${popt_bld_dir}/Makefile ] ||
+			(cd ${popt_bld_dir}
+			sed -i -e '/^AM_C_PROTOTYPES$/d' ${popt_src_dir}/configure.ac || return
+			sed -i -e '/^TESTS = /d' ${popt_src_dir}/Makefile.am || return
+			autoreconf -fiv ${popt_src_dir} || return
+			${popt_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-rpath) || return
+		make -C ${popt_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${popt_bld_dir} -j ${jobs} -k check || return
+		make -C ${popt_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	glib)
+		[ -f ${DESTDIR}${prefix}/include/glib-2.0/glib.h -a "${force_install}" != yes ] && return
+		print_header_path ffi.h > /dev/null || ${0} libffi || return
+		print_header_path libelf.h > /dev/null || ${0} elfutils || return
+		print_header_path pcre.h > /dev/null || ${0} pcre || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${glib_src_dir}/configure ] ||
+			(cd ${glib_src_dir}; NOCONFIGURE=yes ./autogen.sh) || return
+		[ -f ${glib_bld_dir}/Makefile ] ||
+			(cd ${glib_bld_dir}
+			${glib_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-static \
+				--disable-silent-rules --disable-libmount --disable-dtrace --enable-systemtap \
+				CPPFLAGS="${CPPFLAGS} -I`print_header_dir zlib.h`" \
+				LIBFFI_CFLAGS=-I`print_header_dir ffi.h` LIBFFI_LIBS="-L`print_library_dir libffi.so` -lffi" \
+				PCRE_CFLAGS=-I`print_header_dir pcre.h` PCRE_LIBS="-L`print_library_dir libpcre.so` -lpcre" \
+				glib_cv_stack_grows=no glib_cv_uscore=no) || return
+		make -C ${glib_bld_dir} -j ${jobs} || return
+		make -C ${glib_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		[ -z "${strip}" ] && return
+		for b in gapplication gdbus gio gio-launch-desktop gio-querymodules glib-compile-resources glib-compile-schemas gobject-query gresource gsettings gtester; do
+			strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		done
+		;;
+	babeltrace)
+		[ -x ${DESTDIR}${prefix}/bin/babeltrace -a "${force_install}" != yes ] && return
+		print_header_path pcre.h > /dev/null || ${0} pcre || return
+		print_header_path glib.h glib-2.0 > /dev/null || ${0} glib || return
+		print_header_path uuid.h uuid > /dev/null || ${0} util-linux || return
+		print_header_path popt.h > /dev/null || ${0} popt || return
+		print_header_path libelf.h > /dev/null || ${0} elfutils || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${babeltrace_src_dir}/configure ] || (cd ${babeltrace_src_dir}; ./bootstrap) || return
+		[ -f ${babeltrace_bld_dir}/Makefile ] ||
+			(cd ${babeltrace_bld_dir}
+			${babeltrace_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`" \
+				LIBS="${LIBS} -lpcre -lz -lbz2 -llzma" \
+				PKG_CONFIG_LIBDIR=`print_library_dir glib-2.0.pc` \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				ac_cv_func_malloc_0_nonnull=yes \
+				ac_cv_func_realloc_0_nonnull=yes \
+				bt_cv_lib_elfutils=yes) || return
+		make -C ${babeltrace_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${babeltrace_bld_dir} -j ${jobs} -k check || return
+		make -C ${babeltrace_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
 	gdb)
 		[ -x ${DESTDIR}${prefix}/bin/gdb -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} zlib || return
 		print_header_path readline.h readline > /dev/null || ${0} readline || return
 		print_header_path curses.h > /dev/null || ${0} ncurses || return
+		print_header_path expat.h > /dev/null || ${0} expat || return
+		print_header_path mpfr.h > /dev/null || ${0} mpfr || return
 		print_header_path Python.h > /dev/null || ${0} Python || return
 		print_header_path sourcehighlight.h srchilite > /dev/null || ${0} source-highlight || return
+		print_header_path lzma.h > /dev/null || ${0} xz || return
+		print_header_path babeltrace.h babeltrace > /dev/null || ${0} babeltrace || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${gdb_bld_dir}/Makefile ] ||
@@ -513,12 +724,18 @@ EOF
 --disable-rpath
 CFLAGS='${CFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir curses.h`'
 CPPFLAGS='${CPPFLAGS} -I`print_header_dir zlib.h`'
+LIBS='${LIBS} -lpopt -luuid -lgmodule-2.0 -lglib-2.0 -lpcre -ldw -lelf -lz -lbz2 -llzma'
 PKG_CONFIG_SYSROOT_DIR=${DESTDIR}
 EOF
 			${gdb_src_dir}/configure --prefix=${prefix} --host=${host} --target=${target} \
-				--enable-targets=all --enable-64-bit-bfd --enable-tui \
-				--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${target} --without-guile --with-python=python3 \
+				--enable-targets=all --enable-64-bit-bfd --enable-tui --enable-source-highlight \
+				--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${target} \
 				--with-system-zlib --with-system-readline \
+				--with-expat=yes --with-libexpat-prefix=`print_prefix expat.h` \
+				--with-mpfr=yes --with-libmpfr-prefix=`print_prefix mpfr.h` \
+				--with-python=python3 --without-guile \
+				--with-lzma=yes --with-liblzma-prefix=`print_prefix lzma.h` \
+				--with-babeltrace=yes --with-libbabeltrace-prefix=`print_prefix babeltrace.h babeltrace` \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libncurses.so`" \
 				host_configargs="`cat host_configargs`") || return
 		make -C ${gdb_bld_dir} -j ${jobs} V=1 || return
@@ -527,6 +744,35 @@ EOF
 		make -C ${gdb_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		make -C ${gdb_bld_dir}/gdb -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		make -C ${gdb_bld_dir}/sim -j ${jobs} DESTDIR=${DESTDIR} install || return
+		;;
+	strace)
+		[ -x ${DESTDIR}${prefix}/bin/strace -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${strace_bld_dir}/Makefile ] ||
+			(cd ${strace_bld_dir}
+			${strace_src_dir}/configure --prefix=${prefix} --host=${host} --enable-mpers=check) || return
+		make -C ${strace_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${strace_bld_dir} -j ${jobs} -k check || return
+		make -C ${strace_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		;;
+	systemtap)
+		[ -x ${DESTDIR}${prefix}/bin/stap -a "${force_install}" != yes ] && return
+		print_header_path libelf.h > /dev/null || ${0} elfutils || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${systemtap_bld_dir}/Makefile ] ||
+			(cd ${systemtap_bld_dir}
+			${systemtap_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				CPPFLAGS="${CPPFLAGS} -I`print_header_dir libdw.h elfutils`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libdw.so`" \
+				LIBS="${LIBS} -lz -lbz2 -llzma" \
+				) || return
+		make -C ${systemtap_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${systemtap_bld_dir} -j ${jobs} -k check || return
+		make -C ${systemtap_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	screen)
 		[ -x ${DESTDIR}${prefix}/bin/screen -a "${force_install}" != yes ] && return
@@ -696,20 +942,77 @@ EOF
 		cp -Tvr ${vimdoc_ja_src_dir} ${DESTDIR}${prefix}/share/vim/vimfiles || return
 		vim -i NONE -u NONE -N -c "helptags ${DESTDIR}${prefix}/share/vim/vimfiles/doc" -c qall || return
 		;;
+	grep)
+		[ -x ${DESTDIR}${prefix}/bin/grep -a "${force_install}" != yes ] && return
+		print_header_path pcre.h > /dev/null || ${0} pcre || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${grep_bld_dir}/Makefile ] ||
+			(cd ${grep_bld_dir}
+			${grep_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
+		make -C ${grep_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${grep_bld_dir} -j ${jobs} -k check || return
+		make -C ${grep_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	diffutils)
+		[ -x ${DESTDIR}${prefix}/bin/diff -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${diffutils_bld_dir}/Makefile ] ||
+			(cd ${diffutils_bld_dir}
+			${diffutils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
+		make -C ${diffutils_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${diffutils_bld_dir} -j ${jobs} -k check || return
+		make -C ${diffutils_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	patch)
+		[ -x ${DESTDIR}${prefix}/bin/patch -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${patch_bld_dir}/Makefile ] ||
+			(cd ${patch_bld_dir}
+			${patch_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
+		make -C ${patch_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${patch_bld_dir} -j ${jobs} -k check || return
+		make -C ${patch_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	global)
+		[ -x ${DESTDIR}${prefix}/bin/global -a "${force_install}" != yes ] && return
+		print_header_path curses.h > /dev/null || ${0} ncurses || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${global_bld_dir}/Makefile ] ||
+			(cd ${global_bld_dir}
+			${global_src_dir}/configure --prefix=${prefix} --host=${host} \
+				--with-ncurses=`print_prefix curses.h` CPPFLAGS="${CPPFLAGS} -I`print_header_dir curses.h`" \
+				CFLAGS="${CFLAGS} -fcommon" \
+				ac_cv_posix1_2008_realpath=yes) || return
+		make -C ${global_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${global_bld_dir} -j ${jobs} -k check || return
+		make -C ${global_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
 	*) echo not implemented. can not build \'${1}\'. 2>&1; return 1;;
 	esac
-	find ${DESTDIR}${prefix}/lib -type f -name '*.la' -exec \
-		sed -i -e "
-			/^dependency_libs='.\+'/{
-				s/^/# /
-				adependency_libs=''
-			}
-			/^libdir=/s!'${prefix}/lib'!'${DESTDIR}${prefix}/lib'!
-			" {} + || return
+	for d in lib lib64; do
+		[ -d ${DESTDIR}${prefix}/${d} ] || continue
+		find ${DESTDIR}${prefix}/${d} -type f -name '*.la' -exec \
+			sed -i -e "
+				/^dependency_libs='.\+'/{
+					s/^/# /
+					adependency_libs=''
+				}
+				s!^\(libdir='\)\(${prefix}\)!\1${DESTDIR}\2!
+				" {} + || return
+	done
 }
 
 main()
 {
+	build=`gcc -dumpmachine`
 	target=${host}
 	${target}-gcc --version > /dev/null || return
 
@@ -720,6 +1023,7 @@ main()
 
 	for p in "${@:-`grep -oPe '(?<=^: \\${)\w+(?=_ver)' ${0} | sed -e '
 			s/source_highlight/source-highlight/
+			s/util_linux/util-linux/
 			s/pkg_config/pkg-config/
 			s/vimdoc_ja/vimdoc-ja/
 			'`}"; do
