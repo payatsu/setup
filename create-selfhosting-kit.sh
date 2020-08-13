@@ -56,8 +56,8 @@
 : ${prefix:=/usr/local}
 : ${host:=aarch64-linux-gnu}
 : ${jobs:=4}
-: ${strip:=strip}
-: ${cleanup:=no}
+: ${strip:=}
+: ${cleanup:=}
 
 init()
 {
@@ -273,7 +273,7 @@ build()
 		;;
 	binutils)
 		[ -x ${DESTDIR}${prefix}/bin/${target}-as -a "${force_install}" != yes ] && return
-		print_header_path zlib.h > /dev/null || ${0} zlib || return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${binutils_bld_dir}/Makefile ] ||
@@ -310,7 +310,7 @@ build()
 		;;
 	mpfr)
 		[ -f ${DESTDIR}${prefix}/include/mpfr.h -a "${force_install}" != yes ] && return
-		print_header_path gmp.h > /dev/null || ${0} gmp || return
+		print_header_path gmp.h > /dev/null || ${0} ${cmdopt} gmp || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${mpfr_bld_dir}/Makefile ] ||
@@ -324,7 +324,7 @@ build()
 		;;
 	mpc)
 		[ -f ${DESTDIR}${prefix}/include/mpc.h -a "${force_install}" != yes ] && return
-		print_header_path mpfr.h > /dev/null || ${0} mpfr || return
+		print_header_path mpfr.h > /dev/null || ${0} ${cmdopt} mpfr || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${mpc_bld_dir}/Makefile ] ||
@@ -338,7 +338,7 @@ build()
 		;;
 	isl)
 		[ -f ${DESTDIR}${prefix}/include/isl/version.h -a "${force_install}" != yes ] && return
-		print_header_path gmp.h > /dev/null || ${0} gmp || return
+		print_header_path gmp.h > /dev/null || ${0} ${cmdopt} gmp || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${isl_bld_dir}/Makefile ] ||
@@ -353,12 +353,12 @@ build()
 		;;
 	gcc)
 		[ -x ${DESTDIR}${prefix}/bin/gcc -a "${force_install}" != yes ] && return
-		[ -x ${DESTDIR}${prefix}/bin/${target}-as ] || ${0} binutils || return
-		print_header_path zlib.h > /dev/null || ${0} zlib || return
-		print_header_path gmp.h > /dev/null || ${0} gmp || return
-		print_header_path mpfr.h > /dev/null || ${0} mpfr || return
-		print_header_path mpc.h > /dev/null || ${0} mpc || return
-		print_header_path version.h isl > /dev/null || ${0} isl || return
+		[ -x ${DESTDIR}${prefix}/bin/${target}-as ] || ${0} ${cmdopt} binutils || return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path gmp.h > /dev/null || ${0} ${cmdopt} gmp || return
+		print_header_path mpfr.h > /dev/null || ${0} ${cmdopt} mpfr || return
+		print_header_path mpc.h > /dev/null || ${0} ${cmdopt} mpc || return
+		print_header_path version.h isl > /dev/null || ${0} ${cmdopt} isl || return
 		fetch ${1} || return
 		unpack ${1} || return
 		gcc_base_ver=`cat ${gcc_src_dir}/gcc/BASE-VER` || return
@@ -507,9 +507,9 @@ build()
 		;;
 	Python)
 		[ -x ${DESTDIR}${prefix}/bin/python3 -a "${force_install}" != yes ] && return
-		print_header_path expat.h > /dev/null || ${0} expat || return
-		print_header_path ffi.h > /dev/null || ${0} libffi || return
-		print_header_path ssl.h openssl > /dev/null || ${0} openssl || return
+		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
+		print_header_path ffi.h > /dev/null || ${0} ${cmdopt} libffi || return
+		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${Python_bld_dir}/Makefile ] ||
@@ -551,7 +551,7 @@ EOF
 		;;
 	source-highlight)
 		[ -x ${DESTDIR}${prefix}/bin/source-highlight -a "${force_install}" != yes ] && return
-		print_header_path version.hpp boost > /dev/null || ${0} boost || return
+		print_header_path version.hpp boost > /dev/null || ${0} ${cmdopt} boost || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${source_highlight_bld_dir}/Makefile ] ||
@@ -611,9 +611,9 @@ EOF
 		;;
 	elfutils)
 		[ -x ${DESTDIR}${prefix}/bin/eu-addr2line -a "${force_install}" != yes ] && return
-		print_header_path zlib.h > /dev/null || ${0} zlib || return
-		print_header_path bzlib.h > /dev/null || ${0} bzip2 || return
-		print_header_path lzma.h > /dev/null || ${0} xz || return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
+		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${elfutils_bld_dir}/Makefile ] ||
@@ -630,9 +630,9 @@ EOF
 		;;
 	pcre)
 		[ -f ${DESTDIR}${prefix}/include/pcre.h -a "${force_install}" != yes ] && return
-		print_header_path zlib.h > /dev/null || ${0} zlib || return
-		print_header_path bzlib.h > /dev/null || ${0} bzip2 || return
-		print_header_path readline.h readline > /dev/null || ${0} readline || return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
+		print_header_path readline.h readline > /dev/null || ${0} ${cmdopt} readline || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${pcre_bld_dir}/Makefile ] ||
@@ -649,7 +649,7 @@ EOF
 		;;
 	pcre2)
 		[ -f ${DESTDIR}${prefix}/include/pcre2.h -a "${force_install}" != yes ] && return
-		print_header_path bzlib.h > /dev/null || ${0} bzip2 || return
+		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${pcre2_bld_dir}/Makefile ] ||
@@ -695,9 +695,9 @@ EOF
 		;;
 	glib)
 		[ -f ${DESTDIR}${prefix}/include/glib-2.0/glib.h -a "${force_install}" != yes ] && return
-		print_header_path ffi.h > /dev/null || ${0} libffi || return
-		print_header_path libelf.h > /dev/null || ${0} elfutils || return
-		print_header_path pcre.h > /dev/null || ${0} pcre || return
+		print_header_path ffi.h > /dev/null || ${0} ${cmdopt} libffi || return
+		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
+		print_header_path pcre.h > /dev/null || ${0} ${cmdopt} pcre || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${glib_src_dir}/configure ] ||
@@ -719,11 +719,11 @@ EOF
 		;;
 	babeltrace)
 		[ -x ${DESTDIR}${prefix}/bin/babeltrace -a "${force_install}" != yes ] && return
-		print_header_path pcre.h > /dev/null || ${0} pcre || return
-		print_header_path glib.h glib-2.0 > /dev/null || ${0} glib || return
-		print_header_path uuid.h uuid > /dev/null || ${0} util-linux || return
-		print_header_path popt.h > /dev/null || ${0} popt || return
-		print_header_path libelf.h > /dev/null || ${0} elfutils || return
+		print_header_path pcre.h > /dev/null || ${0} ${cmdopt} pcre || return
+		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
+		print_header_path uuid.h uuid > /dev/null || ${0} ${cmdopt} util-linux || return
+		print_header_path popt.h > /dev/null || ${0} ${cmdopt} popt || return
+		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${babeltrace_src_dir}/configure ] || (cd ${babeltrace_src_dir}; ./bootstrap) || return
@@ -744,15 +744,15 @@ EOF
 		;;
 	gdb)
 		[ -x ${DESTDIR}${prefix}/bin/gdb -a "${force_install}" != yes ] && return
-		print_header_path zlib.h > /dev/null || ${0} zlib || return
-		print_header_path readline.h readline > /dev/null || ${0} readline || return
-		print_header_path curses.h > /dev/null || ${0} ncurses || return
-		print_header_path expat.h > /dev/null || ${0} expat || return
-		print_header_path mpfr.h > /dev/null || ${0} mpfr || return
-		print_header_path Python.h > /dev/null || ${0} Python || return
-		print_header_path sourcehighlight.h srchilite > /dev/null || ${0} source-highlight || return
-		print_header_path lzma.h > /dev/null || ${0} xz || return
-		print_header_path babeltrace.h babeltrace > /dev/null || ${0} babeltrace || return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path readline.h readline > /dev/null || ${0} ${cmdopt} readline || return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
+		print_header_path mpfr.h > /dev/null || ${0} ${cmdopt} mpfr || return
+		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
+		print_header_path sourcehighlight.h srchilite > /dev/null || ${0} ${cmdopt} source-highlight || return
+		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
+		print_header_path babeltrace.h babeltrace > /dev/null || ${0} ${cmdopt} babeltrace || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${gdb_bld_dir}/Makefile ] ||
@@ -796,7 +796,7 @@ EOF
 		;;
 	systemtap)
 		[ -x ${DESTDIR}${prefix}/bin/stap -a "${force_install}" != yes ] && return
-		print_header_path libelf.h > /dev/null || ${0} elfutils || return
+		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${systemtap_bld_dir}/Makefile ] ||
@@ -825,7 +825,7 @@ EOF
 		;;
 	tcpdump)
 		[ -x ${DESTDIR}${prefix}/sbin/tcpdump -a "${force_install}" != yes ] && return
-		print_header_path pcap.h pcap > /dev/null || ${0} libpcap || return
+		print_header_path pcap.h pcap > /dev/null || ${0} ${cmdopt} libpcap || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${tcpdump_bld_dir}/Makefile ] ||
@@ -877,7 +877,7 @@ EOF
 		;;
 	automake)
 		[ -x ${DESTDIR}${prefix}/bin/automake -a "${force_install}" != yes ] && return
-		[ -x ${DESTDIR}${prefix}/bin/autoconf ] || ${0} autoconf || return
+		[ -x ${DESTDIR}${prefix}/bin/autoconf ] || ${0} ${cmdopt} autoconf || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${automake_bld_dir}/Makefile ] ||
@@ -900,7 +900,7 @@ EOF
 		;;
 	flex)
 		[ -x ${DESTDIR}${prefix}/bin/flex -a "${force_install}" != yes ] && return
-		[ -x ${DESTDIR}${prefix}/bin/bison ] || ${0} bison || return
+		[ -x ${DESTDIR}${prefix}/bin/bison ] || ${0} ${cmdopt} bison || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${flex_bld_dir}/Makefile ] ||
@@ -913,7 +913,7 @@ EOF
 		;;
 	libtool)
 		[ -x ${DESTDIR}${prefix}/bin/libtool -a "${force_install}" != yes ] && return
-		[ -x ${DESTDIR}${prefix}/bin/flex ] || ${0} flex || return
+		[ -x ${DESTDIR}${prefix}/bin/flex ] || ${0} ${cmdopt} flex || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libtool_bld_dir}/Makefile ] ||
@@ -945,8 +945,8 @@ EOF
 		;;
 	curl)
 		[ -x ${DESTDIR}${prefix}/bin/curl -a "${force_install}" != yes ] && return
-		print_header_path zlib.h > /dev/null || ${0} zlib || return
-		print_header_path ssl.h openssl > /dev/null || ${0} openssl || return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
 		fetch ${1} || return
 		unpack ${1} || return
 		(cd ${curl_bld_dir}
@@ -970,11 +970,11 @@ EOF
 		;;
 	git)
 		[ -x ${DESTDIR}${prefix}/bin/git -a "${force_install}" != yes ] && return
-		print_header_path zlib.h > /dev/null || ${0} zlib || return
-		print_header_path ssl.h openssl > /dev/null || ${0} openssl || return
-		print_header_path curl.h curl > /dev/null || ${0} curl || return
-		print_header_path expat.h > /dev/null || ${0} expat || return
-		print_header_path pcre2.h > /dev/null || ${0} pcre2 || return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
+		print_header_path curl.h curl > /dev/null || ${0} ${cmdopt} curl || return
+		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
+		print_header_path pcre2.h > /dev/null || ${0} ${cmdopt} pcre2 || return
 		fetch ${1} || return
 		unpack ${1} || return
 		make -C ${git_src_dir} -j ${jobs} V=1 configure || return
@@ -1000,7 +1000,7 @@ EOF
 		;;
 	screen)
 		[ -x ${DESTDIR}${prefix}/bin/screen -a "${force_install}" != yes ] && return
-		print_header_path curses.h > /dev/null || ${0} ncurses || return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${screen_bld_dir}/Makefile ] ||
@@ -1015,8 +1015,8 @@ EOF
 		;;
 	vim)
 		[ -x ${DESTDIR}${prefix}/bin/vim -a "${force_install}" != yes ] && return
-		print_header_path curses.h > /dev/null || ${0} ncurses || return
-		print_header_path Python.h > /dev/null || ${0} Python || return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${vim_bld_dir}/configure ] || cp -Tvr ${vim_src_dir} ${vim_bld_dir} || return
@@ -1073,7 +1073,7 @@ EOF
 		done
 		make -C ${vim_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -f ${DESTDIR}${prefix}/bin/vi ] || ln -fsv vim ${DESTDIR}${prefix}/bin/vi || return
-		${0} vimdoc-ja || return
+		${0} ${cmdopt} vimdoc-ja || return
 		;;
 	vimdoc-ja)
 		[ -d ${DESTDIR}${prefix}/share/vim/vimfiles -a "${force_install}" != yes ] && return
@@ -1085,7 +1085,7 @@ EOF
 		;;
 	grep)
 		[ -x ${DESTDIR}${prefix}/bin/grep -a "${force_install}" != yes ] && return
-		print_header_path pcre.h > /dev/null || ${0} pcre || return
+		print_header_path pcre.h > /dev/null || ${0} ${cmdopt} pcre || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${grep_bld_dir}/Makefile ] ||
@@ -1122,7 +1122,7 @@ EOF
 		;;
 	global)
 		[ -x ${DESTDIR}${prefix}/bin/global -a "${force_install}" != yes ] && return
-		print_header_path curses.h > /dev/null || ${0} ncurses || return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${global_bld_dir}/Makefile ] ||
@@ -1138,10 +1138,10 @@ EOF
 		;;
 	ruby)
 		[ -x ${DESTDIR}${prefix}/bin/ruby -a "${force_install}" != yes ] && return
-		print_header_path gmp.h > /dev/null || ${0} gmp || return
-		print_header_path zlib.h > /dev/null || ${0} zlib || return
-		print_header_path readline.h readline > /dev/null || ${0} readline || return
-		print_header_path ssl.h openssl > /dev/null || ${0} openssl || return
+		print_header_path gmp.h > /dev/null || ${0} ${cmdopt} gmp || return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path readline.h readline > /dev/null || ${0} ${cmdopt} readline || return
+		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${ruby_bld_dir}/Makefile ] ||
@@ -1183,13 +1183,32 @@ EOF
 
 cleanup()
 {
-	[ "${cleanup}" != yes ] && return
+	[ -z "${cleanup}" ] && return
 	eval rm -fvr \${${_1}_src_dir} || return
 	eval rm -fvr \${${_1}_bld_dir} || return
 }
 
 main()
 {
+	unset cmdopt
+	while [ $# -gt 0 ]; do
+		case ${1} in
+		--prefix|--host|--jobs)
+			cmdopt="${cmdopt:+${cmdopt} }${1}"
+			opt=`echo ${1} | cut -d- -f3`
+			shift
+			eval ${opt}=\${1:-\${${opt}}}
+			;;
+		--strip|--cleanup)
+			opt=`echo ${1} | cut -d- -f3`
+			eval ${opt}=${opt}
+			;;
+		*) break;;
+		esac
+		cmdopt="${cmdopt:+${cmdopt} }${1}"
+		shift
+	done
+
 	${host}-gcc --version > /dev/null || return
 	build=`gcc -dumpmachine`
 	target=${host}
@@ -1200,14 +1219,6 @@ main()
 
 	languages=c,c++
 	which ${host}-gccgo > /dev/null && languages=${languages},go
-
-	while [ $# -gt 0 ]; do
-		case ${1} in
-		--cleanup) cleanup=yes;;
-		*) break;;
-		esac
-		shift
-	done
 
 	for p in ${@:-`grep -oPe '(?<=^: \\${)\w+(?=_ver)' ${0} | sed -e '
 			s/source_highlight/source-highlight/
