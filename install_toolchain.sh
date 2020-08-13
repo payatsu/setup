@@ -1146,7 +1146,7 @@ fetch()
 			wget -O ${webkitgtk_src_dir}.tar.xz \
 				https://webkitgtk.org/releases/${webkitgtk_name}.tar.xz || return;;
 		*)
-			echo fetch: no match: ${p} 2>&1; return 1;;
+			echo fetch: no match: ${p} >&2; return 1;;
 		esac
 	done
 }
