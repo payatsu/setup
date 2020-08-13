@@ -29,6 +29,8 @@
 : ${gdb_ver:=9.2}
 : ${strace_ver:=5.5}
 : ${systemtap_ver:=4.2}
+: ${libpcap_ver:=1.9.1}
+: ${tcpdump_ver:=4.9.3}
 
 : ${m4_ver:=1.4.18}
 : ${perl_ver:=5.30.3}
@@ -158,6 +160,9 @@ fetch()
 	systemtap)
 		wget -O ${systemtap_src_dir}.tar.gz \
 			https://sourceware.org/systemtap/ftp/releases/${systemtap_name}.tar.gz || return;;
+	libpcap|tcpdump)
+		eval wget -O \${${_1}_src_dir}.tar.gz \
+			http://www.tcpdump.org/release/\${${_1}_name}.tar.gz || return;;
 	perl)
 		wget -O ${perl_src_dir}.tar.gz \
 			http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return;;
@@ -806,20 +811,36 @@ EOF
 			make -C ${systemtap_bld_dir} -j ${jobs} -k check || return
 		make -C ${systemtap_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
-	screen)
-		[ -x ${DESTDIR}${prefix}/bin/screen -a "${force_install}" != yes ] && return
-		print_header_path curses.h > /dev/null || ${0} ncurses || return
+	libpcap)
+		[ -f ${DESTDIR}${prefix}/include/pcap/pcap.h -a "${force_install}" != yes ] && return
 		fetch ${1} || return
 		unpack ${1} || return
-		[ -f ${screen_bld_dir}/Makefile ] ||
-			(cd ${screen_bld_dir}
-			${screen_src_dir}/configure --prefix=${prefix} --host=${host} \
-				--enable-telnet --enable-colors256 --enable-rxvt_osc \
-				LDFLAGS="${LDFLAGS} -L`print_library_dir libtinfo.so`") || return
-		make -C ${screen_bld_dir} -j ${jobs} || return
-		mkdir -pv ${DESTDIR}${prefix}/share/screen/utf8encodings || return
-		make -C ${screen_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
-		[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/${screen_name} || return
+		[ -f ${libpcap_bld_dir}/Makefile ] ||
+			(cd ${libpcap_bld_dir}
+			${libpcap_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
+		make -C ${libpcap_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${libpcap_bld_dir} -j ${jobs} -k test || return
+		make -C ${libpcap_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		;;
+	tcpdump)
+		[ -x ${DESTDIR}${prefix}/sbin/tcpdump -a "${force_install}" != yes ] && return
+		print_header_path pcap.h pcap > /dev/null || ${0} libpcap || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${tcpdump_bld_dir}/Makefile ] ||
+			(cd ${tcpdump_bld_dir}
+			${tcpdump_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--with-system-libpcap \
+				ac_cv_path_PCAP_CONFIG=: \
+				CPPFLAGS="${CPPFLAGS} -I`print_header_dir pcap.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libpcap.so`" \
+				LIBS="${LIBS} -lpcap" \
+				) || return
+		make -C ${tcpdump_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${tcpdump_bld_dir} -j ${jobs} -k check || return
+		make -C ${tcpdump_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		;;
 	m4)
 		# TODO: not implemented.
@@ -976,6 +997,21 @@ EOF
 		for b in git git-receive-pack git-upload-archive git-upload-pack; do
 			strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
+		;;
+	screen)
+		[ -x ${DESTDIR}${prefix}/bin/screen -a "${force_install}" != yes ] && return
+		print_header_path curses.h > /dev/null || ${0} ncurses || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${screen_bld_dir}/Makefile ] ||
+			(cd ${screen_bld_dir}
+			${screen_src_dir}/configure --prefix=${prefix} --host=${host} \
+				--enable-telnet --enable-colors256 --enable-rxvt_osc \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libtinfo.so`") || return
+		make -C ${screen_bld_dir} -j ${jobs} || return
+		mkdir -pv ${DESTDIR}${prefix}/share/screen/utf8encodings || return
+		make -C ${screen_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/${screen_name} || return
 		;;
 	vim)
 		[ -x ${DESTDIR}${prefix}/bin/vim -a "${force_install}" != yes ] && return
