@@ -187,7 +187,7 @@ fetch()
 	ruby)
 		wget -O ${ruby_src_dir}.tar.xz \
 			http://cache.ruby-lang.org/pub/ruby/`print_version ruby`/${ruby_name}.tar.xz || return;;
-	*) echo ERROR: not implemented. can not fetch \'${1}\'. 2>&1; return 1;;
+	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
 
@@ -843,11 +843,20 @@ EOF
 		make -C ${tcpdump_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		;;
 	m4)
-		# TODO: not implemented.
-		echo WARNING: not implemented. can not build \'${1}\'. skipped. 2>&1
+		[ -x ${DESTDIR}${prefix}/bin/m4 -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${m4_bld_dir}/Makefile ] ||
+			(cd ${m4_bld_dir}
+			${m4_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--enable-c++ --enable-changeword) || return
+		make -C ${m4_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${m4_bld_dir} -j ${jobs} -k check || return
+		make -C ${m4_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	perl)
-		echo WARNING: not implemented. can not build \'${1}\'. skipped. 2>&1
+		echo WARNING: not implemented. can not build \'${1}\'. skipped. >&2
 		return 0
 
 		[ -x ${DESTDIR}${prefix}/bin/perl -a "${force_install}" != yes ] && return
@@ -1165,7 +1174,7 @@ EOF
 		strip -v ${DESTDIR}${prefix}/lib/${ruby_platform}/libruby.so || return
 		find ${DESTDIR}${prefix}/lib/${ruby_platform}/ruby/`print_version ruby`.0 -type f -name '*.so' -exec strip -v {} + || return
 		;;
-	*) echo ERROR: not implemented. can not build \'${1}\'. 2>&1; return 1;;
+	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
 	for d in lib lib64; do
 		[ -d ${DESTDIR}${prefix}/${d} ] || continue
@@ -1199,15 +1208,17 @@ main()
 			shift
 			eval ${opt}=\${1:-\${${opt}}}
 			;;
-		--strip|--cleanup)
+		--force|--strip|--cleanup)
 			opt=`echo ${1} | cut -d- -f3`
 			eval ${opt}=${opt}
 			;;
+		-*|--*) echo ERROR: unknown option \'${1}\'. >&2; return 1;;
 		*) break;;
 		esac
 		cmdopt="${cmdopt:+${cmdopt} }${1}"
 		shift
 	done
+	[ "${force}" = force ] && force_install=yes
 
 	${host}-gcc --version > /dev/null || return
 	build=`gcc -dumpmachine`
