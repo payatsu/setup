@@ -1,5 +1,32 @@
 #!/bin/sh
 
+help()
+{
+	cat << EOF
+[NAME]
+    `basename ${0}` - create toolchain running on target itself
+[SYNOPSIS]
+    `basename ${0}` [--prefix PREFIX] [--host HOST] [--jobs JOBS]
+        [--force] [--strip] [--cleanup] [--help] pkgs...
+[OPTIONS]
+    --prefix PREFIX
+        install prefix.
+    --host HOST
+        triplet on which toolchain runs.
+    --jobs JOBS
+        specify the number of jobs to run simultaneously.
+    --force
+        do install even if it seems the package already has been installed.
+    --strip
+        remove symbol sections from installed files while installation process.
+    --cleanup
+        delete the source and build directories of the just installed package,
+        when installation has been completed.
+    --help
+        show this help.
+EOF
+}
+
 : ${zlib_ver:=1.2.11}
 : ${binutils_ver:=2.35}
 : ${gmp_ver:=6.2.0}
@@ -1216,6 +1243,7 @@ main()
 			opt=`echo ${1} | cut -d- -f3`
 			eval ${opt}=${opt}
 			;;
+		--help) help; return;;
 		-*|--*) echo ERROR: unknown option \'${1}\'. >&2; return 1;;
 		*) break;;
 		esac
