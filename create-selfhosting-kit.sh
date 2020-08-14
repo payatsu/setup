@@ -415,7 +415,7 @@ build()
 				--with-shared --with-cxx-shared --with-termlib \
 				--enable-termcap --enable-colors) || return
 		make -C ${ncurses_bld_dir} -j 1 DESTDIR=${DESTDIR} || return # XXX work around for parallel make
-		make -C ${ncurses_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		make -C ${ncurses_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install -k || true # XXX work around to ignore 'strip' error for 'tic' by adding '-k'
 		for h in `find ${DESTDIR}${prefix}/include/ncurses \( -type f -o -type l \) -name '*.h'`; do
 			ln -fsv `echo ${h} | sed -e "s%${DESTDIR}${prefix}/include/%%"` ${DESTDIR}${prefix}/include || return
 		done
@@ -427,10 +427,12 @@ build()
 		done
 		[ -z "${strip}" ] && return
 		for b in clear infocmp tabs tic toe tput tset; do
-			strip -v ${DESTDIR}${prefix}/bin/${b} || return
+			[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
 		for l in libform libmenu libncurses++ libpanel libtinfo; do
-			[ ! -f ${DESTDIR}${prefix}/lib/${l}.so ] || strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
+			[ -f ${DESTDIR}${prefix}/lib/${l}.so ] || continue
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
 		done
 		;;
 	readline)
@@ -447,7 +449,7 @@ build()
 		make -C ${readline_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		for l in libhistory libreadline; do
-			strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
 		done
 		;;
 	expat)
@@ -462,8 +464,8 @@ build()
 			make -C ${expat_bld_dir} -j ${jobs} -k check || return
 		make -C ${expat_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
-		strip -v ${DESTDIR}${prefix}/bin/xmlwf || return
-		strip -v ${DESTDIR}${prefix}/lib/libexpat.so || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/xmlwf || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libexpat.so || return
 		;;
 	libffi)
 		[ -f ${DESTDIR}${prefix}/include/ffi.h -a "${force_install}" != yes ] && return
@@ -496,14 +498,15 @@ build()
 			make -C ${openssl_bld_dir} -j 1 -k test || return # XXX work around for parallel make
 		mkdir -pv ${DESTDIR}${prefix}/ssl || return
 		rm -fv ${DESTDIR}${prefix}/ssl/certs || return
-		ln -fsv /etc/ssl/certs ${DESTDIR}${prefix}/ssl/certs || return
+		[ ! -d /etc/ssl/certs ] || ln -fsv /etc/ssl/certs ${DESTDIR}${prefix}/ssl/certs || return
+		[   -d /etc/ssl/certs ] || mkdir -pv ${DESTDIR}${prefix}/ssl/certs || return
 		make -C ${openssl_bld_dir} -j 1 DESTDIR=${DESTDIR} install || return # XXX work around for parallel make
 		mkdir -pv ${DESTDIR}${prefix}/lib/pkgconfig || return
 		for f in libcrypto.pc libssl.pc openssl.pc; do
 			[ ! -f ${DESTDIR}${prefix}/lib64/pkgconfig/${f} ] || ln -fsv ../../lib64/pkgconfig/${f} ${DESTDIR}${prefix}/lib/pkgconfig || return
 		done
 		[ -z "${strip}" ] && return
-		strip -v ${DESTDIR}${prefix}/bin/openssl || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/openssl || return
 		;;
 	Python)
 		[ -x ${DESTDIR}${prefix}/bin/python3 -a "${force_install}" != yes ] && return
@@ -529,12 +532,12 @@ EOF
 		make -C ${Python_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		for v in `print_version Python` `print_version Python`m; do
-			[ ! -f ${DESTDIR}${prefix}/bin/python${v} ] || strip -v ${DESTDIR}${prefix}/bin/python${v} || return
+			[ ! -f ${DESTDIR}${prefix}/bin/python${v} ] || ${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/python${v} || return
 		done
 		for soname_v in `print_version Python 1`.so `print_version Python`.so.1.0 `print_version Python`m.so.1.0; do
 			[ ! -f ${DESTDIR}${prefix}/lib/libpython${soname_v} ] ||
 				(chmod -v u+w ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
-				strip -v ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
+				${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
 				chmod -v u-w ${DESTDIR}${prefix}/lib/libpython${soname_v} || return) || return
 		done
 		;;
@@ -593,9 +596,9 @@ EOF
 		cp -fv ${bzip2_bld_dir}/bzlib_private.h ${DESTDIR}${prefix}/include || return
 		[ -z "${strip}" ] && return
 		for b in bunzip2 bzcat bzip2 bzip2recover; do
-			strip -v ${DESTDIR}${prefix}/bin/${b} || return
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
-		strip -v ${DESTDIR}${prefix}/lib/libbz2.so || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libbz2.so || return
 		;;
 	xz)
 		[ -x ${DESTDIR}${prefix}/bin/xz -a "${force_install}" != yes ] && return
@@ -714,7 +717,7 @@ EOF
 		make -C ${glib_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		[ -z "${strip}" ] && return
 		for b in gapplication gdbus gio gio-launch-desktop gio-querymodules glib-compile-resources glib-compile-schemas gobject-query gresource gsettings gtester; do
-			strip -v ${DESTDIR}${prefix}/bin/${b} || return
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
 		;;
 	babeltrace)
@@ -933,7 +936,7 @@ EOF
 			make -C ${libtool_bld_dir} -j ${jobs} -k check || return
 		make -C ${libtool_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
-		strip -v ${DESTDIR}${prefix}/lib/libltdl.so || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libltdl.so || return
 		;;
 	pkg-config)
 		[ -x ${DESTDIR}${prefix}/bin/pkg-config -a "${force_install}" != yes ] && return
@@ -975,7 +978,7 @@ EOF
 		make -C ${curl_bld_dir} -j ${jobs} || return
 		make -C ${curl_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
-		strip -v ${DESTDIR}${prefix}/bin/curl || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/curl || return
 		;;
 	git)
 		[ -x ${DESTDIR}${prefix}/bin/git -a "${force_install}" != yes ] && return
@@ -1004,7 +1007,7 @@ EOF
 		make -C ${git_src_dir} -j ${jobs} V=1 DESTDIR=${DESTDIR} ${strip} install || return
 		[ -z "${strip}" ] && return
 		for b in git git-receive-pack git-upload-archive git-upload-pack; do
-			strip -v ${DESTDIR}${prefix}/bin/${b} || return
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
 		;;
 	screen)
@@ -1020,7 +1023,8 @@ EOF
 		make -C ${screen_bld_dir} -j ${jobs} || return
 		mkdir -pv ${DESTDIR}${prefix}/share/screen/utf8encodings || return
 		make -C ${screen_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
-		[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/${screen_name} || return
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${screen_name} || return
 		;;
 	vim)
 		[ -x ${DESTDIR}${prefix}/bin/vim -a "${force_install}" != yes ] && return
@@ -1170,9 +1174,9 @@ EOF
 		ruby_platform=`grep -e '^arch =' -m 1 ${ruby_bld_dir}/Makefile | grep -oe '[[:graph:]]\+$'`
 		ln -fsv ${ruby_platform}/pkgconfig/ruby-`print_version ruby`.pc ${DESTDIR}${prefix}/lib/pkgconfig || return
 		[ -z "${strip}" ] && return
-		strip -v ${DESTDIR}${prefix}/bin/ruby || return
-		strip -v ${DESTDIR}${prefix}/lib/${ruby_platform}/libruby.so || return
-		find ${DESTDIR}${prefix}/lib/${ruby_platform}/ruby/`print_version ruby`.0 -type f -name '*.so' -exec strip -v {} + || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/ruby || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${ruby_platform}/libruby.so || return
+		find ${DESTDIR}${prefix}/lib/${ruby_platform}/ruby/`print_version ruby`.0 -type f -name '*.so' -exec ${host:+${host}-}strip -v {} + || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
