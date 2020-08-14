@@ -278,6 +278,11 @@ print_version()
 	eval echo \${${_1}_ver} | cut -d. -f-${2:-2}
 }
 
+print_build_python_version()
+{
+	python3 -c 'import sys; print("{}.{}".format(*sys.version_info[:2]))' || return
+}
+
 print_target_python_version()
 {
 	grep -e '\<PY_VERSION\>' `print_header_dir Python.h`/patchlevel.h | \
@@ -558,7 +563,15 @@ EOF
 				--enable-shared --enable-optimizations --enable-ipv6 \
 				--with-universal-archs=all --with-lto --with-system-expat --with-system-ffi \
 				--with-openssl=`print_prefix ssl.h openssl` \
-				--with-doc-strings --with-pymalloc --with-ensurepip CONFIG_SITE=config.site) || return
+				--with-doc-strings --with-pymalloc --with-ensurepip \
+				PYTHON_FOR_BUILD=python3 \
+				CONFIG_SITE=config.site || return
+			) || return
+		(cd ${Python_bld_dir}
+		python3 -S -m sysconfig --generate-posix-vars || {
+			echo ERROR: you probably need \'python3-dev\' package for build environment. install it and try again. >&2
+			return 1
+		}) || return
 		make -C ${Python_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${Python_bld_dir} -j ${jobs} -k test || return
