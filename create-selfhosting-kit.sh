@@ -284,6 +284,12 @@ print_target_python_version()
 		grep -oPe '(?<=")\d\.\d(?=\.\d+")' || return
 }
 
+make()
+{
+	echo make "$@"
+	command make "$@"
+}
+
 build()
 {
 	case ${1} in
