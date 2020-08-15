@@ -555,25 +555,32 @@ build()
 		unpack ${1} || return
 		[ -f ${Python_bld_dir}/Makefile ] ||
 			(cd ${Python_bld_dir}
+			python3 -S -m sysconfig --generate-posix-vars || {
+				echo ERROR: Python3 \'sysconfig\' module does not work well. >&2
+				echo ERROR: you probably need \'python3-dev\' package for your build system. >&2
+				echo ERROR: please install it and try again. >&2
+				return 1;} || return
 			[ -f config.site ] || cat << EOF > config.site || return
 ac_cv_file__dev_ptmx=yes
 ac_cv_file__dev_ptc=no
+PYTHON_FOR_BUILD='_PYTHON_PROJECT_BASE=\$(abs_builddir) \
+_PYTHON_HOST_PLATFORM=\$(_PYTHON_HOST_PLATFORM) \
+PYTHONPATH=\$(shell test -f pybuilddir.txt && echo \$(abs_builddir)/\`cat pybuilddir.txt\`:)\$(srcdir)/Lib \
+_PYTHON_SYSCONFIGDATA_NAME=`find build -type f | xargs -I @ basename @ .py` python3'
 EOF
+			rm -fvr build pybuilddir.txt || return
+			sed -i -e "
+				/^    set_compiler_flags('LDFLAGS', 'PY_LDFLAGS_NODIST')/d
+				/^        sysconf_built = sysconfig\.get_config_var('MODBUILT_NAMES')\.split()/s//        sysconf_built = []/
+				/^        sysconf_dis = sysconfig\.get_config_var('MODDISABLED_NAMES')\.split()/s//        sysconf_dis = []/
+				" ${Python_src_dir}/setup.py || return
 			${Python_src_dir}/configure --prefix=${prefix} --build=`uname -m` --host=${host} --enable-universalsdk \
 				--enable-shared --enable-optimizations --enable-ipv6 \
 				--with-universal-archs=all --with-lto --with-system-expat --with-system-ffi \
 				--with-openssl=`print_prefix ssl.h openssl` \
 				--with-doc-strings --with-pymalloc --with-ensurepip \
-				PYTHON_FOR_BUILD=python3 \
 				CONFIG_SITE=config.site || return
 			) || return
-		(cd ${Python_bld_dir}
-		python3 -S -m sysconfig --generate-posix-vars || {
-			echo ERROR: Python3 \'sysconfig\' module does not work well. >&2
-			echo ERROR: you probably need \'python3-dev\' package for your build system. >&2
-			echo ERROR: please install it and try again. >&2
-			return 1
-		}) || return
 		make -C ${Python_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${Python_bld_dir} -j ${jobs} -k test || return
