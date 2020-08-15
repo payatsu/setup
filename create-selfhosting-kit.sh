@@ -1199,6 +1199,7 @@ EOF
 		;;
 	ruby)
 		[ -x ${DESTDIR}${prefix}/bin/ruby -a "${force_install}" != yes ] && return
+		ruby --version || return
 		print_header_path gmp.h > /dev/null || ${0} ${cmdopt} gmp || return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path readline.h readline > /dev/null || ${0} ${cmdopt} readline || return
@@ -1279,7 +1280,7 @@ main()
 
 	mkdir -pv selfhosting-kit || return
 	src_dir=`readlink -m selfhosting-kit/src`
-	DESTDIR=`readlink -m selfhosting-kit/products`
+	DESTDIR=`readlink -m selfhosting-kit/artifacts`
 
 	languages=c,c++
 	which ${host}-gccgo > /dev/null && languages=${languages},go
