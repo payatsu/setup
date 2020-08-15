@@ -569,7 +569,9 @@ EOF
 			) || return
 		(cd ${Python_bld_dir}
 		python3 -S -m sysconfig --generate-posix-vars || {
-			echo ERROR: you probably need \'python3-dev\' package for build environment. install it and try again. >&2
+			echo ERROR: Python3 \'sysconfig\' module does not work well. >&2
+			echo ERROR: you probably need \'python3-dev\' package for your build system. >&2
+			echo ERROR: please install it and try again. >&2
 			return 1
 		}) || return
 		make -C ${Python_bld_dir} -j ${jobs} || return
@@ -1266,7 +1268,7 @@ main()
 			eval ${opt}=${opt}
 			;;
 		--help) help; return;;
-		-*|--*) echo ERROR: unknown option \'${1}\'. >&2; return 1;;
+		-*|--*) echo ERROR: unknown option \'${1}\'. try \'--help\' for more information. >&2; return 1;;
 		*) break;;
 		esac
 		cmdopt="${cmdopt:+${cmdopt} }${1}"
