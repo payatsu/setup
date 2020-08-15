@@ -598,6 +598,9 @@ EOF
 		;;
 	boost)
 		[ -d ${DESTDIR}${prefix}/include/boost -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
+		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
 		fetch ${1} || return
 		unpack ${1} || return
 		(cd ${boost_src_dir}
@@ -605,7 +608,8 @@ EOF
 		sed -i -e "/^    using gcc /s//&: : ${host}-gcc /" project-config.jam &&
 		./b2 --prefix=${DESTDIR}${prefix} --build-dir=${boost_bld_dir} \
 			--layout=system --build-type=minimal -j ${jobs} -q \
-			include=${prefix}/include library-path=${prefix}/lib install) || return
+			--without-python \
+			include=${DESTDIR}${prefix}/include library-path=${DESTDIR}${prefix}/lib install) || return
 		;;
 	source-highlight)
 		[ -x ${DESTDIR}${prefix}/bin/source-highlight -a "${force_install}" != yes ] && return
