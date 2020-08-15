@@ -758,6 +758,8 @@ EOF
 				CPPFLAGS="${CPPFLAGS} -I`print_header_dir zlib.h`" \
 				LIBFFI_CFLAGS=-I`print_header_dir ffi.h` LIBFFI_LIBS="-L`print_library_dir libffi.so` -lffi" \
 				PCRE_CFLAGS=-I`print_header_dir pcre.h` PCRE_LIBS="-L`print_library_dir libpcre.so` -lpcre" \
+				LIBS="-L`print_library_dir libffi.so` -lffi -L`print_library_dir libpcre.so` -lpcre -lz" \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				glib_cv_stack_grows=no glib_cv_uscore=no) || return
 		make -C ${glib_bld_dir} -j ${jobs} || return
 		make -C ${glib_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
