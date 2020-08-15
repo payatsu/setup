@@ -289,6 +289,12 @@ print_target_python_version()
 		grep -oPe '(?<=")\d\.\d(?=\.\d+")' || return
 }
 
+print_target_python_abi()
+{
+	print_header_dir Python.h |
+		grep -oe '[[:alpha:]]*$' || return
+}
+
 make()
 {
 	echo make "$@"
@@ -1104,7 +1110,7 @@ vim_cv_terminfo=${vim_cv_terminfo=yes}
 vim_cv_tgetent=${vim_cv_tgetent=non-zero}
 vim_cv_toupper_broken=${vim_cv_toupper_broken=no}
 vi_cv_var_python3_version=`print_target_python_version`
-vi_cv_var_python3_abiflags=
+vi_cv_var_python3_abiflags=`print_target_python_abi`
 vi_cv_path_python3_pfx=`print_prefix Python.h`
 vi_cv_path_python3_epfx=`print_prefix Python.h`
 vi_cv_path_python3_conf=`print_library_dir python.o`
