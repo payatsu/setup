@@ -986,7 +986,8 @@ EOF
 		unpack ${1} || return
 		[ -f ${flex_bld_dir}/Makefile ] ||
 			(cd ${flex_bld_dir}
-			${flex_src_dir}/configure --prefix=${prefix} --host=${host}) || return
+			${flex_src_dir}/configure --prefix=${prefix} --host=${host} \
+				ac_cv_func_reallocarray=no) || return
 		make -C ${flex_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${flex_bld_dir} -j ${jobs} -k check || return
