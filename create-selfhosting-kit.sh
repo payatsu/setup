@@ -442,6 +442,18 @@ build()
 			s!^.\+\$![ -e ${DESTDIR}${prefix}/include/& ] || cp -Tvr & ${DESTDIR}${prefix}/include/& || exit!
 			" | sh || return
 		) || return
+		(cd  `${host}-gcc -print-file-name=crt1.o | xargs dirname`
+		find . -mindepth 1 -maxdepth 1 -name '*.o' | sed -e "
+			s!^\./!!
+			s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -Tvr & ${DESTDIR}${prefix}/lib/& || exit!
+			" | sh || return
+		) || return
+		(cd  `${host}-gcc -print-file-name=libgcc_s.so | xargs dirname`
+		find . -mindepth 1 -maxdepth 1 -name 'libgcc_s.*' | sed -e "
+			s!^\./!!
+			s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -Tvr & ${DESTDIR}${prefix}/lib/& || exit!
+			" | sh || return
+		) || return
 		;;
 	make)
 		[ -x ${DESTDIR}${prefix}/bin/make -a "${force_install}" != yes ] && return
