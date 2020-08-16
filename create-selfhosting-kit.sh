@@ -829,10 +829,12 @@ EOF
 			(cd ${gdb_bld_dir}
 			[ -f host_configargs ] || cat << EOF | tr '\n' ' ' > host_configargs || return
 --disable-rpath
-CFLAGS='${CFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir curses.h`'
-CPPFLAGS='${CPPFLAGS} -I`print_header_dir zlib.h`'
+CFLAGS='${CFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir curses.h` -I`print_header_dir Python.h`'
+CPPFLAGS='${CPPFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir Python.h`'
+LDFLAGS=-L`print_prefix Python.h`/lib
 LIBS='${LIBS} -lpopt -luuid -lgmodule-2.0 -lglib-2.0 -lpcre -ldw -lelf -lz -lbz2 -llzma'
 PKG_CONFIG_SYSROOT_DIR=${DESTDIR}
+PKG_CONFIG_LIBDIR=`print_library_dir source-highlight.pc`
 EOF
 			${gdb_src_dir}/configure --prefix=${prefix} --host=${host} --target=${target} \
 				--enable-targets=all --enable-64-bit-bfd --enable-tui --enable-source-highlight \
