@@ -436,6 +436,12 @@ build()
 			[ -f ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_base_ver}/${l} ] ||
 				ln -fsv ../lib64/${l} ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_base_ver} || return # XXX work around for --enable-version-specific-runtime-libs
 		done
+		(cd  `${host}-gcc -print-sysroot`/usr/include
+		find . -mindepth 1 -maxdepth 1 | sed -e "
+			s!^\./!!
+			s!^.\+\$![ -e ${DESTDIR}${prefix}/include/& ] || cp -Tvr & ${DESTDIR}${prefix}/include/& || exit!
+			" | sh || return
+		) || return
 		;;
 	make)
 		[ -x ${DESTDIR}${prefix}/bin/make -a "${force_install}" != yes ] && return
