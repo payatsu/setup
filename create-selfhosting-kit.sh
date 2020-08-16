@@ -851,7 +851,7 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${gdb_bld_dir} -j ${jobs} -k check || return
 		make -C ${gdb_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
-		make -C ${gdb_bld_dir}/gdb -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		make -C ${gdb_bld_dir}/gdb -j ${jobs} DESTDIR=${DESTDIR} STRIPPROG=${host:+${host}-}strip install${strip:+-${strip}} || return
 		make -C ${gdb_bld_dir}/sim -j ${jobs} DESTDIR=${DESTDIR} install || return
 		;;
 	strace)
