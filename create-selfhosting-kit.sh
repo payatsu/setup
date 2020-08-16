@@ -1073,7 +1073,7 @@ EOF
 		make -C ${git_src_dir} -j 1       V=1 LDFLAGS="${LDFLAGS} -ldl" all || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${git_src_dir} -j ${jobs} -k V=1 test || return
-		make -C ${git_src_dir} -j ${jobs} V=1 DESTDIR=${DESTDIR} ${strip} install || return
+		make -C ${git_src_dir} -j ${jobs} V=1 STRIP=${host:+${host}-}strip DESTDIR=${DESTDIR} ${strip} install || return
 		[ -z "${strip}" ] && return
 		for b in git git-receive-pack git-upload-archive git-upload-pack; do
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
@@ -1124,6 +1124,7 @@ EOF
 				--enable-cscope --enable-terminal --enable-autoservername --enable-multibyte \
 				--with-tlib=tinfo \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libtinfo.so`" \
+				STRIP=${host:+${host}-}strip \
 			) || return
 		patch -N -p0 -d ${vim_bld_dir} <<'EOF' || [ $? = 1 ] || return
 --- src/Makefile
@@ -1150,7 +1151,7 @@ EOF
 			/^PERL_LIBS\>/s/[[:graph:]]\+CORE//g
 			' ${vim_bld_dir}/src/auto/config.mk || return
 		make -C ${vim_bld_dir} -j ${jobs} || return
-		for l in ex rview rvim view; do
+		for l in ex rview rvim view vimdiff; do
 			[ ! -h ${DESTDIR}${prefix}/bin/${l} ] || rm -fv ${DESTDIR}${prefix}/bin/${l} || return
 		done
 		make -C ${vim_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
@@ -1163,6 +1164,7 @@ EOF
 		unpack ${1} || return
 		mkdir -pv ${DESTDIR}${prefix}/share/vim/vimfiles || return
 		cp -Tvr ${vimdoc_ja_src_dir} ${DESTDIR}${prefix}/share/vim/vimfiles || return
+		! which vim > /dev/null && return
 		vim -i NONE -u NONE -N -c "helptags ${DESTDIR}${prefix}/share/vim/vimfiles/doc" -c qall || return
 		;;
 	grep)
