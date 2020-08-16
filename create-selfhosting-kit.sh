@@ -694,7 +694,7 @@ EOF
 		make -C ${elfutils_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${elfutils_bld_dir} -j ${jobs} -k check || return
-		make -C ${elfutils_bld_dir} -j 1 DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		make -C ${elfutils_bld_dir} -j 1 STRIPPROG=${host:+${host}-}strip DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	pcre)
 		[ -f ${DESTDIR}${prefix}/include/pcre.h -a "${force_install}" != yes ] && return
