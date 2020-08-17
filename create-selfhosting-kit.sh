@@ -22,6 +22,8 @@ help()
     --cleanup
         delete the source and build directories of the just installed package,
         when installation has been completed.
+    --copy-libc
+        copy standard C library header files, crt*.o, and so on.
     --help
         show this help.
 EOF
@@ -436,24 +438,6 @@ build()
 			[ -f ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_base_ver}/${l} ] ||
 				ln -fsv ../lib64/${l} ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_base_ver} || return # XXX work around for --enable-version-specific-runtime-libs
 		done
-		(cd  `${host}-gcc -print-sysroot`/usr/include
-		find . -mindepth 1 -maxdepth 1 | sed -e "
-			s!^\./!!
-			s!^.\+\$![ -e ${DESTDIR}${prefix}/include/& ] || cp -Tvr & ${DESTDIR}${prefix}/include/& || exit!
-			" | sh || return
-		) || return
-		(cd  `${host}-gcc -print-file-name=crt1.o | xargs dirname`
-		find . -mindepth 1 -maxdepth 1 -name '*.o' | sed -e "
-			s!^\./!!
-			s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -Tvr & ${DESTDIR}${prefix}/lib/& || exit!
-			" | sh || return
-		) || return
-		(cd  `${host}-gcc -print-file-name=libgcc_s.so | xargs dirname`
-		find . -mindepth 1 -maxdepth 1 -name 'libgcc_s.*' | sed -e "
-			s!^\./!!
-			s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -Tvr & ${DESTDIR}${prefix}/lib/& || exit!
-			" | sh || return
-		) || return
 		;;
 	make)
 		[ -x ${DESTDIR}${prefix}/bin/make -a "${force_install}" != yes ] && return
@@ -1285,6 +1269,28 @@ EOF
 	return 0
 }
 
+copy_libc()
+{
+	(cd  `${host}-gcc -print-sysroot`/usr/include
+	find . -mindepth 1 -maxdepth 1 | sed -e "
+		s!^\./!!
+		s!^.\+\$![ -e ${DESTDIR}${prefix}/include/& ] || cp -Tvr & ${DESTDIR}${prefix}/include/& || exit!
+		" | sh || return
+	) || return
+	(cd  `${host}-gcc -print-file-name=crt1.o | xargs dirname`
+	find . -mindepth 1 -maxdepth 1 -name '*.o' | sed -e "
+		s!^\./!!
+		s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -Tvr & ${DESTDIR}${prefix}/lib/& || exit!
+		" | sh || return
+	) || return
+	(cd  `${host}-gcc -print-file-name=libgcc_s.so | xargs dirname`
+	find . -mindepth 1 -maxdepth 1 -name 'libgcc_s.*' | sed -e "
+		s!^\./!!
+		s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -Tvr & ${DESTDIR}${prefix}/lib/& || exit!
+		" | sh || return
+	) || return
+}
+
 cleanup()
 {
 	[ -z "${cleanup}" ] && return
@@ -1303,17 +1309,17 @@ main()
 			shift
 			eval ${opt}=\${1:-\${${opt}}}
 			;;
-		--force|--strip|--cleanup)
-			opt=`echo ${1} | cut -d- -f3`
+		--force|--strip|--cleanup|--copy-libc|--help)
+			opt=`echo ${1} | cut -d- -f3- | tr - _`
 			eval ${opt}=${opt}
 			;;
-		--help) help; return;;
 		-*|--*) echo ERROR: unknown option \'${1}\'. try \'--help\' for more information. >&2; return 1;;
 		*) break;;
 		esac
 		cmdopt="${cmdopt:+${cmdopt} }${1}"
 		shift
 	done
+	[ -n "${help}" ] && { help; return;}
 	[ "${force}" = force ] && force_install=yes
 
 	${host}-gcc --version > /dev/null || return
@@ -1337,6 +1343,7 @@ main()
 		build ${p} || return
 		cleanup ${p} || return
 	done
+	[ -z "${copy_libc}" ] || copy_libc || return
 }
 
 main "$@"
