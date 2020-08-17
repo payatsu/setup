@@ -5,9 +5,11 @@ help()
 	cat << EOF
 [NAME]
     `basename ${0}` - create toolchain running on target itself
+
 [SYNOPSIS]
     `basename ${0}` [--prefix PREFIX] [--host HOST] [--jobs JOBS]
         [--force] [--strip] [--cleanup] [--help] pkgs...
+
 [OPTIONS]
     --prefix PREFIX
         install prefix.
@@ -15,6 +17,8 @@ help()
         triplet on which toolchain runs.
     --jobs JOBS
         specify the number of jobs to run simultaneously.
+    --all
+        install as many packages as possible.
     --force
         do install even if it seems the package already has been installed.
     --strip
@@ -26,6 +30,10 @@ help()
         copy standard C library header files, crt*.o, and so on.
     --help
         show this help.
+
+[EXAMPLES]
+    \$ `basename ${0}` --jobs 8 --all --strip --cleanup --copy-libc
+
 EOF
 }
 
@@ -1309,7 +1317,7 @@ main()
 			shift
 			eval ${opt}=\${1:-\${${opt}}}
 			;;
-		--force|--strip|--cleanup|--copy-libc|--help)
+		--all|--force|--strip|--cleanup|--copy-libc|--help)
 			opt=`echo ${1} | cut -d- -f3- | tr - _`
 			eval ${opt}=${opt}
 			;;
@@ -1323,6 +1331,13 @@ main()
 		shift
 	done
 	[ -n "${help}" ] && { help; return;}
+	[ -n "${all}" ] && set -- `grep -oPe '(?<=^: \\${)\w+(?=_ver)' ${0} | sed -e '
+			s/source_highlight/source-highlight/
+			s/util_linux/util-linux/
+			s/pkg_config/pkg-config/
+			s/vimdoc_ja/vimdoc-ja/
+			'`
+	[ $# -eq 0 ] && { echo ERROR: no packages specified. try \'--help\' for more information.>&2; return 1;}
 	[ -n "${force}" ] && force_install=yes
 
 	${host}-gcc --version > /dev/null || return
@@ -1336,12 +1351,7 @@ main()
 	languages=c,c++
 	which ${host}-gccgo > /dev/null && languages=${languages},go
 
-	for p in ${@:-`grep -oPe '(?<=^: \\${)\w+(?=_ver)' ${0} | sed -e '
-			s/source_highlight/source-highlight/
-			s/util_linux/util-linux/
-			s/pkg_config/pkg-config/
-			s/vimdoc_ja/vimdoc-ja/
-			'`}; do
+	for p in ${@}; do
 		init ${p} || return
 		build ${p} || return
 		cleanup ${p} || return
