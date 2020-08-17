@@ -1831,9 +1831,9 @@ install_native_bzip2()
 	update_path || return
 	[ -z "${strip}" ] && return
 	for b in bunzip2 bzcat bzip2 bzip2recover; do
-		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
-	strip -v ${DESTDIR}${prefix}/lib/libbz2.so || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libbz2.so || return
 }
 
 install_native_gzip()
@@ -1861,7 +1861,7 @@ install_native_zip()
 	update_path || return
 	[ -z "${strip}" ] && return
 	for b in zip zipcloak zipnote zipsplit; do
-		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 }
 
@@ -1944,7 +1944,7 @@ install_native_lz4()
 	done
 	make -C ${lz4_bld_dir} -j ${jobs} V=1 PREFIX=${prefix} install || return
 	[ -z "${strip}" ] && return
-	strip -v ${DESTDIR}${prefix}/bin/lz4 || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/lz4 || return
 }
 
 install_native_zstd()
@@ -1957,7 +1957,7 @@ install_native_zstd()
 	make -C ${zstd_bld_dir} -j ${jobs} prefix=${DESTDIR}${prefix} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
-	strip -v ${DESTDIR}${prefix}/bin/zstd || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/zstd || return
 }
 
 install_native_wget()
@@ -2137,7 +2137,7 @@ install_native_autogen()
 	make -C ${autogen_bld_dir} -j ${jobs} install || return
 	[ -z "${strip}" ] && return
 	for b in autogen columns getdefs xml2ag; do
-		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 }
 
@@ -2155,7 +2155,7 @@ install_native_libtool()
 		make -C ${libtool_bld_dir} -j ${jobs} -k check || return
 	make -C ${libtool_bld_dir} -j ${jobs} install || return
 	[ -z "${strip}" ] && return
-	strip -v ${DESTDIR}${prefix}/lib/libltdl.so || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libltdl.so || return
 }
 
 install_native_sed()
@@ -2351,9 +2351,9 @@ install_native_dtc()
 	(unset CFLAGS; make -C ${dtc_bld_dir} -j 1 V=1 PREFIX=${DESTDIR}${prefix} install) || return # XXX work around for parallel make
 	[ -z "${strip}" ] && return
 	for b in convert-dtsv0 dtc fdtdump fdtget fdtoverlay fdtput; do
-		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
-	strip -v ${DESTDIR}${prefix}/lib/libfdt-`print_version dtc`.0.so || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libfdt-`print_version dtc`.0.so || return
 }
 
 install_native_u_boot()
@@ -2398,7 +2398,8 @@ install_native_gperf()
 	[ "${enable_check}" != yes ] ||
 		make -C ${gperf_bld_dir} -j ${jobs} -k check || return
 	make -C ${gperf_bld_dir} -j ${jobs} install || return
-	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/gperf || return
+	[ -z "${strip}" ] && return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/gperf || return
 }
 
 install_native_glibc()
@@ -2555,7 +2556,7 @@ install_native_readline()
 	update_path || return
 	[ -z "${strip}" ] && return
 	for l in libhistory libreadline; do
-		strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
 	done
 }
 
@@ -2623,10 +2624,12 @@ EOF
 	done
 	[ -z "${strip}" ] && return
 	for b in clear infocmp tabs tic toe tput tset; do
-		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 	for l in libform libmenu libncurses++ libpanel libtinfo libformtw libmenutw libncurses++tw libncursestw libpaneltw libtinfotw; do
-		[ ! -f ${DESTDIR}${prefix}/lib/${l}.so ] || strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
+		[ -f ${DESTDIR}${prefix}/lib/${l}.so ] || continue
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
 	done
 }
 
@@ -2822,7 +2825,7 @@ install_native_giflib()
 	update_path || return
 	[ -z "${strip}" ] && return
 	for b in gif2rgb  gifbuild  gifclrmp  giffix  giftext  giftool; do
-		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 }
 
@@ -2900,7 +2903,7 @@ install_native_glib()
 	update_path || return
 	[ -z "${strip}" ] && return
 	for b in gapplication gdbus gio gio-launch-desktop gio-querymodules glib-compile-resources glib-compile-schemas gobject-query gresource gsettings gtester; do
-		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 }
 
@@ -3395,7 +3398,7 @@ install_native_libiconv()
 	update_path || return
 	[ -z "${strip}" ] && return
 	for l in libcharset libiconv; do
-		strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
 	done
 }
 
@@ -3491,7 +3494,7 @@ install_native_neovim()
 		CMAKE_INSTALL_PREFIX=${prefix} || return
 	make -C ${neovim_src_dir} -j ${jobs} install || return
 	[ -z "${strip}" ] && return
-	strip -v ${prefix}/bin/nvim || return
+	${host:+${host}-}strip -v ${prefix}/bin/nvim || return
 }
 
 install_native_dein()
@@ -3640,7 +3643,7 @@ install_native_ghostscript()
 	make -C ${ghostscript_bld_dir} -j ${jobs} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
-	strip -v ${DESTDIR}${prefix}/bin/gs || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/gs || return
 }
 
 install_native_graphviz()
@@ -3913,7 +3916,8 @@ install_native_screen()
 	make -C ${screen_bld_dir} -j ${jobs} || return
 	mkdir -pv ${DESTDIR}${prefix}/share/screen/utf8encodings || return
 	make -C ${screen_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
-	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/${screen_name} || return
+	[ -z "${strip}" ] && return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${screen_name} || return
 }
 
 install_native_libevent()
@@ -3931,7 +3935,7 @@ install_native_libevent()
 	update_path || return
 	[ -z "${strip}" ] && return
 	for l in '' _core _extra _openssl _pthreads; do
-		strip -v ${DESTDIR}${prefix}/lib/libevent${l}.so || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libevent${l}.so || return
 	done
 }
 
@@ -3950,7 +3954,8 @@ install_native_tmux()
 	[ "${enable_check}" != yes ] ||
 		make -C ${tmux_bld_dir} -j ${jobs} -k check || return
 	make -C ${tmux_bld_dir} -j ${jobs} install || return
-	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/tmux || return
+	[ -z "${strip}" ] && return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/tmux || return
 }
 
 install_native_expect()
@@ -4071,7 +4076,8 @@ install_native_squashfs()
 	make -C ${squashfs_bld_dir}/squashfs-tools -j ${jobs} XZ_SUPPORT=1 || return
 	mkdir -pv ${DESTDIR}${prefix}/bin || return
 	make -C ${squashfs_bld_dir}/squashfs-tools -j ${jobs} INSTALL_DIR=${DESTDIR}${prefix}/bin install || return
-	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/mksquashfs ${DESTDIR}${prefix}/bin/unsquashfs || return
+	[ -z "${strip}" ] && return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/mksquashfs ${DESTDIR}${prefix}/bin/unsquashfs || return
 }
 
 install_native_openssl()
@@ -4087,7 +4093,8 @@ install_native_openssl()
 		make -C ${openssl_bld_dir} -j 1 -k test || return # XXX work around for parallel make
 	mkdir -pv ${DESTDIR}${prefix}/ssl || return
 	rm -fv ${DESTDIR}${prefix}/ssl/certs || return
-	ln -fsv /etc/ssl/certs ${DESTDIR}${prefix}/ssl/certs || return
+	[ ! -d /etc/ssl/certs ] || ln -fsv /etc/ssl/certs ${DESTDIR}${prefix}/ssl/certs || return
+	[   -d /etc/ssl/certs ] || mkdir -pv ${DESTDIR}${prefix}/ssl/certs || return
 	make -C ${openssl_bld_dir} -j 1 DESTDIR=${DESTDIR} install || return # XXX work around for parallel make
 	mkdir -pv ${DESTDIR}${prefix}/lib/pkgconfig || return
 	for f in libcrypto.pc libssl.pc openssl.pc; do
@@ -4095,7 +4102,7 @@ install_native_openssl()
 	done
 	update_path || return
 	[ -z "${strip}" ] && return
-	strip -v ${DESTDIR}${prefix}/bin/openssl || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/openssl || return
 }
 
 install_native_openssh()
@@ -4146,7 +4153,7 @@ install_native_curl()
 	make -C ${curl_bld_dir} -j ${jobs} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
-	strip -v ${DESTDIR}${prefix}/bin/curl || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/curl || return
 }
 
 install_native_expat()
@@ -4163,8 +4170,8 @@ install_native_expat()
 	make -C ${expat_bld_dir} -j ${jobs} INSTALL_ROOT=${DESTDIR} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
-	strip -v ${DESTDIR}${prefix}/bin/xmlwf || return
-	strip -v ${DESTDIR}${prefix}/lib/libexpat.so || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/xmlwf || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libexpat.so || return
 }
 
 install_native_asciidoc()
@@ -4278,7 +4285,7 @@ install_native_git()
 	make -C ${git_src_dir} -j ${jobs} -k V=1 install-doc install-html || true # git-manpagesでfallbackするのでmake install-docの失敗はシェル関数の失敗ではない。
 	[ -z "${strip}" ] && return
 	for b in git git-receive-pack git-upload-archive git-upload-pack; do
-		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 }
 
@@ -4388,7 +4395,7 @@ install_native_subversion()
 	update_path || return
 	[ -z "${strip}" ] && return
 	for b in svn svnadmin svnbench svndumpfilter svnfsfs svnlook svnmucc svnrdump svnserve svnsync svnversion; do
-		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 }
 
@@ -4461,7 +4468,7 @@ install_native_bazel()
 	cp -fv ${bazel_bld_dir}/output/bazel ${DESTDIR}${prefix}/bin/bazel || return
 	update_path || return
 	[ -z "${strip}" ] && return
-	strip -v ${DESTDIR}${prefix}/bin/bazel || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/bazel || return
 }
 
 install_native_Bear()
@@ -4495,7 +4502,7 @@ install_native_ccache()
 	update_path || return
 	update_ccache_wrapper -f || return
 	[ -z "${strip}" ] && return
-	strip -v ${DESTDIR}${prefix}/bin/ccache || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/ccache || return
 }
 
 install_native_libedit()
@@ -4529,7 +4536,7 @@ install_native_swig()
 		make -C ${swig_bld_dir} -j ${jobs} -k check || return
 	make -C ${swig_bld_dir} -j ${jobs} install || return
 	[ -z "${strip}" ] && return
-	strip -v ${DESTDIR}${prefix}/bin/swig ${DESTDIR}${prefix}/bin/ccache-swig || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/swig ${DESTDIR}${prefix}/bin/ccache-swig || return
 }
 
 install_native_llvm()
@@ -4993,12 +5000,12 @@ install_native_Python()
 	pip`print_version Python 1` install -U pip || return
 	[ -z "${strip}" ] && return
 	for v in `print_version Python` `print_version Python`m; do
-		[ ! -f ${DESTDIR}${prefix}/bin/python${v} ] || strip -v ${DESTDIR}${prefix}/bin/python${v} || return
+		[ ! -f ${DESTDIR}${prefix}/bin/python${v} ] || ${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/python${v} || return
 	done
 	for soname_v in `print_version Python 1`.so `print_version Python`.so.1.0 `print_version Python`m.so.1.0; do
 		[ ! -f ${DESTDIR}${prefix}/lib/libpython${soname_v} ] ||
 			(chmod -v u+w ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
-			strip -v ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
 			chmod -v u-w ${DESTDIR}${prefix}/lib/libpython${soname_v} || return) || return
 	done
 }
@@ -5027,11 +5034,11 @@ install_native_rustc()
 	./x.py build -j ${jobs} || return
 	./x.py doc -j ${jobs} || return
 	./x.py install -j ${jobs}) || return
+	update_path || return
 	[ -z "${strip}" ] && return
 	for b in cargo cargo-clippy cargo-fmt cargo-miri clippy-driver miri rls rustc rustdoc rustfmt; do
-		[ ! -f ${DESTDIR}${prefix}/bin/${b} ] || strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		[ ! -f ${DESTDIR}${prefix}/bin/${b} ] || ${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
-	update_path || return
 }
 
 install_native_rustup()
@@ -5064,9 +5071,9 @@ install_native_ruby()
 	ruby_platform=`grep -e '^arch =' -m 1 ${ruby_bld_dir}/Makefile | grep -oe '[[:graph:]]\+$'`
 	ln -fsv ${ruby_platform}/pkgconfig/ruby-`print_version ruby`.pc ${DESTDIR}${prefix}/lib/pkgconfig || return
 	[ -z "${strip}" ] && return
-	strip -v ${DESTDIR}${prefix}/bin/ruby || return
-	strip -v ${DESTDIR}${prefix}/lib/${ruby_platform}/libruby.so || return
-	find ${DESTDIR}${prefix}/lib/${ruby_platform}/ruby/`print_version ruby`.0 -type f -name '*.so' -exec strip -v {} + || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/ruby || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${ruby_platform}/libruby.so || return
+	find ${DESTDIR}${prefix}/lib/${ruby_platform}/ruby/`print_version ruby`.0 -type f -name '*.so' -exec ${host:+${host}-}strip -v {} + || return
 }
 
 install_native_go()
@@ -5121,9 +5128,9 @@ install_native_tcl()
 	update_path || return
 	ln -fsv tclsh`print_version tcl` ${DESTDIR}${prefix}/bin/tclsh || return
 	[ -z "${strip}" ] && return
-	strip -v ${DESTDIR}${prefix}/bin/tclsh || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/tclsh || return
 	chmod -v u+w ${DESTDIR}${prefix}/lib/libtcl`print_version tcl`.so || return
-	strip -v ${DESTDIR}${prefix}/lib/libtcl`print_version tcl`.so || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libtcl`print_version tcl`.so || return
 	chmod -v u-w ${DESTDIR}${prefix}/lib/libtcl`print_version tcl`.so || return
 }
 
@@ -5144,7 +5151,7 @@ install_native_tk()
 	ln -fsv wish`print_version tk` ${DESTDIR}${prefix}/bin/wish || return
 	[ -z "${strip}" ] && return
 	chmod -v u+w ${DESTDIR}${prefix}/lib/libtk`print_version tk`.so || return
-	strip -v ${DESTDIR}${prefix}/lib/libtk`print_version tk`.so || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libtk`print_version tk`.so || return
 	chmod -v u-w ${DESTDIR}${prefix}/lib/libtk`print_version tk`.so || return
 }
 
@@ -5319,7 +5326,8 @@ EOF
 	cp -fv ${DESTDIR}${prefix}/lib/liblua.so ${DESTDIR}${prefix}/lib/liblua.so.`print_version lua` || return
 	ln -fsv liblua.so.`print_version lua` ${DESTDIR}${prefix}/lib/liblua.so || return
 	update_path || return
-	[ -z "${strip}" ] || strip -v ${DESTDIR}${prefix}/bin/lua ${DESTDIR}${prefix}/bin/luac || return
+	[ -z "${strip}" ] && return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/lua ${DESTDIR}${prefix}/bin/luac || return
 }
 
 install_native_node()
@@ -5520,7 +5528,7 @@ install_native_yavta()
 	command install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${yavta_bld_dir}/yavta || return
 	update_path || return
 	[ -z "${strip}" ] && return
-	strip -v ${DESTDIR}${prefix}/bin/yavta || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/yavta || return
 }
 
 install_native_googletest()
@@ -5555,7 +5563,7 @@ install_native_fzf()
 	mkdir -pv ${DESTDIR}${prefix}/share/vim/vim`print_version vim | tr -d .`/plugin || return
 	cp -fv ${fzf_src_dir}/plugin/fzf.vim ${DESTDIR}${prefix}/share/vim/vim`print_version vim | tr -d .`/plugin || return
 	[ -z "${strip}" ] && return
-	strip -v ${DESTDIR}${prefix}/bin/fzf || return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/fzf || return
 }
 
 install_native_jq()
@@ -5621,7 +5629,7 @@ install_native_nmap()
 	make -C ${nmap_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 	[ -z "${strip}" ] && return
 	for b in ncat nmap nping; do
-		strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 }
 
