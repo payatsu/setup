@@ -1316,11 +1316,14 @@ main()
 		-*|--*) echo ERROR: unknown option \'${1}\'. try \'--help\' for more information. >&2; return 1;;
 		*) break;;
 		esac
-		cmdopt="${cmdopt:+${cmdopt} }${1}"
+		case ${1} in
+		--copy-libc) ;; # don't pass this option to child process.
+		*) cmdopt="${cmdopt:+${cmdopt} }${1}";;
+		esac
 		shift
 	done
 	[ -n "${help}" ] && { help; return;}
-	[ "${force}" = force ] && force_install=yes
+	[ -n "${force}" ] && force_install=yes
 
 	${host}-gcc --version > /dev/null || return
 	build=`gcc -dumpmachine`
