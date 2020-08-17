@@ -326,7 +326,7 @@ build()
 		make -C ${zlib_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		;;
 	binutils)
-		[ -x ${DESTDIR}${prefix}/bin/${target}-as -a "${force_install}" != yes ] && return
+		[ -x ${DESTDIR}${prefix}/bin/as -a "${force_install}" != yes ] && return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		fetch ${1} || return
 		unpack ${1} || return
