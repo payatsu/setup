@@ -1,5 +1,9 @@
 #!/bin/sh
 
+default_prefix=/usr/local
+default_host=aarch64-linux-gnu
+default_jobs=`grep -e '^processor\>' -c /proc/cpuinfo`
+
 help()
 {
 	cat << EOF
@@ -11,11 +15,11 @@ help()
         [--force] [--strip] [--cleanup] [--help] [packages...]
 
 [OPTIONS]
-    --prefix PREFIX
+    --prefix PREFIX [default: ${default_prefix}]
         install prefix.
-    --host HOST
+    --host HOST [default: ${default_host}]
         triplet on which toolchain runs.
-    --jobs JOBS
+    --jobs JOBS [default: ${default_jobs}]
         specify the number of jobs to run simultaneously.
     --all
         install as many packages as possible.
@@ -33,6 +37,9 @@ help()
 
 [EXAMPLES]
     \$ `basename ${0}` --jobs 8 --all --strip --cleanup --copy-libc
+
+[PACKAGES]
+`print_packages | tr '\n' ' ' | fold -s | sed -e 's/^/    /'`
 
 EOF
 }
@@ -90,9 +97,9 @@ EOF
 
 : ${ruby_ver:=2.7.1}
 
-: ${prefix:=/usr/local}
-: ${host:=aarch64-linux-gnu}
-: ${jobs:=4}
+: ${prefix:=${default_prefix}}
+: ${host:=${default_host}}
+: ${jobs:=${default_jobs}}
 : ${strip:=}
 : ${cleanup:=}
 
@@ -286,6 +293,16 @@ print_version()
 {
 	_1=`echo ${1} | tr - _`
 	eval echo \${${_1}_ver} | cut -d. -f-${2:-2}
+}
+
+print_packages()
+{
+	grep -oPe '(?<=^: \${)\w+(?=_ver)' ${0} | sed -e '
+		s/source_highlight/source-highlight/
+		s/util_linux/util-linux/
+		s/pkg_config/pkg-config/
+		s/vimdoc_ja/vimdoc-ja/
+	' || return
 }
 
 print_build_python_version()
