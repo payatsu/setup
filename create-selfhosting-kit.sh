@@ -1351,12 +1351,7 @@ main()
 		shift
 	done
 	[ -n "${help}" ] && { help; return;}
-	[ -n "${all}" ] && set -- `grep -oPe '(?<=^: \\${)\w+(?=_ver)' ${0} | sed -e '
-			s/source_highlight/source-highlight/
-			s/util_linux/util-linux/
-			s/pkg_config/pkg-config/
-			s/vimdoc_ja/vimdoc-ja/
-			'`
+	[ -z "${all}" ] || set -- `print_packages` || return
 	[ $# -eq 0 ] && echo WARNING: no packages specified. try \'--help\' for more information. >&2
 	[ -n "${force}" ] && force_install=yes
 
