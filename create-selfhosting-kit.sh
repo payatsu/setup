@@ -1294,6 +1294,57 @@ EOF
 	return 0
 }
 
+generate_pathconfig()
+{
+	mkdir -pv `dirname ${1}` || return
+	func_name=`basename ${1} | tr . _ | tr -cd '[:alpha:]_'`
+	cat << 'EOF' | sed -e '1,/^{$/{s%prefix_place_holder%'${prefix}'%;s%host_place_holder%'${host}'%;s%func_place_holder%'${func_name}'%};$s%func_place_holder%'${func_name}'%' > ${1} || return
+prefix=prefix_place_holder
+host=host_place_holder
+func_place_holder()
+{
+	for p in ${prefix}/bin ${prefix}/sbin; do
+		[ -d ${p} ] || continue
+		echo ${p} | grep -qe "/usr/local/s\?bin" && continue
+		echo ${PATH} | tr : '\n' | grep -qe ^${p}\$ \
+			&& PATH=${p}`echo ${PATH} | sed -e "
+					s%\(^\|:\)${p}\(\$\|:\)%\1\2%g
+					s/::/:/g
+					s/^://
+					s/:\$//
+					s/^./:&/
+				"` \
+			|| PATH=${p}${PATH:+:${PATH}}
+	done
+	unset p
+
+	for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/${host} ] && find ${prefix}/${host} -mindepth 2 -maxdepth 2 -type d -name lib` \
+		`[ -d ${prefix}/lib/gcc/${host} ] && find ${prefix}/lib/gcc/${host} -mindepth 1 -maxdepth 1 -type d -name '*.?.?' | sort -rV | head -n 1`; do
+		[ -d ${p} ] || continue
+		echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ \
+			&& export LD_LIBRARY_PATH=${p}`echo ${LD_LIBRARY_PATH} | sed -e "
+					s%\(^\|:\)${p}\(\$\|:\)%\1\2%g
+					s/::/:/g
+					s/^://
+					s/:\$//
+					s/^./:&/
+				"` \
+			|| export LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+	done
+	unset p
+
+	echo ${MANPATH} | tr : '\n' | grep -qe ^${prefix}/share/man\$ \
+		&& export MANPATH=${prefix}/share/man:`echo ${MANPATH} | sed -e '
+				s%\(^\|:\)'${prefix}'/share/man\($\|:\)%\1\2%g
+				s/::/:/g
+				s/^://
+			'` \
+		|| export MANPATH=${prefix}/share/man:${MANPATH}
+}
+func_place_holder
+EOF
+}
+
 copy_libc()
 {
 	mkdir -pv ${DESTDIR}${prefix}/include || return
@@ -1370,6 +1421,7 @@ main()
 		build ${p} || return
 		cleanup ${p} || return
 	done
+	generate_pathconfig ${DESTDIR}${prefix}/pathconfig.sh || return
 	[ -z "${copy_libc}" ] || copy_libc || return
 }
 
