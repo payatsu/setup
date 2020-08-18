@@ -8,7 +8,7 @@ help()
 
 [SYNOPSIS]
     `basename ${0}` [--prefix PREFIX] [--host HOST] [--jobs JOBS]
-        [--force] [--strip] [--cleanup] [--help] pkgs...
+        [--force] [--strip] [--cleanup] [--help] [packages...]
 
 [OPTIONS]
     --prefix PREFIX
@@ -1279,22 +1279,25 @@ EOF
 
 copy_libc()
 {
+	mkdir -pv ${DESTDIR}${prefix}/include || return
 	(cd  `${host}-gcc -print-sysroot`/usr/include
 	find . -mindepth 1 -maxdepth 1 | sed -e "
 		s!^\./!!
-		s!^.\+\$![ -e ${DESTDIR}${prefix}/include/& ] || cp -Tvr & ${DESTDIR}${prefix}/include/& || exit!
+		s!^.\+\$![ -e ${DESTDIR}${prefix}/include/& ] || cp -HTvr & ${DESTDIR}${prefix}/include/& || exit!
 		" | sh || return
 	) || return
+
+	mkdir -pv ${DESTDIR}${prefix}/lib || return
 	(cd  `${host}-gcc -print-file-name=crt1.o | xargs dirname`
 	find . -mindepth 1 -maxdepth 1 -name '*.o' | sed -e "
 		s!^\./!!
-		s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -Tvr & ${DESTDIR}${prefix}/lib/& || exit!
+		s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -HTvr & ${DESTDIR}${prefix}/lib/& || exit!
 		" | sh || return
 	) || return
 	(cd  `${host}-gcc -print-file-name=libgcc_s.so | xargs dirname`
 	find . -mindepth 1 -maxdepth 1 -name 'libgcc_s.*' | sed -e "
 		s!^\./!!
-		s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -Tvr & ${DESTDIR}${prefix}/lib/& || exit!
+		s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -HTvr & ${DESTDIR}${prefix}/lib/& || exit!
 		" | sh || return
 	) || return
 }
@@ -1337,14 +1340,13 @@ main()
 			s/pkg_config/pkg-config/
 			s/vimdoc_ja/vimdoc-ja/
 			'`
-	[ $# -eq 0 ] && { echo ERROR: no packages specified. try \'--help\' for more information.>&2; return 1;}
+	[ $# -eq 0 ] && echo WARNING: no packages specified. try \'--help\' for more information. >&2
 	[ -n "${force}" ] && force_install=yes
 
 	${host}-gcc --version > /dev/null || return
 	build=`gcc -dumpmachine`
 	target=${host}
 
-	mkdir -pv selfhosting-kit || return
 	src_dir=`readlink -m selfhosting-kit/src`
 	DESTDIR=`readlink -m selfhosting-kit/artifacts`
 
