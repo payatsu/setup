@@ -48,7 +48,7 @@ EOF
 : ${binutils_ver:=2.35}
 : ${gmp_ver:=6.2.0}
 : ${mpfr_ver:=4.1.0}
-: ${mpc_ver:=1.1.0}
+: ${mpc_ver:=1.2.0}
 : ${isl_ver:=0.20}
 : ${gcc_ver:=10.2.0}
 : ${make_ver:=4.3}
@@ -59,7 +59,7 @@ EOF
 : ${libffi_ver:=3.3}
 : ${openssl_ver:=1.1.1g}
 : ${Python_ver:=3.8.5}
-: ${boost_ver:=1_73_0}
+: ${boost_ver:=1_74_0}
 : ${source_highlight_ver:=3.1.9}
 : ${bzip2_ver:=1.0.8}
 : ${xz_ver:=5.2.5}
