@@ -86,6 +86,7 @@ EOF
 : ${pkg_config_ver:=0.29.2}
 : ${curl_ver:=7.69.1}
 : ${git_ver:=2.28.0}
+: ${ed_ver:=1.16}
 
 : ${screen_ver:=4.8.0}
 : ${vim_ver:=8.2.1127}
@@ -122,6 +123,7 @@ check_archive()
 	[ -f ${1}.tar.gz  -a -s ${1}.tar.gz  ] && return
 	[ -f ${1}.tar.bz2 -a -s ${1}.tar.bz2 ] && return
 	[ -f ${1}.tar.xz  -a -s ${1}.tar.xz  ] && return
+	[ -f ${1}.tar.lz  -a -s ${1}.tar.lz  ] && return
 	return 1
 }
 
@@ -136,9 +138,9 @@ fetch()
 	zlib)
 		wget -O ${zlib_src_dir}.tar.xz \
 			http://zlib.net/${zlib_name}.tar.xz || return;;
-	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|screen|m4|autoconf|automake|\
+	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|ed|screen|m4|autoconf|automake|\
 	bison|libtool|grep|diffutils|patch|global)
-		for compress_format in xz bz2 gz; do
+		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
 				https://ftp.gnu.org/gnu/${1}/\${${_1}_name}.tar.${compress_format} \
 					&& break \
@@ -245,6 +247,7 @@ unpack()
 	[ -f ${d}.tar.gz  -a -s ${d}.tar.gz  ] && tar xzvf ${d}.tar.gz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${d}`} && return
 	[ -f ${d}.tar.bz2 -a -s ${d}.tar.bz2 ] && tar xjvf ${d}.tar.bz2 --no-same-owner --no-same-permissions -C ${2:-`dirname ${d}`} && return
 	[ -f ${d}.tar.xz  -a -s ${d}.tar.xz  ] && tar xJvf ${d}.tar.xz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${d}`} && return
+	[ -f ${d}.tar.lz  -a -s ${d}.tar.lz  ] && tar xvf  ${d}.tar.lz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${d}`} && return
 	return 1
 }
 
@@ -1106,6 +1109,18 @@ EOF
 		for b in git git-receive-pack git-upload-archive git-upload-pack; do
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
+		;;
+	ed)
+		[ -x ${DESTDIR}${prefix}/bin/ed -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${ed_bld_dir}/Makefile ] ||
+			(cd ${ed_bld_dir}
+			${ed_src_dir}/configure --prefix=${prefix} CC=${CC:-${host:+${host}-}gcc}) || return
+		make -C ${ed_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${ed_bld_dir} -j ${jobs} -k check || return
+		make -C ${ed_bld_dir} -j 1 DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	screen)
 		[ -x ${DESTDIR}${prefix}/bin/screen -a "${force_install}" != yes ] && return
