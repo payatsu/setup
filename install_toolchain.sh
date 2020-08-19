@@ -60,7 +60,7 @@
 : ${mingw_w64_ver:=5.0.4}
 : ${gmp_ver:=6.2.0}
 : ${mpfr_ver:=4.1.0}
-: ${mpc_ver:=1.1.0}
+: ${mpc_ver:=1.2.0}
 : ${isl_ver:=0.20}
 : ${gcc_ver:=10.2.0}
 : ${readline_ver:=8.0}
