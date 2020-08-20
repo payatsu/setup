@@ -88,6 +88,7 @@ EOF
 : ${git_ver:=2.28.0}
 : ${ed_ver:=1.16}
 : ${rsync_ver:=3.1.3}
+: ${dtc_ver:=1.6.0}
 
 : ${screen_ver:=4.8.0}
 : ${vim_ver:=8.2.1127}
@@ -228,6 +229,9 @@ fetch()
 	rsync)
 		wget -O ${rsync_src_dir}.tar.gz \
 			https://download.samba.org/pub/rsync/src/${rsync_name}.tar.gz || return;;
+	dtc)
+		wget -O ${dtc_src_dir}.tar.xz \
+			https://www.kernel.org/pub/software/utils/dtc/${dtc_name}.tar.xz || return;;
 	vim)
 		wget -O ${vim_src_dir}.tar.gz \
 			http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return;;
@@ -1140,6 +1144,19 @@ EOF
 				) || return
 		make -C ${rsync_bld_dir} -j ${jobs} || return
 		make -C ${rsync_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	dtc)
+		[ -x ${DESTDIR}${prefix}/bin/dtc -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${dtc_bld_dir}/Makefile ] || cp -Tvr ${dtc_src_dir} ${dtc_bld_dir} || return
+		(unset CFLAGS; make -C ${dtc_bld_dir} -j 1 V=1 NO_PYTHON=1 CC=${CC:-${host:+${host}-}gcc}) || return # XXX work around for parallel make
+		(unset CFLAGS; make -C ${dtc_bld_dir} -j 1 V=1 NO_PYTHON=1 PREFIX=${DESTDIR}${prefix} install) || return # XXX work around for parallel make
+		[ -z "${strip}" ] && return
+		for b in convert-dtsv0 dtc fdtdump fdtget fdtoverlay fdtput; do
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		done
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libfdt-`print_version dtc`.0.so || return
 		;;
 	screen)
 		[ -x ${DESTDIR}${prefix}/bin/screen -a "${force_install}" != yes ] && return
