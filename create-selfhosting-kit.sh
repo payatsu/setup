@@ -87,6 +87,7 @@ EOF
 : ${curl_ver:=7.69.1}
 : ${git_ver:=2.28.0}
 : ${ed_ver:=1.16}
+: ${rsync_ver:=3.1.3}
 
 : ${screen_ver:=4.8.0}
 : ${vim_ver:=8.2.1127}
@@ -224,6 +225,9 @@ fetch()
 	git)
 		wget -O ${git_src_dir}.tar.xz \
 			https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return;;
+	rsync)
+		wget -O ${rsync_src_dir}.tar.gz \
+			https://download.samba.org/pub/rsync/src/${rsync_name}.tar.gz || return;;
 	vim)
 		wget -O ${vim_src_dir}.tar.gz \
 			http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return;;
@@ -1121,6 +1125,21 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${ed_bld_dir} -j ${jobs} -k check || return
 		make -C ${ed_bld_dir} -j 1 DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	rsync)
+		[ -x ${DESTDIR}${prefix}/bin/rsync -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path popt.h > /dev/null || ${0} ${cmdopt} popt || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${rsync_bld_dir}/Makefile ] ||
+			(cd ${rsync_bld_dir}
+			${rsync_src_dir}/configure --prefix=${prefix} --host=${host} --without-included-zlib\
+				CPPFLAGS="${CPPFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir popt.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libpopt.so`" \
+				) || return
+		make -C ${rsync_bld_dir} -j ${jobs} || return
+		make -C ${rsync_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	screen)
 		[ -x ${DESTDIR}${prefix}/bin/screen -a "${force_install}" != yes ] && return
