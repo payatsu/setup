@@ -87,6 +87,7 @@ EOF
 : ${curl_ver:=7.69.1}
 : ${git_ver:=2.28.0}
 : ${ed_ver:=1.16}
+: ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
 : ${dtc_ver:=1.6.0}
 
@@ -142,7 +143,7 @@ fetch()
 	zlib)
 		wget -O ${zlib_src_dir}.tar.xz \
 			http://zlib.net/${zlib_name}.tar.xz || return;;
-	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|ed|screen|m4|autoconf|automake|\
+	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|ed|bc|screen|m4|autoconf|automake|\
 	bison|libtool|grep|diffutils|patch|global)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
@@ -1137,6 +1138,22 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${ed_bld_dir} -j ${jobs} -k check || return
 		make -C ${ed_bld_dir} -j 1 DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	bc)
+		[ -x ${DESTDIR}${prefix}/bin/bc -a "${force_install}" != yes ] && return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		print_header_path readline.h readline > /dev/null || ${0} ${cmdopt} readline || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${bc_bld_dir}/Makefile ] ||
+			(cd ${bc_bld_dir}
+			sed -i -e 's!^	\./fbc\>!	bc!' ${bc_src_dir}/bc/Makefile.am || return
+			autoreconf -v ${bc_src_dir} || return
+			${bc_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules --with-readline) || return
+		make -C ${bc_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${bc_bld_dir} -j ${jobs} -k check || return
+		make -C ${bc_bld_dir} -j 1 DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	rsync)
 		[ -x ${DESTDIR}${prefix}/bin/rsync -a "${force_install}" != yes ] && return
