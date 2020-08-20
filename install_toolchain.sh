@@ -111,8 +111,8 @@
 : ${file_ver:=5.38}
 : ${source_highlight_ver:=3.1.9}
 : ${screen_ver:=4.8.0}
-: ${libevent_ver:=2.1.11}
-: ${tmux_ver:=3.0a}
+: ${libevent_ver:=2.1.11-stable}
+: ${tmux_ver:=3.1b}
 : ${expect_ver:=5.45.4}
 : ${dejagnu_ver:=1.6.2}
 : ${zsh_ver:=5.8}
@@ -906,7 +906,7 @@ fetch()
 				https://ftp.gnu.org/gnu/src-highlite/${source_highlight_name}.tar.gz || return;;
 		libevent)
 			wget -O ${libevent_src_dir}.tar.gz \
-				https://github.com/libevent/libevent/releases/download/release-${libevent_ver}-stable/${libevent_name}-stable.tar.gz || return;;
+				https://github.com/libevent/libevent/releases/download/release-${libevent_ver}/${libevent_name}.tar.gz || return;;
 		tmux)
 			wget -O ${tmux_src_dir}.tar.gz \
 				https://github.com/tmux/tmux/releases/download/${tmux_ver}/${tmux_name}.tar.gz || return;;
@@ -3929,9 +3929,9 @@ install_native_libevent()
 	unpack libevent || return
 	[ -f ${libevent_bld_dir}/Makefile ] ||
 		(cd ${libevent_bld_dir}
-		${libevent_src_dir}-stable/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		${libevent_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libevent_bld_dir} -j ${jobs} || return
-	[ "${enable_check}" != zes ] ||
+	[ "${enable_check}" != yes ] ||
 		make -C ${libevent_bld_dir} -j ${jobs} -k check || return
 	make -C ${libevent_bld_dir} -j ${jobs} install || return
 	update_path || return

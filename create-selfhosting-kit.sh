@@ -36,7 +36,7 @@ help()
         show this help.
 
 [EXAMPLES]
-    \$ `basename ${0}` --jobs 8 --all --strip --cleanup --copy-libc
+    \$ `basename ${0}` --all --strip --cleanup --copy-libc
 
 [PACKAGES]
 `print_packages | tr '\n' ' ' | fold -s | sed -e 's/^/    /'`
@@ -91,6 +91,8 @@ EOF
 : ${dtc_ver:=1.6.0}
 
 : ${screen_ver:=4.8.0}
+: ${libevent_ver:=2.1.11-stable}
+: ${tmux_ver:=3.1b}
 : ${vim_ver:=8.2.1127}
 : ${vimdoc_ja_ver:=master}
 : ${grep_ver:=3.4}
@@ -232,6 +234,12 @@ fetch()
 	dtc)
 		wget -O ${dtc_src_dir}.tar.xz \
 			https://www.kernel.org/pub/software/utils/dtc/${dtc_name}.tar.xz || return;;
+	libevent)
+		wget -O ${libevent_src_dir}.tar.gz \
+			https://github.com/libevent/libevent/releases/download/release-${libevent_ver}/${libevent_name}.tar.gz || return;;
+	tmux)
+		wget -O ${tmux_src_dir}.tar.gz \
+			https://github.com/tmux/tmux/releases/download/${tmux_ver}/${tmux_name}.tar.gz || return;;
 	vim)
 		wget -O ${vim_src_dir}.tar.gz \
 			http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return;;
@@ -1173,6 +1181,45 @@ EOF
 		make -C ${screen_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${screen_name} || return
+		;;
+	libevent)
+		[ -f ${DESTDIR}${prefix}/include/event2/event.h -a "${force_install}" != yes ] && return
+		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libevent_bld_dir}/Makefile ] ||
+			(cd ${libevent_bld_dir}
+			${libevent_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				PKG_CONFIG_LIBDIR=`print_library_dir openssl.pc` \
+				) || return
+		make -C ${libevent_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${libevent_bld_dir} -j ${jobs} -k check || return
+		make -C ${libevent_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		[ -z "${strip}" ] && return
+		for l in '' _core _extra _openssl _pthreads; do
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libevent${l}.so || return
+		done
+		;;
+	tmux)
+		[ -x ${DESTDIR}${prefix}/bin/tmux -a "${force_install}" != yes ] && return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		print_header_path event.h event2 > /dev/null || ${0} ${cmdopt} libevent || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${tmux_bld_dir}/Makefile ] ||
+			(cd ${tmux_bld_dir}
+			${tmux_src_dir}/configure --prefix=${prefix} --host=${host} \
+				CPPFLAGS="${CPPFLAGS} -I`print_header_dir curses.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libtinfo.so`" \
+				LIBTINFO_LIBS=-ltinfo) || return
+		make -C ${tmux_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${tmux_bld_dir} -j ${jobs} -k check || return
+		make -C ${tmux_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/tmux || return
 		;;
 	vim)
 		[ -x ${DESTDIR}${prefix}/bin/vim -a "${force_install}" != yes ] && return
