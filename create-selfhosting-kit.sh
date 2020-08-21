@@ -96,6 +96,7 @@ EOF
 : ${tmux_ver:=3.1b}
 : ${vim_ver:=8.2.1127}
 : ${vimdoc_ja_ver:=master}
+: ${ctags_ver:=git}
 : ${grep_ver:=3.4}
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
@@ -247,6 +248,9 @@ fetch()
 	vimdoc-ja)
 		wget -O ${vimdoc_ja_src_dir}.tar.gz \
 			https://github.com/vim-jp/vimdoc-ja/archive/master.tar.gz || return;;
+	ctags)
+		git clone --depth 1 \
+			http://github.com/universal-ctags/ctags.git ${ctags_src_dir} || return;;
 	ruby)
 		wget -O ${ruby_src_dir}.tar.xz \
 			http://cache.ruby-lang.org/pub/ruby/`print_version ruby`/${ruby_name}.tar.xz || return;;
@@ -1309,6 +1313,28 @@ EOF
 		cp -Tvr ${vimdoc_ja_src_dir} ${DESTDIR}${prefix}/share/vim/vimfiles || return
 		! which vim > /dev/null && return
 		vim -i NONE -u NONE -N -c "helptags ${DESTDIR}${prefix}/share/vim/vimfiles/doc" -c qall || return
+		;;
+	ctags)
+		[ -x ${DESTDIR}${prefix}/bin/ctags -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		grep -qe '^packcc_LINK\>' ${ctags_src_dir}/Makefile.am || sed -i -e '
+			/^packcc_CPPFLAGS =/{
+				ipackcc_LINK = cc $(packcc_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+				imisc/packcc/packcc-packcc.o: misc/packcc/packcc.c
+				i\\t$(AM_V_CC)cc $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(packcc_CPPFLAGS) $(CPPFLAGS) $(packcc_CFLAGS) $(CFLAGS) -c -o misc/packcc/packcc-packcc.o misc/packcc/packcc.c
+			}
+			' ${ctags_src_dir}/Makefile.am || return
+		[ -f ${ctags_src_dir}/configure ] ||
+			(cd ${ctags_src_dir}; ./autogen.sh) || return
+		[ -f ${ctags_bld_dir}/configure ] || cp -Tvr ${ctags_src_dir} ${ctags_bld_dir} || return
+		[ -f ${ctags_bld_dir}/Makefile ] ||
+			(cd ${ctags_bld_dir}
+			./configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--disable-dependency-tracking \
+				PKG_CONFIG_LIBDIR=) || return
+		make -C ${ctags_bld_dir} -j ${jobs} || return
+		make -C ${ctags_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	grep)
 		[ -x ${DESTDIR}${prefix}/bin/grep -a "${force_install}" != yes ] && return
