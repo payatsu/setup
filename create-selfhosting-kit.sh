@@ -1492,8 +1492,24 @@ cleanup()
 	eval rm -fvr \${${_1}_bld_dir} || return
 }
 
+atexit()
+{
+	[ -z "${tmpdir}" ] || rm -fvr ${tmpdir} || return
+}
+
+delegate()
+{
+	realpath -e ${0} | grep -qe ^/tmp/ && return
+	export tmpdir=`mktemp -dp /tmp` || return
+	cp -v ${0} ${tmpdir} || return
+	exec ${tmpdir}/`basename ${0}` "$@"
+}
+
 main()
 {
+	trap atexit EXIT HUP INT QUIT TERM
+	delegate "$@" || return
+
 	unset cmdopt
 	while [ $# -gt 0 ]; do
 		case ${1} in
@@ -1531,7 +1547,7 @@ main()
 	languages=c,c++
 	which ${host}-gccgo > /dev/null && languages=${languages},go
 
-	for p in ${@}; do
+	for p in $@; do
 		init ${p} || return
 		build ${p} || return
 		cleanup ${p} || return
