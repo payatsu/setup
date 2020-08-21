@@ -103,6 +103,7 @@ EOF
 : ${global_ver:=6.6.4}
 
 : ${ruby_ver:=2.7.1}
+: ${go_ver:=1.14.7}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -254,6 +255,9 @@ fetch()
 	ruby)
 		wget -O ${ruby_src_dir}.tar.xz \
 			http://cache.ruby-lang.org/pub/ruby/`print_version ruby`/${ruby_name}.tar.xz || return;;
+	go)
+		wget -O ${go_src_dir}.tar.gz \
+			https://storage.googleapis.com/golang/go${go_ver}.src.tar.gz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -1419,6 +1423,20 @@ EOF
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${ruby_platform}/libruby.so || return
 		find ${DESTDIR}${prefix}/lib/${ruby_platform}/ruby/`print_version ruby`.0 -type f -name '*.so' -exec ${host:+${host}-}strip -v {} + || return
 		;;
+	go)
+		[ -x ${DESTDIR}${prefix}/go/bin/go -a "${force_install}" != yes ] && return
+		which go > /dev/null || { echo WARNING: host \'go\' is not found. skipped. >&2; return;}
+		fetch ${1} || return
+		[ -d ${go_src_dir} ] || unpack ${1} || return
+		[ -d ${go_src_base}/go ] && mv -v ${go_src_base}/go ${go_src_dir}
+		mkdir -pv ${DESTDIR}${prefix}/go/bin || return
+		[ -f ${DESTDIR}${prefix}/go/bin/go ] || ln -sv `which go` ${DESTDIR}${prefix}/go/bin/go || return
+		(cd ${go_src_dir}/src
+		GOROOT_BOOTSTRAP=`go version | grep -qe gccgo && echo ${DESTDIR}${prefix}/go` \
+			GOROOT_FINAL=${prefix}/go GOARCH=`goarch ${host}` GOOS=linux bash -x ${go_src_dir}/src/make.bash -v) || return
+		rm -v ${DESTDIR}${prefix}/go/bin/go || return
+		cp -Tfvr ${go_src_dir} ${DESTDIR}${prefix}/go || return
+		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
 	for d in lib lib64; do
@@ -1433,6 +1451,16 @@ EOF
 				" {} + || return
 	done
 	return 0
+}
+
+goarch()
+{
+	case ${1} in
+	x86_64*)  echo amd64;;
+	arm*)     echo arm;;
+	aarch64*) echo arm64;;
+	*) echo ERROR: unsupported GOARCH. >&2; return 1;;
+	esac
 }
 
 generate_pathconfig()
