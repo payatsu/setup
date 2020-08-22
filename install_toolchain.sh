@@ -164,7 +164,7 @@
 : ${rustc_ver:=1.45.2}
 : ${rustup_ver:=1.22.1}
 : ${ruby_ver:=2.7.1}
-: ${go_ver:=1.15}
+: ${go_ver:=1.14.7}
 : ${perl_ver:=5.30.3}
 : ${tcl_ver:=8.6.9}
 : ${tk_ver:=8.6.9}
@@ -4945,6 +4945,7 @@ install_cross_functional_gcc()
 		for e in a so so.1; do
 			[ -f ${DESTDIR}${prefix}/lib/gcc/${target}/${d}/libgcc_s.${e} ] || continue
 			ln -fsv ../${d}/libgcc_s.${e} ${DESTDIR}${prefix}/lib/gcc/${target}/${gcc_base_ver} || return # XXX work around for --enable-version-specific-runtime-libs
+			[ -d ${sysroot}/usr/lib ] || continue
 			cp -fv ${DESTDIR}${prefix}/lib/gcc/${target}/${d}/libgcc_s.${e} ${sysroot}/usr/lib || return
 		done
 	done
@@ -5091,7 +5092,8 @@ install_native_go()
 	[ -f ${DESTDIR}${prefix}/go/bin/go ] || ln -sv `which go` ${DESTDIR}${prefix}/go/bin/go || return
 	(cd ${go_src_dir}/src
 	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=`go version | grep -qe gccgo && echo ${DESTDIR}${prefix}/go` \
-		GOROOT_FINAL=${DESTDIR}${prefix}/go bash -x ${go_src_dir}/src/make.bash -v) || return
+		GOROOT_FINAL=${prefix}/go bash -x ${go_src_dir}/src/make.bash -v) || return
+	rm -v ${DESTDIR}${prefix}/go/bin/go || return
 	cp -Tfvr ${go_src_dir} ${DESTDIR}${prefix}/go || return
 	update_path || return
 	GOPATH=${DESTDIR}${prefix}/.go go get golang.org/x/tools/cmd/... || return
