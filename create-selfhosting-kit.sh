@@ -1484,6 +1484,7 @@ EOF
 		;;
 	compiler-rt)
 		[ -d ${DESTDIR}${prefix}/include/sanitizer -a "${force_install}" != yes ] && return
+		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		fetch ${1} || return
 		unpack ${1} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -1511,6 +1512,7 @@ EOF
 	libcxxabi)
 		[ -e ${DESTDIR}${prefix}/lib/libc++abi.so -a "${force_install}" != yes ] && return
 		print_library_path libunwind.so > /dev/null || ${0} ${cmdopt} libunwind || return
+		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		init libcxx || return
 		fetch libcxx || return
 		unpack libcxx || return
