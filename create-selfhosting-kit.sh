@@ -1482,6 +1482,20 @@ EOF
 			cmake --build ${llvm_bld_dir} -v -j ${jobs} --target check || return
 		cmake --install ${llvm_bld_dir} -v ${strip:+--${strip}} || return
 		;;
+	libunwind)
+		[ -e ${DESTDIR}${prefix}/lib/libunwind.so -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${libunwind_src_dir} -B ${libunwind_bld_dir} \
+			-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} -DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DCMAKE_INSTALL_RPATH=';' -DLIBUNWIND_USE_COMPILER_RT=ON || return
+		cmake --build ${libunwind_bld_dir} -v -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			cmake --build ${libunwind_bld_dir} -v -j ${jobs} --target check-unwind || return
+		cmake --install ${libunwind_bld_dir} -v ${strip:+--${strip}} || return
+		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
 	for d in lib lib64; do
