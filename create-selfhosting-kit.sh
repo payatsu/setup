@@ -1514,6 +1514,26 @@ EOF
 		cmake --build ${libcxxabi_bld_dir} -v -j ${jobs} || return
 		cmake --install ${libcxxabi_bld_dir} -v ${strip:+--${strip}} || return
 		;;
+	libcxx)
+		[ -e ${DESTDIR}${prefix}/lib/libc++.so -a "${force_install}" != yes ] && return
+		print_library_path libc++abi.so > /dev/null || ${0} ${cmdopt} libcxxabi || return
+		init libcxxabi || return
+		fetch libcxxabi || return
+		unpack libcxxabi || return
+		fetch ${1} || return
+		unpack ${1} || return
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${libcxx_src_dir} -B ${libcxx_bld_dir} \
+			-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} -DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_CXX_FLAGS=-L`print_library_dir libunwind.so` \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DCMAKE_INSTALL_RPATH=';' -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${libcxxabi_src_dir}/include \
+			-DLIBCXXABI_USE_LLVM_UNWINDER=ON || return
+		cmake --build ${libcxx_bld_dir} -v -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			cmake --build ${libcxx_bld_dir} -v -j ${jobs} --target check-libcxx || return
+		cmake --install ${libcxx_bld_dir} -v ${strip:+--${strip}} || return
+		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
 	for d in lib lib64; do
