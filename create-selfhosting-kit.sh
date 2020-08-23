@@ -104,6 +104,15 @@ EOF
 
 : ${ruby_ver:=2.7.1}
 : ${go_ver:=1.14.7}
+: ${llvm_ver:=10.0.0}
+: ${compiler_rt_ver:=${llvm_ver}}
+: ${libunwind_ver:=${llvm_ver}}
+: ${libcxxabi_ver:=${llvm_ver}}
+: ${libcxx_ver:=${llvm_ver}}
+: ${clang_ver:=${llvm_ver}}
+: ${clang_tools_extra_ver:=${llvm_ver}}
+: ${lld_ver:=${llvm_ver}}
+: ${lldb_ver:=${llvm_ver}}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -111,16 +120,29 @@ EOF
 : ${strip:=}
 : ${cleanup:=}
 
+: ${cmake_build_type:=Release}
+
 init()
 {
 	_1=`echo ${1} | tr - _`
+	eval ${_1}_src_base=${src_dir}/${1}
+
+	case ${1} in
+	llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
+		eval ${_1}_ver=${llvm_ver}
+		eval ${_1}_name=${1}-\${${_1}_ver}.src
+		eval ${_1}_src_dir=\${${_1}_src_base}/\${${_1}_name}
+		eval ${_1}_bld_dir=\${${_1}_src_base}/\${${_1}_name}-bld
+		return 0
+		;;
+	esac
+
 	case ${1} in
 	boost)
 		eval ${_1}_name=${1}_\${${_1}_ver};;
 	*)
 		eval ${_1}_name=${1}-\${${_1}_ver};;
 	esac
-	eval ${_1}_src_base=${src_dir}/${1}
 	eval ${_1}_src_dir=${src_dir}/${1}/\${${_1}_name}
 	eval ${_1}_bld_dir=${src_dir}/${1}/\${${_1}_name}-${host}
 }
@@ -258,6 +280,9 @@ fetch()
 	go)
 		wget -O ${go_src_dir}.tar.gz \
 			https://storage.googleapis.com/golang/go${go_ver}.src.tar.gz || return;;
+	llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
+		eval wget -O \${${_1}_src_dir}.tar.xz \
+			https://github.com/llvm/llvm-project/releases/download/llvmorg-\${${_1}_ver}/\${${_1}_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -330,6 +355,8 @@ print_packages()
 		s/util_linux/util-linux/
 		s/pkg_config/pkg-config/
 		s/vimdoc_ja/vimdoc-ja/
+		s/compiler_rt/compiler-rt/
+		s/clang_tools_extra/clang-tools-extra/
 	' || return
 }
 
@@ -1436,6 +1463,24 @@ EOF
 			GOROOT_FINAL=${prefix}/go GOARCH=`goarch ${host}` GOOS=linux bash -x ${go_src_dir}/src/make.bash -v) || return
 		rm -v ${DESTDIR}${prefix}/go/bin/go || return
 		cp -Tfvr ${go_src_dir} ${DESTDIR}${prefix}/go || return
+		;;
+	llvm)
+		[ -d ${DESTDIR}${prefix}/include/llvm -a "${force_install}" != yes ] && return
+		which llvm-tblgen > /dev/null || { echo WARNING: host \'llvm-tblgen\' is not found. skipped. >&2; return;}
+		fetch ${1} || return
+		unpack ${1} || return
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${llvm_src_dir} -B ${llvm_bld_dir} \
+			-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} -DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DCMAKE_CROSSCOMPILING=True \
+			-DLLVM_DEFAULT_TARGET_TRIPLE=${host} -DLLVM_TARGET_ARCH=`echo ${host} | cut -d- -f1` \
+			-DLLVM_TABLEGEN=`which llvm-tblgen` -DLLVM_ENABLE_LIBXML2=OFF \
+			-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON || return
+		cmake --build ${llvm_bld_dir} -v -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			cmake --build ${llvm_bld_dir} -v -j ${jobs} --target check || return
+		cmake --install ${llvm_bld_dir} -v ${strip:+--${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
