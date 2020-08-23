@@ -1482,6 +1482,18 @@ EOF
 			cmake --build ${llvm_bld_dir} -v -j ${jobs} --target check || return
 		cmake --install ${llvm_bld_dir} -v ${strip:+--${strip}} || return
 		;;
+	compiler-rt)
+		[ -d ${DESTDIR}${prefix}/include/sanitizer -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${compiler_rt_src_dir} -B ${compiler_rt_bld_dir} \
+			-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} -DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DCMAKE_INSTALL_RPATH=';' -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ || return
+		cmake --build ${compiler_rt_bld_dir} -v -j ${jobs} || return
+		cmake --install ${compiler_rt_bld_dir} -v ${strip:+--${strip}} || return
+		;;
 	libunwind)
 		[ -e ${DESTDIR}${prefix}/lib/libunwind.so -a "${force_install}" != yes ] && return
 		fetch ${1} || return
