@@ -1496,6 +1496,24 @@ EOF
 			cmake --build ${libunwind_bld_dir} -v -j ${jobs} --target check-unwind || return
 		cmake --install ${libunwind_bld_dir} -v ${strip:+--${strip}} || return
 		;;
+	libcxxabi)
+		[ -e ${DESTDIR}${prefix}/lib/libc++abi.so -a "${force_install}" != yes ] && return
+		print_library_path libunwind.so > /dev/null || ${0} ${cmdopt} libunwind || return
+		init libcxx || return
+		fetch libcxx || return
+		unpack libcxx || return
+		fetch ${1} || return
+		unpack ${1} || return
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${libcxxabi_src_dir} -B ${libcxxabi_bld_dir} \
+			-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} -DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_CXX_FLAGS=-L`print_library_dir libunwind.so` \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DCMAKE_INSTALL_RPATH=';' -DLIBCXXABI_LIBCXX_PATH=${libcxx_src_dir} \
+			-DLIBCXXABI_USE_LLVM_UNWINDER=ON || return
+		cmake --build ${libcxxabi_bld_dir} -v -j ${jobs} || return
+		cmake --install ${libcxxabi_bld_dir} -v ${strip:+--${strip}} || return
+		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
 	for d in lib lib64; do
@@ -1615,7 +1633,7 @@ delegate()
 	realpath -e ${0} | grep -qe ^/tmp/ && return
 	export tmpdir=`mktemp -dp /tmp` || return
 	cp -v ${0} ${tmpdir} || return
-	exec ${tmpdir}/`basename ${0}` "$@"
+	exec sh -$- ${tmpdir}/`basename ${0}` "$@"
 }
 
 main()
