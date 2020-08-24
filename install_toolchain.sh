@@ -4678,6 +4678,7 @@ EOF
 		`which lld > /dev/null && echo -DCLANG_DEFAULT_LINKER=lld` || return
 	cmake --build ${clang_bld_dir} -v -j ${jobs} || return
 	cmake --install ${clang_bld_dir} -v ${strip:+--${strip}} || return
+	command install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${clang_bld_dir}/bin/clang-tblgen || return
 	update_path || return
 }
 

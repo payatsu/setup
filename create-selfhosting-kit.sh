@@ -1548,6 +1548,57 @@ EOF
 			cmake --build ${libcxx_bld_dir} -v -j ${jobs} --target check-libcxx || return
 		cmake --install ${libcxx_bld_dir} -v ${strip:+--${strip}} || return
 		;;
+	clang)
+		[ -x ${DESTDIR}${prefix}/bin/clang -a "${force_install}" != yes ] && return
+		which llvm-tblgen > /dev/null || { echo WARNING: host \'llvm-tblgen\' is not found. skipped. >&2; return;}
+		which clang-tblgen > /dev/null || { echo WARNING: host \'clang-tblgen\' is not found. skipped. >&2; return;}
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
+		print_header_path allocator_interface.h sanitizer > /dev/null || ${0} ${cmdopt} compiler_rt || return
+		print_library_path libunwind.so > /dev/null || ${0} ${cmdopt} libunwind || return
+		print_library_path libc++abi.so > /dev/null || ${0} ${cmdopt} libcxxabi || return
+		print_header_path iostream c++/v1 > /dev/null || ${0} ${cmdopt} libcxx || return
+		fetch ${1} || return
+		unpack ${1} || return
+		init clang-tools-extra || return
+		fetch clang-tools-extra || return
+		[ -d ${clang_src_dir}/tools/extra ] ||
+			(unpack clang-tools-extra &&
+			mv -v ${clang_tools_extra_src_dir} ${clang_src_dir}/tools/extra) || return
+		patch -N -p0 -d ${clang_src_dir} <<EOF || [ $? = 1 ] || return
+--- tools/extra/clangd/CodeComplete.h
++++ tools/extra/clangd/CodeComplete.h
+@@ -71,7 +71,7 @@
+   /// A visual indicator to prepend to the completion label to indicate whether
+   /// completion result would trigger an #include insertion or not.
+   struct IncludeInsertionIndicator {
+-    std::string Insert = "•";
++    std::string Insert = "*";
+     std::string NoInsert = " ";
+   } IncludeIndicator;
+ 
+EOF
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${clang_src_dir} -B ${clang_bld_dir} \
+			-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} -DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_CXX_FLAGS="-I`print_header_dir llvm-config.h llvm/Config` -L`print_library_dir libLLVM.so`" \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DCMAKE_CROSSCOMPILING=True \
+			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
+			-DLLVM_TOOLS_BINARY_DIR=`which llvm-tblgen | xargs dirname` \
+			-DLLVM_DEFAULT_TARGET_TRIPLE=${host} -DLLVM_TARGET_ARCH=`echo ${host} | cut -d- -f1` \
+			-DLLVM_ENABLE_LIBXML2=OFF \
+			-DLLVM_TABLEGEN=`which llvm-tblgen` \
+			-DCLANG_TABLEGEN=`which clang-tblgen` \
+			-DCMAKE_INSTALL_RPATH=';' -DENABLE_LINKER_BUILD_ID=ON \
+			-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+			-DCLANG_DEFAULT_RTLIB=compiler-rt \
+			-DGCC_INSTALL_PREFIX=`print_prefix iostream c++` || return
+		cmake --build ${clang_bld_dir} -v -j ${jobs} || return
+		cmake --install ${clang_bld_dir} -v ${strip:+--${strip}} || return
+		install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${clang_bld_dir}/bin/clang-tblgen || return
+		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
 	for d in lib lib64; do
@@ -1659,14 +1710,14 @@ cleanup()
 
 atexit()
 {
-	[ -z "${tmpdir}" ] || rm -fvr ${tmpdir} || return
+	[ -z "${tmpdir}" ] || rm -fr ${tmpdir} || return
 }
 
 delegate()
 {
 	realpath -e ${0} | grep -qe ^/tmp/ && return
 	export tmpdir=`mktemp -dp /tmp` || return
-	cp -v ${0} ${tmpdir} || return
+	cp ${0} ${tmpdir} || return
 	exec sh -$- ${tmpdir}/`basename ${0}` "$@"
 }
 
