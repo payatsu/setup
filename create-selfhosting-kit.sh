@@ -537,11 +537,12 @@ build()
 		unpack ${1} || return
 		[ -f ${ncurses_bld_dir}/Makefile ] ||
 			(cd ${ncurses_bld_dir}
+			sed -i -e '/^INSTALL_PROG\>/s!$! --strip-program='`which ${host:+${host}-}strip`'!' ${ncurses_src_dir}/progs/Makefile.in || return
 			${ncurses_src_dir}/configure --prefix=${prefix} --host=${host} \
 				--with-shared --with-cxx-shared --with-termlib \
 				--enable-termcap --enable-colors) || return
 		make -C ${ncurses_bld_dir} -j 1 DESTDIR=${DESTDIR} || return # XXX work around for parallel make
-		make -C ${ncurses_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install -k || true # XXX work around to ignore 'strip' error for 'tic' by adding '-k'
+		make -C ${ncurses_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		for h in `find ${DESTDIR}${prefix}/include/ncurses \( -type f -o -type l \) -name '*.h'`; do
 			ln -fsv `echo ${h} | sed -e "s%${DESTDIR}${prefix}/include/%%"` ${DESTDIR}${prefix}/include || return
 		done
