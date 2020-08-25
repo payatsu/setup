@@ -12,7 +12,8 @@ help()
 
 [SYNOPSIS]
     `basename ${0}` [--prefix PREFIX] [--host HOST] [--jobs JOBS]
-        [--force] [--strip] [--cleanup] [--help] [packages...]
+        [-all] [--fetch-only] [--force] [--strip] [--cleanup] [--copy-libc]
+        [--help] [packages...]
 
 [OPTIONS]
     --prefix PREFIX [default: ${default_prefix}]
@@ -23,6 +24,8 @@ help()
         specify the number of jobs to run simultaneously.
     --all
         install as many packages as possible.
+    --fetch-only
+        fetch source packages, not build/install them.
     --force
         do install even if it seems the package already has been installed.
     --strip
@@ -1738,7 +1741,7 @@ main()
 			shift
 			eval ${opt}=\${1:-\${${opt}}}
 			;;
-		--all|--force|--strip|--cleanup|--copy-libc|--help)
+		--all|--fetch-only|--force|--strip|--cleanup|--copy-libc|--help)
 			opt=`echo ${1} | cut -d- -f3- | tr - _`
 			eval ${opt}=${opt}
 			;;
@@ -1768,6 +1771,10 @@ main()
 
 	for p in $@; do
 		init ${p} || return
+		if [ -n "${fetch_only}" ]; then
+			fetch ${p} || return
+			continue
+		fi
 		build ${p} || return
 		cleanup ${p} || return
 	done
