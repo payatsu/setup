@@ -1719,15 +1719,16 @@ cleanup()
 
 atexit()
 {
-	[ -z "${tmpdir}" ] || rm -fr ${tmpdir} || return
+	realpath -e ${0} | grep -qe ^/tmp/ || return
+	[ -z "${tmpdir}" ] || rm -fr `dirname ${0}` || return
 }
 
 delegate()
 {
 	realpath -e ${0} | grep -qe ^/tmp/ && return
-	export tmpdir=`mktemp -dp /tmp` || return
+	tmpdir=`mktemp -dp /tmp` || return
 	cp ${0} ${tmpdir} || return
-	exec sh -$- ${tmpdir}/`basename ${0}` "$@"
+	exec sh -$- ${tmpdir}/`basename ${0}` --tmpdir "$@"
 }
 
 main()
@@ -1744,7 +1745,7 @@ main()
 			shift
 			eval ${opt}=\${1:-\${${opt}}}
 			;;
-		--all|--fetch-only|--force|--strip|--cleanup|--copy-libc|--help)
+		--all|--fetch-only|--force|--strip|--cleanup|--copy-libc|--help|--tmpdir)
 			opt=`echo ${1} | cut -d- -f3- | tr - _`
 			eval ${opt}=${opt}
 			;;
@@ -1752,7 +1753,7 @@ main()
 		*) break;;
 		esac
 		case ${1} in
-		--copy-libc) ;; # don't pass this option to child process.
+		--copy-libc|--tmpdir) ;; # don't pass these options to child process.
 		*) cmdopt="${cmdopt:+${cmdopt} }${1}";;
 		esac
 		shift
