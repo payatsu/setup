@@ -125,6 +125,8 @@ EOF
 
 : ${cmake_build_type:=Release}
 
+build=`gcc -dumpmachine`
+
 init()
 {
 	_1=`echo ${1} | tr - _`
@@ -1731,11 +1733,8 @@ delegate()
 	exec sh -$- ${tmpdir}/`basename ${0}` --tmpdir "$@"
 }
 
-main()
+parse_cmdopts()
 {
-	trap atexit EXIT HUP INT QUIT TERM
-	delegate "$@" || return
-
 	unset cmdopt
 	while [ $# -gt 0 ]; do
 		case ${1} in
@@ -1758,13 +1757,23 @@ main()
 		esac
 		shift
 	done
+	pkgs="$@"
+}
+
+main()
+{
+	trap atexit EXIT HUP INT QUIT TERM
+	delegate "$@" || return
+
+	parse_cmdopts "$@" || return
+	set -- ${pkgs} || return
+
 	[ -n "${help}" ] && { help; return;}
 	[ -z "${all}" ] || set -- `print_packages` || return
 	[ $# -eq 0 ] && echo WARNING: no packages specified. try \'--help\' for more information. >&2
 	[ -n "${force}" ] && force_install=yes
 
 	${host}-gcc --version > /dev/null || return
-	build=`gcc -dumpmachine`
 	target=${host}
 
 	src_dir=`readlink -m selfhosting-kit/src`
