@@ -1603,6 +1603,9 @@ EOF
 		cmake --install ${clang_bld_dir} -v ${strip:+--${strip}} || return
 		install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${clang_bld_dir}/bin/clang-tblgen || return
 		;;
+	clang-tools-extra)
+		[ -x ${DESTDIR}${prefix}/bin/clangd ] || echo WARNING: \'${1}\' can be install as a part of \'clang\'. skipped. >&2
+		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
 	for d in lib lib64; do
