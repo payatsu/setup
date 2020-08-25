@@ -1672,6 +1672,8 @@ func_place_holder()
 				s/^://
 			'` \
 		|| export MANPATH=${prefix}/share/man:${MANPATH}
+
+	export TERMINFO=${prefix}/share/terminfo
 }
 func_place_holder
 EOF
