@@ -1726,6 +1726,7 @@ func_place_holder()
 			'` \
 		|| export MANPATH=${prefix}/share/man:${MANPATH}
 
+	[ "${TERM}" = linux ] && TERM=xterm-256color
 	export TERMINFO=${prefix}/share/terminfo
 }
 func_place_holder
