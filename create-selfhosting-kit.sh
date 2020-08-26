@@ -3,12 +3,14 @@
 default_prefix=/usr/local
 default_host=aarch64-linux-gnu
 default_jobs=`grep -e '^processor\>' -c /proc/cpuinfo`
+src_dir=`readlink -m selfhosting-kit/src`
+DESTDIR=`readlink -m selfhosting-kit/artifacts`
 
 help()
 {
 	cat << EOF
 [NAME]
-    `basename ${0}` - create toolchain running on target itself
+    `basename ${0}` - create toolchain running on the target itself
 
 [SYNOPSIS]
     `basename ${0}` [--prefix PREFIX] [--host HOST] [--jobs JOBS]
@@ -17,29 +19,72 @@ help()
 
 [OPTIONS]
     --prefix PREFIX [default: ${default_prefix}]
-        install prefix.
+        specify prefix for the built toolchain on the target.
+        this may be hardcoded to the built toolchain.
+        the built toolchain is installed at
+          "${DESTDIR}/PREFIX".
+        copy them to the target filesystem.
+
     --host HOST [default: ${default_host}]
-        triplet on which toolchain runs.
+        specify triplet of the platform on which the built toolchain runs.
+
     --jobs JOBS [default: ${default_jobs}]
         specify the number of jobs to run simultaneously.
+
     --all
-        install as many packages as possible.
+        build/install all packages listed bellow.
+
     --fetch-only
-        fetch source packages, not build/install them.
+        fetch source packages, but do not build/install them.
+        the fetched packages are saved at
+          "${src_dir}".
+
     --force
-        do install even if it seems the package already has been installed.
+        do build/install even if it seems the specified package already
+        has been installed.
+
     --strip
-        remove symbol sections from installed files while installation process.
+        remove symbol sections from built files while installation process.
+
     --cleanup
-        delete the source and build directories of the just installed package,
+        remove the source and build directories of the just installed package,
         when installation has been completed.
+
     --copy-libc
         copy standard C library header files, crt*.o, and so on.
+
     --help
         show this help.
 
 [EXAMPLES]
-    \$ `basename ${0}` --all --strip --cleanup --copy-libc
+    * install minimum toolchain
+        \$ `basename ${0}` --strip --cleanup --copy-libc gcc make
+
+    * install debugging tools
+        \$ `basename ${0}` --strip --cleanup gdb strace systemtap
+
+    * install extra toolchain
+        \$ `basename ${0}` --strip --cleanup \\
+                    m4 autoconf automake libtool pkg-config git
+
+    * install tools required by linux kernel development
+        \$ `basename ${0}` --strip --cleanup ed bc rsync dtc
+
+    * install terminal multiplexers
+        \$ `basename ${0}` --strip --cleanup screen tmux
+
+    * install text editing/coding tools
+        \$ `basename ${0}` --strip --cleanup \\
+                    vim ctags grep diffutils patch global
+
+    * install clang/clang++ compilers
+        \$ `basename ${0}` --strip --cleanup --copy-libc clang
+
+    * install other programming languages
+        \$ `basename ${0}` --strip --cleanup Python ruby go
+
+    * install all packages with libc, but with no symbol information
+        \$ `basename ${0}` --all --strip --cleanup --copy-libc
 
 [PACKAGES]
 `print_packages | tr '\n' ' ' | fold -s | sed -e 's/^/    /'`
@@ -1775,9 +1820,6 @@ main()
 
 	${host}-gcc --version > /dev/null || return
 	target=${host}
-
-	src_dir=`readlink -m selfhosting-kit/src`
-	DESTDIR=`readlink -m selfhosting-kit/artifacts`
 
 	languages=c,c++
 	which ${host}-gccgo > /dev/null && languages=${languages},go
