@@ -1606,7 +1606,7 @@ EOF
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
-		print_header_path allocator_interface.h sanitizer > /dev/null || ${0} ${cmdopt} compiler_rt || return
+		print_header_path allocator_interface.h sanitizer > /dev/null || ${0} ${cmdopt} compiler-rt || return
 		print_library_path libunwind.so > /dev/null || ${0} ${cmdopt} libunwind || return
 		print_library_path libc++abi.so > /dev/null || ${0} ${cmdopt} libcxxabi || return
 		print_header_path iostream c++/v1 > /dev/null || ${0} ${cmdopt} libcxx || return
