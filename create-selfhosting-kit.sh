@@ -1204,6 +1204,7 @@ EOF
 		print_header_path curl.h curl > /dev/null || ${0} ${cmdopt} curl || return
 		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
 		print_header_path pcre2.h > /dev/null || ${0} ${cmdopt} pcre2 || return
+		which msgfmt > /dev/null || ${0} ${cmdopt} --host ${build} --destdir ${build} gettext || return
 		fetch ${1} || return
 		unpack ${1} || return
 		make -C ${git_src_dir} -j ${jobs} V=1 configure || return
@@ -1212,6 +1213,7 @@ EOF
 			--with-openssl=`print_prefix ssl.h openssl` --with-libpcre=`print_prefix pcre2.h` \
 			--with-curl=`print_prefix curl.h curl` --with-expat=`print_prefix expat.h` \
 			--with-perl=perl --with-python=python3 --with-zlib=`print_prefix zlib.h` \
+			--without-tcltk \
 			ac_cv_iconv_omits_bom=no \
 			ac_cv_fread_reads_directories=yes \
 			ac_cv_snprintf_returns_bogus=no \
@@ -1820,7 +1822,7 @@ parse_cmdopts()
 	unset cmdopt
 	while [ $# -gt 0 ]; do
 		case ${1} in
-		--prefix|--host|--jobs)
+		--prefix|--host|--jobs|--destdir)
 			cmdopt="${cmdopt:+${cmdopt} }${1}"
 			opt=`echo ${1} | cut -d- -f3`
 			shift
@@ -1851,12 +1853,16 @@ main()
 	set -- ${pkgs} || return
 
 	[ -n "${help}" ] && { help; return;}
+	[ -n "${destdir}" ] && DESTDIR=`readlink -m ${destdir}`
 	[ -z "${all}" ] || set -- `print_packages` || return
 	[ $# -eq 0 ] && echo WARNING: no packages specified. try \'--help\' for more information. >&2
 	[ -n "${force}" ] && force_install=yes
 
 	${host}-gcc --version > /dev/null || return
 	target=${host}
+
+	PATH=`readlink -m ${build}${prefix}/bin`:${PATH}
+	export LD_LIBRARY_PATH=`readlink -m ${build}${prefix}/lib64`:`readlink -m ${build}${prefix}/lib`${LD_LIBRARY_PATH:+:}${LD_LIBRARY_PATH}
 
 	languages=c,c++
 	which ${host}-gccgo > /dev/null && languages=${languages},go
