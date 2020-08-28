@@ -153,6 +153,7 @@ EOF
 
 : ${ruby_ver:=2.7.1}
 : ${go_ver:=1.14.7}
+: ${cmake_ver:=3.17.2}
 : ${llvm_ver:=10.0.0}
 : ${compiler_rt_ver:=${llvm_ver}}
 : ${libunwind_ver:=${llvm_ver}}
@@ -331,6 +332,9 @@ fetch()
 	go)
 		wget -O ${go_src_dir}.tar.gz \
 			https://storage.googleapis.com/golang/go${go_ver}.src.tar.gz || return;;
+	cmake)
+		wget -O ${cmake_src_dir}.tar.gz \
+			https://cmake.org/files/v`print_version cmake`/${cmake_name}.tar.gz || return;;
 	llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://github.com/llvm/llvm-project/releases/download/llvmorg-\${${_1}_ver}/\${${_1}_name}.tar.xz || return;;
@@ -1535,6 +1539,26 @@ EOF
 			GOROOT_FINAL=${prefix}/go GOARCH=`goarch ${host}` GOOS=linux bash -x ${go_src_dir}/src/make.bash -v) || return
 		rm -v ${DESTDIR}${prefix}/go/bin/go || return
 		cp -Tfvr ${go_src_dir} ${DESTDIR}${prefix}/go || return
+		;;
+	cmake)
+		[ -x ${DESTDIR}${prefix}/bin/cmake -a "${force_install}" != yes ] && return
+		print_header_path curl.h curl > /dev/null || ${0} ${cmdopt} curl || return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
+		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${cmake_bld_dir}/Makefile ] ||
+			(cd ${cmake_bld_dir}
+			${cmake_src_dir}/bootstrap --prefix=${DESTDIR}${prefix} --parallel=${jobs} \
+				--system-curl --system-zlib --system-bzip2 --system-liblzma -- \
+				-DCURL_INCLUDE_DIR=`print_header_dir curl.h curl` -DCURL_LIBRARY=`print_library_path libcurl.so` \
+				-DBZIP2_INCLUDE_DIR=`print_header_dir bzlib.h` -DBZIP2_LIBRARIES=`print_library_path libbz2.so` \
+				-DLIBLZMA_INCLUDE_DIR=`print_header_dir lzma.h` -DLIBLZMA_LIBRARY=`print_library_path liblzma.so`) || return
+		make -C ${cmake_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${cmake_bld_dir} -j ${jobs} -k test || return
+		make -C ${cmake_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 		;;
 	llvm)
 		[ -d ${DESTDIR}${prefix}/include/llvm -a "${force_install}" != yes ] && return
