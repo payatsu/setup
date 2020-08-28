@@ -3,8 +3,8 @@
 default_prefix=/usr/local
 default_host=aarch64-linux-gnu
 default_jobs=`grep -e '^processor\>' -c /proc/cpuinfo`
-src_dir=`readlink -m selfhosting-kit/src`
-DESTDIR=`readlink -m selfhosting-kit/artifacts`
+src_dir=`readlink -m ./src`
+DESTDIR=`readlink -m ./artifacts`
 
 help()
 {
@@ -1652,6 +1652,28 @@ EOF
 		;;
 	clang-tools-extra)
 		[ -x ${DESTDIR}${prefix}/bin/clangd ] || echo WARNING: \'${1}\' can be install as a part of \'clang\'. skipped. >&2
+		;;
+	lld)
+		[ -x ${DESTDIR}${prefix}/bin/lld -a "${force_install}" != yes ] && return
+		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${lld_bld_dir}/llvm-config ] || cat << EOF > ${lld_bld_dir}/llvm-config || return
+echo `print_library_dir libLLVM.so`
+echo `print_header_dir llvm-config.h`
+echo `print_library_dir LLVMConfig.cmake`
+echo not-used
+EOF
+		chmod -v a+x ${lld_bld_dir}/llvm-config || return
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${lld_src_dir} -B ${lld_bld_dir} \
+			-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} -DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DLLVM_CONFIG_PATH=${lld_bld_dir}/llvm-config \
+			-DLLVM_TABLEGEN_EXE=`which llvm-tblgen` \
+			-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON || return
+		cmake --build ${lld_bld_dir} -v -j ${jobs} || return
+		cmake --install ${lld_bld_dir} -v ${strip:+--${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
