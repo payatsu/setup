@@ -132,6 +132,7 @@ EOF
 : ${flex_ver:=2.6.4}
 : ${libtool_ver:=2.4.6}
 : ${pkg_config_ver:=0.29.2}
+: ${gettext_ver:=0.21}
 : ${curl_ver:=7.69.1}
 : ${git_ver:=2.28.0}
 : ${ed_ver:=1.16}
@@ -218,7 +219,7 @@ fetch()
 		wget -O ${zlib_src_dir}.tar.xz \
 			http://zlib.net/${zlib_name}.tar.xz || return;;
 	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|ed|bc|screen|m4|autoconf|automake|\
-	bison|libtool|grep|diffutils|patch|global)
+	bison|libtool|gettext|grep|diffutils|patch|global)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
 				https://ftp.gnu.org/gnu/${1}/\${${_1}_name}.tar.${compress_format} \
@@ -1157,6 +1158,19 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${pkg_config_bld_dir} -j ${jobs} -k check || return
 		make -C ${pkg_config_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	gettext)
+		[ -x ${DESTDIR}${prefix}/bin/gettext -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${gettext_bld_dir}/Makefile ] ||
+			(cd ${gettext_bld_dir}
+			${gettext_src_dir}/configure --prefix=${prefix} --host=${host} \
+				--enable-threads --disable-rpath) || return
+		make -C ${gettext_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${gettext_bld_dir} -j ${jobs} -k check || return
+		make -C ${gettext_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	curl)
 		[ -x ${DESTDIR}${prefix}/bin/curl -a "${force_install}" != yes ] && return
