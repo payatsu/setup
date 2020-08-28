@@ -584,11 +584,15 @@ build()
 		;;
 	ncurses)
 		[ -f ${DESTDIR}${prefix}/include/ncurses/curses.h -a "${force_install}" != yes ] && return
+		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${ncurses_bld_dir}/Makefile ] ||
 			(cd ${ncurses_bld_dir}
-			sed -i -e '/^INSTALL_PROG\>/s!$! --strip-program='`which ${host:+${host}-}strip`'!' ${ncurses_src_dir}/progs/Makefile.in || return
+			sed -i -e "
+				/^INSTALL_PROG\>/{
+					s!\( --strip-program=[[:graph:]]\+\)\?\$! --strip-program=`which ${host:+${host}-}strip`!
+				}" ${ncurses_src_dir}/progs/Makefile.in || return
 			${ncurses_src_dir}/configure --prefix=${prefix} --host=${host} \
 				--with-shared --with-cxx-shared --with-termlib \
 				--enable-termcap --enable-colors) || return
