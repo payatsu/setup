@@ -397,6 +397,16 @@ print_prefix()
 	[ $? = 0 ] && echo ${path} | sed -e 's/\/include\/.\+//' || return
 }
 
+print_binary_path()
+{
+	for d in ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/sbin; do
+		[ -d ${d}${2:+/${2}} ] || continue
+		candidates=`find ${d}${2:+/${2}} \( -type f -o -type l \) -name ${1} | sort`
+		[ -n "${candidates}" ] && echo "${candidates}" | head -n 1 && return
+	done
+	return 1
+}
+
 print_version()
 {
 	_1=`echo ${1} | tr - _`
@@ -534,7 +544,7 @@ build()
 		;;
 	gcc)
 		[ -x ${DESTDIR}${prefix}/bin/gcc -a "${force_install}" != yes ] && return
-		[ -x ${DESTDIR}${prefix}/bin/${target}-as ] || ${0} ${cmdopt} binutils || return
+		print_binary_path ${target}-as > /dev/null || ${0} ${cmdopt} binutils || return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path gmp.h > /dev/null || ${0} ${cmdopt} gmp || return
 		print_header_path mpfr.h > /dev/null || ${0} ${cmdopt} mpfr || return
@@ -1100,7 +1110,7 @@ EOF
 		;;
 	automake)
 		[ -x ${DESTDIR}${prefix}/bin/automake -a "${force_install}" != yes ] && return
-		[ -x ${DESTDIR}${prefix}/bin/autoconf ] || ${0} ${cmdopt} autoconf || return
+		print_binary_path autoconf > /dev/null || ${0} ${cmdopt} autoconf || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${automake_bld_dir}/Makefile ] ||
@@ -1123,7 +1133,7 @@ EOF
 		;;
 	flex)
 		[ -x ${DESTDIR}${prefix}/bin/flex -a "${force_install}" != yes ] && return
-		[ -x ${DESTDIR}${prefix}/bin/bison ] || ${0} ${cmdopt} bison || return
+		print_binary_path bison > /dev/null || ${0} ${cmdopt} bison || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${flex_bld_dir}/Makefile ] ||
@@ -1137,7 +1147,7 @@ EOF
 		;;
 	libtool)
 		[ -x ${DESTDIR}${prefix}/bin/libtool -a "${force_install}" != yes ] && return
-		[ -x ${DESTDIR}${prefix}/bin/flex ] || ${0} ${cmdopt} flex || return
+		print_binary_path flex > /dev/null || ${0} ${cmdopt} flex || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libtool_bld_dir}/Makefile ] ||
@@ -1656,6 +1666,7 @@ EOF
 		print_library_path libunwind.so > /dev/null || ${0} ${cmdopt} libunwind || return
 		print_library_path libc++abi.so > /dev/null || ${0} ${cmdopt} libcxxabi || return
 		print_header_path iostream c++/v1 > /dev/null || ${0} ${cmdopt} libcxx || return
+		print_binary_path lld > /dev/null || ${0} ${cmdopt} lld || return
 		fetch ${1} || return
 		unpack ${1} || return
 		init clang-tools-extra || return
@@ -1690,6 +1701,7 @@ EOF
 			-DCMAKE_INSTALL_RPATH=';' -DENABLE_LINKER_BUILD_ID=ON \
 			-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
 			-DCLANG_DEFAULT_RTLIB=compiler-rt \
+			`print_binary_path lld > /dev/null && echo -DCLANG_DEFAULT_LINKER=lld` \
 			-DGCC_INSTALL_PREFIX=`print_prefix iostream c++` || return
 		cmake --build ${clang_bld_dir} -v -j ${jobs} || return
 		cmake --install ${clang_bld_dir} -v ${strip:+--${strip}} || return
