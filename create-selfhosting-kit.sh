@@ -1865,7 +1865,7 @@ parse_cmdopts()
 		*) break;;
 		esac
 		case ${1} in
-		--copy-libc|--tmpdir) ;; # don't pass these options to child process.
+		--all|--copy-libc|--tmpdir) ;; # don't pass these options to child process.
 		*) cmdopt="${cmdopt:+${cmdopt} }${1}";;
 		esac
 		shift
