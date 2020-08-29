@@ -1495,11 +1495,11 @@ EOF
 		;;
 	ruby)
 		[ -x ${DESTDIR}${prefix}/bin/ruby -a "${force_install}" != yes ] && return
-		ruby --version || return
 		print_header_path gmp.h > /dev/null || ${0} ${cmdopt} gmp || return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path readline.h readline > /dev/null || ${0} ${cmdopt} readline || return
 		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
+		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${ruby_bld_dir}/Makefile ] ||
@@ -1770,7 +1770,8 @@ func_place_holder()
 	unset p
 
 	for p in ${DESTDIR}${prefix}/lib ${DESTDIR}${prefix}/lib64 `[ -d ${DESTDIR}${prefix}/${host} ] && find ${DESTDIR}${prefix}/${host} -mindepth 2 -maxdepth 2 -type d -name lib` \
-		`[ -d ${DESTDIR}${prefix}/lib/gcc/${host} ] && find ${DESTDIR}${prefix}/lib/gcc/${host} -mindepth 1 -maxdepth 1 -type d -name '*.?.?' | sort -rV | head -n 1`; do
+		`[ -d ${DESTDIR}${prefix}/lib/gcc/${host} ] && find ${DESTDIR}${prefix}/lib/gcc/${host} -mindepth 1 -maxdepth 1 -type d -name '*.?.?' | sort -rV | head -n 1` \
+		${DESTDIR}${prefix}/lib/`uname -m`-linux; do
 		[ -n "${DESTDIR}" -o -d ${p} ] || continue
 		echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ \
 			&& export LD_LIBRARY_PATH=${p}`echo ${LD_LIBRARY_PATH} | sed -e "
