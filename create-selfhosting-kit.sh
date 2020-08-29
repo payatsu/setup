@@ -184,7 +184,7 @@ init()
 		eval ${_1}_ver=${llvm_ver}
 		eval ${_1}_name=${1}-\${${_1}_ver}.src
 		eval ${_1}_src_dir=\${${_1}_src_base}/\${${_1}_name}
-		eval ${_1}_bld_dir=\${${_1}_src_base}/\${${_1}_name}-bld
+		eval ${_1}_bld_dir=\${${_1}_src_base}/\${${_1}_name}-${host}
 		return 0
 		;;
 	esac
@@ -1562,7 +1562,8 @@ EOF
 		;;
 	llvm)
 		[ -d ${DESTDIR}${prefix}/include/llvm -a "${force_install}" != yes ] && return
-		which llvm-tblgen > /dev/null || { echo WARNING: host \'llvm-tblgen\' is not found. skipped. >&2; return;}
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
+		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -1571,7 +1572,8 @@ EOF
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_CROSSCOMPILING=True \
 			-DLLVM_DEFAULT_TARGET_TRIPLE=${host} -DLLVM_TARGET_ARCH=`echo ${host} | cut -d- -f1` \
-			-DLLVM_TABLEGEN=`which llvm-tblgen` -DLLVM_ENABLE_LIBXML2=OFF \
+			`[ ${build} != ${host} ] && { echo -n -DLLVM_TABLEGEN=; which llvm-tblgen;}` \
+			-DLLVM_ENABLE_LIBXML2=OFF \
 			-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON || return
 		cmake --build ${llvm_bld_dir} -v -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
@@ -1646,8 +1648,7 @@ EOF
 		;;
 	clang)
 		[ -x ${DESTDIR}${prefix}/bin/clang -a "${force_install}" != yes ] && return
-		which llvm-tblgen > /dev/null || { echo WARNING: host \'llvm-tblgen\' is not found. skipped. >&2; return;}
-		which clang-tblgen > /dev/null || { echo WARNING: host \'clang-tblgen\' is not found. skipped. >&2; return;}
+		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
@@ -1685,7 +1686,6 @@ EOF
 			-DLLVM_TOOLS_BINARY_DIR=`which llvm-tblgen | xargs dirname` \
 			-DLLVM_DEFAULT_TARGET_TRIPLE=${host} -DLLVM_TARGET_ARCH=`echo ${host} | cut -d- -f1` \
 			-DLLVM_ENABLE_LIBXML2=OFF \
-			-DLLVM_TABLEGEN=`which llvm-tblgen` \
 			-DCLANG_TABLEGEN=`which clang-tblgen` \
 			-DCMAKE_INSTALL_RPATH=';' -DENABLE_LINKER_BUILD_ID=ON \
 			-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
@@ -1891,7 +1891,7 @@ main()
 	DESTDIR=`readlink -m ${host}`
 
 	PATH=`readlink -m ${build}${prefix}/bin`:${PATH}
-	export LD_LIBRARY_PATH=`readlink -m ${build}${prefix}/lib64`:`readlink -m ${build}${prefix}/lib`${LD_LIBRARY_PATH:+:}${LD_LIBRARY_PATH}
+	export LD_LIBRARY_PATH=`readlink -m ${build}${prefix}/lib/gcc/${build}/${gcc_ver}`:`readlink -m ${build}${prefix}/lib64`:`readlink -m ${build}${prefix}/lib`${LD_LIBRARY_PATH:+:}${LD_LIBRARY_PATH}
 
 	languages=c,c++
 	which ${host}-gccgo > /dev/null && languages=${languages},go
