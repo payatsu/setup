@@ -1768,8 +1768,8 @@ prefix=prefix_place_holder
 host=host_place_holder
 func_place_holder()
 {
-	for p in ${prefix}/bin ${prefix}/sbin; do
-		[ -d ${p} ] || continue
+	for p in ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/sbin ${DESTDIR}${prefix}/go/bin; do
+		[ -n "${DESTDIR}" -o -d ${p} ] || continue
 		echo ${p} | grep -qe "/usr/local/s\?bin" && continue
 		echo ${PATH} | tr : '\n' | grep -qe ^${p}\$ \
 			&& PATH=${p}`echo ${PATH} | sed -e "
@@ -1783,9 +1783,9 @@ func_place_holder()
 	done
 	unset p
 
-	for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/${host} ] && find ${prefix}/${host} -mindepth 2 -maxdepth 2 -type d -name lib` \
-		`[ -d ${prefix}/lib/gcc/${host} ] && find ${prefix}/lib/gcc/${host} -mindepth 1 -maxdepth 1 -type d -name '*.?.?' | sort -rV | head -n 1`; do
-		[ -d ${p} ] || continue
+	for p in ${DESTDIR}${prefix}/lib ${DESTDIR}${prefix}/lib64 `[ -d ${DESTDIR}${prefix}/${host} ] && find ${DESTDIR}${prefix}/${host} -mindepth 2 -maxdepth 2 -type d -name lib` \
+		`[ -d ${DESTDIR}${prefix}/lib/gcc/${host} ] && find ${DESTDIR}${prefix}/lib/gcc/${host} -mindepth 1 -maxdepth 1 -type d -name '*.?.?' | sort -rV | head -n 1`; do
+		[ -n "${DESTDIR}" -o -d ${p} ] || continue
 		echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ \
 			&& export LD_LIBRARY_PATH=${p}`echo ${LD_LIBRARY_PATH} | sed -e "
 					s%\(^\|:\)${p}\(\$\|:\)%\1\2%g
@@ -1798,16 +1798,16 @@ func_place_holder()
 	done
 	unset p
 
-	echo ${MANPATH} | tr : '\n' | grep -qe ^${prefix}/share/man\$ \
-		&& export MANPATH=${prefix}/share/man:`echo ${MANPATH} | sed -e '
-				s%\(^\|:\)'${prefix}'/share/man\($\|:\)%\1\2%g
+	echo ${MANPATH} | tr : '\n' | grep -qe ^${DESTDIR}${prefix}/share/man\$ \
+		&& export MANPATH=${DESTDIR}${prefix}/share/man:`echo ${MANPATH} | sed -e '
+				s%\(^\|:\)'${DESTDIR}${prefix}'/share/man\($\|:\)%\1\2%g
 				s/::/:/g
 				s/^://
 			'` \
-		|| export MANPATH=${prefix}/share/man:${MANPATH}
+		|| export MANPATH=${DESTDIR}${prefix}/share/man:${MANPATH}
 
 	[ "${TERM}" = linux ] && TERM=xterm-256color
-	export TERMINFO=${prefix}/share/terminfo
+	export TERMINFO=${DESTDIR}${prefix}/share/terminfo
 }
 func_place_holder
 EOF
@@ -1902,12 +1902,13 @@ main()
 	${host}-gcc --version > /dev/null || return
 	target=${host}
 	DESTDIR=`readlink -m ${host}`
-
-	PATH=`readlink -m ${build}${prefix}/bin`:${PATH}
-	export LD_LIBRARY_PATH=`readlink -m ${build}${prefix}/lib/gcc/${build}/${gcc_ver}`:`readlink -m ${build}${prefix}/lib64`:`readlink -m ${build}${prefix}/lib`${LD_LIBRARY_PATH:+:}${LD_LIBRARY_PATH}
-
 	languages=c,c++
 	which ${host}-gccgo > /dev/null && languages=${languages},go
+
+	if [ ${build} = ${host} ]; then
+		generate_pathconfig ${DESTDIR}${prefix}/pathconfig.sh || return
+		. ${DESTDIR}${prefix}/pathconfig.sh || return
+	fi
 
 	for p in $@; do
 		init ${p} || return
