@@ -529,6 +529,7 @@ build()
 		;;
 	isl)
 		[ -f ${DESTDIR}${prefix}/include/isl/version.h -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path gmp.h > /dev/null || ${0} ${cmdopt} gmp || return
 		fetch ${1} || return
 		unpack ${1} || return
@@ -536,7 +537,7 @@ build()
 			(cd ${isl_bld_dir}
 			${isl_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--with-gmp-prefix=`print_prefix gmp.h` \
-				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`" LIBS=-lgmp) || return
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libgmp.so`" LIBS=-lgmp) || return
 		make -C ${isl_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${isl_bld_dir} -j ${jobs} -k check || return
