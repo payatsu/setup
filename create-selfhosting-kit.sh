@@ -1794,7 +1794,8 @@ func_place_holder()
 		|| export MANPATH=${DESTDIR}${prefix}/share/man:${MANPATH}
 
 	[ "${TERM}" = linux ] && TERM=xterm-256color
-	export TERMINFO=${DESTDIR}${prefix}/share/terminfo
+	[ -z "${DESTDIR}" ] && export TERMINFO=${DESTDIR}${prefix}/share/terminfo
+	return 0
 }
 func_place_holder
 EOF
