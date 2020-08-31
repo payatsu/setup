@@ -4,7 +4,6 @@ default_prefix=/usr/local
 default_host=aarch64-linux-gnu
 default_jobs=`grep -e '^processor\>' -c /proc/cpuinfo`
 src_dir=`readlink -m ./src`
-DESTDIR=`readlink -m ./artifacts`
 
 help()
 {
@@ -710,6 +709,8 @@ build()
 		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
 		print_header_path ffi.h > /dev/null || ${0} ${cmdopt} libffi || return
 		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
+		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
+		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
 		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
@@ -723,7 +724,9 @@ EOF
 				--enable-shared --enable-optimizations --enable-ipv6 \
 				--with-universal-archs=all --with-lto --with-system-expat --with-system-ffi \
 				--with-openssl=`print_prefix ssl.h openssl` \
-				--with-doc-strings --with-pymalloc --with-ensurepip \
+				--with-doc-strings --with-pymalloc \
+				CFLAGS="${CFLAGS} -I`print_header_dir expat.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libexpat.so`" \
 				CONFIG_SITE=config.site || return
 			) || return
 		make -C ${Python_bld_dir} -j ${jobs} || return
@@ -1756,7 +1759,6 @@ func_place_holder()
 {
 	for p in ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/sbin ${DESTDIR}${prefix}/go/bin; do
 		[ -n "${DESTDIR}" -o -d ${p} ] || continue
-		echo ${p} | grep -qe "/usr/local/s\?bin" && continue
 		echo ${PATH} | tr : '\n' | grep -qe ^${p}\$ \
 			&& PATH=${p}`echo ${PATH} | sed -e "
 					s%\(^\|:\)${p}\(\$\|:\)%\1\2%g
@@ -1799,6 +1801,21 @@ func_place_holder()
 }
 func_place_holder
 EOF
+}
+
+setup_pathconfig_for_build()
+{
+	orig_host=${host}
+	orig_DESTDIR=${DESTDIR}
+
+	host=${build}
+	DESTDIR=`readlink -m ${build}`
+	generate_pathconfig ${DESTDIR}${prefix}/pathconfig.sh || return
+	. ${DESTDIR}${prefix}/pathconfig.sh || return
+
+	host=${orig_host}
+	DESTDIR=${orig_DESTDIR}
+	unset orig_host orig_DESTDIR
 }
 
 copy_libc()
@@ -1893,10 +1910,7 @@ main()
 	languages=c,c++
 	which ${host}-gccgo > /dev/null && languages=${languages},go
 
-	if [ ${build} = ${host} ]; then
-		generate_pathconfig ${DESTDIR}${prefix}/pathconfig.sh || return
-		. ${DESTDIR}${prefix}/pathconfig.sh || return
-	fi
+	setup_pathconfig_for_build || return
 
 	for p in $@; do
 		init ${p} || return
