@@ -134,6 +134,7 @@ EOF
 : ${gettext_ver:=0.21}
 : ${curl_ver:=7.69.1}
 : ${git_ver:=2.28.0}
+: ${lzip_ver:=1.21}
 : ${ed_ver:=1.16}
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
@@ -304,6 +305,9 @@ fetch()
 	git)
 		wget -O ${git_src_dir}.tar.xz \
 			https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return;;
+	lzip)
+		wget -O ${lzip_src_dir}.tar.gz \
+			http://download.savannah.gnu.org/releases/lzip/${lzip_name}.tar.gz || return;;
 	rsync)
 		wget -O ${rsync_src_dir}.tar.gz \
 			https://download.samba.org/pub/rsync/src/${rsync_name}.tar.gz || return;;
@@ -605,7 +609,7 @@ build()
 			(cd ${ncurses_bld_dir}
 			sed -i -e "
 				/^INSTALL_PROG\>/{
-					s!\( --strip-program=[[:graph:]]\+\)\?\$! --strip-program=`which ${host:+${host}-}strip`!
+					s!\( --strip-program=[[:graph:]]\+\)\?\$! --strip-program=${host:+${host}-}strip!
 				}" ${ncurses_src_dir}/progs/Makefile.in || return
 			${ncurses_src_dir}/configure --prefix=${prefix} --host=${host} \
 				--with-shared --with-cxx-shared --with-termlib \
@@ -1236,6 +1240,22 @@ EOF
 		for b in git git-receive-pack git-upload-archive git-upload-pack; do
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
+		;;
+	lzip)
+		[ -x ${DESTDIR}${prefix}/bin/lzip -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${lzip_bld_dir}/Makefile ] ||
+			(cd ${lzip_bld_dir}
+			sed -i -e "
+				/^INSTALL_PROGRAM\>/{
+					s!\( --strip-program=[[:graph:]]\+\)\?\$! --strip-program=${host:+${host}-}strip!
+				}" ${lzip_src_dir}/Makefile.in || return
+			${lzip_src_dir}/configure --prefix=${prefix} CXX=${CXX:-${host:+${host}-}g++}) || return
+		make -C ${lzip_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${lzip_bld_dir} -j ${jobs} -k check || return
+		make -C ${lzip_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	ed)
 		[ -x ${DESTDIR}${prefix}/bin/ed -a "${force_install}" != yes ] && return
