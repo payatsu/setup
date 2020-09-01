@@ -731,6 +731,8 @@ EOF
 				--with-doc-strings --with-pymalloc \
 				CFLAGS="${CFLAGS} -I`print_header_dir expat.h`" \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libexpat.so`" \
+				PKG_CONFIG_LIBDIR=`print_library_dir libffi.pc` \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				CONFIG_SITE=config.site || return
 			) || return
 		make -C ${Python_bld_dir} -j ${jobs} || return
