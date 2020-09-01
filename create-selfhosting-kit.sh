@@ -912,6 +912,7 @@ EOF
 		print_header_path ffi.h > /dev/null || ${0} ${cmdopt} libffi || return
 		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		print_header_path pcre.h > /dev/null || ${0} ${cmdopt} pcre || return
+		which gettext > /dev/null || ${0} ${cmdopt} --host ${build} gettext || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${glib_src_dir}/configure ] ||
@@ -1259,10 +1260,15 @@ EOF
 		;;
 	ed)
 		[ -x ${DESTDIR}${prefix}/bin/ed -a "${force_install}" != yes ] && return
+		which lzip > /dev/null || ${0} ${cmdopt} --host ${build} lzip || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${ed_bld_dir}/Makefile ] ||
 			(cd ${ed_bld_dir}
+			sed -i -e "
+				/^INSTALL_PROGRAM\>/{
+					s!\( --strip-program=[[:graph:]]\+\)\?\$! --strip-program=${host:+${host}-}strip!
+				}" ${ed_src_dir}/Makefile.in || return
 			${ed_src_dir}/configure --prefix=${prefix} CC=${CC:-${host:+${host}-}gcc}) || return
 		make -C ${ed_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
@@ -1273,6 +1279,8 @@ EOF
 		[ -x ${DESTDIR}${prefix}/bin/bc -a "${force_install}" != yes ] && return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		print_header_path readline.h readline > /dev/null || ${0} ${cmdopt} readline || return
+		which ed > /dev/null || ${0} ${cmdopt} --host ${build} ed || return
+		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${bc_bld_dir}/Makefile ] ||
