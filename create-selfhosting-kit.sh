@@ -690,9 +690,10 @@ build()
 		[ -d ${DESTDIR}${prefix}/include/openssl -a "${force_install}" != yes ] && return
 		fetch ${1} || return
 		unpack ${1} || return
-		(cd ${openssl_bld_dir}
-		MACHINE=`echo ${host} | cut -d- -f1` SYSTEM=Linux \
-			${openssl_src_dir}/config --prefix=${prefix} shared) || return
+		[ -f ${openssl_bld_dir}/Makefile ] ||
+			(cd ${openssl_bld_dir}
+			MACHINE=`echo ${host} | cut -d- -f1` SYSTEM=Linux \
+				${openssl_src_dir}/config --prefix=${prefix} shared) || return
 		make -C ${openssl_bld_dir} -j 1 CROSS_COMPILE=${host}- || return # XXX work around for parallel make
 		[ "${enable_check}" != yes ] ||
 			make -C ${openssl_bld_dir} -j 1 -k test || return # XXX work around for parallel make
@@ -1580,18 +1581,22 @@ EOF
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
 		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
+		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${cmake_bld_dir}/Makefile ] ||
 			(cd ${cmake_bld_dir}
-			${cmake_src_dir}/bootstrap --prefix=${DESTDIR}${prefix} --parallel=${jobs} \
+			${cmake_src_dir}/bootstrap --verbose --prefix=${DESTDIR}${prefix} --parallel=${jobs} \
 				--system-curl --system-zlib --system-bzip2 --system-liblzma -- \
+				-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} -DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+				-DCMAKE_CXX_FLAGS="${CXXFLAGS} -L`print_library_dir libssl.so` -lssl -lcrypto" \
 				-DCURL_INCLUDE_DIR=`print_header_dir curl.h curl` -DCURL_LIBRARY=`print_library_path libcurl.so` \
 				-DBZIP2_INCLUDE_DIR=`print_header_dir bzlib.h` -DBZIP2_LIBRARIES=`print_library_path libbz2.so` \
 				-DLIBLZMA_INCLUDE_DIR=`print_header_dir lzma.h` -DLIBLZMA_LIBRARY=`print_library_path liblzma.so`) || return
 		make -C ${cmake_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${cmake_bld_dir} -j ${jobs} -k test || return
+		[ ${build} = ${host} ] || sed -i -e 's/\<bin\/cmake\>/cmake/' ${cmake_bld_dir}/Makefile || return
 		make -C ${cmake_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 		;;
 	llvm)
