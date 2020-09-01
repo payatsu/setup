@@ -1944,7 +1944,7 @@ main()
 	languages=c,c++
 	which ${host}-gccgo > /dev/null && languages=${languages},go
 
-	setup_pathconfig_for_build || return
+	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
 
 	for p in $@; do
 		init ${p} || return
@@ -1955,7 +1955,7 @@ main()
 		build ${p} || return
 		cleanup ${p} || return
 	done
-	generate_pathconfig ${DESTDIR}${prefix}/pathconfig.sh || return
+	[ -n "${fetch_only}" ] || generate_pathconfig ${DESTDIR}${prefix}/pathconfig.sh || return
 	[ -z "${copy_libc}" ] || copy_libc || return
 }
 
