@@ -1301,6 +1301,10 @@ EOF
 		unpack ${1} || return
 		[ -f ${rsync_bld_dir}/Makefile ] ||
 			(cd ${rsync_bld_dir}
+			sed -i -e "
+				/^INSTALLCMD\>/{
+					s!\( --strip-program=[[:graph:]]\+\)\?\$! --strip-program=${host:+${host}-}strip!
+				}" ${rsync_src_dir}/Makefile.in || return
 			${rsync_src_dir}/configure --prefix=${prefix} --host=${host} --without-included-zlib\
 				CPPFLAGS="${CPPFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir popt.h`" \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libpopt.so`" \
