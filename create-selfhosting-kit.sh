@@ -1726,7 +1726,7 @@ EOF
 			-DLLVM_TOOLS_BINARY_DIR=`which llvm-tblgen | xargs dirname` \
 			-DLLVM_DEFAULT_TARGET_TRIPLE=${host} -DLLVM_TARGET_ARCH=`echo ${host} | cut -d- -f1` \
 			-DLLVM_ENABLE_LIBXML2=OFF \
-			-DCLANG_TABLEGEN=`which clang-tblgen` \
+			`[ ${build} != ${host} ] && { echo -n -DCLANG_TABLEGEN=; which clang-tblgen;}` \
 			-DCMAKE_INSTALL_RPATH=';' -DENABLE_LINKER_BUILD_ID=ON \
 			-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
 			-DCLANG_DEFAULT_RTLIB=compiler-rt \
