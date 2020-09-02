@@ -12,7 +12,7 @@ help()
     `basename ${0}` - create toolchain running on the target itself
 
 [SYNOPSIS]
-    `basename ${0}` [--prefix PREFIX] [--host HOST] [--jobs JOBS]
+    `basename ${0}` [--prefix PREFIX] [--host HOST] [--jobs JOBS] [--prepare]
         [-all] [--fetch-only] [--force] [--strip] [--cleanup] [--copy-libc]
         [--help] [packages...]
 
@@ -29,6 +29,9 @@ help()
 
     --jobs JOBS [default: ${default_jobs}]
         specify the number of jobs to run simultaneously.
+
+    --prepare
+        build/install native build tools.
 
     --all
         build/install all packages listed bellow.
@@ -1914,7 +1917,7 @@ parse_cmdopts()
 			shift
 			eval ${opt}=\${1:-\${${opt}}}
 			;;
-		--all|--fetch-only|--force|--strip|--cleanup|--copy-libc|--help|--tmpdir)
+		--prepare|--all|--fetch-only|--force|--strip|--cleanup|--copy-libc|--help|--tmpdir)
 			opt=`echo ${1} | cut -d- -f3- | tr - _`
 			eval ${opt}=${opt}
 			;;
@@ -1922,7 +1925,7 @@ parse_cmdopts()
 		*) break;;
 		esac
 		case ${1} in
-		--all|--copy-libc|--tmpdir) ;; # don't pass these options to child process.
+		--prepare|--all|--copy-libc|--tmpdir) ;; # don't pass these options to child process.
 		*) cmdopt="${cmdopt:+${cmdopt} }${1}";;
 		esac
 		shift
@@ -1950,6 +1953,7 @@ main()
 	which ${host}-gccgo > /dev/null && languages=${languages},go
 
 	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
+	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} binutils gcc || return
 
 	for p in $@; do
 		init ${p} || return
