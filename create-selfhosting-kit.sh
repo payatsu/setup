@@ -159,6 +159,7 @@ EOF
 : ${cmake_ver:=3.17.2}
 : ${libxml2_ver:=2.9.9}
 : ${libedit_ver:=20181209-3.1}
+: ${swig_ver:=4.0.2}
 : ${llvm_ver:=10.0.0}
 : ${compiler_rt_ver:=${llvm_ver}}
 : ${libunwind_ver:=${llvm_ver}}
@@ -349,6 +350,9 @@ fetch()
 	libedit)
 		wget -O ${libedit_src_dir}.tar.gz \
 			http://thrysoee.dk/editline/${libedit_name}.tar.gz || return;;
+	swig)
+		wget --trust-server-names -O ${swig_src_dir}.tar.gz \
+			https://sourceforge.net/projects/swig/files/swig/${swig_name}/${swig_name}.tar.gz/download || return;;
 	llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://github.com/llvm/llvm-project/releases/download/llvmorg-\${${_1}_ver}/\${${_1}_name}.tar.xz || return;;
@@ -1613,7 +1617,6 @@ EOF
 	libxml2)
 		[ -d ${DESTDIR}${prefix}/include/libxml2 -a "${force_install}" != yes ] && return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
-		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libxml2_bld_dir}/Makefile ] ||
@@ -1621,7 +1624,10 @@ EOF
 			${libxml2_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 				--without-python --disable-silent-rules \
 				CFLAGS="${CFLAGS} -I`print_header_dir zlib.h`" \
-				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`") || return
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`" \
+				PKG_CONFIG_LIBDIR=`print_library_dir zlib.pc` \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
 		make -C ${libxml2_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${libxml2_bld_dir} -j ${jobs} -k check || return
@@ -1803,6 +1809,23 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${libedit_bld_dir} -j ${jobs} -k check || return
 		make -C ${libedit_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		;;
+	swig)
+		[ -x ${DESTDIR}${prefix}/bin/swig -a "${force_install}" != yes ] && return
+		print_header_path pcre.h > /dev/null || ${0} ${cmdopt} pcre || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${swig_bld_dir}/Makefile ] ||
+			(cd ${swig_bld_dir}
+			${swig_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-cpp11-testing \
+				CFLAGS="${CFLAGS} -I`print_header_dir pcre.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libpcre.so`") || return
+		make -C ${swig_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${swig_bld_dir} -j ${jobs} -k check || return
+		make -C ${swig_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/swig ${DESTDIR}${prefix}/bin/ccache-swig || return
 		;;
 	lldb)
 		;;
