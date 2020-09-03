@@ -157,6 +157,8 @@ EOF
 : ${ruby_ver:=2.7.1}
 : ${go_ver:=1.14.7}
 : ${cmake_ver:=3.17.2}
+: ${libxml2_ver:=2.9.9}
+: ${libedit_ver:=20181209-3.1}
 : ${llvm_ver:=10.0.0}
 : ${compiler_rt_ver:=${llvm_ver}}
 : ${libunwind_ver:=${llvm_ver}}
@@ -341,6 +343,12 @@ fetch()
 	cmake)
 		wget -O ${cmake_src_dir}.tar.gz \
 			https://cmake.org/files/v`print_version cmake`/${cmake_name}.tar.gz || return;;
+	libxml2|libxslt)
+		eval wget -O \${${_1}_src_dir}.tar.gz \
+			http://xmlsoft.org/sources/\${${_1}_name}.tar.gz || return;;
+	libedit)
+		wget -O ${libedit_src_dir}.tar.gz \
+			http://thrysoee.dk/editline/${libedit_name}.tar.gz || return;;
 	llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://github.com/llvm/llvm-project/releases/download/llvmorg-\${${_1}_ver}/\${${_1}_name}.tar.xz || return;;
@@ -1602,6 +1610,23 @@ EOF
 		[ ${build} = ${host} ] || sed -i -e 's/\<bin\/cmake\>/cmake/' ${cmake_bld_dir}/Makefile || return
 		make -C ${cmake_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 		;;
+	libxml2)
+		[ -d ${DESTDIR}${prefix}/include/libxml2 -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libxml2_bld_dir}/Makefile ] ||
+			(cd ${libxml2_bld_dir}
+			${libxml2_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+				--without-python --disable-silent-rules \
+				CFLAGS="${CFLAGS} -I`print_header_dir zlib.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`") || return
+		make -C ${libxml2_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${libxml2_bld_dir} -j ${jobs} -k check || return
+		make -C ${libxml2_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
 	llvm)
 		[ -d ${DESTDIR}${prefix}/include/llvm -a "${force_install}" != yes ] && return
 		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
@@ -1763,6 +1788,23 @@ EOF
 			-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON || return
 		cmake --build ${lld_bld_dir} -v -j ${jobs} || return
 		cmake --install ${lld_bld_dir} -v ${strip:+--${strip}} || return
+		;;
+	libedit)
+		[ -f ${DESTDIR}${prefix}/include/histedit.h -a "${force_install}" != yes ] && return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libedit_bld_dir}/Makefile ] ||
+			(cd ${libedit_bld_dir}
+			${libedit_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+				--disable-silent-rules CFLAGS="${CFLAGS} -I`print_header_dir curses.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libncurses.so`") || return
+		make -C ${libedit_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${libedit_bld_dir} -j ${jobs} -k check || return
+		make -C ${libedit_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		;;
+	lldb)
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
