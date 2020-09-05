@@ -760,10 +760,10 @@ EOF
 			[ ! -f ${DESTDIR}${prefix}/bin/python${v} ] || ${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/python${v} || return
 		done
 		for soname_v in `print_version Python 1`.so `print_version Python`.so.1.0 `print_version Python`m.so.1.0; do
-			[ ! -f ${DESTDIR}${prefix}/lib/libpython${soname_v} ] ||
-				(chmod -v u+w ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
-				${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
-				chmod -v u-w ${DESTDIR}${prefix}/lib/libpython${soname_v} || return) || return
+			[ -f ${DESTDIR}${prefix}/lib/libpython${soname_v} ] || continue
+			chmod -v u+w ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
+			chmod -v u-w ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
 		done
 		;;
 	boost)
@@ -1605,7 +1605,7 @@ EOF
 				--system-curl --system-zlib --system-bzip2 --system-liblzma -- \
 				-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} -DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 				-DCMAKE_CXX_FLAGS="${CXXFLAGS} -L`print_library_dir libssl.so` -lssl -lcrypto" \
-				-DCURL_INCLUDE_DIR=`print_header_dir curl.h curl` -DCURL_LIBRARY=`print_library_path libcurl.so` \
+				-DCURL_INCLUDE_DIRS=`print_header_dir curl.h curl` -DCURL_LIBRARIES=`print_library_path libcurl.so` \
 				-DBZIP2_INCLUDE_DIR=`print_header_dir bzlib.h` -DBZIP2_LIBRARIES=`print_library_path libbz2.so` \
 				-DLIBLZMA_INCLUDE_DIR=`print_header_dir lzma.h` -DLIBLZMA_LIBRARY=`print_library_path liblzma.so`) || return
 		make -C ${cmake_bld_dir} -j ${jobs} || return
@@ -1636,7 +1636,7 @@ EOF
 	llvm)
 		[ -d ${DESTDIR}${prefix}/include/llvm -a "${force_install}" != yes ] && return
 		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
-		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
+		[ ${build} = ${host} ] || which llvm-tblgen > /dev/null || ${0} ${cmdopt} --host ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -1721,7 +1721,7 @@ EOF
 		;;
 	clang)
 		[ -x ${DESTDIR}${prefix}/bin/clang -a "${force_install}" != yes ] && return
-		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
@@ -1730,6 +1730,7 @@ EOF
 		print_library_path libc++abi.so > /dev/null || ${0} ${cmdopt} libcxxabi || return
 		print_header_path iostream c++/v1 > /dev/null || ${0} ${cmdopt} libcxx || return
 		print_binary_path lld > /dev/null || ${0} ${cmdopt} lld || return
+		[ ${build} = ${host} ] || which clang-tblgen > /dev/null || ${0} ${cmdopt} --host ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		init clang-tools-extra || return
@@ -1828,6 +1829,46 @@ EOF
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/swig ${DESTDIR}${prefix}/bin/ccache-swig || return
 		;;
 	lldb)
+		[ -x ${DESTDIR}${prefix}/bin/lldb -a "${force_install}" != yes ] && return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		print_header_path histedit.h > /dev/null || ${0} ${cmdopt} libedit || return
+		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
+		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
+		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
+		print_header_path Version.h clang/Basic > /dev/null || ${0} ${cmdopt} clang || return
+		which python3 > /dev/null || ${0} ${cmdopt} --host ${build} Python || return
+		which swig > /dev/null || ${0} ${cmdopt} --host ${build} swig || return
+		[ ${build} = ${host} ] || which lldb-tblgen > /dev/null || ${0} ${cmdopt} --host ${build} ${1} || return
+		fetch ${1} || return
+		unpack ${1} || return
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${lldb_src_dir} -B ${lldb_bld_dir} \
+			-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} -DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DCMAKE_CROSSCOMPILING=True \
+			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
+			-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON \
+			-DCMAKE_C_FLAGS="${CFLAGS} -I`print_header_dir Version.h clang/Basic`" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`print_header_dir curses.h` -I`print_header_dir histedit.h` -L`print_library_dir libcurses.so` -ledit -lpython$(print_version Python 2) -lncurses -lpanel -lxml2 -lz" \
+			`[ ${build} != ${host} ] && { echo -n -DLLVM_TABLEGEN=; which llvm-tblgen;}` \
+			`[ ${build} != ${host} ] && { echo -n -DLLDB_TABLEGEN_EXE=; which lldb-tblgen;}` \
+			-DLibEdit_INCLUDE_DIRS=`print_header_dir histedit.h` \
+			-DLibEdit_LIBRARIES=`print_library_path libedit.so` \
+			-DCURSES_INCLUDE_DIRS=`print_header_dir curses.h` \
+			-DCURSES_LIBRARIES=`print_library_path libcurses.so` \
+			-DPANEL_LIBRARIES=`print_library_path libpanel.so` \
+			-DPYTHON_INCLUDE_DIRS=`print_header_dir Python.h` \
+			-DPYTHON_LIBRARIES=`print_library_path libpython$(print_version Python 2).so` \
+			-DPYTHON_EXECUTABLE=`which python3` \
+			-DSWIG_EXECUTABLE=`which swig` \
+			-DLIBXML2_INCLUDE_DIR=`print_header_dir xmlversion.h libxml2/libxml`/libxml2 \
+			-DLIBXML2_LIBRARIES="`print_library_path libxml2.so`;`print_library_path libz.so`" \
+			|| return
+		cmake --build ${lldb_bld_dir} -v -j ${jobs} || return
+		cmake --install ${lldb_bld_dir} -v ${strip:+--${strip}} || return
+		[ ! -f ${lldb_bld_dir}/bin/lldb-tblgen ] && return
+		install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${lldb_bld_dir}/bin/lldb-tblgen || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
