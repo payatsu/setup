@@ -197,7 +197,7 @@
 : ${libgcrypt_ver:=1.8.6}
 : ${libksba_ver:=1.4.0}
 : ${libassuan_ver:=2.5.3}
-: ${gnupg_ver:=2.2.21}
+: ${gnupg_ver:=2.2.23}
 : ${protobuf_ver:=3.12.3}
 : ${libbacktrace_ver:=git}
 
@@ -4717,6 +4717,8 @@ install_native_lldb()
 		-DLLDB_TEST_C_COMPILER=${CC:-gcc} -DLLDB_TEST_CXX_COMPILER=${CXX:-g++} || return
 	cmake --build ${lldb_bld_dir} -v -j ${jobs} || return
 	cmake --install ${lldb_bld_dir} -v ${strip:+--${strip}} || return
+	[ ! -f ${lldb_bld_dir}/bin/lldb-tblgen ] && return
+	command install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${lldb_bld_dir}/bin/lldb-tblgen || return
 }
 
 install_native_cling()
