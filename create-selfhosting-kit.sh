@@ -1593,6 +1593,7 @@ EOF
 	cmake)
 		[ -x ${DESTDIR}${prefix}/bin/cmake -a "${force_install}" != yes ] && return
 		print_header_path curl.h curl > /dev/null || ${0} ${cmdopt} curl || return
+		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
 		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
@@ -1602,12 +1603,19 @@ EOF
 		[ -f ${cmake_bld_dir}/Makefile ] ||
 			(cd ${cmake_bld_dir}
 			${cmake_src_dir}/bootstrap --verbose --prefix=${DESTDIR}${prefix} --parallel=${jobs} \
-				--system-curl --system-zlib --system-bzip2 --system-liblzma -- \
+				--system-curl --system-expat --system-zlib --system-bzip2 --system-liblzma -- \
 				-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} -DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 				-DCMAKE_CXX_FLAGS="${CXXFLAGS} -L`print_library_dir libssl.so` -lssl -lcrypto" \
-				-DCURL_INCLUDE_DIRS=`print_header_dir curl.h curl` -DCURL_LIBRARIES=`print_library_path libcurl.so` \
-				-DBZIP2_INCLUDE_DIR=`print_header_dir bzlib.h` -DBZIP2_LIBRARIES=`print_library_path libbz2.so` \
-				-DLIBLZMA_INCLUDE_DIR=`print_header_dir lzma.h` -DLIBLZMA_LIBRARY=`print_library_path liblzma.so`) || return
+				-DCURL_INCLUDE_DIR=`print_header_dir curl.h curl` \
+				-DCURL_LIBRARY_RELEASE=`print_library_path libcurl.so` \
+				-DEXPAT_INCLUDE_DIR=`print_header_dir expat.h` \
+				-DEXPAT_LIBRARY=`print_library_path libexpat.so` \
+				-DZLIB_INCLUDE_DIR=`print_header_dir zlib.h` \
+				-DZLIB_LIBRARY_RELEASE=`print_library_path libz.so` \
+				-DBZIP2_INCLUDE_DIR=`print_header_dir bzlib.h` \
+				-DBZIP2_LIBRARIES=`print_library_path libbz2.so` \
+				-DLIBLZMA_INCLUDE_DIR=`print_header_dir lzma.h` \
+				-DLIBLZMA_LIBRARY=`print_library_path liblzma.so`) || return
 		make -C ${cmake_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${cmake_bld_dir} -j ${jobs} -k test || return
