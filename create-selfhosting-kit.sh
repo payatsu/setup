@@ -1821,13 +1821,14 @@ EOF
 		;;
 	swig)
 		[ -x ${DESTDIR}${prefix}/bin/swig -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path pcre.h > /dev/null || ${0} ${cmdopt} pcre || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${swig_bld_dir}/Makefile ] ||
 			(cd ${swig_bld_dir}
 			${swig_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-cpp11-testing \
-				CFLAGS="${CFLAGS} -I`print_header_dir pcre.h`" \
+				CFLAGS="${CFLAGS} -I`print_header_dir pcre.h` -L`print_library_dir libz.so`" \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libpcre.so`") || return
 		make -C ${swig_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
