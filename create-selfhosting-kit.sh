@@ -130,7 +130,7 @@ EOF
 : ${perl_ver:=5.30.3}
 : ${autoconf_ver:=2.69}
 : ${automake_ver:=1.16.2}
-: ${bison_ver:=3.7.1}
+: ${bison_ver:=3.7.2}
 : ${flex_ver:=2.6.4}
 : ${libtool_ver:=2.4.6}
 : ${pkg_config_ver:=0.29.2}
@@ -152,7 +152,7 @@ EOF
 : ${grep_ver:=3.4}
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
-: ${global_ver:=6.6.4}
+: ${global_ver:=6.6.5}
 
 : ${ruby_ver:=2.7.1}
 : ${go_ver:=1.14.7}

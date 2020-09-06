@@ -31,7 +31,7 @@
 : ${texinfo_ver:=6.7}
 : ${coreutils_ver:=8.32}
 : ${busybox_ver:=1.31.1}
-: ${bison_ver:=3.7.1}
+: ${bison_ver:=3.7.2}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
@@ -87,7 +87,7 @@
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.4.3}
 : ${grep_ver:=3.4}
-: ${global_ver:=6.6.4}
+: ${global_ver:=6.6.5}
 : ${pcre_ver:=8.43}
 : ${pcre2_ver:=10.32}
 : ${the_silver_searcher_ver:=2.2.0}
@@ -161,7 +161,7 @@
 : ${boost_ver:=1_74_0}
 : ${Python_ver:=3.8.5}
 : ${Python2_ver:=2.7.18}
-: ${rustc_ver:=1.45.2}
+: ${rustc_ver:=1.46.0}
 : ${rustup_ver:=1.22.1}
 : ${ruby_ver:=2.7.1}
 : ${go_ver:=1.14.7}
