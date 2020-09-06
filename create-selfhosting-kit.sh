@@ -376,8 +376,10 @@ unpack()
 
 print_library_path()
 {
-	for d in ${DESTDIR}${prefix}/lib64 ${DESTDIR}${prefix}/lib `LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
-		sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs realpath -eq`; do
+	for d in ${DESTDIR}${prefix}/lib64 ${DESTDIR}${prefix}/lib \
+		`[ ${build} = ${host} ] && echo /usr/local/lib64 /usr/local/lib` \
+		`LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
+			sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs realpath -eq`; do
 		[ -d ${d}${2:+/${2}} ] || continue
 		candidates=`find ${d}${2:+/${2}} \( -type f -o -type l \) -name ${1} | sort`
 		[ -n "${candidates}" ] && echo "${candidates}" | head -n 1 && return
@@ -458,6 +460,14 @@ print_target_python_abi()
 {
 	print_header_dir Python.h |
 		grep -oe '[[:alpha:]]*$' || return
+}
+
+print_swig_lib_dir()
+{
+	for d in ${DESTDIR}`swig -swiglib` `swig -swiglib`; do
+		[ -d ${d} ] && echo ${d} && return
+	done
+	return 1
 }
 
 make()
@@ -1610,8 +1620,7 @@ EOF
 				-DCURL_LIBRARY_RELEASE=`print_library_path libcurl.so` \
 				-DEXPAT_INCLUDE_DIR=`print_header_dir expat.h` \
 				-DEXPAT_LIBRARY=`print_library_path libexpat.so` \
-				-DZLIB_INCLUDE_DIR=`print_header_dir zlib.h` \
-				-DZLIB_LIBRARY_RELEASE=`print_library_path libz.so` \
+				-DZLIB_ROOT=`print_prefix zlib.h` \
 				-DBZIP2_INCLUDE_DIR=`print_header_dir bzlib.h` \
 				-DBZIP2_LIBRARIES=`print_library_path libbz2.so` \
 				-DLIBLZMA_INCLUDE_DIR=`print_header_dir lzma.h` \
@@ -1625,6 +1634,7 @@ EOF
 	libxml2)
 		[ -d ${DESTDIR}${prefix}/include/libxml2 -a "${force_install}" != yes ] && return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libxml2_bld_dir}/Makefile ] ||
@@ -1859,7 +1869,7 @@ EOF
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
 			-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON \
 			-DCMAKE_C_FLAGS="${CFLAGS} -I`print_header_dir Version.h clang/Basic`" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`print_header_dir curses.h` -I`print_header_dir histedit.h` -L`print_library_dir libcurses.so` -ledit -lpython$(print_version Python 2) -lncurses -lpanel -lxml2 -lz" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`print_header_dir curses.h` -I`print_header_dir histedit.h` -L`print_library_dir libcurses.so` -ledit -lpython$(print_version Python 2) -lncurses -lpanel -lxml2 -llzma -lz" \
 			`[ ${build} != ${host} ] && { echo -n -DLLVM_TABLEGEN=; which llvm-tblgen;}` \
 			`[ ${build} != ${host} ] && { echo -n -DLLDB_TABLEGEN_EXE=; which lldb-tblgen;}` \
 			-DLibEdit_INCLUDE_DIRS=`print_header_dir histedit.h` \
@@ -1874,7 +1884,7 @@ EOF
 			-DLIBXML2_INCLUDE_DIR=`print_header_dir xmlversion.h libxml2/libxml`/libxml2 \
 			-DLIBXML2_LIBRARIES="`print_library_path libxml2.so`;`print_library_path libz.so`" \
 			|| return
-		cmake --build ${lldb_bld_dir} -v -j ${jobs} || return
+		SWIG_LIB=`print_swig_lib_dir` cmake --build ${lldb_bld_dir} -v -j ${jobs} || return
 		cmake --install ${lldb_bld_dir} -v ${strip:+--${strip}} || return
 		[ ! -f ${lldb_bld_dir}/bin/lldb-tblgen ] && return
 		install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${lldb_bld_dir}/bin/lldb-tblgen || return
