@@ -1630,6 +1630,13 @@ EOF
 			make -C ${cmake_bld_dir} -j ${jobs} -k test || return
 		[ ${build} = ${host} ] || sed -i -e 's/\<bin\/cmake\>/cmake/' ${cmake_bld_dir}/Makefile || return
 		make -C ${cmake_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
+		for b in cmake cpack ctest; do
+			b=${DESTDIR}${prefix}/bin/${b}
+			seek=`grep -aboe "${DESTDIR}${prefix}/lib/libz.so" ${b} | cut -d: -f1`
+			[ -z "${seek}" ] && continue
+			dirname_count=`echo -n ${DESTDIR}${prefix}/lib/ | wc -c`
+			dd bs=c count=`echo libz.so | wc -c` if=${b} of=${b} conv=notrunc seek=${seek} skip=`expr ${seek} + ${dirname_count}` || return
+		done
 		;;
 	libxml2)
 		[ -d ${DESTDIR}${prefix}/include/libxml2 -a "${force_install}" != yes ] && return
