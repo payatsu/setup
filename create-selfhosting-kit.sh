@@ -2084,8 +2084,8 @@ main()
 	languages=c,c++
 	which ${host}-gccgo > /dev/null && languages=${languages},go
 
-	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
 	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} binutils gcc || return
+	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
 
 	for p in $@; do
 		init ${p} || return
