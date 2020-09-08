@@ -146,6 +146,7 @@ EOF
 : ${screen_ver:=4.8.0}
 : ${libevent_ver:=2.1.11-stable}
 : ${tmux_ver:=3.1b}
+: ${zsh_ver:=5.8}
 : ${vim_ver:=8.2.1127}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
@@ -327,6 +328,9 @@ fetch()
 	tmux)
 		wget -O ${tmux_src_dir}.tar.gz \
 			https://github.com/tmux/tmux/releases/download/${tmux_ver}/${tmux_name}.tar.gz || return;;
+	zsh)
+		wget --trust-server-names -O ${zsh_src_dir}.tar.xz \
+			https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return;;
 	vim)
 		wget -O ${vim_src_dir}.tar.gz \
 			http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return;;
@@ -1408,6 +1412,23 @@ EOF
 		make -C ${tmux_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/tmux || return
+		;;
+	zsh)
+		[ -x ${DESTDIR}${prefix}/bin/zsh -a "${force_install}" != yes ] && return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${zsh_bld_dir}/configure ] || cp -Tvr ${zsh_src_dir} ${zsh_bld_dir} || return
+		[ -f ${zsh_bld_dir}/Makefile ] ||
+			(cd ${zsh_bld_dir}
+			./configure --prefix=${prefix} --build=${build} --host=${host} \
+				--enable-multibyte --enable-unicode9 --with-tcsetpgrp \
+				CPPFLAGS="${CPPFLAGS} -I`print_header_dir curses.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libcurses.so`") || return
+		make -C ${zsh_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${zsh_bld_dir} -j ${jobs} -k check || return
+		make -C ${zsh_bld_dir} -j ${jobs} -k DESTDIR=${DESTDIR} install || true # XXX work around. if 'man' and 'nroff' are not found, 'make install' fails.
 		;;
 	vim)
 		[ -x ${DESTDIR}${prefix}/bin/vim -a "${force_install}" != yes ] && return
