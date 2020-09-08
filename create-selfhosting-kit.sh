@@ -153,6 +153,7 @@ EOF
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
 : ${global_ver:=6.6.5}
+: ${findutils_ver:=4.7.0}
 
 : ${ruby_ver:=2.7.1}
 : ${go_ver:=1.14.7}
@@ -226,7 +227,7 @@ fetch()
 		wget -O ${zlib_src_dir}.tar.xz \
 			http://zlib.net/${zlib_name}.tar.xz || return;;
 	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|ed|bc|screen|m4|autoconf|automake|\
-	bison|libtool|gettext|grep|diffutils|patch|global)
+	bison|libtool|gettext|grep|diffutils|patch|global|findutils)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
 				https://ftp.gnu.org/gnu/${1}/\${${_1}_name}.tar.${compress_format} \
@@ -1555,6 +1556,18 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${global_bld_dir} -j ${jobs} -k check || return
 		make -C ${global_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	findutils)
+		[ -x ${DESTDIR}${prefix}/bin/find -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${findutils_bld_dir}/Makefile ] ||
+			(cd ${findutils_bld_dir}
+			${findutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules --enable-threads) || return
+		make -C ${findutils_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${findutils_bld_dir} -j ${jobs} -k check || return
+		make -C ${findutils_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	ruby)
 		[ -x ${DESTDIR}${prefix}/bin/ruby -a "${force_install}" != yes ] && return
