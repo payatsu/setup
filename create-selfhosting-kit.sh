@@ -467,6 +467,11 @@ print_target_python_abi()
 		grep -oe '[[:alpha:]]*$' || return
 }
 
+print_target_llvm_version()
+{
+	grep -e 'LLVM_VERSION_STRING' `print_header_path llvm-config.h` | cut -d\" -f2 || return
+}
+
 print_swig_lib_dir()
 {
 	for d in ${DESTDIR}`swig -swiglib` `swig -swiglib`; do
@@ -1714,6 +1719,7 @@ EOF
 		;;
 	compiler-rt)
 		[ -d ${DESTDIR}${prefix}/include/sanitizer -a "${force_install}" != yes ] && return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		fetch ${1} || return
 		unpack ${1} || return
@@ -1724,9 +1730,12 @@ EOF
 			-DCMAKE_INSTALL_RPATH=';' -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ || return
 		cmake --build ${compiler_rt_bld_dir} -v -j ${jobs} || return
 		cmake --install ${compiler_rt_bld_dir} -v ${strip:+--${strip}} || return
+		mkdir -pv ${DESTDIR}${prefix}/lib/clang/`print_target_llvm_version`/lib || return
+		cp -Tfvr ${DESTDIR}${prefix}/lib/linux ${DESTDIR}${prefix}/lib/clang/`print_target_llvm_version`/lib/linux || return # XXX: workaround for mismatch between clang search path and compiler-rt installation path.
 		;;
 	libunwind)
 		[ -e ${DESTDIR}${prefix}/lib/libunwind.so -a "${force_install}" != yes ] && return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
 		fetch ${1} || return
 		unpack ${1} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -1741,6 +1750,7 @@ EOF
 		;;
 	libcxxabi)
 		[ -e ${DESTDIR}${prefix}/lib/libc++abi.so -a "${force_install}" != yes ] && return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
 		print_library_path libunwind.so > /dev/null || ${0} ${cmdopt} libunwind || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		init libcxx || return
@@ -1760,6 +1770,7 @@ EOF
 		;;
 	libcxx)
 		[ -e ${DESTDIR}${prefix}/lib/libc++.so -a "${force_install}" != yes ] && return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
 		print_library_path libc++abi.so > /dev/null || ${0} ${cmdopt} libcxxabi || return
 		init libcxxabi || return
 		fetch libcxxabi || return
@@ -1835,6 +1846,7 @@ EOF
 		;;
 	lld)
 		[ -x ${DESTDIR}${prefix}/bin/lld -a "${force_install}" != yes ] && return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		fetch ${1} || return
 		unpack ${1} || return
