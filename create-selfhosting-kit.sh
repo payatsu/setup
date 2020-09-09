@@ -83,7 +83,7 @@ help()
         \$ `basename ${0}` --strip --cleanup --copy-libc clang
 
     * install other programming languages
-        \$ `basename ${0}` --strip --cleanup Python ruby go
+        \$ `basename ${0}` --strip --cleanup Python go
 
     * install all packages with libc, but with no symbol information
         \$ `basename ${0}` --all --strip --cleanup --copy-libc
@@ -156,7 +156,6 @@ EOF
 : ${global_ver:=6.6.5}
 : ${findutils_ver:=4.7.0}
 
-: ${ruby_ver:=2.7.1}
 : ${go_ver:=1.14.7}
 : ${cmake_ver:=3.17.2}
 : ${libxml2_ver:=2.9.9}
@@ -340,9 +339,6 @@ fetch()
 	ctags)
 		git clone --depth 1 \
 			http://github.com/universal-ctags/ctags.git ${ctags_src_dir} || return;;
-	ruby)
-		wget -O ${ruby_src_dir}.tar.xz \
-			http://cache.ruby-lang.org/pub/ruby/`print_version ruby`/${ruby_name}.tar.xz || return;;
 	go)
 		wget -O ${go_src_dir}.tar.gz \
 			https://storage.googleapis.com/golang/go${go_ver}.src.tar.gz || return;;
@@ -1594,36 +1590,6 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${findutils_bld_dir} -j ${jobs} -k check || return
 		make -C ${findutils_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
-		;;
-	ruby)
-		[ -x ${DESTDIR}${prefix}/bin/ruby -a "${force_install}" != yes ] && return
-		print_header_path gmp.h > /dev/null || ${0} ${cmdopt} gmp || return
-		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
-		print_header_path readline.h readline > /dev/null || ${0} ${cmdopt} readline || return
-		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
-		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
-		fetch ${1} || return
-		unpack ${1} || return
-		[ -f ${ruby_bld_dir}/Makefile ] ||
-			(cd ${ruby_bld_dir}
-			${ruby_src_dir}/configure --prefix=${prefix} --host=${host} \
-				--disable-silent-rules --enable-multiarch --enable-shared \
-				--with-compress-debug-sections \
-				--with-zlib-dir=`print_prefix zlib.h` \
-				--with-readline-dir=`print_prefix readline.h readline` \
-				--with-openssl-dir=`print_prefix ssl.h openssl` \
-				) || return
-		make -C ${ruby_bld_dir} -j ${jobs} V=1 SHELL=bash || return
-		[ "${enable_check}" != yes ] ||
-			make -C ${ruby_bld_dir} -j ${jobs} -k V=1 check || return
-		make -C ${ruby_bld_dir} -j ${jobs} V=1 DESTDIR=${DESTDIR} install || return
-		mkdir -pv ${DESTDIR}${prefix}/lib/pkgconfig || return
-		ruby_platform=`grep -e '^arch =' -m 1 ${ruby_bld_dir}/Makefile | grep -oe '[[:graph:]]\+$'`
-		ln -fsv ${ruby_platform}/pkgconfig/ruby-`print_version ruby`.pc ${DESTDIR}${prefix}/lib/pkgconfig || return
-		[ -z "${strip}" ] && return
-		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/ruby || return
-		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${ruby_platform}/libruby.so || return
-		find ${DESTDIR}${prefix}/lib/${ruby_platform}/ruby/`print_version ruby`.0 -type f -name '*.so' -exec ${host:+${host}-}strip -v {} + || return
 		;;
 	go)
 		[ -x ${DESTDIR}${prefix}/go/bin/go -a "${force_install}" != yes ] && return
