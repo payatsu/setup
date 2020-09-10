@@ -135,7 +135,7 @@ EOF
 : ${libtool_ver:=2.4.6}
 : ${pkg_config_ver:=0.29.2}
 : ${gettext_ver:=0.21}
-: ${curl_ver:=7.69.1}
+: ${curl_ver:=7.72.0}
 : ${git_ver:=2.28.0}
 : ${lzip_ver:=1.21}
 : ${ed_ver:=1.16}

@@ -124,7 +124,7 @@
 : ${openssl_ver:=1.1.1g}
 : ${openssh_ver:=8.2p1}
 : ${nghttp2_ver:=1.40.0}
-: ${curl_ver:=7.69.1}
+: ${curl_ver:=7.72.0}
 : ${expat_ver:=2.2.9}
 : ${asciidoc_ver:=8.6.9}
 : ${libxml2_ver:=2.9.9}
