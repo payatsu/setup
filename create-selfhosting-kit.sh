@@ -1696,8 +1696,9 @@ EOF
 			-DCMAKE_INSTALL_RPATH=';' -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ || return
 		cmake --build ${compiler_rt_bld_dir} -v -j ${jobs} || return
 		cmake --install ${compiler_rt_bld_dir} -v ${strip:+--${strip}} || return
-		mkdir -pv ${DESTDIR}${prefix}/lib/clang/`print_target_llvm_version`/lib || return
-		cp -Tfvr ${DESTDIR}${prefix}/lib/linux ${DESTDIR}${prefix}/lib/clang/`print_target_llvm_version`/lib/linux || return # XXX: workaround for mismatch between clang search path and compiler-rt installation path.
+# FIXME
+#		mkdir -pv ${DESTDIR}${prefix}/lib/clang/`print_target_llvm_version`/lib || return
+#		cp -Tfvr ${DESTDIR}${prefix}/lib/linux ${DESTDIR}${prefix}/lib/clang/`print_target_llvm_version`/lib/linux || return # XXX: workaround for mismatch between clang search path and compiler-rt installation path.
 		;;
 	libunwind)
 		[ -e ${DESTDIR}${prefix}/lib/libunwind.so -a "${force_install}" != yes ] && return
