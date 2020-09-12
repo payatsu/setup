@@ -720,13 +720,14 @@ build()
 		;;
 	openssl)
 		[ -d ${DESTDIR}${prefix}/include/openssl -a "${force_install}" != yes ] && return
+		${0} ${cmdopt} --host ${build} perl || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${openssl_bld_dir}/Makefile ] ||
 			(cd ${openssl_bld_dir}
 			MACHINE=`echo ${host} | cut -d- -f1` SYSTEM=Linux \
 				${openssl_src_dir}/config --prefix=${prefix} shared) || return
-		make -C ${openssl_bld_dir} -j 1 CROSS_COMPILE=${host}- || return # XXX work around for parallel make
+		make -C ${openssl_bld_dir} -j 1 `[ -z "${CC}" ] && echo CROSS_COMPILE=${host}-` || return # XXX work around for parallel make
 		[ "${enable_check}" != yes ] ||
 			make -C ${openssl_bld_dir} -j 1 -k test || return # XXX work around for parallel make
 		mkdir -pv ${DESTDIR}${prefix}/ssl || return
@@ -1971,6 +1972,20 @@ func_place_holder()
 					s/^./:&/
 				"` \
 			|| export LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+	done
+	unset p
+
+	for p in ${DESTDIR}${prefix}/lib/perl5/${perl_ver}; do
+		[ -n "${DESTDIR}" -o -d ${p} ] || continue
+		echo ${PERL5LIB} | tr : '\n' | grep -qe ^${p}\$ \
+			&& export PERL5LIB=${p}`echo ${PERL5LIB} | sed -e "
+					s%\(^\|:\)${p}\(\$\|:\)%\1\2%g
+					s/::/:/g
+					s/^://
+					s/:\$//
+					s/^./:&/
+				"` \
+			|| export PERL5LIB=${p}${PERL5LIB:+:${PERL5LIB}}
 	done
 	unset p
 
