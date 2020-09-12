@@ -794,7 +794,7 @@ EOF
 		unpack ${1} || return
 		(cd ${boost_src_dir}
 		CXX= ./bootstrap.sh --prefix=${DESTDIR}${prefix} --with-toolset=gcc &&
-		sed -i -e "/^    using gcc /s//&: : ${host}-gcc /" project-config.jam &&
+		sed -i -e "/^    using gcc /s!!&: : ${CC:-${host:+${host}-}gcc} !" project-config.jam &&
 		./b2 --prefix=${DESTDIR}${prefix} --build-dir=${boost_bld_dir} \
 			--layout=system --build-type=minimal -j ${jobs} -q \
 			--without-python \
@@ -923,6 +923,7 @@ EOF
 			(cd ${util_linux_bld_dir}
 			${util_linux_src_dir}/configure --prefix=${prefix} --host=${host} --build=${build} --disable-silent-rules \
 				--enable-write --disable-use-tty-group --with-bashcompletiondir=${prefix}/share/bash-completion \
+				CFLAGS="${CFLAGS} -I`print_header_dir Python.h`" \
 				PKG_CONFIG_LIBDIR=) || return
 		make -C ${util_linux_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
