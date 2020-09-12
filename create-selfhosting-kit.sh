@@ -749,6 +749,7 @@ build()
 		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
 		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
 		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
@@ -1623,7 +1624,7 @@ EOF
 		unpack ${1} || return
 		[ -f ${cmake_bld_dir}/Makefile ] ||
 			(cd ${cmake_bld_dir}
-			${cmake_src_dir}/bootstrap --verbose --prefix=${DESTDIR}${prefix} --parallel=${jobs} \
+			CC= CXX= ${cmake_src_dir}/bootstrap --verbose --prefix=${DESTDIR}${prefix} --parallel=${jobs} \
 				--system-curl --system-expat --system-zlib --system-bzip2 --system-liblzma -- \
 				-DCMAKE_C_COMPILER="${CC:-${host:+${host}-}gcc}" -DCMAKE_CXX_COMPILER="${CXX:-${host:+${host}-}g++}" \
 				-DCMAKE_CXX_FLAGS="${CXXFLAGS} -L`print_library_dir libssl.so` -lssl -lcrypto" \
@@ -1904,7 +1905,7 @@ EOF
 			-DCURSES_LIBRARIES=`print_library_path libcurses.so` \
 			-DPANEL_LIBRARIES=`print_library_path libpanel.so` \
 			-DPYTHON_INCLUDE_DIRS=`print_header_dir Python.h` \
-			-DPYTHON_LIBRARIES=`print_library_path libpython$(print_version Python 2).so` \
+			-DPYTHON_LIBRARIES=`print_library_path libpython$(print_target_python_version).so` \
 			-DPYTHON_EXECUTABLE=`which python3` \
 			-DSWIG_EXECUTABLE=`which swig` \
 			-DLIBXML2_INCLUDE_DIR=`print_header_dir xmlversion.h libxml2/libxml`/libxml2 \
