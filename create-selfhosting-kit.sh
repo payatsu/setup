@@ -2008,7 +2008,7 @@ setup_pathconfig_for_build()
 copy_libc()
 {
 	mkdir -pv ${DESTDIR}${prefix}/include || return
-	(cd  `${host}-gcc -print-sysroot`/usr/include
+	(cd  `${CC:-${host:+${host}-}gcc} -print-sysroot`/usr/include
 	find . -mindepth 1 -maxdepth 1 | sed -e "
 		s!^\./!!
 		s!^.\+\$![ -e ${DESTDIR}${prefix}/include/& ] || cp -HTvr & ${DESTDIR}${prefix}/include/& || exit!
@@ -2016,13 +2016,13 @@ copy_libc()
 	) || return
 
 	mkdir -pv ${DESTDIR}${prefix}/lib || return
-	(cd  `${host}-gcc -print-file-name=crt1.o | xargs dirname`
+	(cd  `${CC:-${host:+${host}-}gcc} -print-file-name=crt1.o | xargs dirname`
 	find . -mindepth 1 -maxdepth 1 -name '*.o' | sed -e "
 		s!^\./!!
 		s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -HTvr & ${DESTDIR}${prefix}/lib/& || exit!
 		" | sh || return
 	) || return
-	(cd  `${host}-gcc -print-file-name=libgcc_s.so | xargs dirname`
+	(cd  `${CC:-${host:+${host}-}gcc} -print-file-name=libgcc_s.so | xargs dirname`
 	find . -mindepth 1 -maxdepth 1 -name 'libgcc_s.*' | sed -e "
 		s!^\./!!
 		s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -HTvr & ${DESTDIR}${prefix}/lib/& || exit!
