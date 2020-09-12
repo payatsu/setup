@@ -1052,15 +1052,20 @@ EOF
 	systemtap)
 		[ -x ${DESTDIR}${prefix}/bin/stap -a "${force_install}" != yes ] && return
 		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
+		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${systemtap_bld_dir}/Makefile ] ||
 			(cd ${systemtap_bld_dir}
 			${systemtap_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				CPPFLAGS="${CPPFLAGS} -I`print_header_dir libdw.h elfutils`" \
-				LDFLAGS="${LDFLAGS} -L`print_library_dir libdw.so`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libdw.so` -lpython$(print_target_python_version)" \
 				LIBS="${LIBS} -lz -lbz2 -llzma" \
 				) || return
+		sed -i -e '/^\<LDFLAGS\>/{
+			s/\( -lc\)\?$/ -lc/
+			aexport LDFLAGS
+		}' ${systemtap_bld_dir}/python/Makefile || return
 		make -C ${systemtap_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${systemtap_bld_dir} -j ${jobs} -k check || return
