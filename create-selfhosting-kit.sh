@@ -595,6 +595,7 @@ build()
 				--with-isl=`print_prefix version.h isl` --with-system-zlib \
 				--enable-languages=${languages} --disable-multilib --enable-linker-build-id --enable-libstdcxx-debug \
 				--program-suffix=-${gcc_base_ver} --enable-version-specific-runtime-libs \
+				`[ ${build} != ${host} ] && echo ${SDKTARGETSYSROOT:+--with-build-sysroot=${SDKTARGETSYSROOT}}` \
 			) || return
 		make -C ${gcc_bld_dir} -j ${jobs} \
 			CPPFLAGS="${CPPFLAGS} -DLIBICONV_PLUG" \
@@ -1109,15 +1110,14 @@ EOF
 		make -C ${m4_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	perl)
-		echo WARNING: not implemented. can not build \'${1}\'. skipped. >&2
-		return 0
-
+		[ ${build} != ${host} ] && { echo WARNING: not implemented. can not build \'${1}\'. skipped. >&2; return 0;}
 		[ -x ${DESTDIR}${prefix}/bin/perl -a "${force_install}" != yes ] && return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${perl_bld_dir}/Makefile ] ||
 			(cd ${perl_bld_dir}
-			${perl_src_dir}/Configure -de -Dusecrosscompile -Dprefix=${prefix} -Dcc="${CC:-${host:+${host}-}gcc}" \
+			${perl_src_dir}/Configure -de `[ ${build} != ${host} ] && echo -- -Dusecrosscompile` \
+				-Dprefix=${prefix} -Dcc="${CC:-${host:+${host}-}gcc}" \
 				-Dusethreads -Duse64bitint -Duse64bitall -Dusemorebits -Duseshrplib -Dmksymlinks) || return
 		make -C ${perl_bld_dir} -j 1 || return
 		[ "${enable_check}" != yes ] ||
