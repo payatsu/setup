@@ -1049,7 +1049,7 @@ EOF
 				--with-babeltrace=yes --with-libbabeltrace-prefix=`print_prefix babeltrace.h babeltrace` \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libncurses.so`" \
 				host_configargs="`cat host_configargs`") || return
-		make -C ${gdb_bld_dir} -j ${jobs} V=1 || return
+		PERL5LIB= make -C ${gdb_bld_dir} -j ${jobs} V=1 || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${gdb_bld_dir} -j ${jobs} -k check || return
 		make -C ${gdb_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
@@ -1347,7 +1347,7 @@ EOF
 			sed -i -e 's!^	\./fbc\>!	bc!' ${bc_src_dir}/bc/Makefile.am || return
 			autoreconf -v ${bc_src_dir} || return
 			${bc_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules --with-readline) || return
-		make -C ${bc_bld_dir} -j ${jobs} || return
+		PERL5LIB= make -C ${bc_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${bc_bld_dir} -j ${jobs} -k check || return
 		make -C ${bc_bld_dir} -j 1 DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
