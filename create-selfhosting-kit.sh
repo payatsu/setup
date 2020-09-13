@@ -490,6 +490,7 @@ build()
 		fetch ${1} || return
 		unpack ${1} || return
 		(cd ${zlib_bld_dir}
+		unset CC LDSHARED CFLAGS
 		CHOST=${host} ${zlib_src_dir}/configure --prefix=${prefix}) || return
 		make -C ${zlib_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
