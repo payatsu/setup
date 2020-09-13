@@ -1959,7 +1959,7 @@ generate_pathconfig()
 {
 	mkdir -pv `dirname ${1}` || return
 	func_name=`basename ${1} | tr . _ | tr -cd '[:alpha:]_'`
-	cat << 'EOF' | sed -e '1,/^{$/{s%prefix_place_holder%'${prefix}'%;s%host_place_holder%'${host}'%;s%func_place_holder%'${func_name}'%};$s%func_place_holder%'${func_name}'%' > ${1} || return
+	cat << 'EOF' | sed -e '1,/^{$/{s%prefix_place_holder%'${prefix}'%;s%host_place_holder%'${host}'%;s%func_place_holder%'${func_name}'%};s%perl_ver_place_holder%'${perl_ver}'%;$s%func_place_holder%'${func_name}'%' > ${1} || return
 prefix=prefix_place_holder
 host=host_place_holder
 func_place_holder()
@@ -1994,7 +1994,7 @@ func_place_holder()
 	done
 	unset p
 
-	for p in ${DESTDIR}${prefix}/lib/perl5/${perl_ver}; do
+	for p in ${DESTDIR}${prefix}/lib/perl5/perl_ver_place_holder; do
 		[ -n "${DESTDIR}" -o -d ${p} ] || continue
 		echo ${PERL5LIB} | tr : '\n' | grep -qe ^${p}\$ \
 			&& export PERL5LIB=${p}`echo ${PERL5LIB} | sed -e "
