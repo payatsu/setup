@@ -1400,8 +1400,9 @@ EOF
 		[ -f ${libevent_bld_dir}/Makefile ] ||
 			(cd ${libevent_bld_dir}
 			${libevent_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir openssl.pc` \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libevent_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
@@ -1539,6 +1540,7 @@ EOF
 			(cd ${ctags_bld_dir}
 			./configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--disable-dependency-tracking \
+				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=) || return
 		make -C ${ctags_bld_dir} -j ${jobs} || return
 		make -C ${ctags_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
@@ -1672,6 +1674,7 @@ EOF
 				--without-python --disable-silent-rules \
 				CFLAGS="${CFLAGS} -I`print_header_dir zlib.h`" \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`" \
+				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir zlib.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
