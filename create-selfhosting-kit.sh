@@ -490,7 +490,7 @@ build()
 		fetch ${1} || return
 		unpack ${1} || return
 		(cd ${zlib_bld_dir}
-		unset CC LDSHARED CFLAGS
+		unset LDSHARED CFLAGS
 		CHOST=${host} ${zlib_src_dir}/configure --prefix=${prefix}) || return
 		make -C ${zlib_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
@@ -767,6 +767,7 @@ EOF
 				--with-doc-strings --with-pymalloc \
 				CFLAGS="${CFLAGS} -I`print_header_dir expat.h`" \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libexpat.so`" \
+				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir libffi.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				CONFIG_SITE=config.site || return
@@ -925,6 +926,7 @@ EOF
 			${util_linux_src_dir}/configure --prefix=${prefix} --host=${host} --build=${build} --disable-silent-rules \
 				--enable-write --disable-use-tty-group --with-bashcompletiondir=${prefix}/share/bash-completion \
 				CFLAGS="${CFLAGS} -I`print_header_dir Python.h`" \
+				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=) || return
 		make -C ${util_linux_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
@@ -964,6 +966,8 @@ EOF
 				LIBFFI_CFLAGS=-I`print_header_dir ffi.h` LIBFFI_LIBS="-L`print_library_dir libffi.so` -lffi" \
 				PCRE_CFLAGS=-I`print_header_dir pcre.h` PCRE_LIBS="-L`print_library_dir libpcre.so` -lpcre" \
 				LIBS="-L`print_library_dir libffi.so` -lffi -L`print_library_dir libpcre.so` -lpcre -lz" \
+				PKG_CONFIG_PATH= \
+				PKG_CONFIG_LIBDIR=`print_library_dir libffi.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				glib_cv_stack_grows=no glib_cv_uscore=no) || return
 		make -C ${glib_bld_dir} -j ${jobs} || return
@@ -982,12 +986,15 @@ EOF
 		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		fetch ${1} || return
 		unpack ${1} || return
-		[ -f ${babeltrace_src_dir}/configure ] || (cd ${babeltrace_src_dir}; ./bootstrap) || return
+		[ -f ${babeltrace_src_dir}/configure ] ||
+			(cd ${babeltrace_src_dir}
+			ACLOCAL_PATH=${DESTDIR}${prefix}/share/aclocal ./bootstrap) || return
 		[ -f ${babeltrace_bld_dir}/Makefile ] ||
 			(cd ${babeltrace_bld_dir}
 			${babeltrace_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`" \
 				LIBS="${LIBS} -lpcre -lz -lbz2 -llzma" \
+				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir glib-2.0.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				ac_cv_func_malloc_0_nonnull=yes \
@@ -1019,8 +1026,9 @@ CFLAGS='${CFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir curses.h` -I`p
 CPPFLAGS='${CPPFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir Python.h`'
 LDFLAGS=-L`print_prefix Python.h`/lib
 LIBS='${LIBS} -lpopt -luuid -lgmodule-2.0 -lglib-2.0 -lpcre -ldw -lelf -lz -lbz2 -llzma'
-PKG_CONFIG_SYSROOT_DIR=${DESTDIR}
+PKG_CONFIG_PATH=
 PKG_CONFIG_LIBDIR=`print_library_dir source-highlight.pc`
+PKG_CONFIG_SYSROOT_DIR=${DESTDIR}
 EOF
 			${gdb_src_dir}/configure --prefix=${prefix} --host=${host} --target=${target} \
 				--enable-targets=all --enable-64-bit-bfd --enable-tui --enable-source-highlight \
