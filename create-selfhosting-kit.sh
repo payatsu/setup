@@ -649,6 +649,14 @@ build()
 				--enable-termcap --enable-colors) || return
 		make -C ${ncurses_bld_dir} -j 1 DESTDIR=${DESTDIR} || return # XXX work around for parallel make
 		make -C ${ncurses_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		make -C ${ncurses_bld_dir} -j ${jobs} distclean || return
+		[ -f ${ncurses_bld_dir}/Makefile ] ||
+			(cd ${ncurses_bld_dir}
+			${ncurses_src_dir}/configure --prefix=${prefix} --host=${host} \
+				--with-shared --with-cxx-shared --with-termlib \
+				--enable-termcap --enable-widec --enable-colors) || return
+		make -C ${ncurses_bld_dir} -j 1 DESTDIR=${DESTDIR} || return # XXX work around for parallel make
+		make -C ${ncurses_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		for h in `find ${DESTDIR}${prefix}/include/ncurses \( -type f -o -type l \) -name '*.h'`; do
 			ln -fsv `echo ${h} | sed -e "s%${DESTDIR}${prefix}/include/%%"` ${DESTDIR}${prefix}/include || return
 		done
@@ -663,7 +671,7 @@ build()
 			[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
-		for l in libform libmenu libncurses++ libpanel libtinfo; do
+		for l in libform libmenu libncurses++ libpanel libtinfo libformw libmenuw libncurses++w libncursesw libpanelw libtinfow; do
 			[ -f ${DESTDIR}${prefix}/lib/${l}.so ] || continue
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
 		done
