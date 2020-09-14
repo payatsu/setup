@@ -773,7 +773,8 @@ EOF
 				--with-universal-archs=all --with-lto --with-system-expat --with-system-ffi \
 				--with-openssl=`print_prefix ssl.h openssl` \
 				--with-doc-strings --with-pymalloc \
-				CFLAGS="${CFLAGS} -I`print_header_dir expat.h`" \
+				LDSHARED= \
+				CFLAGS="${CFLAGS} -I`{ print_header_dir curses.h ncursesw | sed -e 's/include$/&\/ncursesw/'; print_header_dir curses.h;} | head -n 1` -I`print_header_dir expat.h`" \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libexpat.so`" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir libffi.pc` \
