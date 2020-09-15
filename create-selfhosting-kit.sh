@@ -729,7 +729,6 @@ build()
 		;;
 	openssl)
 		[ -d ${DESTDIR}${prefix}/include/openssl -a "${force_install}" != yes ] && return
-		${0} ${cmdopt} --host ${build} perl || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${openssl_bld_dir}/Makefile ] ||
@@ -1050,7 +1049,7 @@ EOF
 				--with-babeltrace=yes --with-libbabeltrace-prefix=`print_prefix babeltrace.h babeltrace` \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libncurses.so`" \
 				host_configargs="`cat host_configargs`") || return
-		PERL5LIB= make -C ${gdb_bld_dir} -j ${jobs} V=1 || return
+		make -C ${gdb_bld_dir} -j ${jobs} V=1 || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${gdb_bld_dir} -j ${jobs} -k check || return
 		make -C ${gdb_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
@@ -1348,7 +1347,7 @@ EOF
 			sed -i -e 's!^	\./fbc\>!	bc!' ${bc_src_dir}/bc/Makefile.am || return
 			autoreconf -v ${bc_src_dir} || return
 			${bc_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules --with-readline) || return
-		PERL5LIB= make -C ${bc_bld_dir} -j ${jobs} || return
+		make -C ${bc_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${bc_bld_dir} -j ${jobs} -k check || return
 		make -C ${bc_bld_dir} -j 1 DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
@@ -1968,7 +1967,7 @@ generate_pathconfig()
 {
 	mkdir -pv `dirname ${1}` || return
 	func_name=`basename ${1} | tr . _ | tr -cd '[:alpha:]_'`
-	cat << 'EOF' | sed -e '1,/^{$/{s%prefix_place_holder%'${prefix}'%;s%host_place_holder%'${host}'%;s%func_place_holder%'${func_name}'%};s%perl_ver_place_holder%'${perl_ver}'%;$s%func_place_holder%'${func_name}'%' > ${1} || return
+	cat << 'EOF' | sed -e '1,/^{$/{s%prefix_place_holder%'${prefix}'%;s%host_place_holder%'${host}'%;s%func_place_holder%'${func_name}'%};$s%func_place_holder%'${func_name}'%' > ${1} || return
 prefix=prefix_place_holder
 host=host_place_holder
 func_place_holder()
@@ -2000,20 +1999,6 @@ func_place_holder()
 					s/^./:&/
 				"` \
 			|| export LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-	done
-	unset p
-
-	for p in ${DESTDIR}${prefix}/lib/perl5/perl_ver_place_holder; do
-		[ -n "${DESTDIR}" -o -d ${p} ] || continue
-		echo ${PERL5LIB} | tr : '\n' | grep -qe ^${p}\$ \
-			&& export PERL5LIB=${p}`echo ${PERL5LIB} | sed -e "
-					s%\(^\|:\)${p}\(\$\|:\)%\1\2%g
-					s/::/:/g
-					s/^://
-					s/:\$//
-					s/^./:&/
-				"` \
-			|| export PERL5LIB=${p}${PERL5LIB:+:${PERL5LIB}}
 	done
 	unset p
 
