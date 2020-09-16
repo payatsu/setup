@@ -2072,6 +2072,23 @@ setup_pathconfig_for_build()
 	unset orig_host orig_DESTDIR
 }
 
+set_compiler_as_env_vars()
+{
+	unset AR AS GDB NM OBJCOPY OBJDUMP RANLIB STRIP
+	unset CC CXX CPP LD LDSHARED
+	unset CFLAGS CXXFLAGS LDFLAGS
+	unset CROSS_COMPILE CONFIGURE_FLAGS
+	[ ${build} = ${host} ] && unset PKG_CONFIG_PATH
+
+	[ ${build} = ${host} ] && return
+
+	export CC="${host:+${host}-}gcc${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
+	export CXX="${host:+${host}-}g++${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
+	export CPP="${host:+${host}-}gcc -E${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
+	export LD="${host:+${host}-}ld${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
+	export LDSHARED="${host:+${host}-}ld${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
+}
+
 copy_libc()
 {
 	mkdir -pv ${DESTDIR}${prefix}/include || return
@@ -2166,6 +2183,8 @@ main()
 
 	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} binutils gcc ccache || return
 	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
+
+	set_compiler_as_env_vars || return
 
 	for p in $@; do
 		init ${p} || return
