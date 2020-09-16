@@ -102,6 +102,7 @@ EOF
 : ${isl_ver:=0.20}
 : ${gcc_ver:=10.2.0}
 : ${make_ver:=4.3}
+: ${ccache_ver:=3.7.9}
 
 : ${ncurses_ver:=6.2}
 : ${readline_ver:=8.0}
@@ -244,6 +245,9 @@ fetch()
 					&& break \
 					|| rm -v ${gcc_src_dir}.tar.${compress_format}
 		done || return;;
+	ccache)
+		wget -O ${ccache_src_dir}.tar.xz \
+			https://github.com/ccache/ccache/releases/download/v${ccache_ver}/${ccache_name}.tar.xz || return;;
 	expat)
 		wget -O ${expat_src_dir}.tar.bz2 \
 			https://sourceforge.net/projects/expat/files/expat/${expat_ver}/${expat_name}.tar.bz2/download || return;;
@@ -632,6 +636,21 @@ build()
 		[ "${enable_check}" != yes ] ||
 			make -C ${make_bld_dir} -j ${jobs} -k check || return
 		make -C ${make_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	ccache)
+		[ -x ${DESTDIR}${prefix}/bin/ccache -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${ccache_bld_dir}/Makefile ] ||
+			(cd ${ccache_bld_dir}
+			${ccache_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+		make -C ${ccache_bld_dir} -j ${jobs} V=1 || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${ccache_bld_dir} -j ${jobs} -k V=1 check || return
+		make -C ${ccache_bld_dir} -j ${jobs} V=1 DESTDIR=${DESTDIR} install || return
+		update_ccache_wrapper -f || return
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/ccache || return
 		;;
 	ncurses)
 		[ -f ${DESTDIR}${prefix}/include/ncurses/curses.h -a "${force_install}" != yes ] && return
@@ -1953,6 +1972,26 @@ EOF
 	return 0
 }
 
+update_ccache_wrapper()
+{
+	! which ccache > /dev/null && return
+
+	while getopts f arg; do
+		case ${arg} in
+		f) force_update=yes;;
+		esac
+	done
+	shift `expr ${OPTIND} - 1`
+
+	mkdir -pv ${DESTDIR}${prefix}/lib/ccache || return
+	find `echo ${PATH} | tr : ' '` -maxdepth 1 ! -type d -executable -regextype posix-extended \( \
+			-regex '^/.+/(([^-]+-){2,4})?g(cc|\+\+)' \
+			-o -name clang -o -name clang++ \
+		\) -exec basename \{\} \; 2> /dev/null | sort | uniq | \
+			sed -e s"%^.\\+\$%[ \"${force_update}\" != yes -a -f ${DESTDIR}${prefix}/lib/ccache/& ] || ln -fsv ../../bin/ccache ${DESTDIR}${prefix}/lib/ccache/&%;s/\$/ || return/" | sh || return
+	unset force_update
+}
+
 goarch()
 {
 	case ${1} in
@@ -1972,7 +2011,7 @@ prefix=prefix_place_holder
 host=host_place_holder
 func_place_holder()
 {
-	for p in ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/sbin ${DESTDIR}${prefix}/go/bin; do
+	for p in ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/sbin ${DESTDIR}${prefix}/go/bin ${DESTDIR}${prefix}/lib/ccache; do
 		[ -n "${DESTDIR}" -o -d ${p} ] || continue
 		echo ${PATH} | tr : '\n' | grep -qe ^${p}\$ \
 			&& PATH=${p}`echo ${PATH} | sed -e "
@@ -2125,7 +2164,7 @@ main()
 	languages=c,c++
 	which ${host}-gccgo > /dev/null && languages=${languages},go
 
-	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} binutils gcc || return
+	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} binutils gcc ccache || return
 	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
 
 	for p in $@; do
