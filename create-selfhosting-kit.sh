@@ -823,7 +823,12 @@ EOF
 		make -C ${Python_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${Python_bld_dir} -j ${jobs} -k test || return
-		make -C ${Python_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		cat << EOF > ${Python_bld_dir}/lsb_release || return
+#!/bin/sh
+PYTHONPATH=/usr/share/pyshared:\$PYTHONPATH python3 `which lsb_release`
+EOF
+		chmod -v a+x ${Python_bld_dir}/lsb_release || return
+		PATH=${Python_bld_dir}:$PATH make -C ${Python_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		for v in `print_version Python` `print_version Python`m; do
 			[ ! -f ${DESTDIR}${prefix}/bin/python${v} ] || ${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/python${v} || return
@@ -974,6 +979,7 @@ EOF
 			${util_linux_src_dir}/configure --prefix=${prefix} --host=${host} --build=${build} --disable-silent-rules \
 				--enable-write --disable-use-tty-group --with-bashcompletiondir=${prefix}/share/bash-completion \
 				CFLAGS="${CFLAGS} -I`print_header_dir Python.h`" \
+				LDFLAGS="-L`print_library_dir libtinfo.so`" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=) || return
 		make -C ${util_linux_bld_dir} -j ${jobs} || return
@@ -1088,7 +1094,7 @@ EOF
 				--with-python=python3 --without-guile \
 				--with-lzma=yes --with-liblzma-prefix=`print_prefix lzma.h` \
 				--with-babeltrace=yes --with-libbabeltrace-prefix=`print_prefix babeltrace.h babeltrace` \
-				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libncurses.so`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libncurses.so` -L`print_library_dir libpopt.so`" \
 				host_configargs="`cat host_configargs`") || return
 		make -C ${gdb_bld_dir} -j ${jobs} V=1 || return
 		[ "${enable_check}" != yes ] ||
