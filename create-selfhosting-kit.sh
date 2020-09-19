@@ -379,6 +379,18 @@ unpack()
 	return 1
 }
 
+print_sysroot()
+{
+	${CC:-${host:+${host}-}gcc} -print-sysroot || return
+}
+
+print_pkg_config_sysroot()
+{
+	d=`print_sysroot`
+	[ -n "${d}" ] && echo ${d} && return
+	echo ${DESTDIR} || return
+}
+
 print_library_path()
 {
 	for d in ${DESTDIR}${prefix}/lib64 ${DESTDIR}${prefix}/lib \
@@ -414,6 +426,15 @@ print_header_dir()
 {
 	path=`print_header_path $@`
 	[ $? = 0 ] && echo ${path} | sed -e "s%${2:+/${2}}/${1}\$%%" || return
+}
+
+print_aclocal_dir()
+{
+	for d in ${DESTDIR}${prefix}/share/aclocal \
+		`print_sysroot`/usr/share/aclocal; do
+		[ -d ${d} ] || continue
+		echo ${d}
+	done
 }
 
 print_prefix()
@@ -1015,15 +1036,16 @@ EOF
 		unpack ${1} || return
 		[ -f ${babeltrace_src_dir}/configure ] ||
 			(cd ${babeltrace_src_dir}
-			ACLOCAL_PATH=${DESTDIR}${prefix}/share/aclocal ./bootstrap) || return
+			ACLOCAL_PATH=`print_aclocal_dir | tr '\n' :` ./bootstrap) || return
 		[ -f ${babeltrace_bld_dir}/Makefile ] ||
 			(cd ${babeltrace_bld_dir}
 			${babeltrace_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`" \
+				CPPFLAGS="${CPPFLAGS} -I`print_header_dir popt.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libpopt.so`" \
 				LIBS="${LIBS} -lpcre -lz -lbz2 -llzma" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir glib-2.0.pc` \
-				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				PKG_CONFIG_SYSROOT_DIR=`print_pkg_config_sysroot` \
 				ac_cv_func_malloc_0_nonnull=yes \
 				ac_cv_func_realloc_0_nonnull=yes \
 				bt_cv_lib_elfutils=yes) || return
