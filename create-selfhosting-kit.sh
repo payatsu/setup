@@ -384,13 +384,6 @@ print_sysroot()
 	${CC:-${host:+${host}-}gcc} -print-sysroot || return
 }
 
-print_pkg_config_sysroot()
-{
-	d=`print_sysroot`
-	[ -n "${d}" ] && echo ${d} && return
-	echo ${DESTDIR} || return
-}
-
 print_library_path()
 {
 	for d in ${DESTDIR}${prefix}/lib64 ${DESTDIR}${prefix}/lib \
@@ -435,6 +428,12 @@ print_aclocal_dir()
 		[ -d ${d} ] || continue
 		echo ${d}
 	done
+}
+
+print_pkg_config_sysroot()
+{
+	[ `print_library_dir ${1}` = ${DESTDIR}${prefix}/lib/pkgconfig ] && echo ${DESTDIR} && return
+	print_sysroot || return
 }
 
 print_prefix()
@@ -1051,7 +1050,7 @@ EOF
 				LIBS="${LIBS} -lpcre -lz -lbz2 -llzma" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir glib-2.0.pc` \
-				PKG_CONFIG_SYSROOT_DIR=`print_pkg_config_sysroot` \
+				PKG_CONFIG_SYSROOT_DIR=`print_pkg_config_sysroot glib-2.0.pc` \
 				ac_cv_func_malloc_0_nonnull=yes \
 				ac_cv_func_realloc_0_nonnull=yes \
 				bt_cv_lib_elfutils=yes) || return
