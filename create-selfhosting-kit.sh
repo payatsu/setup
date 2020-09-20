@@ -824,10 +824,10 @@ EOF
 			make -C ${Python_bld_dir} -j ${jobs} -k test || return
 		cat << EOF > ${Python_bld_dir}/lsb_release || return
 #!/bin/sh
-PYTHONPATH=/usr/share/pyshared:\$PYTHONPATH python3 `which lsb_release`
+PYTHONPATH=/usr/share/pyshared:\$PYTHONPATH python3 `which lsb_release` "\$@"
 EOF
 		chmod -v a+x ${Python_bld_dir}/lsb_release || return
-		PATH=${Python_bld_dir}:$PATH make -C ${Python_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		PATH=${Python_bld_dir}:${PATH} make -C ${Python_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		for v in `print_version Python` `print_version Python`m; do
 			[ ! -f ${DESTDIR}${prefix}/bin/python${v} ] || ${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/python${v} || return
