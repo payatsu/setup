@@ -977,7 +977,7 @@ EOF
 			(cd ${util_linux_bld_dir}
 			${util_linux_src_dir}/configure --prefix=${prefix} --host=${host} --build=${build} --disable-silent-rules \
 				--enable-write --disable-use-tty-group --with-bashcompletiondir=${prefix}/share/bash-completion \
-				CFLAGS="${CFLAGS} -I`print_header_dir Python.h`" \
+				CFLAGS="${CFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir Python.h`" \
 				LDFLAGS="-L`print_library_dir libtinfo.so`" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=) || return
@@ -1319,7 +1319,7 @@ EOF
 		[ -x ${DESTDIR}${prefix}/bin/git -a "${force_install}" != yes ] && return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
-		print_header_path curl.h curl > /dev/null || ${0} ${cmdopt} curl || return
+		print_binary_path curl-config > /dev/null || ${0} ${cmdopt} curl || return
 		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
 		print_header_path pcre2.h > /dev/null || ${0} ${cmdopt} pcre2 || return
 		which msgfmt > /dev/null || ${0} ${cmdopt} --host ${build} gettext || return
@@ -1332,6 +1332,7 @@ EOF
 			--with-curl=`print_prefix curl.h curl` --with-expat=`print_prefix expat.h` \
 			--with-perl=perl --with-python=python3 --with-zlib=`print_prefix zlib.h` \
 			--without-tcltk \
+			CURL_CONFIG=`print_binary_path curl-config` \
 			ac_cv_iconv_omits_bom=no \
 			ac_cv_fread_reads_directories=yes \
 			ac_cv_snprintf_returns_bogus=no \
