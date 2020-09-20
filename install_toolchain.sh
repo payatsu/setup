@@ -28,6 +28,7 @@
 : ${zstd_ver:=1.4.4}
 : ${wget_ver:=1.20.3}
 : ${pkg_config_ver:=0.29.2}
+: ${help2man_ver:=1.47.16}
 : ${texinfo_ver:=6.7}
 : ${coreutils_ver:=8.32}
 : ${busybox_ver:=1.31.1}
@@ -339,6 +340,8 @@ help()
 		Specify the version of GNU wget you want, currently '${wget_ver}'.
 	pkg_config_ver
 		Specify the version of pkg-config you want, currently '${pkg_config_ver}'.
+	help2man_ver
+		Specify the version of help2man you want, currently '${help2man_ver}'.
 	texinfo_ver
 		Specify the version of GNU Texinfo you want, currently '${texinfo_ver}'.
 	coreutils_ver
@@ -685,7 +688,7 @@ fetch()
 		eval [ -n \"\${${_p}_src_base}\" ] && eval mkdir -pv \${${_p}_src_base} || return
 		eval check_archive \${${_p}_src_dir} || eval [ -d \${${_p}_src_dir} -o -h \${${_p}_src_dir} ] && continue
 		case ${p} in
-		tar|cpio|gzip|wget|texinfo|coreutils|bison|m4|autoconf|autoconf-archive|automake|libtool|sed|gawk|\
+		tar|cpio|gzip|wget|help2man|texinfo|coreutils|bison|m4|autoconf|autoconf-archive|automake|libtool|sed|gawk|\
 		gnulib|make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
 		diffutils|patch|findutils|less|groff|gdbm|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
 			eval [ "\${${p}_ver}" = git ] && {
@@ -1992,6 +1995,20 @@ install_native_pkg_config()
 	[ "${enable_check}" != yes ] ||
 		make -C ${pkg_config_bld_dir} -j ${jobs} -k check || return
 	make -C ${pkg_config_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_help2man()
+{
+	[ -x ${prefix}/bin/help2man -a "${force_install}" != yes ] && return
+	fetch help2man || return
+	unpack help2man || return
+	[ -f ${help2man_bld_dir}/Makefile ] ||
+		(cd ${help2man_bld_dir}
+		${help2man_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${help2man_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${help2man_bld_dir} -j ${jobs} -k check || return
+	make -C ${help2man_bld_dir} -j ${jobs} install || return
 }
 
 install_native_texinfo()
