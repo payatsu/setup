@@ -158,7 +158,7 @@ EOF
 : ${findutils_ver:=4.7.0}
 
 : ${go_ver:=1.14.7}
-: ${cmake_ver:=3.17.2}
+: ${cmake_ver:=3.18.2}
 : ${libxml2_ver:=2.9.9}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=4.0.2}
