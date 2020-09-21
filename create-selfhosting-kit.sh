@@ -822,11 +822,8 @@ EOF
 		make -C ${Python_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${Python_bld_dir} -j ${jobs} -k test || return
-		cat << EOF > ${Python_bld_dir}/lsb_release || return
-#!/bin/sh
-PYTHONPATH=/usr/share/pyshared:\$PYTHONPATH python3 `which lsb_release` "\$@"
-EOF
-		chmod -v a+x ${Python_bld_dir}/lsb_release || return
+		generate_command_wrapper ${Python_bld_dir} lsb_release \
+			'PYTHONPATH=/usr/share/pyshared:${PYTHONPATH} python3 '`which lsb_release`' "$@"' || return
 		PATH=${Python_bld_dir}:${PATH} make -C ${Python_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		for v in `print_version Python` `print_version Python`m; do
@@ -2018,6 +2015,15 @@ update_ccache_wrapper()
 		\) -exec basename \{\} \; 2> /dev/null | sort | uniq | \
 			sed -e s"%^.\\+\$%[ \"${force_update}\" != yes -a -f ${DESTDIR}${prefix}/lib/ccache/& ] || ln -fsv ../../bin/ccache ${DESTDIR}${prefix}/lib/ccache/&%;s/\$/ || return/" | sh || return
 	unset force_update
+}
+
+generate_command_wrapper()
+{
+	cat << EOF > ${1}/${2} || return
+#!/bin/sh
+${3}
+EOF
+	chmod -v a+x ${1}/${2} || return
 }
 
 goarch()
