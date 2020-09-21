@@ -67,7 +67,7 @@ help()
 
     * install extra toolchain
         \$ `basename ${0}` --strip --cleanup \\
-                    m4 autoconf automake libtool pkg-config git
+                    m4 autoconf automake libtool pkg-config git cmake
 
     * install tools required by linux kernel development
         \$ `basename ${0}` --strip --cleanup ed bc rsync dtc
