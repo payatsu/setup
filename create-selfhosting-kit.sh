@@ -522,7 +522,7 @@ build()
 		make -C ${zlib_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		;;
 	binutils)
-		[ -x ${DESTDIR}${prefix}/bin/as -a "${force_install}" != yes ] && return
+		[ -x ${DESTDIR}${prefix}/bin/${target}-as -a "${force_install}" != yes ] && return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		fetch ${1} || return
 		unpack ${1} || return
@@ -2179,7 +2179,7 @@ parse_cmdopts()
 	unset cmdopt
 	while [ $# -gt 0 ]; do
 		case ${1} in
-		--prefix|--host|--jobs)
+		--prefix|--host|--jobs|--target)
 			cmdopt="${cmdopt:+${cmdopt} }${1}"
 			opt=`echo ${1} | cut -d- -f3`
 			shift
@@ -2215,7 +2215,7 @@ main()
 	[ -n "${force}" ] && force_install=yes
 
 	${host}-gcc --version > /dev/null || return
-	target=${host}
+	[ -z "${target}" ] && target=${host}
 	DESTDIR=`readlink -m ${host}`
 	languages=c,c++
 	which ${host}-gccgo > /dev/null && languages=${languages},go
