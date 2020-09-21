@@ -1686,11 +1686,16 @@ EOF
 		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
+		generate_command_wrapper ${cmake_bld_dir} ${host:+${host}-}gcc \
+			"`{ which ${host:+${host}-}gcc; echo ${CC:-${host:+${host}-}gcc} | grep -oPe '(?<= ).+'; echo \\"\\$@\\";} | tr '\n' ' '`" || return
+		generate_command_wrapper ${cmake_bld_dir} ${host:+${host}-}g++ \
+			"`{ which ${host:+${host}-}g++; echo ${CXX:-${host:+${host}-}g++} | grep -oPe '(?<= ).+'; echo \\"\\$@\\";} | tr '\n' ' '`" || return
 		[ -f ${cmake_bld_dir}/Makefile ] ||
 			(cd ${cmake_bld_dir}
 			CC= CXX= ${cmake_src_dir}/bootstrap --verbose --prefix=${DESTDIR}${prefix} --parallel=${jobs} \
 				--system-curl --system-expat --system-zlib --system-bzip2 --system-liblzma -- \
-				-DCMAKE_C_COMPILER="${CC:-${host:+${host}-}gcc}" -DCMAKE_CXX_COMPILER="${CXX:-${host:+${host}-}g++}" \
+				-DCMAKE_C_COMPILER=${cmake_bld_dir}/${host:+${host}-}gcc \
+				-DCMAKE_CXX_COMPILER=${cmake_bld_dir}/${host:+${host}-}g++ \
 				-DCMAKE_CXX_FLAGS="${CXXFLAGS} -L`print_library_dir libssl.so` -lssl -lcrypto" \
 				-DCURL_INCLUDE_DIR=`print_header_dir curl.h curl` \
 				-DCURL_LIBRARY_RELEASE=`print_library_path libcurl.so` \
