@@ -204,7 +204,7 @@ init()
 		eval ${_1}_name=${1}-\${${_1}_ver};;
 	esac
 	eval ${_1}_src_dir=${src_dir}/${1}/\${${_1}_name}
-	eval ${_1}_bld_dir=${src_dir}/${1}/\${${_1}_name}-${host}
+	eval ${_1}_bld_dir=${src_dir}/${1}/\${${_1}_name}-${host}`[ ${host} != ${target} ] && echo -${target}`
 }
 
 check_archive()
@@ -618,7 +618,11 @@ build()
 			${gcc_src_dir}/configure --prefix=${prefix} --host=${host} --target=${target} \
 				--with-gmp=`print_prefix gmp.h` --with-mpfr=`print_prefix mpfr.h` --with-mpc=`print_prefix mpc.h` \
 				--with-isl=`print_prefix version.h isl` --with-system-zlib \
-				--enable-languages=${languages} --disable-multilib --enable-linker-build-id --enable-libstdcxx-debug \
+				--enable-languages=c`{
+					echo ${target} | grep -qe linux && echo ,c++
+					[ ${build} = ${host} ] || which ${host}-gccgo > /dev/null && echo ,go
+				} | tr -d '\n'` \
+				--disable-multilib --enable-linker-build-id --enable-libstdcxx-debug \
 				--program-suffix=-${gcc_base_ver} --enable-version-specific-runtime-libs \
 				`[ ${build} != ${host} ] && echo ${SDKTARGETSYSROOT:+--with-build-sysroot=${SDKTARGETSYSROOT}}` \
 			) || return
@@ -632,7 +636,7 @@ build()
 		make -C ${gcc_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		[ -f ${gcc_bld_dir}/gcc/xg++ -a "${force_install}" = yes ] &&
 			which doxygen > /dev/null && make -C ${gcc_bld_dir}/${target}/libstdc++-v3 -j ${jobs} DESTDIR=${DESTDIR} install-man
-		ln -fsv gcc ${DESTDIR}${prefix}/bin/cc || return
+		[ ${host} != ${target} ] || ln -fsv gcc ${DESTDIR}${prefix}/bin/cc || return
 		[ ! -f ${DESTDIR}${prefix}/bin/${target}-gcc-tmp ] || rm -v ${DESTDIR}${prefix}/bin/${target}-gcc-tmp || return
 		for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
 			[ -f ${DESTDIR}${prefix}/bin/${b}-${gcc_base_ver} ] || continue
@@ -2217,8 +2221,6 @@ main()
 	${host}-gcc --version > /dev/null || return
 	[ -z "${target}" ] && target=${host}
 	DESTDIR=`readlink -m ${host}`
-	languages=c,c++
-	which ${host}-gccgo > /dev/null && languages=${languages},go
 
 	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} binutils gcc ccache || return
 	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
