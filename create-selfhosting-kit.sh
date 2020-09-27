@@ -2139,22 +2139,23 @@ set_compiler_as_env_vars()
 
 copy_libc()
 {
-	mkdir -pv ${DESTDIR}${prefix}/include || return
-	(cd  `${CC:-${host:+${host}-}gcc} -print-sysroot`/usr/include
+	d=${DESTDIR}${prefix}`[ ${host} != ${target} ] && echo /${target}`/include
+	mkdir -pv ${d} || return
+	(cd `${CC:-${host:+${host}-}gcc} -print-sysroot`/usr/include
 	find . -mindepth 1 -maxdepth 1 | sed -e "
 		s!^\./!!
-		s!^.\+\$![ -e ${DESTDIR}${prefix}/include/& ] || cp -HTvr & ${DESTDIR}${prefix}/include/& || exit!
+		s!^.\+\$![ -e ${d}/& ] || cp -HTvr & ${d}/& || exit!
 		" | sh || return
 	) || return
 
 	mkdir -pv ${DESTDIR}${prefix}/lib || return
-	(cd  `${CC:-${host:+${host}-}gcc} -print-file-name=crt1.o | xargs dirname`
+	(cd `${CC:-${host:+${host}-}gcc} -print-file-name=crt1.o | xargs dirname`
 	find . -mindepth 1 -maxdepth 1 -name '*.o' | sed -e "
 		s!^\./!!
 		s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -HTvr & ${DESTDIR}${prefix}/lib/& || exit!
 		" | sh || return
 	) || return
-	(cd  `${CC:-${host:+${host}-}gcc} -print-file-name=libgcc_s.so | xargs dirname`
+	(cd `${CC:-${host:+${host}-}gcc} -print-file-name=libgcc_s.so | xargs dirname`
 	find . -mindepth 1 -maxdepth 1 -name 'libgcc_s.*' | sed -e "
 		s!^\./!!
 		s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -HTvr & ${DESTDIR}${prefix}/lib/& || exit!
