@@ -625,7 +625,7 @@ build()
 				--disable-multilib --enable-linker-build-id --enable-libstdcxx-debug \
 				--program-suffix=-${gcc_base_ver} --enable-version-specific-runtime-libs \
 				`[ ${build} != ${host} ] && {
-					d=\`${target}-gcc -print-sysroot\`
+					d=$(${target}-gcc -print-sysroot)
 					[ -d "${d}" ] && echo --with-build-sysroot=${d} && exit
 					echo ${SDKTARGETSYSROOT:+--with-build-sysroot=${SDKTARGETSYSROOT}}
 				}` \
@@ -2141,24 +2141,36 @@ copy_libc()
 {
 	d=${DESTDIR}${prefix}`[ ${host} != ${target} ] && echo /${target}`/include
 	mkdir -pv ${d} || return
-	(cd `${CC:-${host:+${host}-}gcc} -print-sysroot`/usr/include
+	(cd `$([ ${host} = ${target} ] \
+			&& echo ${CC:-${target:+${target}-}gcc} \
+			|| echo ${target:+${target}-}gcc \
+			) -print-sysroot`/usr/include
 	find . -mindepth 1 -maxdepth 1 | sed -e "
 		s!^\./!!
 		s!^.\+\$![ -e ${d}/& ] || cp -HTvr & ${d}/& || exit!
 		" | sh || return
 	) || return
 
-	mkdir -pv ${DESTDIR}${prefix}/lib || return
-	(cd `${CC:-${host:+${host}-}gcc} -print-file-name=crt1.o | xargs dirname`
-	find . -mindepth 1 -maxdepth 1 -name '*.o' | sed -e "
+	d=${DESTDIR}${prefix}`[ ${host} != ${target} ] && echo /${target}`/lib
+	mkdir -pv ${d} || return
+
+	(cd `$([ ${host} = ${target} ] \
+			&& echo ${CC:-${target:+${target}-}gcc} \
+			|| echo ${target:+${target}-}gcc \
+			) -print-file-name=crti.o | xargs dirname`
+	find . -mindepth 1 -name '*.o' | sed -e "
 		s!^\./!!
-		s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -HTvr & ${DESTDIR}${prefix}/lib/& || exit!
+		s!^.\+\$![ -e ${d}/& ] || install -DTv & ${d}/& || exit!
 		" | sh || return
 	) || return
-	(cd `${CC:-${host:+${host}-}gcc} -print-file-name=libgcc_s.so | xargs dirname`
+
+	(cd `$([ ${host} = ${target} ] \
+			&& echo ${CC:-${target:+${target}-}gcc} \
+			|| echo ${target:+${target}-}gcc \
+			) -print-file-name=libgcc_s.so | xargs dirname`
 	find . -mindepth 1 -maxdepth 1 -name 'libgcc_s.*' | sed -e "
 		s!^\./!!
-		s!^.\+\$![ -e ${DESTDIR}${prefix}/lib/& ] || cp -HTvr & ${DESTDIR}${prefix}/lib/& || exit!
+		s!^.\+\$![ -e ${d}/& ] || install -DTv & ${d}/& || exit!
 		" | sh || return
 	) || return
 }
