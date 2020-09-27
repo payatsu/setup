@@ -2164,15 +2164,18 @@ copy_libc()
 		" | sh || return
 	) || return
 
-	(cd `$([ ${host} = ${target} ] \
-			&& echo ${CC:-${target:+${target}-}gcc} \
-			|| echo ${target:+${target}-}gcc \
-			) -print-file-name=libgcc_s.so | xargs dirname`
-	find . -mindepth 1 -maxdepth 1 -name 'libgcc_s.*' | sed -e "
-		s!^\./!!
-		s!^.\+\$![ -e ${d}/& ] || install -DTv & ${d}/& || exit!
-		" | sh || return
-	) || return
+	for l in libgcc.a libgcc.so libgcc_s.so; do
+		(cd `$([ ${host} = ${target} ] \
+				&& echo ${CC:-${target:+${target}-}gcc} \
+				|| echo ${target:+${target}-}gcc \
+				) -print-file-name=${l} | xargs dirname` || return
+		[ -f ${l} ] || continue
+		find . -mindepth 1 -maxdepth 1 -name "${l}*" | sed -e "
+			s!^\./!!
+			s!^.\+\$![ -e ${d}/& ] || install -DTv & ${d}/& || exit!
+			" | sh || return
+		) || return
+	done
 }
 
 cleanup()
