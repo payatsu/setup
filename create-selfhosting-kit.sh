@@ -683,7 +683,7 @@ build()
 		;;
 	ncurses)
 		[ -f ${DESTDIR}${prefix}/include/ncurses/curses.h -a "${force_install}" != yes ] && return
-		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
+		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${ncurses_bld_dir}/Makefile ] ||
@@ -806,7 +806,7 @@ build()
 		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
 		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
-		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
+		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${Python_bld_dir}/Makefile ] ||
@@ -1012,7 +1012,7 @@ EOF
 		print_header_path ffi.h > /dev/null || ${0} ${cmdopt} libffi || return
 		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		print_header_path pcre.h > /dev/null || ${0} ${cmdopt} pcre || return
-		which gettext > /dev/null || ${0} ${cmdopt} --host ${build} gettext || return
+		which gettext > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gettext || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${glib_src_dir}/configure ] ||
@@ -1328,7 +1328,7 @@ EOF
 		print_binary_path curl-config > /dev/null || ${0} ${cmdopt} curl || return
 		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
 		print_header_path pcre2.h > /dev/null || ${0} ${cmdopt} pcre2 || return
-		which msgfmt > /dev/null || ${0} ${cmdopt} --host ${build} gettext || return
+		which msgfmt > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gettext || return
 		fetch ${1} || return
 		unpack ${1} || return
 		make -C ${git_src_dir} -j ${jobs} V=1 configure || return
@@ -1372,7 +1372,7 @@ EOF
 		;;
 	ed)
 		[ -x ${DESTDIR}${prefix}/bin/ed -a "${force_install}" != yes ] && return
-		which lzip > /dev/null || ${0} ${cmdopt} --host ${build} lzip || return
+		which lzip > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} lzip || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${ed_bld_dir}/Makefile ] ||
@@ -1391,8 +1391,8 @@ EOF
 		[ -x ${DESTDIR}${prefix}/bin/bc -a "${force_install}" != yes ] && return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		print_header_path readline.h readline > /dev/null || ${0} ${cmdopt} readline || return
-		which ed > /dev/null || ${0} ${cmdopt} --host ${build} ed || return
-		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
+		which ed > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ed || return
+		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${bc_bld_dir}/Makefile ] ||
@@ -1512,7 +1512,7 @@ EOF
 		;;
 	vim)
 		[ -x ${DESTDIR}${prefix}/bin/vim -a "${force_install}" != yes ] && return
-		which msgfmt > /dev/null || ${0} ${cmdopt} --host ${build} gettext || return
+		which msgfmt > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gettext || return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
 		fetch ${1} || return
@@ -1692,7 +1692,7 @@ EOF
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
 		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
-		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} ${1} || return
+		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		generate_command_wrapper ${cmake_bld_dir} ${host:+${host}-}gcc \
@@ -1751,8 +1751,8 @@ EOF
 		;;
 	llvm)
 		[ -d ${DESTDIR}${prefix}/include/llvm -a "${force_install}" != yes ] && return
-		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
-		[ ${build} = ${host} ] || which llvm-tblgen > /dev/null || ${0} ${cmdopt} --host ${build} ${1} || return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
+		[ ${build} = ${host} ] || which llvm-tblgen > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -1771,7 +1771,7 @@ EOF
 		;;
 	compiler-rt)
 		[ -d ${DESTDIR}${prefix}/include/sanitizer -a "${force_install}" != yes ] && return
-		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		fetch ${1} || return
 		unpack ${1} || return
@@ -1788,7 +1788,7 @@ EOF
 		;;
 	libunwind)
 		[ -e ${DESTDIR}${prefix}/lib/libunwind.so -a "${force_install}" != yes ] && return
-		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
 		fetch ${1} || return
 		unpack ${1} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -1803,7 +1803,7 @@ EOF
 		;;
 	libcxxabi)
 		[ -e ${DESTDIR}${prefix}/lib/libc++abi.so -a "${force_install}" != yes ] && return
-		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
 		print_library_path libunwind.so > /dev/null || ${0} ${cmdopt} libunwind || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		init libcxx || return
@@ -1823,7 +1823,7 @@ EOF
 		;;
 	libcxx)
 		[ -e ${DESTDIR}${prefix}/lib/libc++.so -a "${force_install}" != yes ] && return
-		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
 		print_library_path libc++abi.so > /dev/null || ${0} ${cmdopt} libcxxabi || return
 		init libcxxabi || return
 		fetch libcxxabi || return
@@ -1844,7 +1844,7 @@ EOF
 		;;
 	clang)
 		[ -x ${DESTDIR}${prefix}/bin/clang -a "${force_install}" != yes ] && return
-		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
@@ -1853,7 +1853,7 @@ EOF
 		print_library_path libc++abi.so > /dev/null || ${0} ${cmdopt} libcxxabi || return
 		print_header_path iostream c++/v1 > /dev/null || ${0} ${cmdopt} libcxx || return
 		print_binary_path lld > /dev/null || ${0} ${cmdopt} lld || return
-		[ ${build} = ${host} ] || which clang-tblgen > /dev/null || ${0} ${cmdopt} --host ${build} ${1} || return
+		[ ${build} = ${host} ] || which clang-tblgen > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		init clang-tools-extra || return
@@ -1899,7 +1899,7 @@ EOF
 		;;
 	lld)
 		[ -x ${DESTDIR}${prefix}/bin/lld -a "${force_install}" != yes ] && return
-		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		fetch ${1} || return
 		unpack ${1} || return
@@ -1955,16 +1955,16 @@ EOF
 		;;
 	lldb)
 		[ -x ${DESTDIR}${prefix}/bin/lldb -a "${force_install}" != yes ] && return
-		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} cmake || return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		print_header_path histedit.h > /dev/null || ${0} ${cmdopt} libedit || return
 		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
 		print_header_path Version.h clang/Basic > /dev/null || ${0} ${cmdopt} clang || return
-		which python3 > /dev/null || ${0} ${cmdopt} --host ${build} Python || return
-		which swig > /dev/null || ${0} ${cmdopt} --host ${build} swig || return
-		[ ${build} = ${host} ] || which lldb-tblgen > /dev/null || ${0} ${cmdopt} --host ${build} ${1} || return
+		which python3 > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} Python || return
+		which swig > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} swig || return
+		[ ${build} = ${host} ] || which lldb-tblgen > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
