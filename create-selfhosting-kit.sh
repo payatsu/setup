@@ -777,6 +777,7 @@ build()
 		;;
 	openssl)
 		[ -d ${DESTDIR}${prefix}/include/openssl -a "${force_install}" != yes ] && return
+		${0} ${cmdopt} --host ${build} --target ${build} perl || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${openssl_bld_dir}/Makefile ] ||
@@ -1194,12 +1195,13 @@ EOF
 		[ -f ${perl_bld_dir}/Makefile ] ||
 			(cd ${perl_bld_dir}
 			${perl_src_dir}/Configure -de `[ ${build} != ${host} ] && echo -- -Dusecrosscompile` \
-				-Dprefix=${prefix} -Dcc="${CC:-${host:+${host}-}gcc}" \
+				-Dprefix=`[ ${build} = ${host} ] && echo ${DESTDIR}`${prefix} \
+				-Dcc="${CC:-${host:+${host}-}gcc}" \
 				-Dusethreads -Duse64bitint -Duse64bitall -Dusemorebits -Duseshrplib -Dmksymlinks) || return
 		make -C ${perl_bld_dir} -j 1 || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${perl_bld_dir} -j ${jobs} -k test || return
-		make -C ${perl_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		make -C ${perl_bld_dir} -j ${jobs} DESTDIR=`[ ${build} != ${host} ] && echo ${DESTDIR}` install${strip:+-${strip}} || return
 		ln -fsv `find ${DESTDIR}${prefix}/lib -type f -name libperl.so | sed -e s%^${DESTDIR}${prefix}/lib/%%` ${DESTDIR}${prefix}/lib || return
 		;;
 	autoconf)
@@ -2243,9 +2245,10 @@ main()
 	[ -z "${target}" ] && target=${host}
 	DESTDIR=`readlink -m ${host}`
 
-	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} --target ${build} binutils gcc ccache || return
+	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} --target ${build} ccache binutils gcc || return
 	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
 
+	! which ccache > /dev/null || ccache -M 8G || return
 	set_compiler_as_env_vars || return
 
 	for p in $@; do
