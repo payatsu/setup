@@ -603,7 +603,7 @@ build()
 		make -C ${isl_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	gcc)
-		[ -x ${DESTDIR}${prefix}/bin/gcc -a "${force_install}" != yes ] && return
+		[ -x ${DESTDIR}${prefix}/bin/${target}-gcc -a "${force_install}" != yes ] && return
 		print_binary_path ${target}-as > /dev/null || ${0} ${cmdopt} binutils || return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path gmp.h > /dev/null || ${0} ${cmdopt} gmp || return
@@ -624,7 +624,11 @@ build()
 				} | tr -d '\n'` \
 				--disable-multilib --enable-linker-build-id --enable-libstdcxx-debug \
 				--program-suffix=-${gcc_base_ver} --enable-version-specific-runtime-libs \
-				`[ ${build} != ${host} ] && echo ${SDKTARGETSYSROOT:+--with-build-sysroot=${SDKTARGETSYSROOT}}` \
+				`[ ${build} != ${host} ] && {
+					d=\`${target}-gcc -print-sysroot\`
+					[ -d "${d}" ] && echo --with-build-sysroot=${d} && exit
+					echo ${SDKTARGETSYSROOT:+--with-build-sysroot=${SDKTARGETSYSROOT}}
+				}` \
 			) || return
 		make -C ${gcc_bld_dir} -j ${jobs} \
 			CPPFLAGS="${CPPFLAGS} -DLIBICONV_PLUG" \
@@ -639,9 +643,10 @@ build()
 		[ ${host} != ${target} ] || ln -fsv gcc ${DESTDIR}${prefix}/bin/cc || return
 		[ ! -f ${DESTDIR}${prefix}/bin/${target}-gcc-tmp ] || rm -v ${DESTDIR}${prefix}/bin/${target}-gcc-tmp || return
 		for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
-			[ -f ${DESTDIR}${prefix}/bin/${b}-${gcc_base_ver} ] || continue
-			ln -fsv ${b}-${gcc_base_ver} ${DESTDIR}${prefix}/bin/${b} || return
-			ln -fsv ${b} ${DESTDIR}${prefix}/bin/${target}-${b} || return
+			[ -f ${DESTDIR}${prefix}/bin/${target}-${b}-${gcc_base_ver} ] || continue
+			[ ${host} != ${target} ] || ln -fsv ${b}-${gcc_base_ver} ${DESTDIR}${prefix}/bin/${b} || return
+			ln -fsv `[ ${host} = ${target} ] && echo ${b} || echo ${target}-${b}-${gcc_base_ver}` \
+				${DESTDIR}${prefix}/bin/${target}-${b} || return
 			ln -fsv ${b}-${gcc_base_ver}.1 ${DESTDIR}${prefix}/share/man/man1/${b}.1 || return
 		done
 		for l in libgcc_s.so libgcc_s.so.1; do
@@ -2222,7 +2227,7 @@ main()
 	[ -z "${target}" ] && target=${host}
 	DESTDIR=`readlink -m ${host}`
 
-	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} binutils gcc ccache || return
+	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} --target ${build} binutils gcc ccache || return
 	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
 
 	set_compiler_as_env_vars || return
