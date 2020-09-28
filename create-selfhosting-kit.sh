@@ -2225,7 +2225,7 @@ copy_libc()
 cleanup()
 {
 	[ -z "${cleanup}" ] && return
-	eval rm -fvr \${${_1}_src_dir} || return
+	eval [ -d \${${_1}_src_dir}/.git ] || eval rm -fvr \${${_1}_src_dir} || return
 	eval rm -fvr \${${_1}_bld_dir} || return
 }
 
