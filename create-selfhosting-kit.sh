@@ -1697,10 +1697,8 @@ EOF
 		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
-		generate_command_wrapper ${cmake_bld_dir} ${host:+${host}-}gcc \
-			"`{ which ${host:+${host}-}gcc; echo ${CC:-${host:+${host}-}gcc} | grep -oPe '(?<= ).+'; echo \\"\\$@\\";} | tr '\n' ' '`" || return
-		generate_command_wrapper ${cmake_bld_dir} ${host:+${host}-}g++ \
-			"`{ which ${host:+${host}-}g++; echo ${CXX:-${host:+${host}-}g++} | grep -oPe '(?<= ).+'; echo \\"\\$@\\";} | tr '\n' ' '`" || return
+		generate_gcc_wrapper ${cmake_bld_dir} || return
+		generate_gxx_wrapper ${cmake_bld_dir} || return
 		[ -f ${cmake_bld_dir}/Makefile ] ||
 			(cd ${cmake_bld_dir}
 			CC= CXX= ${cmake_src_dir}/bootstrap --verbose --prefix=${DESTDIR}${prefix} --parallel=${jobs} \
@@ -1757,9 +1755,12 @@ EOF
 		[ ${build} = ${host} ] || which llvm-tblgen > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
+		generate_gcc_wrapper ${llvm_bld_dir} || return
+		generate_gxx_wrapper ${llvm_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${llvm_src_dir} -B ${llvm_bld_dir} \
-			-DCMAKE_C_COMPILER="${CC:-${host:+${host}-}gcc}" -DCMAKE_CXX_COMPILER="${CXX:-${host:+${host}-}g++}" \
+			-DCMAKE_C_COMPILER=${llvm_bld_dir}/${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${llvm_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_CROSSCOMPILING=True \
 			-DLLVM_DEFAULT_TARGET_TRIPLE=${host} -DLLVM_TARGET_ARCH=`echo ${host} | cut -d- -f1` \
@@ -1777,9 +1778,12 @@ EOF
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		fetch ${1} || return
 		unpack ${1} || return
+		generate_gcc_wrapper ${compiler_rt_bld_dir} || return
+		generate_gxx_wrapper ${compiler_rt_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${compiler_rt_src_dir} -B ${compiler_rt_bld_dir} \
-			-DCMAKE_C_COMPILER="${CC:-${host:+${host}-}gcc}" -DCMAKE_CXX_COMPILER="${CXX:-${host:+${host}-}g++}" \
+			-DCMAKE_C_COMPILER=${compiler_rt_bld_dir}/${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${compiler_rt_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_INSTALL_RPATH=';' -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ || return
 		cmake --build ${compiler_rt_bld_dir} -v -j ${jobs} || return
@@ -1793,9 +1797,12 @@ EOF
 		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
 		fetch ${1} || return
 		unpack ${1} || return
+		generate_gcc_wrapper ${libunwind_bld_dir} || return
+		generate_gxx_wrapper ${libunwind_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${libunwind_src_dir} -B ${libunwind_bld_dir} \
-			-DCMAKE_C_COMPILER="${CC:-${host:+${host}-}gcc}" -DCMAKE_CXX_COMPILER="${CXX:-${host:+${host}-}g++}" \
+			-DCMAKE_C_COMPILER=${libunwind_bld_dir}/${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${libunwind_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_INSTALL_RPATH=';' -DLIBUNWIND_USE_COMPILER_RT=ON || return
 		cmake --build ${libunwind_bld_dir} -v -j ${jobs} || return
@@ -1813,9 +1820,12 @@ EOF
 		unpack libcxx || return
 		fetch ${1} || return
 		unpack ${1} || return
+		generate_gcc_wrapper ${libcxxabi_bld_dir} || return
+		generate_gxx_wrapper ${libcxxabi_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${libcxxabi_src_dir} -B ${libcxxabi_bld_dir} \
-			-DCMAKE_C_COMPILER="${CC:-${host:+${host}-}gcc}" -DCMAKE_CXX_COMPILER="${CXX:-${host:+${host}-}g++}" \
+			-DCMAKE_C_COMPILER=${libcxxabi_bld_dir}/${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${libcxxabi_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_CXX_FLAGS=-L`print_library_dir libunwind.so` \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_INSTALL_RPATH=';' -DLIBCXXABI_LIBCXX_PATH=${libcxx_src_dir} \
@@ -1832,9 +1842,12 @@ EOF
 		unpack libcxxabi || return
 		fetch ${1} || return
 		unpack ${1} || return
+		generate_gcc_wrapper ${libcxx_bld_dir} || return
+		generate_gxx_wrapper ${libcxx_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${libcxx_src_dir} -B ${libcxx_bld_dir} \
-			-DCMAKE_C_COMPILER="${CC:-${host:+${host}-}gcc}" -DCMAKE_CXX_COMPILER="${CXX:-${host:+${host}-}g++}" \
+			-DCMAKE_C_COMPILER=${libcxx_bld_dir}/${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${libcxx_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_CXX_FLAGS=-L`print_library_dir libunwind.so` \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_INSTALL_RPATH=';' -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${libcxxabi_src_dir}/include \
@@ -1876,9 +1889,12 @@ EOF
    } IncludeIndicator;
  
 EOF
+		generate_gcc_wrapper ${clang_bld_dir} || return
+		generate_gxx_wrapper ${clang_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${clang_src_dir} -B ${clang_bld_dir} \
-			-DCMAKE_C_COMPILER="${CC:-${host:+${host}-}gcc}" -DCMAKE_CXX_COMPILER="${CXX:-${host:+${host}-}g++}" \
+			-DCMAKE_C_COMPILER=${clang_bld_dir}/${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${clang_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_CXX_FLAGS="-I`print_header_dir llvm-config.h llvm/Config` -L`print_library_dir libLLVM.so`" \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_CROSSCOMPILING=True \
@@ -1912,9 +1928,12 @@ echo `print_library_dir LLVMConfig.cmake`
 echo not-used
 EOF
 		chmod -v a+x ${lld_bld_dir}/llvm-config || return
+		generate_gcc_wrapper ${lld_bld_dir} || return
+		generate_gxx_wrapper ${lld_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${lld_src_dir} -B ${lld_bld_dir} \
-			-DCMAKE_C_COMPILER="${CC:-${host:+${host}-}gcc}" -DCMAKE_CXX_COMPILER="${CXX:-${host:+${host}-}g++}" \
+			-DCMAKE_C_COMPILER=${lld_bld_dir}/${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${lld_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DLLVM_CONFIG_PATH=${lld_bld_dir}/llvm-config \
 			-DLLVM_TABLEGEN_EXE=`which llvm-tblgen` \
@@ -1969,9 +1988,12 @@ EOF
 		[ ${build} = ${host} ] || which lldb-tblgen > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
+		generate_gcc_wrapper ${lldb_bld_dir} || return
+		generate_gxx_wrapper ${lldb_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${lldb_src_dir} -B ${lldb_bld_dir} \
-			-DCMAKE_C_COMPILER="${CC:-${host:+${host}-}gcc}" -DCMAKE_CXX_COMPILER="${CXX:-${host:+${host}-}g++}" \
+			-DCMAKE_C_COMPILER=${lldb_bld_dir}/${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${lldb_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_CROSSCOMPILING=True \
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
@@ -2040,6 +2062,26 @@ generate_command_wrapper()
 ${3}
 EOF
 	chmod -v a+x ${1}/${2} || return
+}
+
+generate_gcc_wrapper()
+{
+	generate_command_wrapper ${1} ${host:+${host}-}gcc \
+		"`{
+			which ${host:+${host}-}gcc
+			echo ${CC:-${host:+${host}-}gcc} | grep -oPe '(?<= ).+'
+			echo \\"\\$@\\"
+		} | tr '\n' ' '`" || return
+}
+
+generate_gxx_wrapper()
+{
+	generate_command_wrapper ${1} ${host:+${host}-}g++ \
+		"`{
+			which ${host:+${host}-}g++
+			echo ${CXX:-${host:+${host}-}g++} | grep -oPe '(?<= ).+'
+			echo \\"\\$@\\"
+		} | tr '\n' ' '`" || return
 }
 
 goarch()
