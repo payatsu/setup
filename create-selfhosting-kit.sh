@@ -138,6 +138,7 @@ EOF
 : ${gettext_ver:=0.21}
 : ${curl_ver:=7.72.0}
 : ${git_ver:=2.28.0}
+: ${openssh_ver:=8.4p1}
 : ${lzip_ver:=1.21}
 : ${ed_ver:=1.16}
 : ${bc_ver:=1.07.1}
@@ -316,6 +317,9 @@ fetch()
 	git)
 		wget -O ${git_src_dir}.tar.xz \
 			https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return;;
+	openssh)
+		wget -O ${openssh_src_dir}.tar.gz \
+			http://ftp.jaist.ac.jp/pub/OpenBSD/OpenSSH/portable/${openssh_name}.tar.gz || return;;
 	lzip)
 		wget -O ${lzip_src_dir}.tar.gz \
 			http://download.savannah.gnu.org/releases/lzip/${lzip_name}.tar.gz || return;;
@@ -1355,6 +1359,20 @@ EOF
 		for b in git git-receive-pack git-upload-archive git-upload-pack; do
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
+		;;
+	openssh)
+		[ -x ${DESTDIR}${prefix}/bin/ssh -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${openssh_bld_dir}/Makefile ] ||
+			(cd ${openssh_bld_dir}
+			${openssh_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --with-zlib=`print_prefix zlib.h`) || return
+		make -C ${openssh_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${openssh_bld_dir} -j ${jobs} -k tests || return
+		make -C ${openssh_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		;;
 	lzip)
 		[ -x ${DESTDIR}${prefix}/bin/lzip -a "${force_install}" != yes ] && return
