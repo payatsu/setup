@@ -152,7 +152,7 @@ EOF
 : ${vim_ver:=8.2.1127}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
-: ${grep_ver:=3.4}
+: ${grep_ver:=3.5}
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
 : ${global_ver:=6.6.5}

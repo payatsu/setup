@@ -87,7 +87,7 @@
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.4.3}
-: ${grep_ver:=3.4}
+: ${grep_ver:=3.5}
 : ${global_ver:=6.6.5}
 : ${pcre_ver:=8.43}
 : ${pcre2_ver:=10.32}
