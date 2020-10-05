@@ -144,6 +144,7 @@ EOF
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
 : ${dtc_ver:=1.6.0}
+: ${v4l_utils_ver:=1.20.0}
 
 : ${screen_ver:=4.8.0}
 : ${libevent_ver:=2.1.11-stable}
@@ -329,6 +330,9 @@ fetch()
 	dtc)
 		wget -O ${dtc_src_dir}.tar.xz \
 			https://www.kernel.org/pub/software/utils/dtc/${dtc_name}.tar.xz || return;;
+	v4l-utils)
+		wget -O ${v4l_utils_src_dir}.tar.bz2 \
+			https://linuxtv.org/downloads/v4l-utils/${v4l_utils_name}.tar.bz2 || return;;
 	libevent)
 		wget -O ${libevent_src_dir}.tar.gz \
 			https://github.com/libevent/libevent/releases/download/release-${libevent_ver}/${libevent_name}.tar.gz || return;;
@@ -469,6 +473,7 @@ print_packages()
 		s/util_linux/util-linux/
 		s/pkg_config/pkg-config/
 		s/vimdoc_ja/vimdoc-ja/
+		s/v4l_utils/v4l-utils/
 		s/compiler_rt/compiler-rt/
 		s/clang_tools_extra/clang-tools-extra/
 	' || return
@@ -1456,6 +1461,21 @@ EOF
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libfdt-`print_version dtc`.0.so || return
+		;;
+	v4l-utils)
+		[ -x ${DESTDIR}${prefix}/bin/v4l2-ctl -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${v4l_utils_bld_dir}/Makefile ] ||
+			(cd ${v4l_utils_bld_dir}
+			${v4l_utils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--disable-rpath \
+				PKG_CONFIG_LIBDIR= \
+				) || return
+		make -C ${v4l_utils_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${v4l_utils_bld_dir} -j ${jobs} -k check || return
+		make -C ${v4l_utils_bld_dir} -j 1 -k DESTDIR=${DESTDIR} install${strip:+-${strip}} || true # '-k': workaround for 'install-data-local' fails in utils/keytable/bpf_protocols
 		;;
 	screen)
 		[ -x ${DESTDIR}${prefix}/bin/screen -a "${force_install}" != yes ] && return
