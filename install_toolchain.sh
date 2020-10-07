@@ -160,7 +160,7 @@
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
 : ${boost_ver:=1_74_0}
-: ${Python_ver:=3.8.5}
+: ${Python_ver:=3.9.0}
 : ${Python2_ver:=2.7.18}
 : ${rustc_ver:=1.46.0}
 : ${rustup_ver:=1.22.1}
