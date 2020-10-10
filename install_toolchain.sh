@@ -162,10 +162,10 @@
 : ${boost_ver:=1_74_0}
 : ${Python_ver:=3.9.0}
 : ${Python2_ver:=2.7.18}
-: ${rustc_ver:=1.46.0}
+: ${rustc_ver:=1.47.0}
 : ${rustup_ver:=1.22.1}
 : ${ruby_ver:=2.7.1}
-: ${go_ver:=1.14.7}
+: ${go_ver:=1.14.9}
 : ${perl_ver:=5.30.3}
 : ${tcl_ver:=8.6.9}
 : ${tk_ver:=8.6.9}
