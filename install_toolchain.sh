@@ -4423,10 +4423,12 @@ install_native_ninja()
 	[ -x ${prefix}/bin/ninja -a "${force_install}" != yes ] && return
 	fetch ninja || return
 	unpack ninja || return
-	[ -f ${ninja_bld_dir}/configure.py ] || cp -Tvr ${ninja_src_dir} ${ninja_bld_dir} || return
-	[ -f ${ninja_bld_dir}/ninja ] ||
-		(cd ${ninja_bld_dir}
-		./configure.py --bootstrap --verbose) || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${ninja_src_dir} -B ${ninja_bld_dir} \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
+		-DCMAKE_INSTALL_PREFIX=${prefix} || return
+	cmake --build ${ninja_bld_dir} -v -j ${jobs} || return
 	command install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${ninja_bld_dir}/ninja || return
 }
 
