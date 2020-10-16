@@ -67,7 +67,7 @@ help()
 
     * install extra toolchain
         \$ `basename ${0}` --strip --cleanup \\
-                    m4 autoconf automake libtool pkg-config git cmake
+                    m4 autoconf automake libtool pkg-config git cmake ninja
 
     * install tools required by linux kernel development
         \$ `basename ${0}` --strip --cleanup ed bc rsync dtc
@@ -161,6 +161,7 @@ EOF
 
 : ${go_ver:=1.14.9}
 : ${cmake_ver:=3.18.2}
+: ${ninja_ver:=1.10.1}
 : ${libxml2_ver:=2.9.9}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=4.0.2}
@@ -357,6 +358,9 @@ fetch()
 	cmake)
 		wget -O ${cmake_src_dir}.tar.gz \
 			https://cmake.org/files/v`print_version cmake`/${cmake_name}.tar.gz || return;;
+	ninja)
+		wget -O ${ninja_src_dir}.tar.gz \
+			https://github.com/ninja-build/ninja/archive/v${ninja_ver}.tar.gz || return;;
 	libxml2|libxslt)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			http://xmlsoft.org/sources/\${${_1}_name}.tar.gz || return;;
@@ -1765,6 +1769,20 @@ EOF
 			dirname_count=`echo -n ${DESTDIR}${prefix}/lib/ | wc -c`
 			dd bs=c count=`echo libz.so | wc -c` if=${b} of=${b} conv=notrunc seek=${seek} skip=`expr ${seek} + ${dirname_count}` || return
 		done
+		;;
+	ninja)
+		[ -x ${DESTDIR}${prefix}/bin/ninja -a "${force_install}" != yes ] && return
+		fetch ninja || return
+		unpack ninja || return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
+		generate_gxx_wrapper ${ninja_bld_dir} || return
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${ninja_src_dir} -B ${ninja_bld_dir} \
+			-DCMAKE_CXX_COMPILER=${ninja_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} \
+			-DCMAKE_INSTALL_PREFIX=${prefix} || return
+		cmake --build ${ninja_bld_dir} -v -j ${jobs} || return
+		install -D ${strip:+-s --strip-program=${host:+${host}-}strip} -v -t ${DESTDIR}${prefix}/bin ${ninja_bld_dir}/ninja || return
 		;;
 	libxml2)
 		[ -d ${DESTDIR}${prefix}/include/libxml2 -a "${force_install}" != yes ] && return

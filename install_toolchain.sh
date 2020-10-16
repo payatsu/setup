@@ -140,7 +140,7 @@
 : ${apr_util_ver:=1.6.1}
 : ${utf8proc_ver:=2.4.0}
 : ${subversion_ver:=1.13.0}
-: ${ninja_ver:=1.10.0}
+: ${ninja_ver:=1.10.1}
 : ${meson_ver:=0.54.0}
 : ${cmake_ver:=3.18.2}
 : ${bazel_ver:=2.2.0}
