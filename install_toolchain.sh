@@ -183,8 +183,8 @@
 : ${x264_ver:=master}
 : ${x265_ver:=3.2.1}
 : ${libav_ver:=11.9}
-: ${opencv_ver:=4.2.0}
-: ${opencv_contrib_ver:=4.2.0}
+: ${opencv_ver:=4.5.0}
+: ${opencv_contrib_ver:=4.5.0}
 : ${v4l_utils_ver:=1.20.0}
 : ${yavta_ver:=git}
 : ${googletest_ver:=1.8.1}
