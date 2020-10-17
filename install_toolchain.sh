@@ -83,7 +83,7 @@
 : ${libffi_ver:=3.3}
 : ${emacs_ver:=27.1}
 : ${libiconv_ver:=1.15}
-: ${vim_ver:=8.2.1127}
+: ${vim_ver:=8.2.1855}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.4.3}

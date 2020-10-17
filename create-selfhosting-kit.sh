@@ -150,7 +150,7 @@ EOF
 : ${libevent_ver:=2.1.11-stable}
 : ${tmux_ver:=3.1b}
 : ${zsh_ver:=5.8}
-: ${vim_ver:=8.2.1127}
+: ${vim_ver:=8.2.1855}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.5}
