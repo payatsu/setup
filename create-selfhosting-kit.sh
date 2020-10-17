@@ -127,6 +127,8 @@ EOF
 : ${systemtap_ver:=4.2}
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
+: ${procps_ver:=3.3.15}
+: ${inetutils_ver:=1.9.4}
 
 : ${m4_ver:=1.4.18}
 : ${perl_ver:=5.30.3}
@@ -205,6 +207,8 @@ init()
 	case ${1} in
 	boost)
 		eval ${_1}_name=${1}_\${${_1}_ver};;
+	procps)
+		eval ${_1}_name=${1}-v\${${_1}_ver};;
 	*)
 		eval ${_1}_name=${1}-\${${_1}_ver};;
 	esac
@@ -232,7 +236,7 @@ fetch()
 	zlib)
 		wget -O ${zlib_src_dir}.tar.xz \
 			http://zlib.net/${zlib_name}.tar.xz || return;;
-	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|ed|bc|screen|m4|autoconf|automake|\
+	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|ed|bc|screen|m4|autoconf|automake|\
 	bison|libtool|gettext|grep|diffutils|patch|global|findutils)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
@@ -306,6 +310,9 @@ fetch()
 	libpcap|tcpdump)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			http://www.tcpdump.org/release/\${${_1}_name}.tar.gz || return;;
+	procps)
+		wget -O ${procps_src_dir}.tar.bz2 \
+			https://gitlab.com/procps-ng/procps/-/archive/v${procps_ver}/procps-v${procps_ver}.tar.bz2 || return;;
 	perl)
 		wget -O ${perl_src_dir}.tar.gz \
 			http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return;;
@@ -1191,6 +1198,43 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${tcpdump_bld_dir} -j ${jobs} -k check || return
 		make -C ${tcpdump_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		;;
+	procps)
+		[ -x ${DESTDIR}${prefix}/bin/ps -a "${force_install}" != yes ] && return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${procps_src_dir}/configure ] ||
+			(cd ${procps_src_dir}; gettext_datadir=$(dirname $(which gettext))/../share/gettext ./autogen.sh) || return
+		[ -f ${procps_bld_dir}/configure ] || cp -Tvr ${procps_src_dir} ${procps_bld_dir} || return
+		[ -f ${procps_bld_dir}/Makefile ] ||
+			(cd ${procps_bld_dir}
+			./configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				CFLAGS="${CFLAGS} -I`print_header_dir ncurses.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libncurses.so`" \
+				ac_cv_func_realloc_0_nonnull=yes \
+				ac_cv_func_malloc_0_nonnull=yes \
+				) || return
+		make -C ${procps_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${procps_bld_dir} -j ${jobs} -k check || return
+		make -C ${procps_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	inetutils)
+		[ -x ${DESTDIR}${prefix}/bin/telnet -a "${force_install}" != yes ] && return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${inetutils_bld_dir}/Makefile ] ||
+			(cd ${inetutils_bld_dir}
+			${inetutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+			CFLAGS="${CFLAGS} -I`print_header_dir curses.h` -DPATH_PROCNET_DEV=\\\"/proc/net/dev\\\"" \
+			LDFLAGS="${LDFLAGS} -L`print_library_dir libtinfo.so` -ltinfo" \
+			) || return
+		make -C ${inetutils_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${inetutils_bld_dir} -j ${jobs} -k check || return
+		make -C ${inetutils_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	m4)
 		[ -x ${DESTDIR}${prefix}/bin/m4 -a "${force_install}" != yes ] && return
