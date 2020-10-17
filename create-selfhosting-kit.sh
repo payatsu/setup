@@ -67,7 +67,8 @@ help()
 
     * install extra toolchain
         \$ `basename ${0}` --strip --cleanup \\
-                    m4 autoconf automake libtool pkg-config git cmake ninja
+                    m4 autoconf automake libtool pkg-config git \\
+                    cmake ninja meson
 
     * install tools required by linux kernel development
         \$ `basename ${0}` --strip --cleanup ed bc rsync dtc
@@ -162,6 +163,7 @@ EOF
 : ${go_ver:=1.14.9}
 : ${cmake_ver:=3.18.2}
 : ${ninja_ver:=1.10.1}
+: ${meson_ver:=0.54.0}
 : ${libxml2_ver:=2.9.9}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=4.0.2}
@@ -361,6 +363,9 @@ fetch()
 	ninja)
 		wget -O ${ninja_src_dir}.tar.gz \
 			https://github.com/ninja-build/ninja/archive/v${ninja_ver}.tar.gz || return;;
+	meson)
+		wget -O ${meson_src_dir}.tar.gz \
+			https://github.com/mesonbuild/meson/archive/${meson_ver}.tar.gz || return;;
 	libxml2|libxslt)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			http://xmlsoft.org/sources/\${${_1}_name}.tar.gz || return;;
@@ -1783,6 +1788,17 @@ EOF
 			-DCMAKE_INSTALL_PREFIX=${prefix} || return
 		cmake --build ${ninja_bld_dir} -v -j ${jobs} || return
 		install -D ${strip:+-s --strip-program=${host:+${host}-}strip} -v -t ${DESTDIR}${prefix}/bin ${ninja_bld_dir}/ninja || return
+		;;
+	meson)
+		[ -x ${DESTDIR}${prefix}/bin/meson -a "${force_install}" != yes ] && return
+		print_binary_path python3 > /dev/null || ${0} ${cmdopt} Python || return
+		print_binary_path ninja > /dev/null || ${0} ${cmdopt} ninja || return
+		which python3 > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} Python || return
+		fetch ${1} || return
+		unpack ${1} || return
+		(cd ${meson_src_dir}
+		python3 ${meson_src_dir}/setup.py install --prefix ${DESTDIR}${prefix}) || return
+		sed -i -e '1s%^.\+$%\#!'${prefix}/bin/python3'%' ${DESTDIR}${prefix}/bin/meson || return
 		;;
 	libxml2)
 		[ -d ${DESTDIR}${prefix}/include/libxml2 -a "${force_install}" != yes ] && return
