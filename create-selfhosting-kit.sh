@@ -1764,7 +1764,7 @@ EOF
 		make -C ${cmake_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 		for b in cmake cpack ctest; do
 			b=${DESTDIR}${prefix}/bin/${b}
-			seek=`grep -aboe "${DESTDIR}${prefix}/lib/libz.so" ${b} | cut -d: -f1`
+			seek=`grep -aboe "${DESTDIR}${prefix}/lib/libz.so" ${b} 2> /dev/null | cut -d: -f1`
 			[ -z "${seek}" ] && continue
 			dirname_count=`echo -n ${DESTDIR}${prefix}/lib/ | wc -c`
 			dd bs=c count=`echo libz.so | wc -c` if=${b} of=${b} conv=notrunc seek=${seek} skip=`expr ${seek} + ${dirname_count}` || return
@@ -1772,9 +1772,9 @@ EOF
 		;;
 	ninja)
 		[ -x ${DESTDIR}${prefix}/bin/ninja -a "${force_install}" != yes ] && return
-		fetch ninja || return
-		unpack ninja || return
 		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
+		fetch ${1} || return
+		unpack ${1} || return
 		generate_gxx_wrapper ${ninja_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${ninja_src_dir} -B ${ninja_bld_dir} \
