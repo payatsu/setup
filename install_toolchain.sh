@@ -4442,6 +4442,7 @@ install_native_subversion()
 install_native_ninja()
 {
 	[ -x ${prefix}/bin/ninja -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
 	fetch ninja || return
 	unpack ninja || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -4610,7 +4611,8 @@ install_native_compiler_rt()
 		-S ${compiler_rt_src_dir} -B ${compiler_rt_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DCMAKE_INSTALL_RPATH=';' -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ || return
+		-DCMAKE_INSTALL_RPATH=';' -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ \
+		-DCMAKE_CXX_COMPILER_ID=Clang || return
 	cmake --build ${compiler_rt_bld_dir} -v -j ${jobs} || return
 	cmake --install ${compiler_rt_bld_dir} -v ${strip:+--${strip}} || return
 	mkdir -pv ${DESTDIR}${prefix}/lib/clang/`llvm-config --version`/lib || return

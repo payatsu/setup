@@ -1901,7 +1901,8 @@ EOF
 			-DCMAKE_C_COMPILER=${compiler_rt_bld_dir}/${host:+${host}-}gcc \
 			-DCMAKE_CXX_COMPILER=${compiler_rt_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-			-DCMAKE_INSTALL_RPATH=';' -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ || return
+			-DCMAKE_INSTALL_RPATH=';' -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ \
+			-DCMAKE_CXX_COMPILER_ID=Clang || return
 		cmake --build ${compiler_rt_bld_dir} -v -j ${jobs} || return
 		cmake --install ${compiler_rt_bld_dir} -v ${strip:+--${strip}} || return
 # FIXME

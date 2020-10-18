@@ -11,7 +11,7 @@ ARG njobs
 ARG pkgs="zlib binutils m4 gmp mpfr mpc isl gcc \
 bzip2 elfutils bison flex perl autoconf autoconf-archive automake libtool ncurses readline less texinfo \
 gawk cpio xz zip unzip lzip lunzip lzo lzop lz4 zstd file groff gdbm libpipeline man-db ed bc patch ccache \
-pcre swig libffi openssl Python2 Python libxml2 libiconv ninja meson glib pkg-config nghttp2 curl cmake Bear \
+pcre swig libffi openssl Python2 Python libxml2 libiconv glib pkg-config nghttp2 curl cmake ninja meson Bear \
 llvm lld compiler-rt libunwind libcxxabi libcxx clang libedit lldb \
 ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux popt babeltrace gdb make \
 autogen gettext pcre2 asciidoc git openssh go rustc zsh bash screen libevent tmux lua vim neovim global \
