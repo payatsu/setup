@@ -104,6 +104,7 @@
 : ${patch_ver:=2.7.6}
 : ${findutils_ver:=4.7.0}
 : ${procps_ver:=3.3.15}
+: ${lsof_ver:=4.93.2}
 : ${less_ver:=530}
 : ${groff_ver:=1.22.4}
 : ${gdbm_ver:=1.18.1}
@@ -490,6 +491,8 @@ help()
 		Specify the version of GNU findutils you want, currently'${findutils_ver}'.
 	procps_ver
 		Specify the version of procps you want, currently '${procps_ver}'.
+	lsof_ver
+		Specify the version of lsof you want, currently '${lsof_ver}'.
 	less_ver
 		Specify the version of GNU less you want, currently '${less_ver}'.
 	groff_ver
@@ -894,6 +897,9 @@ fetch()
 		procps)
 			wget -O ${procps_src_dir}.tar.bz2 \
 				https://gitlab.com/procps-ng/procps/-/archive/v${procps_ver}/procps-v${procps_ver}.tar.bz2 || return;;
+		lsof)
+			wget -O ${lsof_src_dir}.tar.gz \
+				https://github.com/lsof-org/lsof/archive/${lsof_ver}.tar.gz || return;;
 		libpipeline|man-db)
 			for compress_format in xz gz; do
 				eval wget -O \${${_p}_src_dir}.tar.${compress_format:-xz} \
@@ -3813,6 +3819,21 @@ install_native_procps()
 		make -C ${procps_bld_dir} -j ${jobs} -k check || return
 	make -C ${procps_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
+}
+
+install_native_lsof()
+{
+	[ -x ${prefix}/bin/lsof -a "${force_install}" != yes ] && return
+	fetch lsof || return
+	unpack lsof || return
+	[ -f ${lsof_bld_dir}/Makefile ] || cp -Tvr ${lsof_src_dir} ${lsof_bld_dir} || return
+	[ -f ${lsof_bld_dir}/Makefile ] ||
+		(cd ${lsof_bld_dir}
+		echo nn | ./Configure linux) || return
+	make -C ${lsof_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${lsof_bld_dir} -j ${jobs} -k check || return
+	command install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${lsof_bld_dir}/lsof || return
 }
 
 install_native_less()
