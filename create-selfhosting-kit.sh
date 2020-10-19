@@ -128,6 +128,7 @@ EOF
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
 : ${procps_ver:=3.3.15}
+: ${sysstat_ver:=12.4.0}
 : ${inetutils_ver:=1.9.4}
 : ${iproute2_ver:=5.9.0}
 : ${nmap_ver:=7.80}
@@ -315,6 +316,9 @@ fetch()
 	procps)
 		wget -O ${procps_src_dir}.tar.bz2 \
 			https://gitlab.com/procps-ng/procps/-/archive/v${procps_ver}/procps-v${procps_ver}.tar.bz2 || return;;
+	sysstat)
+		wget -O ${sysstat_src_dir}.tar.gz \
+			https://github.com/sysstat/sysstat/archive/v${sysstat_ver}.tar.gz || return;;
 	iproute2)
 		wget -O ${iproute2_src_dir}.tar.xz \
 			https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/${iproute2_name}.tar.xz || return;;
@@ -1227,6 +1231,20 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${procps_bld_dir} -j ${jobs} -k check || return
 		make -C ${procps_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	sysstat)
+		[ -x ${DESTDIR}${prefix}/bin/sar -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${sysstat_bld_dir}/configure ] || cp -Tvr ${sysstat_src_dir} ${sysstat_bld_dir} || return
+		[ -f ${sysstat_bld_dir}/Makefile ] ||
+			(cd ${sysstat_bld_dir}
+			./configure --prefix=${prefix} --host=${host} --enable-install-cron --enable-collect-all \
+				--enable-copy-only) || return
+		make -C ${sysstat_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${sysstat_bld_dir} -j ${jobs} -k check || return
+		make -C ${sysstat_bld_dir} -j ${jobs} IGNORE_FILE_ATTRIBUTES=y DESTDIR=${DESTDIR} install || return
 		;;
 	inetutils)
 		[ -x ${DESTDIR}${prefix}/bin/telnet -a "${force_install}" != yes ] && return
