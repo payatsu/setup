@@ -120,6 +120,7 @@
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.0}
 : ${inetutils_ver:=1.9.4}
+: ${iproute2_ver:=5.9.0}
 : ${util_linux_ver:=2.35.1}
 : ${e2fsprogs_ver:=1.45.6}
 : ${squashfs_ver:=4.4}
@@ -521,8 +522,10 @@ help()
 		Specify the version of Zsh you want, currently '${zsh_ver}'.
 	bash_ver
 		Specify the version of Bash you want, currently '${bash_ver}'.
-	inetutils
+	inetutils_ver
 		Specify the version of inetutils you want, currently '${inetutils_ver}'.
+	iproute2_ver
+		Specify the version of iproute2 you want, currently '${iproute2_ver}'.
 	util_linux_ver
 		Specify the version of util-linux you want, currently '${util_linux_ver}'.
 	e2fsprogs_ver
@@ -925,6 +928,9 @@ fetch()
 		zsh)
 			wget --trust-server-names -O ${zsh_src_dir}.tar.xz \
 				https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return;;
+		iproute2)
+			wget -O ${iproute2_src_dir}.tar.xz \
+				https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/${iproute2_name}.tar.xz || return;;
 		util-linux)
 			wget -O ${util_linux_src_dir}.tar.xz \
 				https://kernel.org/pub/linux/utils/util-linux/v`print_version util-linux`/${util_linux_name}.tar.xz || return;;
@@ -4075,6 +4081,18 @@ install_native_inetutils()
 	[ "${enable_check}" != yes ] ||
 		make -C ${inetutils_bld_dir} -j ${jobs} -k check || return
 	make -C ${inetutils_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_iproute2()
+{
+	[ -x ${prefix}/bin/ip -a "${force_install}" != yes ] && return
+	fetch iproute2 || return
+	unpack iproute2 || return
+	[ -f ${iproute2_bld_dir}/Makefile ] || cp -Tvr ${iproute2_src_dir} ${iproute2_bld_dir} || return
+	make -C ${iproute2_bld_dir} -j ${jobs} V=1 PREFIX=${prefix} HOSTCC=${CC:-${host:+${host}-}gcc} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${iproute2_bld_dir} -j ${jobs} -k check || return
+	make -C ${iproute2_bld_dir} -j ${jobs} V=1 PREFIX=${prefix} DESTDIR=${DESTDIR} install || return
 }
 
 install_native_util_linux()
