@@ -105,6 +105,7 @@
 : ${findutils_ver:=4.7.0}
 : ${procps_ver:=3.3.15}
 : ${lsof_ver:=4.93.2}
+: ${sysstat_ver:=12.4.0}
 : ${less_ver:=530}
 : ${groff_ver:=1.22.4}
 : ${gdbm_ver:=1.18.1}
@@ -494,6 +495,8 @@ help()
 		Specify the version of procps you want, currently '${procps_ver}'.
 	lsof_ver
 		Specify the version of lsof you want, currently '${lsof_ver}'.
+	sysstat_ver
+		Specify the version of sysstat you want, currently '${sysstat_ver}'.
 	less_ver
 		Specify the version of GNU less you want, currently '${less_ver}'.
 	groff_ver
@@ -903,6 +906,9 @@ fetch()
 		lsof)
 			wget -O ${lsof_src_dir}.tar.gz \
 				https://github.com/lsof-org/lsof/archive/${lsof_ver}.tar.gz || return;;
+		sysstat)
+			wget -O ${sysstat_src_dir}.tar.gz \
+				https://github.com/sysstat/sysstat/archive/v${sysstat_ver}.tar.gz || return;;
 		libpipeline|man-db)
 			for compress_format in xz gz; do
 				eval wget -O \${${_p}_src_dir}.tar.${compress_format:-xz} \
@@ -3840,6 +3846,22 @@ install_native_lsof()
 	[ "${enable_check}" != yes ] ||
 		make -C ${lsof_bld_dir} -j ${jobs} -k check || return
 	command install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${lsof_bld_dir}/lsof || return
+}
+
+install_native_sysstat()
+{
+	[ -x ${prefix}/bin/sar -a "${force_install}" != yes ] && return
+	fetch sysstat || return
+	unpack sysstat || return
+	[ -f ${sysstat_bld_dir}/configure ] || cp -Tvr ${sysstat_src_dir} ${sysstat_bld_dir} || return
+	[ -f ${sysstat_bld_dir}/Makefile ] ||
+		(cd ${sysstat_bld_dir}
+		./configure --prefix=${prefix} --host=${host} --enable-install-cron --enable-collect-all \
+			--enable-copy-only) || return
+	make -C ${sysstat_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${sysstat_bld_dir} -j ${jobs} -k check || return
+	make -C ${sysstat_bld_dir} -j ${jobs} IGNORE_FILE_ATTRIBUTES=y install || return
 }
 
 install_native_less()
