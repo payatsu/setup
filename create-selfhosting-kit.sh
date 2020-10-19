@@ -129,6 +129,7 @@ EOF
 : ${tcpdump_ver:=4.9.3}
 : ${procps_ver:=3.3.15}
 : ${inetutils_ver:=1.9.4}
+: ${nmap_ver:=7.80}
 
 : ${m4_ver:=1.4.18}
 : ${perl_ver:=5.30.3}
@@ -313,6 +314,9 @@ fetch()
 	procps)
 		wget -O ${procps_src_dir}.tar.bz2 \
 			https://gitlab.com/procps-ng/procps/-/archive/v${procps_ver}/procps-v${procps_ver}.tar.bz2 || return;;
+	nmap)
+		wget -O ${nmap_src_dir}.tar.bz2 \
+			https://nmap.org/dist/${nmap_name}.tar.bz2 || return;;
 	perl)
 		wget -O ${perl_src_dir}.tar.gz \
 			http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return;;
@@ -1235,6 +1239,23 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${inetutils_bld_dir} -j ${jobs} -k check || return
 		make -C ${inetutils_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	nmap)
+		[ -x ${DESTDIR}${prefix}/bin/nmap -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${nmap_bld_dir}/configure ] || cp -Tvr ${nmap_src_dir} ${nmap_bld_dir} || return
+		[ -f ${nmap_bld_dir}/Makefile ] ||
+			(cd ${nmap_bld_dir}
+			./configure --prefix=${prefix} --host=${host}) || return
+		make -C ${nmap_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${nmap_bld_dir} -j ${jobs} -k check || return
+		make -C ${nmap_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		[ -z "${strip}" ] && return
+		for b in ncat nmap nping; do
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		done
 		;;
 	m4)
 		[ -x ${DESTDIR}${prefix}/bin/m4 -a "${force_install}" != yes ] && return
