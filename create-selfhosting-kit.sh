@@ -129,6 +129,7 @@ EOF
 : ${tcpdump_ver:=4.9.3}
 : ${procps_ver:=3.3.15}
 : ${inetutils_ver:=1.9.4}
+: ${iproute2_ver:=5.9.0}
 : ${nmap_ver:=7.80}
 
 : ${m4_ver:=1.4.18}
@@ -314,6 +315,9 @@ fetch()
 	procps)
 		wget -O ${procps_src_dir}.tar.bz2 \
 			https://gitlab.com/procps-ng/procps/-/archive/v${procps_ver}/procps-v${procps_ver}.tar.bz2 || return;;
+	iproute2)
+		wget -O ${iproute2_src_dir}.tar.xz \
+			https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/${iproute2_name}.tar.xz || return;;
 	nmap)
 		wget -O ${nmap_src_dir}.tar.bz2 \
 			https://nmap.org/dist/${nmap_name}.tar.bz2 || return;;
@@ -1239,6 +1243,17 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${inetutils_bld_dir} -j ${jobs} -k check || return
 		make -C ${inetutils_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	iproute2)
+		[ -d ${DESTDIR}${prefix}/include/iproute2 -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${iproute2_bld_dir}/Makefile ] || cp -Tvr ${iproute2_src_dir} ${iproute2_bld_dir} || return
+		sed -i -e 's/^	\$(HOSTCC)/	gcc/' ${iproute2_bld_dir}/netem/Makefile || return
+		make -C ${iproute2_bld_dir} -j ${jobs} V=1 PREFIX=${prefix} HOSTCC="${CC:-${host:+${host}-}gcc}" || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${iproute2_bld_dir} -j ${jobs} -k check || return
+		make -C ${iproute2_bld_dir} -j ${jobs} V=1 PREFIX=${prefix} DESTDIR=${DESTDIR} install || return
 		;;
 	nmap)
 		[ -x ${DESTDIR}${prefix}/bin/nmap -a "${force_install}" != yes ] && return

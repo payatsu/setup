@@ -4085,7 +4085,7 @@ install_native_inetutils()
 
 install_native_iproute2()
 {
-	[ -x ${prefix}/bin/ip -a "${force_install}" != yes ] && return
+	[ -d ${prefix}/include/iproute2 -a "${force_install}" != yes ] && return
 	fetch iproute2 || return
 	unpack iproute2 || return
 	[ -f ${iproute2_bld_dir}/Makefile ] || cp -Tvr ${iproute2_src_dir} ${iproute2_bld_dir} || return
