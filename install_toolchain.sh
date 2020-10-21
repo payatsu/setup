@@ -202,7 +202,7 @@
 : ${libksba_ver:=1.4.0}
 : ${libassuan_ver:=2.5.3}
 : ${gnupg_ver:=2.2.23}
-: ${protobuf_ver:=3.12.3}
+: ${protobuf_ver:=3.13.0}
 : ${libbacktrace_ver:=git}
 
 # TODO X11周りのインストールは未着手。
