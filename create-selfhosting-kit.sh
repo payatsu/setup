@@ -165,6 +165,9 @@ EOF
 : ${global_ver:=6.6.5}
 : ${findutils_ver:=4.7.0}
 
+: ${help2man_ver:=1.47.16}
+: ${coreutils_ver:=8.32}
+
 : ${go_ver:=1.14.9}
 : ${cmake_ver:=3.18.2}
 : ${ninja_ver:=1.10.1}
@@ -240,7 +243,7 @@ fetch()
 		wget -O ${zlib_src_dir}.tar.xz \
 			http://zlib.net/${zlib_name}.tar.xz || return;;
 	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|ed|bc|screen|m4|autoconf|automake|\
-	bison|libtool|gettext|grep|diffutils|patch|global|findutils)
+	bison|libtool|gettext|grep|diffutils|patch|global|findutils|help2man|coreutils)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
 				https://ftp.gnu.org/gnu/${1}/\${${_1}_name}.tar.${compress_format} \
@@ -1817,6 +1820,33 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${findutils_bld_dir} -j ${jobs} -k check || return
 		make -C ${findutils_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	help2man)
+		[ -x ${DESTDIR}${prefix}/bin/help2man -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${help2man_bld_dir}/Makefile ] ||
+			(cd ${help2man_bld_dir}
+			${help2man_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+		make -C ${help2man_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${help2man_bld_dir} -j ${jobs} -k check || return
+		make -C ${help2man_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		;;
+	coreutils)
+		[ -x ${DESTDIR}${prefix}/bin/cat -a "${force_install}" != yes ] && return
+		print_header_path gmp.h > /dev/null || ${0} ${cmdopt} gmp || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${coreutils_bld_dir}/Makefile ] ||
+			(cd ${coreutils_bld_dir}
+			FORCE_UNSAFE_CONFIGURE=1 ${coreutils_src_dir}/configure --prefix=${prefix} \
+				--build=${build} --host=${host} --disable-silent-rules --enable-threads) || return
+		[ ${build} = ${host} ] || sed -i -e '/^run_help2man\>/s!help2man$!& --no-discard-stderr!' ${coreutils_bld_dir}/Makefile || return
+		make -C ${coreutils_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${coreutils_bld_dir} -j ${jobs} -k check || return
+		make -C ${coreutils_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	go)
 		[ -x ${DESTDIR}${prefix}/go/bin/go -a "${force_install}" != yes ] && return
