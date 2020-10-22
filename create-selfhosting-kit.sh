@@ -2409,6 +2409,11 @@ copy_libc()
 		" | sh || return
 	) || return
 
+	cp -fv `$([ ${host} = ${target} ] \
+		&& echo ${CC:-${target:+${target}-}gcc} \
+		|| echo ${target:+${target}-}gcc \
+		) -print-file-name=libc.so.6` ${d} || return
+
 	for l in libgcc.a libgcc.so libgcc_s.so; do
 		(cd `$([ ${host} = ${target} ] \
 				&& echo ${CC:-${target:+${target}-}gcc} \
