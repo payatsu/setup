@@ -167,6 +167,7 @@ EOF
 
 : ${help2man_ver:=1.47.16}
 : ${coreutils_ver:=8.32}
+: ${file_ver:=5.38}
 
 : ${go_ver:=1.14.9}
 : ${cmake_ver:=3.18.2}
@@ -376,6 +377,9 @@ fetch()
 	ctags)
 		git clone --depth 1 \
 			http://github.com/universal-ctags/ctags.git ${ctags_src_dir} || return;;
+	file)
+		wget -O ${file_src_dir}.tar.gz \
+			http://ftp.astron.com/pub/file/${file_name}.tar.gz || return;;
 	go)
 		wget -O ${go_src_dir}.tar.gz \
 			https://storage.googleapis.com/golang/go${go_ver}.src.tar.gz || return;;
@@ -1848,6 +1852,26 @@ EOF
 			make -C ${coreutils_bld_dir} -j ${jobs} -k check || return
 		make -C ${coreutils_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
+	file)
+		[ -x ${DESTDIR}${prefix}/bin/file -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
+		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
+		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} --target ${build} file || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${file_bld_dir}/Makefile ] ||
+			(cd ${file_bld_dir}
+			${file_src_dir}/configure --prefix=${prefix} --host=${host} --enable-static --disable-silent-rules \
+				CFLAGS="${CFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir bzlib.h` -I`print_header_dir lzma.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libbz2.so` -L`print_library_dir liblzma.so`" \
+				) || return
+		make -C ${file_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${file_bld_dir} -j ${jobs} check || return
+		make -C ${file_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		truncate_path_in_elf ${DESTDIR}${prefix}/bin/file ${DESTDIR}${prefix}/lib ${DESTDIR} ${prefix}/lib || return
+		;;
 	go)
 		[ -x ${DESTDIR}${prefix}/go/bin/go -a "${force_install}" != yes ] && return
 		which go > /dev/null || { echo WARNING: host \'go\' is not found. skipped. >&2; return;}
@@ -2283,6 +2307,14 @@ generate_gxx_wrapper()
 			echo ${CXX:-${host:+${host}-}g++} | grep -oPe '(?<= ).+'
 			echo \\"\\$@\\"
 		} | tr '\n' ' '`" || return
+}
+
+truncate_path_in_elf()
+{
+	seek=`grep -aboe ${2} ${1} 2> /dev/null | cut -d: -f1`
+	[ -z "${seek}" ] && continue
+	dirname_count=`echo -n ${3} | wc -c`
+	dd bs=c count=`echo ${4} | wc -c` if=${1} of=${1} conv=notrunc seek=${seek} skip=`expr ${seek} + ${dirname_count}` || return
 }
 
 goarch()
