@@ -143,7 +143,7 @@ EOF
 : ${pkg_config_ver:=0.29.2}
 : ${gettext_ver:=0.21}
 : ${curl_ver:=7.72.0}
-: ${git_ver:=2.28.0}
+: ${git_ver:=2.29.0}
 : ${openssh_ver:=8.4p1}
 : ${lzip_ver:=1.21}
 : ${ed_ver:=1.16}
