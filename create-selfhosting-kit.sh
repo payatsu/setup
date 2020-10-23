@@ -150,6 +150,7 @@ EOF
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
 : ${dtc_ver:=1.6.0}
+: ${kmod_ver:=27}
 : ${v4l_utils_ver:=1.20.0}
 
 : ${screen_ver:=4.8.0}
@@ -356,6 +357,9 @@ fetch()
 	dtc)
 		wget -O ${dtc_src_dir}.tar.xz \
 			https://www.kernel.org/pub/software/utils/dtc/${dtc_name}.tar.xz || return;;
+	kmod)
+		wget -O ${kmod_src_dir}.tar.xz \
+			https://www.kernel.org/pub/linux/utils/kernel/kmod/${kmod_name}.tar.xz || return;;
 	v4l-utils)
 		wget -O ${v4l_utils_src_dir}.tar.bz2 \
 			https://linuxtv.org/downloads/v4l-utils/${v4l_utils_name}.tar.bz2 || return;;
@@ -1576,6 +1580,29 @@ EOF
 		done
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libfdt-`print_version dtc`.0.so || return
 		;;
+	kmod)
+		[ -x ${DESTDIR}${prefix}/bin/kmod -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
+		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${kmod_bld_dir}/Makefile ] ||
+			(cd ${kmod_bld_dir}
+			${kmod_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				--with-xz --with-zlib --with-openssl \
+				PKG_CONFIG_LIBDIR=`print_library_dir liblzma.pc` \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
+		make -C ${kmod_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${kmod_bld_dir} -j ${jobs} -k check || return
+		make -C ${kmod_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		for f in depmod insmod lsmod modinfo modprobe rmmod; do
+			ln -fsv kmod ${DESTDIR}${prefix}/bin/${f} || return
+		done
+		truncate_path_in_elf ${DESTDIR}${prefix}/bin/kmod ${DESTDIR} ${prefix}/lib || return
+		;;
 	v4l-utils)
 		[ -x ${DESTDIR}${prefix}/bin/v4l2-ctl -a "${force_install}" != yes ] && return
 		fetch ${1} || return
@@ -1870,7 +1897,7 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${file_bld_dir} -j ${jobs} check || return
 		make -C ${file_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
-		truncate_path_in_elf ${DESTDIR}${prefix}/bin/file ${DESTDIR}${prefix}/lib ${DESTDIR} ${prefix}/lib || return
+		truncate_path_in_elf ${DESTDIR}${prefix}/bin/file ${DESTDIR} ${prefix}/lib || return
 		;;
 	go)
 		[ -x ${DESTDIR}${prefix}/go/bin/go -a "${force_install}" != yes ] && return
@@ -1920,7 +1947,7 @@ EOF
 		[ ${build} = ${host} ] || sed -i -e 's/\<bin\/cmake\>/cmake/' ${cmake_bld_dir}/Makefile || return
 		make -C ${cmake_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 		for b in cmake cpack ctest; do
-			truncate_path_in_elf ${DESTDIR}${prefix}/bin/${b} ${DESTDIR}${prefix}/lib/libz.so ${DESTDIR}${prefix}/lib/ libz.so || return
+			truncate_path_in_elf ${DESTDIR}${prefix}/bin/${b} ${DESTDIR}${prefix}/lib/ libz.so || return
 		done
 		;;
 	ninja)
@@ -2307,10 +2334,10 @@ generate_gxx_wrapper()
 
 truncate_path_in_elf()
 {
-	seek=`grep -aboe ${2} ${1} 2> /dev/null | cut -d: -f1`
+	seek=`grep -aboe ${2}${3} ${1} 2> /dev/null | cut -d: -f1`
 	[ -z "${seek}" ] && continue
-	dirname_count=`echo -n ${3} | wc -c`
-	dd bs=c count=`echo ${4} | wc -c` if=${1} of=${1} conv=notrunc seek=${seek} skip=`expr ${seek} + ${dirname_count}` || return
+	dirname_count=`echo -n ${2} | wc -c`
+	dd bs=c count=`echo ${3} | wc -c` if=${1} of=${1} conv=notrunc seek=${seek} skip=`expr ${seek} + ${dirname_count}` || return
 }
 
 goarch()
