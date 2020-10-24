@@ -2513,7 +2513,7 @@ copy_libc()
 		" | sh || return
 	) || return
 
-	cp -fv `$([ ${host} = ${target} ] \
+	! echo ${target} | grep -qe linux || cp -fv `$([ ${host} = ${target} ] \
 		&& echo ${CC:-${target:+${target}-}gcc} \
 		|| echo ${target:+${target}-}gcc \
 		) -print-file-name=libc.so.6` ${d} || return
