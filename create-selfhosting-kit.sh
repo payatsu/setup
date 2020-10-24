@@ -151,6 +151,7 @@ EOF
 : ${rsync_ver:=3.1.3}
 : ${dtc_ver:=1.6.0}
 : ${kmod_ver:=27}
+: ${u_boot_ver:=2020.10}
 : ${v4l_utils_ver:=1.20.0}
 
 : ${screen_ver:=4.8.0}
@@ -360,6 +361,9 @@ fetch()
 	kmod)
 		wget -O ${kmod_src_dir}.tar.xz \
 			https://www.kernel.org/pub/linux/utils/kernel/kmod/${kmod_name}.tar.xz || return;;
+	u-boot)
+		wget -O ${u_boot_src_dir}.tar.bz2 \
+			ftp://ftp.denx.de/pub/u-boot/${u_boot_name}.tar.bz2 || return;;
 	v4l-utils)
 		wget -O ${v4l_utils_src_dir}.tar.bz2 \
 			https://linuxtv.org/downloads/v4l-utils/${v4l_utils_name}.tar.bz2 || return;;
@@ -512,6 +516,7 @@ print_packages()
 		s/util_linux/util-linux/
 		s/pkg_config/pkg-config/
 		s/vimdoc_ja/vimdoc-ja/
+		s/u_boot/u-boot/
 		s/v4l_utils/v4l-utils/
 		s/compiler_rt/compiler-rt/
 		s/clang_tools_extra/clang-tools-extra/
@@ -1602,6 +1607,21 @@ EOF
 			ln -fsv kmod ${DESTDIR}${prefix}/bin/${f} || return
 		done
 		truncate_path_in_elf ${DESTDIR}${prefix}/bin/kmod ${DESTDIR} ${prefix}/lib || return
+		;;
+	u-boot)
+		[ -x ${DESTDIR}${prefix}/bin/mkimage -a "${force_install}" != yes ] && return
+		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${u_boot_bld_dir}/Makefile ] || cp -Tvr ${u_boot_src_dir} ${u_boot_bld_dir} || return
+		generate_gcc_wrapper ${u_boot_bld_dir} || return
+		[ -f ${u_boot_bld_dir}/.config ] ||
+			make -C ${u_boot_bld_dir} -j ${jobs} V=1 sandbox_defconfig || return
+		sed -i -e 's/^	\$(Q)\$(MAKE) \$(build)=\$@$/& HOSTCC=$(MYCC)/' ${u_boot_bld_dir}/Makefile || return
+		sed -i -e '/^\<hostc_flags\>/s! \$(__hostc_flags)$!& -I'`print_header_dir evp.h openssl`'!' ${u_boot_bld_dir}/scripts/Makefile.host || return
+		make -C ${u_boot_bld_dir} -j ${jobs} V=1 NO_SDL=1 MYCC=${u_boot_bld_dir}/${host:+${host}-}gcc HOSTLDFLAGS=-L`print_library_dir libssl.so` tools || return
+		mkdir -pv ${DESTDIR}${prefix}/bin || return
+		find ${u_boot_bld_dir}/tools -maxdepth 1 -type f -perm /100 -exec install -vt ${DESTDIR}${prefix}/bin {} + || return
 		;;
 	v4l-utils)
 		[ -x ${DESTDIR}${prefix}/bin/v4l2-ctl -a "${force_install}" != yes ] && return

@@ -53,7 +53,7 @@
 : ${linux_ver:=5.7.10}
 : ${kmod_ver:=27}
 : ${dtc_ver:=1.6.0}
-: ${u_boot_ver:=2019.07}
+: ${u_boot_ver:=2020.10}
 : ${qemu_ver:=4.2.0}
 : ${gperf_ver:=3.1}
 : ${glibc_ver:=2.32}
