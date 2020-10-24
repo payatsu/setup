@@ -626,6 +626,7 @@ build()
 		[ "${enable_check}" != yes ] ||
 			make -C ${mpfr_bld_dir} -j ${jobs} -k check || return
 		make -C ${mpfr_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		truncate_path_in_elf ${DESTDIR}${prefix}/lib/libmpfr.so ${DESTDIR} ${prefix}/lib || return
 		;;
 	mpc)
 		[ -f ${DESTDIR}${prefix}/include/mpc.h -a "${force_install}" != yes ] && return
@@ -640,6 +641,7 @@ build()
 		[ "${enable_check}" != yes ] ||
 			make -C ${mpc_bld_dir} -j ${jobs} -k check || return
 		make -C ${mpc_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		truncate_path_in_elf ${DESTDIR}${prefix}/lib/libmpc.so ${DESTDIR} ${prefix}/lib || return
 		;;
 	isl)
 		[ -f ${DESTDIR}${prefix}/include/isl/version.h -a "${force_install}" != yes ] && return
@@ -656,6 +658,7 @@ build()
 		[ "${enable_check}" != yes ] ||
 			make -C ${isl_bld_dir} -j ${jobs} -k check || return
 		make -C ${isl_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		truncate_path_in_elf ${DESTDIR}${prefix}/lib/libisl.so ${DESTDIR} ${prefix}/lib || return
 		;;
 	gcc)
 		[ -x ${DESTDIR}${prefix}/bin/${target}-gcc -a "${force_install}" != yes ] && return
@@ -1087,9 +1090,13 @@ EOF
 				glib_cv_stack_grows=no glib_cv_uscore=no) || return
 		make -C ${glib_bld_dir} -j ${jobs} || return
 		make -C ${glib_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
-		[ -z "${strip}" ] && return
 		for b in gapplication gdbus gio gio-launch-desktop gio-querymodules glib-compile-resources glib-compile-schemas gobject-query gresource gsettings gtester; do
+			truncate_path_in_elf ${DESTDIR}${prefix}/bin/${b} ${DESTDIR}${prefix}/lib/../lib64:${DESTDIR} ${prefix}/lib || return
+			[ -z "${strip}" ] && continue
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		done
+		for l in libgio-2.0.so libglib-2.0.so libgmodule-2.0.so libgobject-2.0.so libgthread-2.0.so; do
+			truncate_path_in_elf ${DESTDIR}${prefix}/lib/${l} ${DESTDIR}${prefix}/lib/../lib64:${DESTDIR} ${prefix}/lib || return
 		done
 		;;
 	babeltrace)
@@ -1120,6 +1127,12 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${babeltrace_bld_dir} -j ${jobs} -k check || return
 		make -C ${babeltrace_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		for b in babeltrace babeltrace-log; do
+			truncate_path_in_elf ${DESTDIR}${prefix}/bin/${b} ${DESTDIR} ${prefix}/lib || return
+		done
+		for l in libbabeltrace-ctf-metadata.so  libbabeltrace-ctf-text.so  libbabeltrace-ctf.so  libbabeltrace-dummy.so  libbabeltrace-lttng-live.so  libbabeltrace.so; do
+			truncate_path_in_elf ${DESTDIR}${prefix}/lib/${l} ${DESTDIR} ${prefix}/lib || return
+		done
 		;;
 	gdb)
 		[ -x ${DESTDIR}${prefix}/bin/gdb -a "${force_install}" != yes ] && return
@@ -1609,6 +1622,7 @@ EOF
 			ln -fsv kmod ${DESTDIR}${prefix}/bin/${f} || return
 		done
 		truncate_path_in_elf ${DESTDIR}${prefix}/bin/kmod ${DESTDIR} ${prefix}/lib || return
+		truncate_path_in_elf ${DESTDIR}${prefix}/lib/libkmod.so ${DESTDIR} ${prefix}/lib || return
 		;;
 	u-boot)
 		[ -x ${DESTDIR}${prefix}/bin/mkimage -a "${force_install}" != yes ] && return
@@ -1947,6 +1961,7 @@ EOF
 			make -C ${file_bld_dir} -j ${jobs} check || return
 		make -C ${file_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		truncate_path_in_elf ${DESTDIR}${prefix}/bin/file ${DESTDIR} ${prefix}/lib || return
+		truncate_path_in_elf ${DESTDIR}${prefix}/lib/libmagic.so ${DESTDIR} ${prefix}/lib || return
 		;;
 	go)
 		[ -x ${DESTDIR}${prefix}/go/bin/go -a "${force_install}" != yes ] && return
@@ -2044,6 +2059,10 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${libxml2_bld_dir} -j ${jobs} -k check || return
 		make -C ${libxml2_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		for b in xmlcatalog xmllint; do
+			truncate_path_in_elf ${DESTDIR}${prefix}/bin/${b} ${DESTDIR} ${prefix}/lib || return
+		done
+		truncate_path_in_elf ${DESTDIR}${prefix}/lib/libxml2.so ${DESTDIR} ${prefix}/lib || return
 		;;
 	llvm)
 		[ -d ${DESTDIR}${prefix}/include/llvm -a "${force_install}" != yes ] && return
@@ -2383,7 +2402,7 @@ generate_gxx_wrapper()
 
 truncate_path_in_elf()
 {
-	seek=`grep -aboe ${2}${3} ${1} 2> /dev/null | cut -d: -f1`
+	seek=`grep -aboe ${2}${3} ${1} 2> /dev/null | cut -d: -f1 | head -n 1`
 	[ -z "${seek}" ] && continue
 	dirname_count=`echo -n ${2} | wc -c`
 	dd bs=c count=`echo ${3} | wc -c` if=${1} of=${1} conv=notrunc seek=${seek} skip=`expr ${seek} + ${dirname_count}` || return
