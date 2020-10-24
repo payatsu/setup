@@ -1188,6 +1188,8 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${strace_bld_dir} -j ${jobs} -k check || return
 		make -C ${strace_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/strace || return
 		;;
 	systemtap)
 		[ -x ${DESTDIR}${prefix}/bin/stap -a "${force_install}" != yes ] && return
@@ -1638,6 +1640,11 @@ EOF
 		make -C ${u_boot_bld_dir} -j ${jobs} V=1 NO_SDL=1 MYCC=${u_boot_bld_dir}/${host:+${host}-}gcc HOSTLDFLAGS=-L`print_library_dir libssl.so` tools || return
 		mkdir -pv ${DESTDIR}${prefix}/bin || return
 		find ${u_boot_bld_dir}/tools -maxdepth 1 -type f -perm /100 -exec install -vt ${DESTDIR}${prefix}/bin {} + || return
+		[ -z "${strip}" ] && return
+		for b in asn1_compiler dumpimage fdtgrep fit_check_sign fit_info gen_eth_addr gen_ethaddr_crc ifwitool img2srec \
+			mkenvimage mkimage ncb proftool spl_size_limit; do
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		done
 		;;
 	tar)
 		[ -x ${DESTDIR}${prefix}/bin/tar -a "${force_install}" != yes ] && return
@@ -1753,6 +1760,8 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${zsh_bld_dir} -j ${jobs} -k check || return
 		make -C ${zsh_bld_dir} -j ${jobs} -k DESTDIR=${DESTDIR} install || true # XXX work around. if 'man' and 'nroff' are not found, 'make install' fails.
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/zsh || return
 		;;
 	vim)
 		[ -x ${DESTDIR}${prefix}/bin/vim -a "${force_install}" != yes ] && return
