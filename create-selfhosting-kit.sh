@@ -152,6 +152,8 @@ EOF
 : ${dtc_ver:=1.6.0}
 : ${kmod_ver:=27}
 : ${u_boot_ver:=2020.10}
+: ${tar_ver:=1.32}
+: ${cpio_ver:=2.13}
 : ${v4l_utils_ver:=1.20.0}
 
 : ${screen_ver:=4.8.0}
@@ -245,7 +247,7 @@ fetch()
 	zlib)
 		wget -O ${zlib_src_dir}.tar.xz \
 			http://zlib.net/${zlib_name}.tar.xz || return;;
-	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|ed|bc|screen|m4|autoconf|automake|\
+	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|ed|bc|tar|cpio|screen|m4|autoconf|automake|\
 	bison|libtool|gettext|grep|diffutils|patch|global|findutils|help2man|coreutils)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
@@ -1622,6 +1624,33 @@ EOF
 		make -C ${u_boot_bld_dir} -j ${jobs} V=1 NO_SDL=1 MYCC=${u_boot_bld_dir}/${host:+${host}-}gcc HOSTLDFLAGS=-L`print_library_dir libssl.so` tools || return
 		mkdir -pv ${DESTDIR}${prefix}/bin || return
 		find ${u_boot_bld_dir}/tools -maxdepth 1 -type f -perm /100 -exec install -vt ${DESTDIR}${prefix}/bin {} + || return
+		;;
+	tar)
+		[ -x ${DESTDIR}${prefix}/bin/tar -a "${force_install}" != yes ] && return
+		print_binary_path xz > /dev/null || ${0} ${cmdopt} xz || return
+		print_binary_path lzip > /dev/null || ${0} ${cmdopt} lzip || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${tar_bld_dir}/Makefile ] ||
+			(cd ${tar_bld_dir}
+			FORCE_UNSAFE_CONFIGURE=1 ${tar_src_dir}/configure --prefix=${prefix} \
+				--build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${tar_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${tar_bld_dir} -j ${jobs} -k check || return
+		make -C ${tar_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	cpio)
+		[ -x ${DESTDIR}${prefix}/bin/cpio -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${cpio_bld_dir}/Makefile ] ||
+			(cd ${cpio_bld_dir}
+			${cpio_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${cpio_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${cpio_bld_dir} -j ${jobs} -k check || return
+		make -C ${cpio_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	v4l-utils)
 		[ -x ${DESTDIR}${prefix}/bin/v4l2-ctl -a "${force_install}" != yes ] && return
