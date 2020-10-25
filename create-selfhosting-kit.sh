@@ -141,6 +141,8 @@ EOF
 : ${flex_ver:=2.6.4}
 : ${libtool_ver:=2.4.6}
 : ${pkg_config_ver:=0.29.2}
+: ${sed_ver:=4.8}
+: ${gawk_ver:=5.1.0}
 : ${gettext_ver:=0.21}
 : ${curl_ver:=7.72.0}
 : ${git_ver:=2.29.0}
@@ -248,7 +250,7 @@ fetch()
 		wget -O ${zlib_src_dir}.tar.xz \
 			http://zlib.net/${zlib_name}.tar.xz || return;;
 	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|ed|bc|tar|cpio|screen|m4|autoconf|automake|\
-	bison|libtool|gettext|grep|diffutils|patch|global|findutils|help2man|coreutils)
+	bison|libtool|sed|gawk|gettext|grep|diffutils|patch|global|findutils|help2man|coreutils)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
 				https://ftp.gnu.org/gnu/${1}/\${${_1}_name}.tar.${compress_format} \
@@ -1418,6 +1420,34 @@ EOF
 		make -C ${libtool_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libltdl.so || return
+		;;
+	sed)
+		[ -x ${DESTDIR}${prefix}/bin/sed -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${sed_bld_dir}/Makefile ] ||
+			(cd ${sed_bld_dir}
+			${sed_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${sed_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${sed_bld_dir} -j ${jobs} -k check || return
+		make -C ${sed_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	gawk)
+		[ -x ${DESTDIR}${prefix}/bin/gawk -a "${force_install}" != yes ] && return
+		print_header_path readline.h readline > /dev/null || ${0} ${cmdopt} readline || return
+		print_header_path mpfr.h > /dev/null || ${0} ${cmdopt} mpfr || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${gawk_bld_dir}/Makefile ] ||
+			(cd ${gawk_bld_dir}
+			${gawk_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-static \
+				--with-readline=`print_prefix readline.h readline` \
+				--with-mpfr=`print_prefix mpfr.h`) || return
+		make -C ${gawk_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${gawk_bld_dir} -j ${jobs} -k check || return
+		make -C ${gawk_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	pkg-config)
 		[ -x ${DESTDIR}${prefix}/bin/pkg-config -a "${force_install}" != yes ] && return
