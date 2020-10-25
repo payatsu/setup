@@ -2754,6 +2754,8 @@ install_native_strace()
 	[ "${enable_check}" != yes ] ||
 		make -C ${strace_bld_dir} -j ${jobs} -k check || return
 	make -C ${strace_bld_dir} -j ${jobs} install || return
+	[ -z "${strip}" ] && return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/strace || return
 }
 
 install_native_ltrace()

@@ -1092,11 +1092,13 @@ EOF
 		make -C ${glib_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		for b in gapplication gdbus gio gio-launch-desktop gio-querymodules glib-compile-resources glib-compile-schemas gobject-query gresource gsettings gtester; do
 			truncate_path_in_elf ${DESTDIR}${prefix}/bin/${b} ${DESTDIR}${prefix}/lib/../lib64:${DESTDIR} ${prefix}/lib || return
+			truncate_path_in_elf ${DESTDIR}${prefix}/bin/${b} ${DESTDIR} ${prefix}/lib || return
 			[ -z "${strip}" ] && continue
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
 		for l in libgio-2.0.so libglib-2.0.so libgmodule-2.0.so libgobject-2.0.so libgthread-2.0.so; do
 			truncate_path_in_elf ${DESTDIR}${prefix}/lib/${l} ${DESTDIR}${prefix}/lib/../lib64:${DESTDIR} ${prefix}/lib || return
+			truncate_path_in_elf ${DESTDIR}${prefix}/lib/${l} ${DESTDIR} ${prefix}/lib || return
 		done
 		;;
 	babeltrace)
@@ -2412,7 +2414,7 @@ generate_gxx_wrapper()
 truncate_path_in_elf()
 {
 	seek=`grep -aboe ${2}${3} ${1} 2> /dev/null | cut -d: -f1 | head -n 1`
-	[ -z "${seek}" ] && continue
+	[ -z "${seek}" ] && return
 	dirname_count=`echo -n ${2} | wc -c`
 	dd bs=c count=`echo ${3} | wc -c` if=${1} of=${1} conv=notrunc seek=${seek} skip=`expr ${seek} + ${dirname_count}` || return
 }
