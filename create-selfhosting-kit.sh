@@ -122,7 +122,7 @@ EOF
 : ${popt_ver:=1.16}
 : ${glib_ver:=2.59.0}
 : ${babeltrace_ver:=1.5.6}
-: ${gdb_ver:=9.2}
+: ${gdb_ver:=10.1}
 : ${strace_ver:=5.5}
 : ${systemtap_ver:=4.2}
 : ${libpcap_ver:=1.9.1}

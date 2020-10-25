@@ -68,7 +68,7 @@
 : ${ncurses_ver:=6.2}
 : ${popt_ver:=1.16}
 : ${babeltrace_ver:=1.5.6}
-: ${gdb_ver:=9.2}
+: ${gdb_ver:=10.1}
 : ${lcov_ver:=1.14}
 : ${strace_ver:=5.5}
 : ${ltrace_ver:=0.7.3}
