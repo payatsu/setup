@@ -1310,6 +1310,8 @@ EOF
 		unpack ${1} || return
 		[ -f ${iproute2_bld_dir}/Makefile ] || cp -Tvr ${iproute2_src_dir} ${iproute2_bld_dir} || return
 		sed -i -e 's/^	\$(HOSTCC)/	gcc/' ${iproute2_bld_dir}/netem/Makefile || return
+		PKG_CONFIG_LIBDIR=`print_library_dir libelf.pc` \
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		make -C ${iproute2_bld_dir} -j ${jobs} V=1 PREFIX=${prefix} HOSTCC="${CC:-${host:+${host}-}gcc}" || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${iproute2_bld_dir} -j ${jobs} -k check || return
