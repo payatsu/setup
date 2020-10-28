@@ -1310,9 +1310,11 @@ EOF
 		unpack ${1} || return
 		[ -f ${iproute2_bld_dir}/Makefile ] || cp -Tvr ${iproute2_src_dir} ${iproute2_bld_dir} || return
 		sed -i -e 's/^	\$(HOSTCC)/	gcc/' ${iproute2_bld_dir}/netem/Makefile || return
-		PKG_CONFIG_LIBDIR=`print_library_dir libelf.pc` \
-		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-		make -C ${iproute2_bld_dir} -j ${jobs} V=1 PREFIX=${prefix} HOSTCC="${CC:-${host:+${host}-}gcc}" || return
+		sed -i -e 's!^    : \${CC=gcc}$!    CC="'"${CC:-${host:+${host}-}gcc}"'"!' ${iproute2_bld_dir}/configure || return
+		PKG_CONFIG_PATH= \
+			PKG_CONFIG_LIBDIR=`print_library_dir libelf.pc` \
+			PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+			make -C ${iproute2_bld_dir} -j ${jobs} V=1 PREFIX=${prefix} HOSTCC="${CC:-${host:+${host}-}gcc}" || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${iproute2_bld_dir} -j ${jobs} -k check || return
 		make -C ${iproute2_bld_dir} -j ${jobs} V=1 PREFIX=${prefix} DESTDIR=${DESTDIR} install || return
@@ -1652,6 +1654,7 @@ EOF
 			(cd ${kmod_bld_dir}
 			${kmod_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--with-xz --with-zlib --with-openssl \
+				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir liblzma.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
@@ -1720,6 +1723,7 @@ EOF
 			(cd ${v4l_utils_bld_dir}
 			${v4l_utils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--disable-rpath \
+				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR= \
 				) || return
 		make -C ${v4l_utils_bld_dir} -j ${jobs} || return
