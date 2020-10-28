@@ -4113,10 +4113,27 @@ install_native_iproute2()
 	fetch iproute2 || return
 	unpack iproute2 || return
 	[ -f ${iproute2_bld_dir}/Makefile ] || cp -Tvr ${iproute2_src_dir} ${iproute2_bld_dir} || return
-	make -C ${iproute2_bld_dir} -j ${jobs} V=1 PREFIX=${prefix} HOSTCC=${CC:-${host:+${host}-}gcc} || return
+	make -C ${iproute2_bld_dir} -j ${jobs} V=1 \
+		PREFIX=${prefix} \
+		CONFDIR=${prefix}/etc/iproute2 \
+		NETNS_RUN_DIR=${prefix}/var/run/netns \
+		NETNS_ETC_DIR=${prefix}/etc/netns \
+		HOSTCC=${CC:-${host:+${host}-}gcc} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${iproute2_bld_dir} -j ${jobs} -k check || return
-	make -C ${iproute2_bld_dir} -j ${jobs} V=1 PREFIX=${prefix} DESTDIR=${DESTDIR} install || return
+	make -C ${iproute2_bld_dir} -j ${jobs} V=1 \
+		PREFIX=${prefix} \
+		CONFDIR=${prefix}/etc/iproute2 \
+		NETNS_RUN_DIR=${prefix}/var/run/netns \
+		NETNS_ETC_DIR=${prefix}/etc/netns \
+		SBINDIR=${prefix}/sbin \
+		ARPDDIR=${prefix}/var/lib/arpd \
+		DESTDIR=${DESTDIR} install || return
+	[ -z "${strip}" ] && return
+	for b in bridge devlink genl ifstat ip lnstat nstat rdma rtacct rtmon ss tc tipc; do
+		[ -f ${DESTDIR}${prefix}/sbin/${b} ] || continue
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/sbin/${b} || return
+	done
 }
 
 install_native_util_linux()
