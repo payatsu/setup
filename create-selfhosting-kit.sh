@@ -249,8 +249,9 @@ fetch()
 	zlib)
 		wget -O ${zlib_src_dir}.tar.xz \
 			http://zlib.net/${zlib_name}.tar.xz || return;;
-	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|ed|bc|tar|cpio|screen|m4|autoconf|automake|\
-	bison|libtool|sed|gawk|gettext|grep|diffutils|patch|global|findutils|help2man|coreutils)
+	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|autoconf|automake|\
+	bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|grep|\
+	diffutils|patch|global|findutils|help2man|coreutils)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
 				https://ftp.gnu.org/gnu/${1}/\${${_1}_name}.tar.${compress_format} \
