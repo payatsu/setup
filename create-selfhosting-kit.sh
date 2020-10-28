@@ -55,6 +55,9 @@ help()
     --with-libc
         copy standard C library header files, crt*.o, and so on.
 
+    --without-libc
+        remove standard C library header files, crt*.o, and so on.
+
     --help
         show this help.
 
@@ -2651,7 +2654,7 @@ parse_cmdopts()
 			shift
 			eval ${opt}=\${1:-\${${opt}}}
 			;;
-		--prepare|--all|--fetch-only|--force|--strip|--cleanup|--with-libc|--help|--tmpdir)
+		--prepare|--all|--fetch-only|--force|--strip|--cleanup|--with-libc|--without-libc|--help|--tmpdir)
 			opt=`echo ${1} | cut -d- -f3- | tr - _`
 			eval ${opt}=${opt}
 			;;
@@ -2689,6 +2692,7 @@ main()
 
 	! which ccache > /dev/null || ccache -M 8G || return
 	set_compiler_as_env_vars || return
+	[ -z "${without_libc}" ] || manipulate_libc remove || return
 
 	for p in $@; do
 		init ${p} || return
