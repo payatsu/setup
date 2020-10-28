@@ -13,7 +13,7 @@ help()
 
 [SYNOPSIS]
     `basename ${0}` [--prefix PREFIX] [--host HOST] [--jobs JOBS] [--prepare]
-        [-all] [--fetch-only] [--force] [--strip] [--cleanup] [--copy-libc]
+        [-all] [--fetch-only] [--force] [--strip] [--cleanup] [--with-libc]
         [--help] [packages...]
 
 [OPTIONS]
@@ -52,7 +52,7 @@ help()
         remove the source and build directories of the just installed package,
         when installation has been completed.
 
-    --copy-libc
+    --with-libc
         copy standard C library header files, crt*.o, and so on.
 
     --help
@@ -60,7 +60,7 @@ help()
 
 [EXAMPLES]
     * install minimum toolchain
-        \$ `basename ${0}` --strip --cleanup --copy-libc gcc make
+        \$ `basename ${0}` --strip --cleanup --with-libc gcc make
 
     * install debugging tools
         \$ `basename ${0}` --strip --cleanup gdb strace systemtap
@@ -81,13 +81,13 @@ help()
                     vim ctags grep diffutils patch global
 
     * install clang/clang++ compilers
-        \$ `basename ${0}` --strip --cleanup --copy-libc clang
+        \$ `basename ${0}` --strip --cleanup --with-libc clang
 
     * install other programming languages
         \$ `basename ${0}` --strip --cleanup Python go
 
     * install all packages with libc, but with no symbol information
-        \$ `basename ${0}` --all --strip --cleanup --copy-libc
+        \$ `basename ${0}` --all --strip --cleanup --with-libc
 
 [PACKAGES]
 `print_packages | tr '\n' ' ' | fold -s | sed -e 's/^/    /'`
@@ -2565,7 +2565,7 @@ set_compiler_as_env_vars()
 	export LDSHARED="${host:+${host}-}ld${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
 }
 
-copy_libc()
+manipulate_libc()
 {
 	d=${DESTDIR}${prefix}`[ ${host} != ${target} ] && echo /${target}`/include
 	mkdir -pv ${d} || return
@@ -2573,10 +2573,11 @@ copy_libc()
 			&& echo ${CC:-${target:+${target}-}gcc} \
 			|| echo ${target:+${target}-}gcc \
 			) -print-sysroot`/usr/include
-	find . -mindepth 1 -maxdepth 1 | sed -e "
-		s!^\./!!
-		s!^.\+\$![ -e ${d}/& ] || cp -HTvr & ${d}/& || exit!
-		" | sh || return
+	find . -mindepth 1 -maxdepth 1 | sed -e 's!^\./!!' |
+		case ${1} in
+		copy)   sed -e "s!^.\+\$![ -e ${d}/& ] || cp -HTvr & ${d}/& || exit!";;
+		remove) sed -e "s!^.\+\$!rm -fvr ${d}/& || exit!";;
+		esac | sh || return
 	) || return
 
 	d=${DESTDIR}${prefix}`[ ${host} != ${target} ] && echo /${target}`/lib
@@ -2586,16 +2587,21 @@ copy_libc()
 			&& echo ${CC:-${target:+${target}-}gcc} \
 			|| echo ${target:+${target}-}gcc \
 			) -print-file-name=crti.o | xargs dirname`
-	find . -mindepth 1 -name '*.o' | sed -e "
-		s!^\./!!
-		s!^.\+\$![ -e ${d}/& ] || install -DTv & ${d}/& || exit!
-		" | sh || return
+	find . -mindepth 1 -name '*.o' | sed -e 's!^\./!!' |
+		case ${1} in
+		copy)   sed -e "s!^.\+\$![ -e ${d}/& ] || install -DTv & ${d}/& || exit!";;
+		remove) sed -e "s!^.\+\$!rm -fvr ${d}/& || exit!";;
+		esac | sh || return
 	) || return
 
-	! echo ${target} | grep -qe linux || cp -fv `$([ ${host} = ${target} ] \
-		&& echo ${CC:-${target:+${target}-}gcc} \
-		|| echo ${target:+${target}-}gcc \
-		) -print-file-name=libc.so.6` ${d} || return
+	! echo ${target} | grep -qe linux ||
+		case ${1} in
+		copy) [ -f ${d}/libc.so.6 ] || cp -fv `$([ ${host} = ${target} ] \
+				&& echo ${CC:-${target:+${target}-}gcc} \
+				|| echo ${target:+${target}-}gcc \
+			) -print-file-name=libc.so.6` ${d} || return;;
+		remove) rm -fv ${d}/libc.so.6 || return;;
+		esac
 
 	for l in libgcc.a libgcc.so libgcc_s.so; do
 		(cd `$([ ${host} = ${target} ] \
@@ -2603,10 +2609,11 @@ copy_libc()
 				|| echo ${target:+${target}-}gcc \
 				) -print-file-name=${l} | xargs dirname` || return
 		[ -f ${l} ] || continue
-		find . -mindepth 1 -maxdepth 1 -name "${l}*" | sed -e "
-			s!^\./!!
-			s!^.\+\$![ -e ${d}/& ] || install -DTv & ${d}/& || exit!
-			" | sh || return
+		find . -mindepth 1 -maxdepth 1 -name "${l}*" | sed -e 's!^\./!!' |
+			case ${1} in
+			copy)   sed -e "s!^.\+\$![ -e ${d}/& ] || install -DTv & ${d}/& || exit!";;
+			remove) sed -e "s!^.\+\$!rm -fvr ${d}/& || exit!";;
+			esac | sh || return
 		) || return
 	done
 }
@@ -2644,7 +2651,7 @@ parse_cmdopts()
 			shift
 			eval ${opt}=\${1:-\${${opt}}}
 			;;
-		--prepare|--all|--fetch-only|--force|--strip|--cleanup|--copy-libc|--help|--tmpdir)
+		--prepare|--all|--fetch-only|--force|--strip|--cleanup|--with-libc|--help|--tmpdir)
 			opt=`echo ${1} | cut -d- -f3- | tr - _`
 			eval ${opt}=${opt}
 			;;
@@ -2652,7 +2659,7 @@ parse_cmdopts()
 		*) break;;
 		esac
 		case ${1} in
-		--prepare|--all|--copy-libc|--tmpdir) ;; # don't pass these options to child process.
+		--prepare|--all|--with-libc|--tmpdir) ;; # don't pass these options to child process.
 		*) cmdopt="${cmdopt:+${cmdopt} }${1}";;
 		esac
 		shift
@@ -2693,7 +2700,7 @@ main()
 		cleanup ${p} || return
 	done
 	[ -n "${fetch_only}" ] || generate_pathconfig ${DESTDIR}${prefix}/pathconfig.sh || return
-	[ -z "${copy_libc}" ] || copy_libc || return
+	[ -z "${with_libc}" ] || manipulate_libc copy || return
 }
 
 main "$@"
