@@ -162,6 +162,7 @@ EOF
 : ${libevent_ver:=2.1.11-stable}
 : ${tmux_ver:=3.1b}
 : ${zsh_ver:=5.8}
+: ${bash_ver:=5.0}
 : ${vim_ver:=8.2.1855}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
@@ -250,7 +251,7 @@ fetch()
 		wget -O ${zlib_src_dir}.tar.xz \
 			http://zlib.net/${zlib_name}.tar.xz || return;;
 	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|autoconf|automake|\
-	bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|grep|\
+	bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|grep|\
 	diffutils|patch|global|findutils|help2man|coreutils)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
@@ -1795,6 +1796,19 @@ EOF
 		make -C ${zsh_bld_dir} -j ${jobs} -k DESTDIR=${DESTDIR} install || true # XXX work around. if 'man' and 'nroff' are not found, 'make install' fails.
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/zsh || return
+		;;
+	bash)
+		[ -x ${DESTDIR}${prefix}/bin/bash -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${bash_bld_dir}/Makefile ] ||
+			(cd ${bash_bld_dir}
+			${bash_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-rpath) || return
+		make -C ${bash_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${bash_bld_dir} -j ${jobs} -k check || return
+		make -C ${bash_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		ln -fsv bash ${DESTDIR}${prefix}/bin/sh || return
 		;;
 	vim)
 		[ -x ${DESTDIR}${prefix}/bin/vim -a "${force_install}" != yes ] && return
