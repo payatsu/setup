@@ -2702,7 +2702,7 @@ parse_cmdopts()
 		*) break;;
 		esac
 		case ${1} in
-		--prepare|--all|--with-libc|--tmpdir) ;; # don't pass these options to child process.
+		--prepare|--all|--with-libc|--without-libc|--tmpdir) ;; # don't pass these options to child process.
 		*) cmdopt="${cmdopt:+${cmdopt} }${1}";;
 		esac
 		shift
