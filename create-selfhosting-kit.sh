@@ -2688,9 +2688,9 @@ parse_cmdopts()
 	unset cmdopt
 	while [ $# -gt 0 ]; do
 		case ${1} in
-		--prefix|--host|--jobs|--target)
+		--prefix|--host|--jobs|--target|--*-ver)
 			cmdopt="${cmdopt:+${cmdopt} }${1}"
-			opt=`echo ${1} | cut -d- -f3`
+			opt=`echo ${1} | cut -d- -f3- | tr - _`
 			shift
 			eval ${opt}=\${1:-\${${opt}}}
 			;;
