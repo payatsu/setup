@@ -1737,7 +1737,7 @@ EOF
 		make -C ${cpio_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	e2fsprogs)
-		[ -x ${prefix}/bin/mkfs.ext2 -a "${force_install}" != yes ] && return
+		[ -x ${DESTDIR}${prefix}/sbin/mkfs.ext2 -a "${force_install}" != yes ] && return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${e2fsprogs_bld_dir}/Makefile ] ||

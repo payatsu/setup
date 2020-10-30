@@ -4153,7 +4153,7 @@ install_native_util_linux()
 
 install_native_e2fsprogs()
 {
-	[ -x ${prefix}/bin/mkfs.ext2 -a "${force_install}" != yes ] && return
+	[ -x ${prefix}/sbin/mkfs.ext2 -a "${force_install}" != yes ] && return
 	fetch e2fsprogs || return
 	unpack e2fsprogs || return
 	[ -f ${e2fsprogs_bld_dir}/Makefile ] ||
