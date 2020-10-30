@@ -159,6 +159,7 @@ EOF
 : ${u_boot_ver:=2020.10}
 : ${tar_ver:=1.32}
 : ${cpio_ver:=2.13}
+: ${e2fsprogs_ver:=1.45.6}
 : ${v4l_utils_ver:=1.20.0}
 
 : ${screen_ver:=4.8.0}
@@ -373,6 +374,9 @@ fetch()
 	u-boot)
 		wget -O ${u_boot_src_dir}.tar.bz2 \
 			ftp://ftp.denx.de/pub/u-boot/${u_boot_name}.tar.bz2 || return;;
+	e2fsprogs)
+		wget -O ${e2fsprogs_src_dir}.tar.gz \
+			https://sourceforge.net/projects/e2fsprogs/files/e2fsprogs/v${e2fsprogs_ver}/${e2fsprogs_name}.tar.gz/download || return;;
 	v4l-utils)
 		wget -O ${v4l_utils_src_dir}.tar.bz2 \
 			https://linuxtv.org/downloads/v4l-utils/${v4l_utils_name}.tar.bz2 || return;;
@@ -1731,6 +1735,19 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${cpio_bld_dir} -j ${jobs} -k check || return
 		make -C ${cpio_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	e2fsprogs)
+		[ -x ${prefix}/bin/mkfs.ext2 -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${e2fsprogs_bld_dir}/Makefile ] ||
+			(cd ${e2fsprogs_bld_dir}
+			${e2fsprogs_src_dir}/configure --prefix=${prefix} --host=${host} --enable-verbose-makecmds --enable-elf-shlibs) || return
+		make -C ${e2fsprogs_bld_dir} -j 1 || return # -j '1' is for workaround
+		[ "${enable_check}" != yes ] ||
+			make -C ${e2fsprogs_bld_dir} -j ${jobs} -k check || return
+		make -C ${e2fsprogs_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		make -C ${e2fsprogs_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install-libs || return
 		;;
 	v4l-utils)
 		[ -x ${DESTDIR}${prefix}/bin/v4l2-ctl -a "${force_install}" != yes ] && return
