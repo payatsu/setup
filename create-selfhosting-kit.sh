@@ -1241,6 +1241,8 @@ EOF
 		;;
 	perf)
 		[ -x ${DESTDIR}${prefix}/bin/perf -a "${force_install}" != yes ] && return
+		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
+		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
 		init linux || return
 		fetch linux || return
 		unpack linux || return
@@ -1249,10 +1251,10 @@ EOF
 		mkdir -pv ${perf_bld_dir} || return
 		generate_toolchain_wrapper ${perf_bld_dir} || return
 		PKG_CONFIG_PATH= \
-		PKG_CONFIG_LIBDIR=`print_library_dir libelf.pc` \
+		PKG_CONFIG_LIBDIR= \
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} NO_LIBPERL=1 NO_SLANG=1 all || return
-		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} DESTDIR=${DESTDIR}${prefix} install || return
+		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" NO_LIBPERL=1 NO_SLANG=1 all || return
+		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" DESTDIR=${DESTDIR}${prefix} install || return
 		;;
 	libpcap)
 		[ -f ${DESTDIR}${prefix}/include/pcap/pcap.h -a "${force_install}" != yes ] && return
