@@ -128,6 +128,8 @@ EOF
 : ${gdb_ver:=10.1}
 : ${strace_ver:=5.5}
 : ${systemtap_ver:=4.2}
+: ${linux_ver:=5.7.10}
+: ${perf_ver:=${linux_ver}}
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
 : ${procps_ver:=3.3.15}
@@ -326,6 +328,9 @@ fetch()
 	systemtap)
 		wget -O ${systemtap_src_dir}.tar.gz \
 			https://sourceware.org/systemtap/ftp/releases/${systemtap_name}.tar.gz || return;;
+	linux|perf)
+		wget -O ${linux_src_dir}.tar.xz \
+			https://www.kernel.org/pub/linux/kernel/v`print_version ${_1} 1`.x/${linux_name}.tar.xz || return;;
 	libpcap|tcpdump)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			http://www.tcpdump.org/release/\${${_1}_name}.tar.gz || return;;
@@ -1226,6 +1231,29 @@ EOF
 			make -C ${systemtap_bld_dir} -j ${jobs} -k check || return
 		make -C ${systemtap_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
+	linux)
+		fetch ${1} || return
+		unpack ${1} || return
+		generate_toolchain_wrapper ${linux_bld_dir} || return
+		make -C ${linux_src_dir} -j ${jobs} V=1 O=${linux_bld_dir} mrproper || return
+		make -C ${linux_src_dir} -j ${jobs} V=1 O=${linux_bld_dir} \
+			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${linux_bld_dir}/${host:+${host}-} INSTALL_HDR_PATH=${DESTDIR}${prefix} headers_install || return
+		;;
+	perf)
+		[ -x ${DESTDIR}${prefix}/bin/perf -a "${force_install}" != yes ] && return
+		init linux || return
+		fetch linux || return
+		unpack linux || return
+		perf_ver=${linux_ver}
+		init ${1} || return
+		mkdir -pv ${perf_bld_dir} || return
+		generate_toolchain_wrapper ${perf_bld_dir} || return
+		PKG_CONFIG_PATH= \
+		PKG_CONFIG_LIBDIR=`print_library_dir libelf.pc` \
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} NO_LIBPERL=1 NO_SLANG=1 all || return
+		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} DESTDIR=${DESTDIR}${prefix} install || return
+		;;
 	libpcap)
 		[ -f ${DESTDIR}${prefix}/include/pcap/pcap.h -a "${force_install}" != yes ] && return
 		fetch ${1} || return
@@ -2072,7 +2100,7 @@ EOF
 		[ -f ${DESTDIR}${prefix}/go/bin/go ] || ln -sv `which go` ${DESTDIR}${prefix}/go/bin/go || return
 		(cd ${go_src_dir}/src
 		GOROOT_BOOTSTRAP=`go version | grep -qe gccgo && echo ${DESTDIR}${prefix}/go` \
-			GOROOT_FINAL=${prefix}/go GOARCH=`goarch ${host}` GOOS=linux bash -x ${go_src_dir}/src/make.bash -v) || return
+			GOROOT_FINAL=${prefix}/go GOARCH=`print_goarch ${host}` GOOS=linux bash -x ${go_src_dir}/src/make.bash -v) || return
 		rm -v ${DESTDIR}${prefix}/go/bin/go || return
 		cp -Tfvr ${go_src_dir} ${DESTDIR}${prefix}/go || return
 		;;
@@ -2499,6 +2527,23 @@ generate_gxx_wrapper()
 		} | tr '\n' ' '`" || return
 }
 
+generate_toolchain_wrapper()
+{
+	if [ $# -eq 1 ]; then
+		generate_gcc_wrapper ${1} || return
+		for t in ar as nm objcopy objdump ranlib strip cpp ld; do
+			generate_toolchain_wrapper ${1} ${t} || return
+		done
+		return
+	fi
+	generate_command_wrapper ${1} ${host:+${host}-}${2} \
+		"`{
+			which ${host:+${host}-}${2}
+			eval echo \\\${$(echo ${2} | tr a-z A-Z):-\\\${host:+\\\${host}-}${2}} | grep -oPe '(?<= ).+'
+			echo \\"\\$@\\"
+		} | tr '\n' ' '`" || return
+}
+
 truncate_path_in_elf()
 {
 	seek=`grep -aboe ${2}${3} ${1} 2> /dev/null | cut -d: -f1 | head -n 1`
@@ -2507,7 +2552,20 @@ truncate_path_in_elf()
 	dd bs=c count=`echo ${3} | wc -c` if=${1} of=${1} conv=notrunc seek=${seek} skip=`expr ${seek} + ${dirname_count}` || return
 }
 
-goarch()
+print_linux_arch()
+{
+	case ${1} in
+	arm*)        echo arm;;
+	aarch64*)    echo arm64;;
+	i?86*)       echo x86;;
+	microblaze*) echo microblaze;;
+	nios2*)      echo nios2;;
+	x86_64*)     echo x86;;
+	*)           echo unknown; echo Unknown target architecture: ${1} >&2;;
+	esac
+}
+
+print_goarch()
 {
 	case ${1} in
 	x86_64*)  echo amd64;;
