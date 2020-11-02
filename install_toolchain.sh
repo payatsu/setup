@@ -51,6 +51,7 @@
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
 : ${linux_ver:=5.7.10}
+: ${perf_ver:=${linux_ver}}
 : ${kmod_ver:=27}
 : ${dtc_ver:=1.6.0}
 : ${u_boot_ver:=2020.10}
@@ -389,6 +390,8 @@ help()
 		Specify the version of rsync you want, currently '${rsync_ver}'.
 	linux_ver
 		Specify the version of Linux kernel you want, currently '${linux_ver}'.
+	perf_ver
+		Specify the version of perf you want, currently '${perf_ver}'.
 	kmod_ver
 		Specify the version of kmod you want, currently '${kmod_ver}'.
 	dtc_ver
@@ -776,7 +779,7 @@ fetch()
 		rsync)
 			wget -O ${rsync_src_dir}.tar.gz \
 				https://download.samba.org/pub/rsync/src/${rsync_name}.tar.gz || return;;
-		linux)
+		linux|perf)
 			case `print_version linux` in
 			2.6)     linux_major_ver=v2.6;;
 			3.*)     linux_major_ver=v3.x;;
@@ -2274,6 +2277,9 @@ install_native_binutils()
 install_native_elfutils()
 {
 	[ -x ${prefix}/bin/eu-addr2line -a "${force_install}" != yes ] && return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path bzlib.h > /dev/null || install_native_bzip2 || return
+	print_header_path lzma.h > /dev/null || install_native_xz || return
 	fetch elfutils || return
 	unpack elfutils || return
 	[ -f ${elfutils_bld_dir}/Makefile ] ||
@@ -2356,6 +2362,18 @@ install_native_linux_header()
 	make -C ${linux_src_dir} -j ${jobs} V=1 O=${linux_bld_dir} mrproper || return
 	make -C ${linux_src_dir} -j ${jobs} V=1 O=${linux_bld_dir} \
 		ARCH=${linux_arch} INSTALL_HDR_PATH=${DESTDIR}${prefix} headers_install || return
+}
+
+install_native_perf()
+{
+	[ -x ${prefix}/bin/perf -a "${force_install}" != yes ] && return
+	print_header_path libelf.h > /dev/null || install_native_elfutils || return
+	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
+	fetch linux || return
+	unpack linux || return
+	mkdir -pv ${perf_bld_dir} || return
+	make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" NO_LIBPERL=1 NO_LIBPYTHON=1 NO_SLANG=1 all || return
+	make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" DESTDIR=${DESTDIR}${prefix} install || return
 }
 
 install_native_kmod()
