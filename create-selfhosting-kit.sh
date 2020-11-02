@@ -171,6 +171,7 @@ EOF
 : ${bash_ver:=5.0}
 : ${vim_ver:=8.2.1855}
 : ${vimdoc_ja_ver:=master}
+: ${emacs_ver:=27.1}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.5}
 : ${diffutils_ver:=3.7}
@@ -257,7 +258,7 @@ fetch()
 		wget -O ${zlib_src_dir}.tar.xz \
 			http://zlib.net/${zlib_name}.tar.xz || return;;
 	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|autoconf|automake|\
-	bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|grep|\
+	bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|emacs|grep|\
 	diffutils|patch|global|findutils|help2man|coreutils)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
@@ -1955,6 +1956,41 @@ EOF
 		cp -Tvr ${vimdoc_ja_src_dir} ${DESTDIR}${prefix}/share/vim/vimfiles || return
 		! which vim > /dev/null && return
 		vim -i NONE -u NONE -N -c "helptags ${DESTDIR}${prefix}/share/vim/vimfiles/doc" -c qall || return
+		;;
+	emacs)
+		[ -x ${DESTDIR}${prefix}/bin/emacs -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		print_header_path gmp.h > /dev/null || ${0} ${cmdopt} gmp || return
+		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
+		fetch ${1} || return
+		unpack ${1} || return
+		sed -i -e '
+			/^make-docfile\${EXEEXT}:/{
+				n
+				s/\$(CC)/gcc/
+				s/\${ALL_CFLAGS}/${BASE_CFLAGS} ${PROFILING_CFLAGS}/
+				s!\$(LOADLIBES)!$(top_srcdir)/lib/binary-io.c $(top_srcdir)/lib/c-ctype.c!
+			}
+			/^make-fingerprint\${EXEEXT}:/{
+				n
+				s/\$(CC)/gcc/
+				s/\${ALL_CFLAGS}/${BASE_CFLAGS} ${PROFILING_CFLAGS}/
+				s!\$(LOADLIBES)!$(top_srcdir)/lib/fingerprint.c $(top_srcdir)/lib/getopt.c $(top_srcdir)/lib/sha256.c!
+			}' ${emacs_src_dir}/lib-src/Makefile.in || return
+		[ -f ${emacs_bld_dir}/Makefile ] ||
+			(cd ${emacs_bld_dir}
+			CPPFLAGS="${CPPFLAGS} -I`print_header_dir ncurses.h`" LDFLAGS="${LDFLAGS} -L`print_library_dir libncurses.so` -lz -llzma" \
+				${emacs_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				--without-sound --with-dumping=none --without-dbus --without-gnutls --with-modules --without-x \
+				PKG_CONFIG_PATH= \
+				PKG_CONFIG_LIBDIR=`print_library_dir libxml-2.0.pc` \
+				PKG_CONFIG_SYSROOT_DIR=`print_pkg_config_sysroot libxml-2.0.pc` \
+				) || return
+		make -C ${emacs_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${emacs_bld_dir} -j ${jobs} -k check || return
+		make -C ${emacs_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	ctags)
 		[ -x ${DESTDIR}${prefix}/bin/ctags -a "${force_install}" != yes ] && return
