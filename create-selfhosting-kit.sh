@@ -1345,7 +1345,7 @@ EOF
 			-DCMAKE_CXX_COMPILER=${bpftrace_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_C_FLAGS="${CFLAGS} -L`print_library_dir libelf.so` -L`print_library_dir libz.so` -lelf -lz" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`print_header_dir bpf.h bcc/compat/linux`/bcc/compat -I`print_header_dir libelf.h` -L`print_library_dir libelf.so` -L`print_library_dir libz.so` -lelf -lz" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`print_header_dir bpf.h bcc/compat/linux`/bcc/compat -I`print_header_dir libelf.h` -I`print_header_dir bfd.h` -L`print_library_dir libelf.so` -L`print_library_dir libz.so` -lelf -lz" \
 			-DLIBBFD_INCLUDE_DIRS=`print_header_dir bfd.h` \
 			-DLIBBFD_LIBRARIES=`print_library_path libbfd.so` \
 			-DLIBOPCODES_INCLUDE_DIRS=`print_header_dir dis-asm.h` \
@@ -1353,7 +1353,7 @@ EOF
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
 			-DClang_DIR=`print_library_dir ClangConfig.cmake` \
 			|| return
-		cmake --build ${bpftrace_bld_dir} -v -j ${jobs} --target bpftrace || return
+		cmake --build ${bpftrace_bld_dir} -v -j ${jobs} --target bpftrace man || return
 		cmake --install ${bpftrace_bld_dir} -v ${strip:+--${strip}} || return
 		;;
 	libpcap)
