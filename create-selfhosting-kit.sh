@@ -130,6 +130,9 @@ EOF
 : ${systemtap_ver:=4.2}
 : ${linux_ver:=5.7.10}
 : ${perf_ver:=${linux_ver}}
+: ${libbpf_ver:=0.1.1}
+: ${bcc_ver:=0.16.0}
+: ${bpftrace_ver:=0.11.2}
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
 : ${procps_ver:=3.3.15}
@@ -332,6 +335,15 @@ fetch()
 	linux|perf)
 		wget -O ${linux_src_dir}.tar.xz \
 			https://www.kernel.org/pub/linux/kernel/v`print_version ${_1} 1`.x/${linux_name}.tar.xz || return;;
+	libbpf)
+		wget -O ${libbpf_src_dir}.tar.gz \
+			https://github.com/libbpf/libbpf/archive/v${libbpf_ver}.tar.gz || return;;
+	bcc)
+		wget -O ${bcc_src_dir}.tar.gz \
+			https://github.com/iovisor/bcc/archive/v${bcc_ver}.tar.gz || return;;
+	bpftrace)
+		wget -O ${bpftrace_src_dir}.tar.gz \
+			https://github.com/iovisor/bpftrace/archive/v${bpftrace_ver}.tar.gz || return;;
 	libpcap|tcpdump)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			http://www.tcpdump.org/release/\${${_1}_name}.tar.gz || return;;
@@ -576,6 +588,12 @@ make()
 {
 	echo make "$@"
 	command make "$@"
+}
+
+cmake()
+{
+	echo cmake "$@"
+	command cmake "$@"
 }
 
 build()
@@ -1256,6 +1274,87 @@ EOF
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" NO_LIBPERL=1 NO_SLANG=1 all || return
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" DESTDIR=${DESTDIR}${prefix} install || return
+		;;
+	libbpf)
+		[ -f ${DESTDIR}${prefix}/include/bpf/bpf.h -a "${force_install}" != yes ] && return
+		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
+		fetch ${1} || return
+		unpack ${1} || return
+		PKG_CONFIG_PATH= \
+		PKG_CONFIG_LIBDIR=`print_library_dir libelf.pc` \
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+		make -C ${libbpf_src_dir}/src -j ${jobs} V=1 OBJDIR=${libbpf_bld_dir} CC="${CC:-${host:+${host}-}gcc}" PREFIX=${prefix} || return
+		make -C ${libbpf_src_dir}/src -j ${jobs} V=1 OBJDIR=${libbpf_bld_dir} CC="${CC:-${host:+${host}-}gcc}" PREFIX=${prefix} DESTDIR=${DESTDIR} install || return
+		[ -z "${strip}" ] && return
+		for l in lib/libbpf.a lib/libbpf.so lib64/libbpf.a lib64/libbpf.so; do
+			[ -f ${DESTDIR}${prefix}/${l} ] || continue
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/${l} || return
+		done
+		;;
+	bcc)
+		[ -f ${DESTDIR}${prefix}/include/bcc/bcc_version.h -a "${force_install}" != yes ] && return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
+		${0} ${cmdopt} --host ${build} --target ${build} bison || return
+		${0} ${cmdopt} --host ${build} --target ${build} flex || return
+		print_header_path FlexLexer.h > /dev/null || ${0} ${cmdopt} flex || return
+		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
+		print_header_path Version.h clang/Basic > /dev/null || ${0} ${cmdopt} clang || return
+		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
+		print_header_path bfd.h > /dev/null || ${0} ${cmdopt} binutils || return
+		print_binary_path python3 > /dev/null || ${0} ${cmdopt} Python || return
+		fetch ${1} || return
+		unpack ${1} || return
+		sed -i -e '/--install-layout/s/^ /#&/' ${bcc_src_dir}/src/python/CMakeLists.txt || return
+		init libbpf || return
+		fetch libbpf || return
+		unpack libbpf || return
+		[ -f ${bcc_src_dir}/src/cc/libbpf/README.md ] || cp -Tvr ${libbpf_src_dir} ${bcc_src_dir}/src/cc/libbpf || return
+		generate_gcc_wrapper ${bcc_bld_dir} || return
+		generate_gxx_wrapper ${bcc_bld_dir} || return
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${bcc_src_dir} -B ${bcc_bld_dir} \
+			-DCMAKE_C_COMPILER=${bcc_bld_dir}/${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${bcc_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DCMAKE_C_FLAGS="${CFLAGS} -L`print_library_dir libelf.so` -L`print_library_dir libz.so`" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`print_header_dir FlexLexer.h` -L`print_library_dir libelf.so` -L`print_library_dir libz.so` -lelf -lz" \
+			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
+			-DPYTHON_CMD=python3 \
+			|| return
+		cmake --build ${bcc_bld_dir} -v -j ${jobs} || return
+		cmake --install ${bcc_bld_dir} -v ${strip:+--${strip}} || return
+		;;
+	bpftrace)
+		[ -x ${DESTDIR}${prefix}/bin/bpftrace -a "${force_install}" != yes ] && return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
+		${0} ${cmdopt} --host ${build} --target ${build} bison || return
+		${0} ${cmdopt} --host ${build} --target ${build} flex || return
+		print_header_path FlexLexer.h > /dev/null || ${0} ${cmdopt} flex || return
+		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
+		print_header_path Version.h clang/Basic > /dev/null || ${0} ${cmdopt} clang || return
+		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
+		print_header_path bfd.h > /dev/null || ${0} ${cmdopt} binutils || return
+		print_header_path bcc_version.h bcc > /dev/null || ${0} ${cmdopt} bcc || return
+		fetch ${1} || return
+		unpack ${1} || return
+		generate_gcc_wrapper ${bpftrace_bld_dir} || return
+		generate_gxx_wrapper ${bpftrace_bld_dir} || return
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${bpftrace_src_dir} -B ${bpftrace_bld_dir} \
+			-DCMAKE_C_COMPILER=${bpftrace_bld_dir}/${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${bpftrace_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DCMAKE_C_FLAGS="${CFLAGS} -L`print_library_dir libelf.so` -L`print_library_dir libz.so` -lelf -lz" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`print_header_dir bpf.h bcc/compat/linux`/bcc/compat -I`print_header_dir libelf.h` -L`print_library_dir libelf.so` -L`print_library_dir libz.so` -lelf -lz" \
+			-DLIBBFD_INCLUDE_DIRS=`print_header_dir bfd.h` \
+			-DLIBBFD_LIBRARIES=`print_library_path libbfd.so` \
+			-DLIBOPCODES_INCLUDE_DIRS=`print_header_dir dis-asm.h` \
+			-DLIBOPCODES_LIBRARIES=`print_library_path libopcodes.so` \
+			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
+			-DClang_DIR=`print_library_dir ClangConfig.cmake` \
+			|| return
+		cmake --build ${bpftrace_bld_dir} -v -j ${jobs} --target bpftrace || return
+		cmake --install ${bpftrace_bld_dir} -v ${strip:+--${strip}} || return
 		;;
 	libpcap)
 		[ -f ${DESTDIR}${prefix}/include/pcap/pcap.h -a "${force_install}" != yes ] && return
