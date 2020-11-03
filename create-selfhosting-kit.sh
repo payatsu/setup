@@ -2402,13 +2402,7 @@ EOF
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		fetch ${1} || return
 		unpack ${1} || return
-		[ -f ${lld_bld_dir}/llvm-config ] || cat << EOF > ${lld_bld_dir}/llvm-config || return
-echo `print_library_dir libLLVM.so`
-echo `print_header_dir llvm-config.h`
-echo `print_library_dir LLVMConfig.cmake`
-echo not-used
-EOF
-		chmod -v a+x ${lld_bld_dir}/llvm-config || return
+		generate_llvm_config_proxy ${lld_bld_dir} || return
 		generate_gcc_wrapper ${lld_bld_dir} || return
 		generate_gxx_wrapper ${lld_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -2580,6 +2574,17 @@ generate_toolchain_wrapper()
 			eval echo \\\${$(echo ${2} | tr a-z A-Z):-\\\${host:+\\\${host}-}${2}} | grep -oPe '(?<= ).+'
 			echo \\"\\$@\\"
 		} | tr '\n' ' '`" || return
+}
+
+generate_llvm_config_proxy()
+{
+	generate_command_wrapper ${1} llvm-config \
+		"\
+echo `print_library_dir libLLVM.so`
+echo `print_header_dir llvm-config.h`
+echo `print_library_dir LLVMConfig.cmake`
+echo not-used\
+" || return
 }
 
 truncate_path_in_elf()
