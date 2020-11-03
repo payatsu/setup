@@ -1449,7 +1449,8 @@ EOF
 		unpack ${1} || return
 		[ -f ${bison_bld_dir}/Makefile ] ||
 			(cd ${bison_bld_dir}
-			${bison_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
+			${bison_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--enable-relocatable) || return
 		make -C ${bison_bld_dir} -j ${jobs} || return
 		make -C ${bison_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
