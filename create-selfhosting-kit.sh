@@ -58,6 +58,9 @@ help()
     --without-libc
         remove standard C library header files, crt*.o, and so on.
 
+    --XXX-ver x.y.z
+        specify the version of package XXX as x.y.z.
+
     --help
         show this help.
 
