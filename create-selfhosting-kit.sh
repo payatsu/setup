@@ -13,8 +13,8 @@ help()
 
 [SYNOPSIS]
     `basename ${0}` [--prefix PREFIX] [--host HOST] [--jobs JOBS] [--prepare]
-        [-all] [--fetch-only] [--force] [--strip] [--cleanup] [--with-libc]
-        [--help] [packages...]
+        [-all] [--exclude XXX] [--fetch-only] [--force] [--strip] [--cleanup]
+        [--with-libc] [--without-libc] [--help] [packages...]
 
 [OPTIONS]
     --prefix PREFIX [default: ${default_prefix}]
@@ -35,6 +35,9 @@ help()
 
     --all
         build/install all packages listed bellow.
+
+    --exclude XXX
+        exclude package XXX when '--all' is enabled.
 
     --fetch-only
         fetch source packages, but do not build/install them.
@@ -555,6 +558,11 @@ print_packages()
 		s/compiler_rt/compiler-rt/
 		s/clang_tools_extra/clang-tools-extra/
 	' || return
+}
+
+print_filtered_packages()
+{
+	print_packages | grep -v -e dummy `echo $@ | sed -e 's/\>/$/g;s/\</-e ^/g'`
 }
 
 print_build_python_version()
@@ -2894,8 +2902,8 @@ parse_cmdopts()
 	while [ $# -gt 0 ]; do
 		case ${1} in
 		--prefix|--host|--jobs|--target|--*-ver)
-			cmdopt="${cmdopt:+${cmdopt} }${1}"
 			opt=`echo ${1} | cut -d- -f3- | tr - _`
+			cmdopt="${cmdopt:+${cmdopt} }${1}"
 			shift
 			eval ${opt}=\${1:-\${${opt}}}
 			;;
@@ -2903,6 +2911,9 @@ parse_cmdopts()
 			opt=`echo ${1} | cut -d- -f3- | tr - _`
 			eval ${opt}=${opt}
 			;;
+		--exclude)
+			opt=`echo ${1} | cut -d- -f3- | tr - _`
+			shift; eval ${opt}=\"\${${opt}:+\${${opt}} }\${1:-\${${opt}}}\"; shift; continue;;
 		-*|--*) echo ERROR: unknown option \'${1}\'. try \'--help\' for more information. >&2; return 1;;
 		*) break;;
 		esac
@@ -2924,7 +2935,7 @@ main()
 	set -- ${pkgs} || return
 
 	[ -n "${help}" ] && { help; return;}
-	[ -z "${all}" ] || set -- `print_packages` || return
+	[ -z "${all}" ] || set -- `print_filtered_packages ${exclude}` || return
 	[ $# -eq 0 ] && echo WARNING: no packages specified. try \'--help\' for more information. >&2
 	[ -n "${force}" ] && force_install=yes
 
