@@ -1402,6 +1402,7 @@ EOF
 	procps)
 		[ -x ${DESTDIR}${prefix}/bin/ps -a "${force_install}" != yes ] && return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		which gettext > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gettext || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${procps_src_dir}/configure ] ||
