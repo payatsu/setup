@@ -1262,6 +1262,7 @@ EOF
 		make -C ${systemtap_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	linux)
+		[ -f ${DESTDIR}${prefix}/include/linux/version.h -a "${force_install}" != yes ] && return
 		fetch ${1} || return
 		unpack ${1} || return
 		generate_toolchain_wrapper ${linux_bld_dir} || return
