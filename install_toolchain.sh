@@ -88,6 +88,7 @@
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.4.3}
+: ${nano_ver:=5.3}
 : ${grep_ver:=3.5}
 : ${global_ver:=6.6.5}
 : ${pcre_ver:=8.43}
@@ -462,6 +463,8 @@ help()
 		Specify the version of ctags you want, currently '${ctags_ver}'.
 	neovim_ver
 		Specify the version of Neovim you want, currently '${neovim_ver}'.
+	nano_ver
+		Specify the version of GNU Nano you want, currently '${nano_ver}'.
 	grep_ver
 		Specify the version of GNU Grep you want, currently '${grep_ver}'.
 	global_ver
@@ -701,7 +704,7 @@ fetch()
 		eval check_archive \${${_p}_src_dir} || eval [ -d \${${_p}_src_dir} -o -h \${${_p}_src_dir} ] && continue
 		case ${p} in
 		tar|cpio|gzip|wget|help2man|texinfo|coreutils|bison|m4|autoconf|autoconf-archive|automake|libtool|sed|gawk|\
-		gnulib|make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|grep|global|\
+		gnulib|make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|nano|grep|global|\
 		diffutils|patch|findutils|less|groff|gdbm|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
 			eval [ "\${${p}_ver}" = git ] && {
 				case ${p} in
@@ -3563,6 +3566,21 @@ install_native_dein()
 			https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh || return
 	[ `whoami` != root ] || ! echo Error. run as root is not recommended. >&2 || return
 	sh ${src}/vim/installer.sh ${HOME}/.vim || return
+}
+
+install_native_nano()
+{
+	[ -x ${prefix}/bin/nano -a "${force_install}" != yes ] && return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
+	fetch nano || return
+	unpack nano || return
+	[ -f ${nano_bld_dir}/Makefile ] ||
+		(cd ${nano_bld_dir}
+		${nano_src_dir}/configure --prefix=${prefix} --host=${host} --disable-rpath) || return
+	make -C ${nano_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${nano_bld_dir} -j ${jobs} -k check || return
+	make -C ${nano_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
 install_native_grep()

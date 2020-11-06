@@ -181,6 +181,7 @@ EOF
 : ${vim_ver:=8.2.1855}
 : ${vimdoc_ja_ver:=master}
 : ${emacs_ver:=27.1}
+: ${nano_ver:=5.3}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.5}
 : ${diffutils_ver:=3.7}
@@ -267,7 +268,7 @@ fetch()
 		wget -O ${zlib_src_dir}.tar.xz \
 			http://zlib.net/${zlib_name}.tar.xz || return;;
 	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|autoconf|automake|\
-	bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|emacs|grep|\
+	bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|emacs|nano|grep|\
 	diffutils|patch|global|findutils|help2man|coreutils)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
@@ -2109,6 +2110,22 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${emacs_bld_dir} -j ${jobs} -k check || return
 		make -C ${emacs_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	nano)
+		[ -x ${DESTDIR}${prefix}/bin/nano -a "${force_install}" != yes ] && return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${nano_bld_dir}/Makefile ] ||
+			(cd ${nano_bld_dir}
+			${nano_src_dir}/configure --prefix=${prefix} --host=${host} --disable-rpath \
+				CFLAGS="${CFLAGS} -I`print_header_dir ncurses.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libncurses.so`" \
+			) || return
+		make -C ${nano_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${nano_bld_dir} -j ${jobs} -k check || return
+		make -C ${nano_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	ctags)
 		[ -x ${DESTDIR}${prefix}/bin/ctags -a "${force_install}" != yes ] && return
