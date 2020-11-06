@@ -562,7 +562,7 @@ print_packages()
 
 print_filtered_packages()
 {
-	print_packages | grep -v -e dummy `echo $@ | sed -e 's/\>/$/g;s/\</-e ^/g'`
+	print_packages | grep -v -e dummy `echo $@ | tr ' ' '\n' | sed -e 's/^/-e ^/;s/$/$/'`
 }
 
 print_build_python_version()
