@@ -2747,35 +2747,40 @@ prefix=$({ cd $(dirname ${BASH_SOURCE:-${(%):-%N}}) && pwd || echo prefix_place_
 host=host_place_holder
 func_place_holder()
 {
+	tmp_PATH=${PATH}
 	for p in ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/sbin ${DESTDIR}${prefix}/go/bin ${DESTDIR}${prefix}/lib/ccache; do
 		[ -n "${DESTDIR}" -o -d ${p} ] || continue
-		echo ${PATH} | tr : '\n' | grep -qe ^${p}\$ \
-			&& PATH=${p}`echo ${PATH} | sed -e "
+		echo ${tmp_PATH} | tr : '\n' | grep -qe ^${p}\$ \
+			&& tmp_PATH=${p}`echo ${tmp_PATH} | sed -e "
 					s%\(^\|:\)${p}\(\$\|:\)%\1\2%g
 					s/::/:/g
 					s/^://
 					s/:\$//
 					s/^./:&/
 				"` \
-			|| PATH=${p}${PATH:+:${PATH}}
+			|| tmp_PATH=${p}${tmp_PATH:+:${tmp_PATH}}
 	done
 	unset p
 
+	tmp_LD_LIBRARY_PATH=${LD_LIBRARY_PATH}
 	for p in ${DESTDIR}${prefix}/lib ${DESTDIR}${prefix}/lib64 `[ -d ${DESTDIR}${prefix}/${host} ] && find ${DESTDIR}${prefix}/${host} -mindepth 2 -maxdepth 2 -type d -name lib` \
 		`[ -d ${DESTDIR}${prefix}/lib/gcc/${host} ] && find ${DESTDIR}${prefix}/lib/gcc/${host} -mindepth 1 -maxdepth 1 -type d -name '*.?.?' | sort -rV | head -n 1` \
 		${DESTDIR}${prefix}/lib/`uname -m`-linux; do
 		[ -n "${DESTDIR}" -o -d ${p} ] || continue
-		echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ \
-			&& export LD_LIBRARY_PATH=${p}`echo ${LD_LIBRARY_PATH} | sed -e "
+		echo ${tmp_LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ \
+			&& tmp_LD_LIBRARY_PATH=${p}`echo ${tmp_LD_LIBRARY_PATH} | sed -e "
 					s%\(^\|:\)${p}\(\$\|:\)%\1\2%g
 					s/::/:/g
 					s/^://
 					s/:\$//
 					s/^./:&/
 				"` \
-			|| export LD_LIBRARY_PATH=${p}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+			|| tmp_LD_LIBRARY_PATH=${p}${tmp_LD_LIBRARY_PATH:+:${tmp_LD_LIBRARY_PATH}}
 	done
 	unset p
+
+	export PATH=${tmp_PATH} LD_LIBRARY_PATH=${tmp_LD_LIBRARY_PATH}
+	unset tmp_PATH tmp_LD_LIBRARY_PATH
 
 	echo ${MANPATH} | tr : '\n' | grep -qe ^${DESTDIR}${prefix}/share/man\$ \
 		&& export MANPATH=${DESTDIR}${prefix}/share/man:`echo ${MANPATH} | sed -e '
