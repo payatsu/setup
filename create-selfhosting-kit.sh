@@ -1954,8 +1954,8 @@ EOF
 		[ -f ${tmux_bld_dir}/Makefile ] ||
 			(cd ${tmux_bld_dir}
 			${tmux_src_dir}/configure --prefix=${prefix} --host=${host} \
-				CPPFLAGS="${CPPFLAGS} -I`print_header_dir curses.h`" \
-				LDFLAGS="${LDFLAGS} -L`print_library_dir libtinfo.so`" \
+				CPPFLAGS="${CPPFLAGS} -I`print_header_dir curses.h` -I`print_header_dir event.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libtinfo.so` -L`print_library_dir libevent.so`" \
 				LIBTINFO_LIBS=-ltinfo) || return
 		make -C ${tmux_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
