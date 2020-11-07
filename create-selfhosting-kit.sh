@@ -1315,6 +1315,7 @@ EOF
 		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		print_header_path bfd.h > /dev/null || ${0} ${cmdopt} binutils || return
 		print_binary_path python3 > /dev/null || ${0} ${cmdopt} Python || return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		fetch ${1} || return
 		unpack ${1} || return
 		sed -i -e '/--install-layout/s/^ /#&/' ${bcc_src_dir}/src/python/CMakeLists.txt || return
@@ -1330,7 +1331,7 @@ EOF
 			-DCMAKE_CXX_COMPILER=${bcc_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_C_FLAGS="${CFLAGS} -L`print_library_dir libelf.so` -L`print_library_dir libz.so`" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`print_header_dir FlexLexer.h` -L`print_library_dir libelf.so` -L`print_library_dir libz.so` -lelf -lz" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`print_header_dir FlexLexer.h` -L`print_library_dir libelf.so` -L`print_library_dir libz.so` -L`print_library_dir libtinfo.so` -ltinfo -lelf -lz" \
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
 			-DPYTHON_CMD=python3 \
 			|| return
