@@ -1351,6 +1351,7 @@ EOF
 		print_header_path bcc_version.h bcc > /dev/null || ${0} ${cmdopt} bcc || return
 		fetch ${1} || return
 		unpack ${1} || return
+		sed -i -e 's/\(set(CMAKE_REQUIRED_LIBRARIES bcc\)\()\)/\1 tinfo\2/' ${bpftrace_src_dir}/CMakeLists.txt || return
 		generate_gcc_wrapper ${bpftrace_bld_dir} || return
 		generate_gxx_wrapper ${bpftrace_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
