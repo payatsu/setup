@@ -1285,8 +1285,8 @@ EOF
 		PKG_CONFIG_PATH= \
 		PKG_CONFIG_LIBDIR= \
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" NO_LIBPERL=1 NO_SLANG=1 all || return
-		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" DESTDIR=${DESTDIR}${prefix} install || return
+		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" NO_LIBPERL=1 NO_SLANG=1 all || return
+		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" DESTDIR=${DESTDIR}${prefix} install || return
 		;;
 	libbpf)
 		[ -f ${DESTDIR}${prefix}/include/bpf/bpf.h -a "${force_install}" != yes ] && return
