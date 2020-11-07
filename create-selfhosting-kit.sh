@@ -2861,7 +2861,7 @@ manipulate_libc()
 			&& echo ${CC:-${target:+${target}-}gcc} \
 			|| echo ${target:+${target}-}gcc \
 			) -print-sysroot`/usr/include
-	find . -mindepth 1 -maxdepth 1 | sed -e 's!^\./!!' |
+	find . -mindepth 1 -maxdepth 2 | sed -e 's!^\./!!' |
 		case ${1} in
 		copy)   sed -e "s!^.\+\$![ -e ${d}/& ] || cp -HTvr & ${d}/& || exit!";;
 		remove) sed -e "s!^.\+\$!rm -fvr ${d}/& || exit!";;
