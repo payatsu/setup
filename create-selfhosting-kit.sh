@@ -1852,7 +1852,7 @@ EOF
 		[ -f ${u_boot_bld_dir}/.config ] ||
 			make -C ${u_boot_bld_dir} -j ${jobs} V=1 sandbox_defconfig || return
 		sed -i -e 's/^	\$(Q)\$(MAKE) \$(build)=\$@$/& HOSTCC=$(MYCC)/' ${u_boot_bld_dir}/Makefile || return
-		sed -i -e '/^\<hostc_flags\>/s! \$(__hostc_flags)$!& -I'`print_header_dir evp.h openssl`'!' ${u_boot_bld_dir}/scripts/Makefile.host || return
+		sed -i -e '/^\<hostc_flags\>/s! \$(__hostc_flags)$!& -idirafter'`print_header_dir evp.h openssl`'!' ${u_boot_bld_dir}/scripts/Makefile.host || return
 		make -C ${u_boot_bld_dir} -j ${jobs} V=1 NO_SDL=1 MYCC=${u_boot_bld_dir}/${host:+${host}-}gcc HOSTLDFLAGS=-L`print_library_dir libssl.so` tools || return
 		mkdir -pv ${DESTDIR}${prefix}/bin || return
 		find ${u_boot_bld_dir}/tools -maxdepth 1 -type f -perm /100 -exec install -vt ${DESTDIR}${prefix}/bin {} + || return
