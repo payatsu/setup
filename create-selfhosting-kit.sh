@@ -1727,7 +1727,8 @@ EOF
 		unpack ${1} || return
 		[ -f ${openssh_bld_dir}/Makefile ] ||
 			(cd ${openssh_bld_dir}
-			${openssh_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --with-zlib=`print_prefix zlib.h`) || return
+			${openssh_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --with-zlib=`print_prefix zlib.h` \
+				--with-privsep-path=${prefix}/var/empty) || return
 		make -C ${openssh_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${openssh_bld_dir} -j ${jobs} -k tests || return
@@ -1908,7 +1909,7 @@ EOF
 		[ -f ${v4l_utils_bld_dir}/Makefile ] ||
 			(cd ${v4l_utils_bld_dir}
 			${v4l_utils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				--disable-rpath \
+				--disable-rpath --with-udevdir=${prefix}/lib/udev \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR= \
 				) || return
