@@ -1287,6 +1287,11 @@ EOF
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" NO_LIBPERL=1 NO_SLANG=1 all || return
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" DESTDIR=${DESTDIR}${prefix} install || return
+		[ -z "${strip}" ] && return
+		for b in perf trace; do
+			[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		done
 		;;
 	libbpf)
 		[ -f ${DESTDIR}${prefix}/include/bpf/bpf.h -a "${force_install}" != yes ] && return
@@ -1901,6 +1906,11 @@ EOF
 			make -C ${e2fsprogs_bld_dir} -j ${jobs} -k check || return
 		make -C ${e2fsprogs_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		make -C ${e2fsprogs_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install-libs || return
+		[ -z "${strip}" ] && return
+		for b in chattr lsattr; do
+			[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		done
 		;;
 	v4l-utils)
 		[ -x ${DESTDIR}${prefix}/bin/v4l2-ctl -a "${force_install}" != yes ] && return
