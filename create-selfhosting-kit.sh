@@ -2871,9 +2871,9 @@ manipulate_libc()
 			&& echo ${CC:-${target:+${target}-}gcc} \
 			|| echo ${target:+${target}-}gcc \
 			) -print-sysroot`/usr/include
-	find . -mindepth 1 -maxdepth 2 | sed -e 's!^\./!!' | sort |
+	find . -mindepth 1 \( -type f -o -type l \) | sed -e 's!^\./!!' | sort |
 		case ${1} in
-		copy)   sed -e "s!^.\+\$![ -e ${d}/& ] || cp -HTvr & ${d}/& || exit!";;
+		copy)   sed -e "s!^.\+\$![ -e ${d}/& ] || install -DTv & ${d}/& || exit!";;
 		remove) sed -e "s!^.\+\$!rm -fvr ${d}/& || exit!";;
 		esac | sh || return
 	) || return
