@@ -2871,7 +2871,7 @@ manipulate_libc()
 			&& echo ${CC:-${target:+${target}-}gcc} \
 			|| echo ${target:+${target}-}gcc \
 			) -print-sysroot`/usr/include
-	find . -mindepth 1 -maxdepth 2 | sed -e 's!^\./!!' |
+	find . -mindepth 1 -maxdepth 2 | sed -e 's!^\./!!' | sort |
 		case ${1} in
 		copy)   sed -e "s!^.\+\$![ -e ${d}/& ] || cp -HTvr & ${d}/& || exit!";;
 		remove) sed -e "s!^.\+\$!rm -fvr ${d}/& || exit!";;
@@ -2885,7 +2885,7 @@ manipulate_libc()
 			&& echo ${CC:-${target:+${target}-}gcc} \
 			|| echo ${target:+${target}-}gcc \
 			) -print-file-name=crti.o | xargs dirname`
-	find . -mindepth 1 -name '*.o' | sed -e 's!^\./!!' |
+	find . -mindepth 1 -name '*.o' | sed -e 's!^\./!!' | sort |
 		case ${1} in
 		copy)   sed -e "s!^.\+\$![ -e ${d}/& ] || install -DTv & ${d}/& || exit!";;
 		remove) sed -e "s!^.\+\$!rm -fvr ${d}/& || exit!";;
@@ -2893,13 +2893,15 @@ manipulate_libc()
 	) || return
 
 	! echo ${target} | grep -qe linux ||
-		case ${1} in
-		copy) [ -f ${d}/libc.so.6 ] || cp -fv `$([ ${host} = ${target} ] \
-				&& echo ${CC:-${target:+${target}-}gcc} \
-				|| echo ${target:+${target}-}gcc \
-			) -print-file-name=libc.so.6` ${d} || return;;
-		remove) rm -fv ${d}/libc.so.6 || return;;
-		esac
+		for l in libc.so libc.so.6 libc_nonshared.a libm.so libm.so.6; do
+			case ${1} in
+			copy) [ -f ${d}/${l} ] || cp -fv `$([ ${host} = ${target} ] \
+					&& echo ${CC:-${target:+${target}-}gcc} \
+					|| echo ${target:+${target}-}gcc \
+				) -print-file-name=${l}` ${d} || return;;
+			remove) rm -fv ${d}/${l} || return;;
+			esac
+		done
 
 	for l in libgcc.a libgcc.so libgcc_s.so; do
 		(cd `$([ ${host} = ${target} ] \
@@ -2907,7 +2909,7 @@ manipulate_libc()
 				|| echo ${target:+${target}-}gcc \
 				) -print-file-name=${l} | xargs dirname` || return
 		[ -f ${l} ] || continue
-		find . -mindepth 1 -maxdepth 1 -name "${l}*" | sed -e 's!^\./!!' |
+		find . -mindepth 1 -maxdepth 1 -name "${l}*" | sed -e 's!^\./!!' | sort |
 			case ${1} in
 			copy)   sed -e "s!^.\+\$![ -e ${d}/& ] || install -DTv & ${d}/& || exit!";;
 			remove) sed -e "s!^.\+\$!rm -fvr ${d}/& || exit!";;
