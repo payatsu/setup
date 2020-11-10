@@ -2902,6 +2902,11 @@ manipulate_libc()
 			remove) rm -fv ${d}/${l} || return;;
 			esac
 		done
+	[ ! -f ${d}/libc.so ] ||
+		sed -i -e '
+			s! /usr/lib\(/libc_nonshared\.a\)! '${d}'\1!
+			s! '${DESTDIR}'! !
+		' ${d}/libc.so || return
 
 	for l in libgcc.a libgcc.so libgcc_s.so; do
 		(cd `$([ ${host} = ${target} ] \
