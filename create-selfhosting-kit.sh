@@ -146,6 +146,7 @@ EOF
 : ${inetutils_ver:=1.9.4}
 : ${iproute2_ver:=5.9.0}
 : ${nmap_ver:=7.80}
+: ${i2c_tools_ver:=4.2}
 
 : ${m4_ver:=1.4.18}
 : ${perl_ver:=5.30.3}
@@ -366,6 +367,9 @@ fetch()
 	nmap)
 		wget -O ${nmap_src_dir}.tar.bz2 \
 			https://nmap.org/dist/${nmap_name}.tar.bz2 || return;;
+	i2c-tools)
+		wget -O ${i2c_tools_src_dir}.tar.xz \
+			https://mirrors.edge.kernel.org/pub/software/utils/i2c-tools/${i2c_tools_name}.tar.xz || return;;
 	perl)
 		wget -O ${perl_src_dir}.tar.gz \
 			http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return;;
@@ -552,6 +556,7 @@ print_packages()
 	grep -oPe '(?<=^: \${)\w+(?=_ver)' ${0} | sed -e '
 		s/source_highlight/source-highlight/
 		s/util_linux/util-linux/
+		s/i2c_tools/i2c-tools/
 		s/pkg_config/pkg-config/
 		s/vimdoc_ja/vimdoc-ja/
 		s/u_boot/u-boot/
@@ -1512,6 +1517,15 @@ EOF
 		for b in ncat nmap nping; do
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
+		;;
+	i2c-tools)
+		[ -x ${DESTDIR}${prefix}/sbin/i2cdetect -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${i2c_tools_bld_dir}/Makefile ] || cp -Tvr ${i2c_tools_src_dir} ${i2c_tools_bld_dir} || return
+		make -C ${i2c_tools_bld_dir} -j ${jobs} EXTRA= PYTHON=python3 CC="${CC:-${host:+${host}-}gcc}" AR="${AR:-${host:+${host}-}ar}" || return
+		[ -z "${strip}" ] || make -C ${i2c_tools_bld_dir} -j ${jobs} EXTRA= STRIP="${STRIP:-${host:+${host}-}strip}" strip || return
+		make -C ${i2c_tools_bld_dir} -j ${jobs} EXTRA= PREFIX=${prefix} DESTDIR=${DESTDIR} install || return
 		;;
 	m4)
 		[ -x ${DESTDIR}${prefix}/bin/m4 -a "${force_install}" != yes ] && return
