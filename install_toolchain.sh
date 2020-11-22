@@ -37,7 +37,7 @@
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.69}
 : ${autoconf_archive_ver:=2019.01.06}
-: ${automake_ver:=1.16.2}
+: ${automake_ver:=1.16.3}
 : ${autogen_ver:=5.18.16}
 : ${libtool_ver:=2.4.6}
 : ${sed_ver:=4.8}
@@ -199,11 +199,11 @@
 : ${tcpdump_ver:=4.9.3}
 : ${nmap_ver:=7.80}
 : ${npth_ver:=1.6}
-: ${libgpg_error_ver:=1.38}
-: ${libgcrypt_ver:=1.8.6}
-: ${libksba_ver:=1.4.0}
-: ${libassuan_ver:=2.5.3}
-: ${gnupg_ver:=2.2.23}
+: ${libgpg_error_ver:=1.39}
+: ${libgcrypt_ver:=1.8.7}
+: ${libksba_ver:=1.5.0}
+: ${libassuan_ver:=2.5.4}
+: ${gnupg_ver:=2.2.24}
 : ${protobuf_ver:=3.13.0}
 : ${libbacktrace_ver:=git}
 

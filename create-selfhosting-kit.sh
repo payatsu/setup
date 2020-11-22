@@ -151,7 +151,7 @@ EOF
 : ${m4_ver:=1.4.18}
 : ${perl_ver:=5.30.3}
 : ${autoconf_ver:=2.69}
-: ${automake_ver:=1.16.2}
+: ${automake_ver:=1.16.3}
 : ${bison_ver:=3.7.2}
 : ${flex_ver:=2.6.4}
 : ${libtool_ver:=2.4.6}
