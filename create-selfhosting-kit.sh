@@ -194,8 +194,8 @@ EOF
 : ${coreutils_ver:=8.32}
 : ${file_ver:=5.38}
 
-: ${go_ver:=1.14.9}
-: ${cmake_ver:=3.18.2}
+: ${go_ver:=1.14.12}
+: ${cmake_ver:=3.19.1}
 : ${ninja_ver:=1.10.1}
 : ${meson_ver:=0.54.0}
 : ${libxml2_ver:=2.9.9}

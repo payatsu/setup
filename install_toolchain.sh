@@ -87,7 +87,7 @@
 : ${vim_ver:=8.2.1855}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
-: ${neovim_ver:=0.4.3}
+: ${neovim_ver:=0.4.4}
 : ${nano_ver:=5.3}
 : ${grep_ver:=3.6}
 : ${global_ver:=6.6.5}
@@ -147,7 +147,7 @@
 : ${subversion_ver:=1.13.0}
 : ${ninja_ver:=1.10.1}
 : ${meson_ver:=0.54.0}
-: ${cmake_ver:=3.18.2}
+: ${cmake_ver:=3.19.1}
 : ${bazel_ver:=2.2.0}
 : ${Bear_ver:=2.4.3}
 : ${ccache_ver:=3.7.9}
@@ -170,7 +170,7 @@
 : ${rustc_ver:=1.47.0}
 : ${rustup_ver:=1.22.1}
 : ${ruby_ver:=2.7.1}
-: ${go_ver:=1.14.9}
+: ${go_ver:=1.14.12}
 : ${perl_ver:=5.30.3}
 : ${tcl_ver:=8.6.9}
 : ${tk_ver:=8.6.9}
@@ -182,7 +182,7 @@
 : ${guile_ver:=2.2.7}
 : ${lua_ver:=5.3.5}
 : ${node_ver:=12.16.1}
-: ${jdk_ver:=14.0.2}
+: ${jdk_ver:=15.0.1}
 : ${nasm_ver:=2.14.02}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=master}
