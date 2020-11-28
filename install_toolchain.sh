@@ -168,7 +168,7 @@
 : ${Python_ver:=3.9.0}
 : ${Python2_ver:=2.7.18}
 : ${rustc_ver:=1.47.0}
-: ${rustup_ver:=1.22.1}
+: ${rustup_ver:=1.23.0}
 : ${ruby_ver:=2.7.1}
 : ${go_ver:=1.14.12}
 : ${perl_ver:=5.30.3}
