@@ -193,7 +193,7 @@
 : ${v4l_utils_ver:=1.20.0}
 : ${yavta_ver:=git}
 : ${googletest_ver:=1.8.1}
-: ${fzf_ver:=0.21.1}
+: ${fzf_ver:=0.24.3}
 : ${jq_ver:=1.6}
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
@@ -5698,8 +5698,8 @@ install_native_fzf()
 	which go > /dev/null || install_native_go || return
 	fetch fzf || return
 	unpack fzf || return
-	make -C ${fzf_src_dir} -j ${jobs} || return
-	make -C ${fzf_src_dir} -j ${jobs} install || return
+	make -C ${fzf_src_dir} -j ${jobs} FZF_VERSION=${fzf_ver} FZF_REVISION='tar-make' || return
+	make -C ${fzf_src_dir} -j ${jobs} FZF_VERSION=${fzf_ver} FZF_REVISION='tar-make' install || return
 	mkdir -pv ${DESTDIR}${prefix}/bin || return
 	cp -fv ${fzf_src_dir}/bin/fzf ${DESTDIR}${prefix}/bin/fzf || return
 	cp -fv ${fzf_src_dir}/bin/fzf-tmux ${DESTDIR}${prefix}/bin/fzf-tmux || return
