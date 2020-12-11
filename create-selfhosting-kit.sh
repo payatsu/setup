@@ -115,7 +115,7 @@ EOF
 : ${ccache_ver:=3.7.9}
 
 : ${ncurses_ver:=6.2}
-: ${readline_ver:=8.0}
+: ${readline_ver:=8.1}
 : ${expat_ver:=2.2.9}
 : ${libffi_ver:=3.3}
 : ${openssl_ver:=1.1.1g}
@@ -150,7 +150,7 @@ EOF
 
 : ${m4_ver:=1.4.18}
 : ${perl_ver:=5.30.3}
-: ${autoconf_ver:=2.69}
+: ${autoconf_ver:=2.70}
 : ${automake_ver:=1.16.3}
 : ${bison_ver:=3.7.2}
 : ${flex_ver:=2.6.4}

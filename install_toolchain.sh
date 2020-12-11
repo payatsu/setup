@@ -35,7 +35,7 @@
 : ${bison_ver:=3.7.2}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
-: ${autoconf_ver:=2.69}
+: ${autoconf_ver:=2.70}
 : ${autoconf_archive_ver:=2019.01.06}
 : ${automake_ver:=1.16.3}
 : ${autogen_ver:=5.18.16}
@@ -65,7 +65,7 @@
 : ${mpc_ver:=1.2.0}
 : ${isl_ver:=0.20}
 : ${gcc_ver:=10.2.0}
-: ${readline_ver:=8.0}
+: ${readline_ver:=8.1}
 : ${ncurses_ver:=6.2}
 : ${popt_ver:=1.16}
 : ${babeltrace_ver:=1.5.6}
