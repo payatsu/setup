@@ -153,7 +153,7 @@
 : ${ccache_ver:=3.7.9}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=4.0.2}
-: ${llvm_ver:=10.0.0}
+: ${llvm_ver:=11.0.0}
 : ${compiler_rt_ver:=${llvm_ver}}
 : ${libunwind_ver:=${llvm_ver}}
 : ${libcxxabi_ver:=${llvm_ver}}
@@ -168,7 +168,7 @@
 : ${Python_ver:=3.9.0}
 : ${Python2_ver:=2.7.18}
 : ${rustc_ver:=1.47.0}
-: ${rustup_ver:=1.23.0}
+: ${rustup_ver:=1.23.1}
 : ${ruby_ver:=2.7.1}
 : ${go_ver:=1.14.13}
 : ${perl_ver:=5.30.3}
@@ -4744,11 +4744,12 @@ install_native_libcxxabi()
 	unpack libcxx || return
 	fetch libcxxabi || return
 	unpack libcxxabi || return
+	ln -Tfsv ${libcxx_src_dir} ${libcxxabi_src_dir}/../libcxx || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${libcxxabi_src_dir} -B ${libcxxabi_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DCMAKE_INSTALL_RPATH=';' -DLIBCXXABI_LIBCXX_PATH=${libcxx_src_dir} \
+		-DCMAKE_INSTALL_RPATH=';' \
 		-DLIBCXXABI_USE_LLVM_UNWINDER=ON || return
 	cmake --build ${libcxxabi_bld_dir} -v -j ${jobs} || return
 	cmake --install ${libcxxabi_bld_dir} -v ${strip:+--${strip}} || return
@@ -4760,15 +4761,19 @@ install_native_libcxx()
 	[ -e ${prefix}/lib/libc++.so -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	print_library_path libc++abi.so > /dev/null || install_native_libcxxabi || return
+	fetch llvm || return
+	unpack llvm || return
 	fetch libcxxabi || return
 	unpack libcxxabi || return
 	fetch libcxx || return
 	unpack libcxx || return
+	ln -Tfsv ${llvm_src_dir} ${libcxx_src_dir}/../llvm || return
+	ln -Tfsv ${libcxxabi_src_dir} ${libcxx_src_dir}/../libcxxabi || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${libcxx_src_dir} -B ${libcxx_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DCMAKE_INSTALL_RPATH=';' -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${libcxxabi_src_dir}/include \
+		-DCMAKE_INSTALL_RPATH=';' -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${libcxx_src_dir}/../libcxxabi/include \
 		-DLIBCXXABI_USE_LLVM_UNWINDER=ON || return
 	cmake --build ${libcxx_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||

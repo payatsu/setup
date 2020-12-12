@@ -201,7 +201,7 @@ EOF
 : ${libxml2_ver:=2.9.9}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=4.0.2}
-: ${llvm_ver:=10.0.0}
+: ${llvm_ver:=11.0.0}
 : ${compiler_rt_ver:=${llvm_ver}}
 : ${libunwind_ver:=${llvm_ver}}
 : ${libcxxabi_ver:=${llvm_ver}}
@@ -2464,6 +2464,7 @@ EOF
 		unpack libcxx || return
 		fetch ${1} || return
 		unpack ${1} || return
+		ln -Tfsv ${libcxx_src_dir} ${libcxxabi_src_dir}/../libcxx || return
 		generate_gcc_wrapper ${libcxxabi_bld_dir} || return
 		generate_gxx_wrapper ${libcxxabi_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -2472,7 +2473,7 @@ EOF
 			-DCMAKE_CXX_COMPILER=${libcxxabi_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_CXX_FLAGS=-L`print_library_dir libunwind.so` \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-			-DCMAKE_INSTALL_RPATH=';' -DLIBCXXABI_LIBCXX_PATH=${libcxx_src_dir} \
+			-DCMAKE_INSTALL_RPATH=';' \
 			-DLIBCXXABI_USE_LLVM_UNWINDER=ON || return
 		cmake --build ${libcxxabi_bld_dir} -v -j ${jobs} || return
 		cmake --install ${libcxxabi_bld_dir} -v ${strip:+--${strip}} || return
@@ -2481,11 +2482,16 @@ EOF
 		[ -e ${DESTDIR}${prefix}/lib/libc++.so -a "${force_install}" != yes ] && return
 		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
 		print_library_path libc++abi.so > /dev/null || ${0} ${cmdopt} libcxxabi || return
+		init llvm || return
+		fetch llvm || return
+		unpack llvm || return
 		init libcxxabi || return
 		fetch libcxxabi || return
 		unpack libcxxabi || return
 		fetch ${1} || return
 		unpack ${1} || return
+		ln -Tfsv ${llvm_src_dir} ${libcxx_src_dir}/../llvm || return
+		ln -Tfsv ${libcxxabi_src_dir} ${libcxx_src_dir}/../libcxxabi || return
 		generate_gcc_wrapper ${libcxx_bld_dir} || return
 		generate_gxx_wrapper ${libcxx_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -2494,7 +2500,7 @@ EOF
 			-DCMAKE_CXX_COMPILER=${libcxx_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_CXX_FLAGS=-L`print_library_dir libunwind.so` \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-			-DCMAKE_INSTALL_RPATH=';' -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${libcxxabi_src_dir}/include \
+			-DCMAKE_INSTALL_RPATH=';' -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${libcxx_src_dir}/../libcxxabi/include \
 			-DLIBCXXABI_USE_LLVM_UNWINDER=ON || return
 		cmake --build ${libcxx_bld_dir} -v -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
