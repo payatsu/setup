@@ -192,7 +192,7 @@
 : ${opencv_contrib_ver:=4.5.0}
 : ${v4l_utils_ver:=1.20.0}
 : ${yavta_ver:=git}
-: ${googletest_ver:=1.8.1}
+: ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.24.3}
 : ${jq_ver:=1.6}
 : ${libpcap_ver:=1.9.1}
