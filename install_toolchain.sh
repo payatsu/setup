@@ -52,6 +52,7 @@
 : ${rsync_ver:=3.1.3}
 : ${linux_ver:=5.7.10}
 : ${perf_ver:=${linux_ver}}
+: ${libbpf_ver:=0.1.1}
 : ${kmod_ver:=27}
 : ${dtc_ver:=1.6.0}
 : ${u_boot_ver:=2020.10}
@@ -393,6 +394,8 @@ help()
 		Specify the version of Linux kernel you want, currently '${linux_ver}'.
 	perf_ver
 		Specify the version of perf you want, currently '${perf_ver}'.
+	libbpf_ver
+		Specify the version of libbpf you want, currently '${libbpf_ver}'.
 	kmod_ver
 		Specify the version of kmod you want, currently '${kmod_ver}'.
 	dtc_ver
@@ -791,6 +794,9 @@ fetch()
 			esac
 			wget -O ${linux_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/kernel/${linux_major_ver:-v`print_version linux 1`.x}/${linux_name}.tar.xz || return;;
+		libbpf)
+			wget -O ${libbpf_src_dir}.tar.gz \
+				https://github.com/libbpf/libbpf/archive/v${libbpf_ver}.tar.gz || return;;
 		kmod)
 			wget -O ${kmod_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/utils/kernel/kmod/${kmod_name}.tar.xz || return;;
@@ -2378,6 +2384,21 @@ install_native_perf()
 	mkdir -pv ${perf_bld_dir} || return
 	make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" NO_LIBPERL=1 NO_LIBPYTHON=1 NO_SLANG=1 all || return
 	make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" DESTDIR=${DESTDIR}${prefix} install || return
+}
+
+install_native_libbpf()
+{
+	[ -f ${prefix}/include/bpf/bpf.h -a "${force_install}" != yes ] && return
+	print_header_path libelf.h > /dev/null || install_native_elfutils || return
+	fetch libbpf || return
+	unpack libbpf || return
+	make -C ${libbpf_src_dir}/src -j ${jobs} V=1 OBJDIR=${libbpf_bld_dir} CC="${CC:-${host:+${host}-}gcc}" PREFIX=${prefix} || return
+	make -C ${libbpf_src_dir}/src -j ${jobs} V=1 OBJDIR=${libbpf_bld_dir} CC="${CC:-${host:+${host}-}gcc}" PREFIX=${prefix} DESTDIR=${DESTDIR} install || return
+	[ -z "${strip}" ] && return
+	for l in lib/libbpf.a lib/libbpf.so lib64/libbpf.a lib64/libbpf.so; do
+		[ -f ${DESTDIR}${prefix}/${l} ] || continue
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/${l} || return
+	done
 }
 
 install_native_kmod()
