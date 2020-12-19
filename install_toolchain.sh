@@ -53,6 +53,7 @@
 : ${linux_ver:=5.7.10}
 : ${perf_ver:=${linux_ver}}
 : ${libbpf_ver:=0.1.1}
+: ${bcc_ver:=0.16.0}
 : ${kmod_ver:=27}
 : ${dtc_ver:=1.6.0}
 : ${u_boot_ver:=2020.10}
@@ -396,6 +397,8 @@ help()
 		Specify the version of perf you want, currently '${perf_ver}'.
 	libbpf_ver
 		Specify the version of libbpf you want, currently '${libbpf_ver}'.
+	bcc_ver
+		Specify the version of bcc you want, currently '${bcc_ver}'.
 	kmod_ver
 		Specify the version of kmod you want, currently '${kmod_ver}'.
 	dtc_ver
@@ -797,6 +800,9 @@ fetch()
 		libbpf)
 			wget -O ${libbpf_src_dir}.tar.gz \
 				https://github.com/libbpf/libbpf/archive/v${libbpf_ver}.tar.gz || return;;
+		bcc)
+			wget -O ${bcc_src_dir}.tar.gz \
+				https://github.com/iovisor/bcc/archive/v${bcc_ver}.tar.gz || return;;
 		kmod)
 			wget -O ${kmod_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/utils/kernel/kmod/${kmod_name}.tar.xz || return;;
@@ -2399,6 +2405,37 @@ install_native_libbpf()
 		[ -f ${DESTDIR}${prefix}/${l} ] || continue
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/${l} || return
 	done
+}
+
+install_native_bcc()
+{
+	[ -f ${prefix}/include/bcc/bcc_version.h -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	print_header_path FlexLexer.h > /dev/null || install_native_flex || return
+	print_header_path llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
+	print_header_path Version.h clang/Basic > /dev/null || install_native_clang || return
+	print_header_path libelf.h > /dev/null || install_native_elfutils || return
+	print_header_path bfd.h > /dev/null || install_native_binutils || return
+	which python3 > /dev/null || install_native_Python || return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
+	fetch bcc || return
+	unpack bcc || return
+	sed -i -e '/--install-layout/s/^ /#&/' ${bcc_src_dir}/src/python/CMakeLists.txt || return
+	fetch libbpf || return
+	unpack libbpf || return
+	[ -f ${bcc_src_dir}/src/cc/libbpf/README.md ] || cp -Tvr ${libbpf_src_dir} ${bcc_src_dir}/src/cc/libbpf || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${bcc_src_dir} -B ${bcc_bld_dir} \
+		-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+		-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+		-DCMAKE_C_FLAGS="${CFLAGS} -L`print_library_dir libelf.so` -L`print_library_dir libz.so`" \
+		-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`print_header_dir FlexLexer.h` -L`print_library_dir libelf.so` -L`print_library_dir libz.so` -L`print_library_dir libtinfo.so` -ltinfo -lelf -lz" \
+		-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
+		-DPYTHON_CMD=python3 \
+		|| return
+	cmake --build ${bcc_bld_dir} -v -j ${jobs} || return
+	cmake --install ${bcc_bld_dir} -v ${strip:+--${strip}} || return
 }
 
 install_native_kmod()
