@@ -124,7 +124,7 @@ EOF
 : ${source_highlight_ver:=3.1.9}
 : ${bzip2_ver:=1.0.8}
 : ${xz_ver:=5.2.5}
-: ${elfutils_ver:=0.178}
+: ${elfutils_ver:=0.182}
 : ${pcre_ver:=8.43}
 : ${pcre2_ver:=10.32}
 : ${util_linux_ver:=2.35.1}
