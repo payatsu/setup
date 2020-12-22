@@ -168,7 +168,7 @@
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
 : ${boost_ver:=1_75_0}
-: ${Python_ver:=3.9.0}
+: ${Python_ver:=3.9.1}
 : ${Python2_ver:=2.7.18}
 : ${rustc_ver:=1.47.0}
 : ${rustup_ver:=1.23.1}
@@ -206,7 +206,7 @@
 : ${libgcrypt_ver:=1.8.7}
 : ${libksba_ver:=1.5.0}
 : ${libassuan_ver:=2.5.4}
-: ${gnupg_ver:=2.2.25}
+: ${gnupg_ver:=2.2.26}
 : ${protobuf_ver:=3.13.0}
 : ${libbacktrace_ver:=git}
 
@@ -1357,7 +1357,7 @@ deploy()
 docker()
 # Build Docker container.
 {
-	DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker-compose build --build-arg njobs=${jobs} dev || return
+	DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker-compose build --build-arg njobs=${jobs} --progress plain dev || return
 }
 
 list()
