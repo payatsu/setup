@@ -1041,7 +1041,7 @@ EOF
 		[ -f ${elfutils_bld_dir}/Makefile ] ||
 			(cd ${elfutils_bld_dir}
 			${elfutils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				--disable-debuginfod \
+				--disable-debuginfod --disable-libdebuginfod \
 				CFLAGS="${CFLAGS} -I`print_header_dir zlib.h`" \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`" \
 				LIBS="${LIBS} -lz -lbz2 -llzma") || return

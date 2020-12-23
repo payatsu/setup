@@ -2307,7 +2307,7 @@ install_native_elfutils()
 	[ -f ${elfutils_bld_dir}/Makefile ] ||
 		(cd ${elfutils_bld_dir}
 		${elfutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-			--disable-debuginfod \
+			--disable-debuginfod --disable-libdebuginfod \
 			CFLAGS="${CFLAGS} -I`print_header_dir zlib.h`" \
 			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -lbz2") || return
 	make -C ${elfutils_bld_dir} -j ${jobs} || return
