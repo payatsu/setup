@@ -113,7 +113,7 @@
 : ${sysstat_ver:=12.4.0}
 : ${less_ver:=530}
 : ${groff_ver:=1.22.4}
-: ${gdbm_ver:=1.18.1}
+: ${gdbm_ver:=1.19}
 : ${libpipeline_ver:=1.5.2}
 : ${man_db_ver:=2.9.0}
 : ${file_ver:=5.38}
