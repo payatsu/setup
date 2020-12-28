@@ -87,7 +87,7 @@
 : ${libffi_ver:=3.3}
 : ${emacs_ver:=27.1}
 : ${libiconv_ver:=1.15}
-: ${vim_ver:=8.2.1855}
+: ${vim_ver:=8.2.2237}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.4.4}
@@ -172,7 +172,7 @@
 : ${Python2_ver:=2.7.18}
 : ${rustc_ver:=1.47.0}
 : ${rustup_ver:=1.23.1}
-: ${ruby_ver:=2.7.1}
+: ${ruby_ver:=3.0.0}
 : ${go_ver:=1.14.13}
 : ${perl_ver:=5.30.3}
 : ${tcl_ver:=8.6.9}
