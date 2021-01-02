@@ -160,7 +160,7 @@ EOF
 : ${gawk_ver:=5.1.0}
 : ${gettext_ver:=0.21}
 : ${curl_ver:=7.72.0}
-: ${git_ver:=2.29.2}
+: ${git_ver:=2.30.0}
 : ${openssh_ver:=8.4p1}
 : ${lzip_ver:=1.21}
 : ${ed_ver:=1.16}
