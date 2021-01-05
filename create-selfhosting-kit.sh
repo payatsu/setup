@@ -195,7 +195,7 @@ EOF
 : ${file_ver:=5.38}
 
 : ${go_ver:=1.14.13}
-: ${cmake_ver:=3.19.1}
+: ${cmake_ver:=3.19.2}
 : ${ninja_ver:=1.10.1}
 : ${meson_ver:=0.54.0}
 : ${libxml2_ver:=2.9.9}
