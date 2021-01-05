@@ -3646,9 +3646,12 @@ install_native_neovim()
 	fetch neovim || return
 	unpack neovim || return
 	make -C ${neovim_src_dir} -j ${jobs} \
+		BUILD_TYPE='Unix Makefiles' BUILD_TOOL=make \
 		CMAKE_BUILD_TYPE=${cmake_build_type} \
 		CMAKE_INSTALL_PREFIX=${prefix} || return
-	make -C ${neovim_src_dir} -j ${jobs} install || return
+	make -C ${neovim_src_dir} -j ${jobs} \
+		BUILD_TYPE='Unix Makefiles' BUILD_TOOL=make \
+		install || return
 	[ -z "${strip}" ] && return
 	${host:+${host}-}strip -v ${prefix}/bin/nvim || return
 }
