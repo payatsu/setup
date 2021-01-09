@@ -13,7 +13,7 @@
 # [TODO] Polly, MySQL, grub
 # [TODO] update-alternatives
 
-: ${tar_ver:=1.32}
+: ${tar_ver:=1.33}
 : ${cpio_ver:=2.13}
 : ${xz_ver:=5.2.5}
 : ${bzip2_ver:=1.0.8}
@@ -91,7 +91,7 @@
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.4.4}
-: ${nano_ver:=5.3}
+: ${nano_ver:=5.4}
 : ${grep_ver:=3.6}
 : ${global_ver:=6.6.5}
 : ${pcre_ver:=8.43}

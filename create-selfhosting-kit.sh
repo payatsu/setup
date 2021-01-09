@@ -169,7 +169,7 @@ EOF
 : ${dtc_ver:=1.6.0}
 : ${kmod_ver:=27}
 : ${u_boot_ver:=2020.10}
-: ${tar_ver:=1.32}
+: ${tar_ver:=1.33}
 : ${cpio_ver:=2.13}
 : ${e2fsprogs_ver:=1.45.6}
 : ${v4l_utils_ver:=1.20.0}
@@ -182,7 +182,7 @@ EOF
 : ${vim_ver:=8.2.2237}
 : ${vimdoc_ja_ver:=master}
 : ${emacs_ver:=27.1}
-: ${nano_ver:=5.3}
+: ${nano_ver:=5.4}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.6}
 : ${diffutils_ver:=3.7}
