@@ -26,7 +26,7 @@
 : ${lzop_ver:=1.04}
 : ${lz4_ver:=1.9.2}
 : ${zstd_ver:=1.4.4}
-: ${wget_ver:=1.21}
+: ${wget_ver:=1.21.1}
 : ${pkg_config_ver:=0.29.2}
 : ${help2man_ver:=1.47.16}
 : ${texinfo_ver:=6.7}
