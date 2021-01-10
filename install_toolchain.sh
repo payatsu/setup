@@ -5505,6 +5505,7 @@ install_native_guile()
 	[ "${enable_check}" != yes ] ||
 		make -C ${guile_bld_dir} -j ${jobs} -k check || return
 	make -C ${guile_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_lua()
