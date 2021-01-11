@@ -182,7 +182,7 @@
 : ${libpsl_ver:=0.21.0}
 : ${libatomic_ops_ver:=7.6.10}
 : ${gc_ver:=7.6.12}
-: ${guile_ver:=2.2.7}
+: ${guile_ver:=3.0.5}
 : ${lua_ver:=5.3.5}
 : ${node_ver:=12.16.1}
 : ${jdk_ver:=15.0.1}
@@ -2186,6 +2186,9 @@ install_native_autogen()
 	print_header_path libguile.h > /dev/null || install_native_guile || return
 	fetch autogen || return
 	unpack autogen || return
+	sed -i -e '/^  \<_guile_versions_to_search\>/s/\[2.2/['`print_version guile`' 2.2/' ${autogen_src_dir}/config/guile.m4 || return
+	sed -i -e '/^#elif GUILE_VERSION </s!$! || 1 /* workaround */!' ${autogen_src_dir}/agen5/guile-iface.h || return
+	autoreconf -fiv ${autogen_src_dir} || return
 	[ -f ${autogen_bld_dir}/Makefile ] ||
 		(cd ${autogen_bld_dir}
 		${autogen_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules \
@@ -2838,7 +2841,7 @@ install_native_gdb()
 		(cd ${gdb_bld_dir}
 		${gdb_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --target=${target} \
 			--enable-targets=all --enable-64-bit-bfd --enable-tui \
-			--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${target} --without-guile --with-python=python3 \
+			--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${target} --with-python=python3 \
 			--with-system-zlib --with-system-readline \
 			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libncurses.so`" \
 			host_configargs='--disable-rpath 'CFLAGS=\'"${CFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir curses.h`"\') || return

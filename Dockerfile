@@ -79,7 +79,7 @@ sed -i -e 's/^# \(ja_JP\.UTF-8 UTF-8\)$/\1/' /etc/locale.gen && \
 locale-gen
 USER ${USER}
 WORKDIR /home/${USER}
-ENV LANG=ja_JP.utf8 SHELL=${prefix}/bin/zsh USER=${USER}
+ENV LANG=ja_JP.UTF-8 SHELL=${prefix}/bin/zsh USER=${USER}
 CMD exec ${SHELL} -l
 RUN \
 sudo mv -v ${prefix}/lib/rustlib/uninstall.sh . && \
