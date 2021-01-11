@@ -107,7 +107,7 @@
 : ${plantuml_ver:=1.2020.15}
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
-: ${findutils_ver:=4.7.0}
+: ${findutils_ver:=4.8.0}
 : ${procps_ver:=3.3.15}
 : ${lsof_ver:=4.93.2}
 : ${sysstat_ver:=12.4.0}

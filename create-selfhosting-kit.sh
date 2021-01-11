@@ -188,7 +188,7 @@ EOF
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
 : ${global_ver:=6.6.5}
-: ${findutils_ver:=4.7.0}
+: ${findutils_ver:=4.8.0}
 
 : ${help2man_ver:=1.47.16}
 : ${coreutils_ver:=8.32}
