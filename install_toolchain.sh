@@ -206,7 +206,7 @@
 : ${libgcrypt_ver:=1.8.7}
 : ${libksba_ver:=1.5.0}
 : ${libassuan_ver:=2.5.4}
-: ${gnupg_ver:=2.2.26}
+: ${gnupg_ver:=2.2.27}
 : ${protobuf_ver:=3.13.0}
 : ${libbacktrace_ver:=git}
 
