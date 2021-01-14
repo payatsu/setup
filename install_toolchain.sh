@@ -47,7 +47,7 @@
 : ${binutils_ver:=2.35.1}
 : ${elfutils_ver:=0.182}
 : ${systemtap_ver:=4.2}
-: ${ed_ver:=1.16}
+: ${ed_ver:=1.17}
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
 : ${linux_ver:=5.7.10}
@@ -91,7 +91,7 @@
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.4.4}
-: ${nano_ver:=5.4}
+: ${nano_ver:=5.5}
 : ${grep_ver:=3.6}
 : ${global_ver:=6.6.5}
 : ${pcre_ver:=8.43}

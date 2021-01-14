@@ -163,7 +163,7 @@ EOF
 : ${git_ver:=2.30.0}
 : ${openssh_ver:=8.4p1}
 : ${lzip_ver:=1.21}
-: ${ed_ver:=1.16}
+: ${ed_ver:=1.17}
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
 : ${dtc_ver:=1.6.0}
@@ -182,7 +182,7 @@ EOF
 : ${vim_ver:=8.2.2237}
 : ${vimdoc_ja_ver:=master}
 : ${emacs_ver:=27.1}
-: ${nano_ver:=5.4}
+: ${nano_ver:=5.5}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.6}
 : ${diffutils_ver:=3.7}
