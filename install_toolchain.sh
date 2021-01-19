@@ -156,7 +156,7 @@
 : ${ccache_ver:=3.7.9}
 : ${libedit_ver:=20181209-3.1}
 : ${swig_ver:=4.0.2}
-: ${llvm_ver:=11.0.0}
+: ${llvm_ver:=11.0.1}
 : ${compiler_rt_ver:=${llvm_ver}}
 : ${libunwind_ver:=${llvm_ver}}
 : ${libcxxabi_ver:=${llvm_ver}}
