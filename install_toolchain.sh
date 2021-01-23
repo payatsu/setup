@@ -202,8 +202,8 @@
 : ${tcpdump_ver:=4.9.3}
 : ${nmap_ver:=7.80}
 : ${npth_ver:=1.6}
-: ${libgpg_error_ver:=1.39}
-: ${libgcrypt_ver:=1.8.7}
+: ${libgpg_error_ver:=1.41}
+: ${libgcrypt_ver:=1.9.0}
 : ${libksba_ver:=1.5.0}
 : ${libassuan_ver:=2.5.4}
 : ${gnupg_ver:=2.2.27}
