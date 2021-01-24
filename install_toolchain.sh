@@ -32,7 +32,7 @@
 : ${texinfo_ver:=6.7}
 : ${coreutils_ver:=8.32}
 : ${busybox_ver:=1.31.1}
-: ${bison_ver:=3.7.2}
+: ${bison_ver:=3.7.5}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.70}
@@ -63,9 +63,9 @@
 : ${glibc_ver:=2.32}
 : ${newlib_ver:=3.1.0}
 : ${mingw_w64_ver:=5.0.4}
-: ${gmp_ver:=6.2.0}
+: ${gmp_ver:=6.2.1}
 : ${mpfr_ver:=4.1.0}
-: ${mpc_ver:=1.2.0}
+: ${mpc_ver:=1.2.1}
 : ${isl_ver:=0.20}
 : ${gcc_ver:=10.2.0}
 : ${readline_ver:=8.1}
@@ -111,7 +111,7 @@
 : ${procps_ver:=3.3.15}
 : ${lsof_ver:=4.93.2}
 : ${sysstat_ver:=12.4.0}
-: ${less_ver:=530}
+: ${less_ver:=563}
 : ${groff_ver:=1.22.4}
 : ${gdbm_ver:=1.19}
 : ${libpipeline_ver:=1.5.2}

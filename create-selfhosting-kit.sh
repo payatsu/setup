@@ -106,9 +106,9 @@ EOF
 
 : ${zlib_ver:=1.2.11}
 : ${binutils_ver:=2.35.1}
-: ${gmp_ver:=6.2.0}
+: ${gmp_ver:=6.2.1}
 : ${mpfr_ver:=4.1.0}
-: ${mpc_ver:=1.2.0}
+: ${mpc_ver:=1.2.1}
 : ${isl_ver:=0.20}
 : ${gcc_ver:=10.2.0}
 : ${make_ver:=4.3}
@@ -152,7 +152,7 @@ EOF
 : ${perl_ver:=5.30.3}
 : ${autoconf_ver:=2.70}
 : ${automake_ver:=1.16.3}
-: ${bison_ver:=3.7.2}
+: ${bison_ver:=3.7.5}
 : ${flex_ver:=2.6.4}
 : ${libtool_ver:=2.4.6}
 : ${pkg_config_ver:=0.29.2}
