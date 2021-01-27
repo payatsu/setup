@@ -119,7 +119,7 @@ EOF
 : ${expat_ver:=2.2.9}
 : ${libffi_ver:=3.3}
 : ${openssl_ver:=1.1.1i}
-: ${Python_ver:=3.9.0}
+: ${Python_ver:=3.9.1}
 : ${boost_ver:=1_75_0}
 : ${source_highlight_ver:=3.1.9}
 : ${bzip2_ver:=1.0.8}
