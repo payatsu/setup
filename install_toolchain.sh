@@ -35,7 +35,7 @@
 : ${bison_ver:=3.7.5}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
-: ${autoconf_ver:=2.70}
+: ${autoconf_ver:=2.71}
 : ${autoconf_archive_ver:=2019.01.06}
 : ${automake_ver:=1.16.3}
 : ${autogen_ver:=5.18.16}
@@ -203,7 +203,7 @@
 : ${nmap_ver:=7.80}
 : ${npth_ver:=1.6}
 : ${libgpg_error_ver:=1.41}
-: ${libgcrypt_ver:=1.9.0}
+: ${libgcrypt_ver:=1.9.1}
 : ${libksba_ver:=1.5.0}
 : ${libassuan_ver:=2.5.4}
 : ${gnupg_ver:=2.2.27}
