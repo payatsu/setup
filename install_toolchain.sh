@@ -87,7 +87,7 @@
 : ${libffi_ver:=3.3}
 : ${emacs_ver:=27.1}
 : ${libiconv_ver:=1.15}
-: ${vim_ver:=8.2.2237}
+: ${vim_ver:=8.2.2425}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.4.4}
@@ -185,7 +185,7 @@
 : ${guile_ver:=3.0.5}
 : ${lua_ver:=5.3.5}
 : ${node_ver:=12.16.1}
-: ${jdk_ver:=15.0.1}
+: ${jdk_ver:=15.0.2}
 : ${nasm_ver:=2.14.02}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=master}
