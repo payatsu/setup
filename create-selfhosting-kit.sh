@@ -105,7 +105,7 @@ EOF
 }
 
 : ${zlib_ver:=1.2.11}
-: ${binutils_ver:=2.36}
+: ${binutils_ver:=2.35.2}
 : ${gmp_ver:=6.2.1}
 : ${mpfr_ver:=4.1.0}
 : ${mpc_ver:=1.2.1}
