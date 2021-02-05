@@ -133,7 +133,7 @@ EOF
 : ${babeltrace_ver:=1.5.6}
 : ${gdb_ver:=10.1}
 : ${strace_ver:=5.5}
-: ${systemtap_ver:=4.2}
+: ${systemtap_ver:=4.4}
 : ${linux_ver:=5.7.10}
 : ${perf_ver:=${linux_ver}}
 : ${libbpf_ver:=0.1.1}
@@ -162,7 +162,7 @@ EOF
 : ${curl_ver:=7.72.0}
 : ${git_ver:=2.30.0}
 : ${openssh_ver:=8.4p1}
-: ${lzip_ver:=1.21}
+: ${lzip_ver:=1.22}
 : ${ed_ver:=1.17}
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}

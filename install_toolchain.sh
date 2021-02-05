@@ -20,18 +20,18 @@
 : ${gzip_ver:=1.10}
 : ${zip_ver:=3.0}
 : ${unzip_ver:=6.0}
-: ${lzip_ver:=1.21}
-: ${lunzip_ver:=1.9}
+: ${lzip_ver:=1.22}
+: ${lunzip_ver:=1.11}
 : ${lzo_ver:=2.10}
 : ${lzop_ver:=1.04}
-: ${lz4_ver:=1.9.2}
-: ${zstd_ver:=1.4.4}
+: ${lz4_ver:=1.9.3}
+: ${zstd_ver:=1.4.8}
 : ${wget_ver:=1.21.1}
 : ${pkg_config_ver:=0.29.2}
 : ${help2man_ver:=1.47.16}
 : ${texinfo_ver:=6.7}
 : ${coreutils_ver:=8.32}
-: ${busybox_ver:=1.31.1}
+: ${busybox_ver:=1.33.0}
 : ${bison_ver:=3.7.5}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
@@ -46,7 +46,7 @@
 : ${make_ver:=4.3}
 : ${binutils_ver:=2.35.2}
 : ${elfutils_ver:=0.182}
-: ${systemtap_ver:=4.2}
+: ${systemtap_ver:=4.4}
 : ${ed_ver:=1.17}
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
@@ -60,7 +60,7 @@
 : ${u_boot_ver:=2020.10}
 : ${qemu_ver:=4.2.0}
 : ${gperf_ver:=3.1}
-: ${glibc_ver:=2.32}
+: ${glibc_ver:=2.33}
 : ${newlib_ver:=3.1.0}
 : ${mingw_w64_ver:=5.0.4}
 : ${gmp_ver:=6.2.1}
@@ -196,7 +196,7 @@
 : ${v4l_utils_ver:=1.20.0}
 : ${yavta_ver:=git}
 : ${googletest_ver:=1.10.0}
-: ${fzf_ver:=0.24.3}
+: ${fzf_ver:=0.25.1}
 : ${jq_ver:=1.6}
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
@@ -207,7 +207,7 @@
 : ${libksba_ver:=1.5.0}
 : ${libassuan_ver:=2.5.4}
 : ${gnupg_ver:=2.2.27}
-: ${protobuf_ver:=3.13.0}
+: ${protobuf_ver:=3.14.0}
 : ${libbacktrace_ver:=git}
 
 # TODO X11周りのインストールは未着手。
