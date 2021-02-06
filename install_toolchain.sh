@@ -76,7 +76,7 @@
 : ${lcov_ver:=1.14}
 : ${strace_ver:=5.10}
 : ${ltrace_ver:=0.7.3}
-: ${valgrind_ver:=3.15.0}
+: ${valgrind_ver:=3.16.1}
 : ${zlib_ver:=1.2.11}
 : ${libpng_ver:=1.6.37}
 : ${tiff_ver:=4.2.0}
@@ -143,7 +143,7 @@
 : ${git_ver:=2.30.0}
 : ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=5.4}
-: ${sqlite_ver:=3310100}
+: ${sqlite_ver:=3340100}
 : ${apr_ver:=1.7.0}
 : ${apr_util_ver:=1.6.1}
 : ${utf8proc_ver:=2.4.0}
@@ -1007,7 +1007,7 @@ fetch()
 				https://www.mercurial-scm.org/release/${mercurial_name}.tar.gz || return;;
 		sqlite)
 			wget -O ${sqlite_src_dir}.tar.gz \
-				https://www.sqlite.org/2020/${sqlite_name}.tar.gz || return;;
+				https://www.sqlite.org/2021/${sqlite_name}.tar.gz || return;;
 		apr|apr-util)
 			eval wget -O \${${_p}_src_dir}.tar.bz2 \
 				http://ftp.tsukuba.wide.ad.jp/software/apache/apr/\${${_p:-apr}_name}.tar.bz2 || return;;
