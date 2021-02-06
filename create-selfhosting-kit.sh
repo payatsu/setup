@@ -165,7 +165,7 @@ EOF
 : ${lzip_ver:=1.22}
 : ${ed_ver:=1.17}
 : ${bc_ver:=1.07.1}
-: ${rsync_ver:=3.1.3}
+: ${rsync_ver:=3.2.3}
 : ${dtc_ver:=1.6.0}
 : ${kmod_ver:=28}
 : ${u_boot_ver:=2020.10}
@@ -1816,7 +1816,8 @@ EOF
 				/^INSTALLCMD\>/{
 					s!\( --strip-program=[[:graph:]]\+\)\?\$! --strip-program=${host:+${host}-}strip!
 				}" ${rsync_src_dir}/Makefile.in || return
-			${rsync_src_dir}/configure --prefix=${prefix} --host=${host} --without-included-zlib\
+			${rsync_src_dir}/configure --prefix=${prefix} --host=${host} --without-included-zlib \
+				--disable-xxhash \
 				CPPFLAGS="${CPPFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir popt.h`" \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libpopt.so`" \
 				) || return

@@ -49,7 +49,7 @@
 : ${systemtap_ver:=4.4}
 : ${ed_ver:=1.17}
 : ${bc_ver:=1.07.1}
-: ${rsync_ver:=3.1.3}
+: ${rsync_ver:=3.2.3}
 : ${linux_ver:=5.7.10}
 : ${perf_ver:=${linux_ver}}
 : ${libbpf_ver:=0.1.1}
@@ -2375,7 +2375,8 @@ install_native_rsync()
 	unpack rsync || return
 	[ -f ${rsync_bld_dir}/Makefile ] ||
 		(cd ${rsync_bld_dir}
-		${rsync_src_dir}/configure --prefix=${prefix} --host=${host} --without-included-zlib) || return
+		${rsync_src_dir}/configure --prefix=${prefix} --host=${host} --without-included-zlib \
+			--disable-xxhash) || return
 	make -C ${rsync_bld_dir} -j ${jobs} || return
 	make -C ${rsync_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
