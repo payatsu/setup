@@ -55,7 +55,7 @@
 : ${libbpf_ver:=0.1.1}
 : ${bcc_ver:=0.16.0}
 : ${bpftrace_ver:=0.11.2}
-: ${kmod_ver:=27}
+: ${kmod_ver:=28}
 : ${dtc_ver:=1.6.0}
 : ${u_boot_ver:=2020.10}
 : ${qemu_ver:=4.2.0}
@@ -71,22 +71,22 @@
 : ${readline_ver:=8.1}
 : ${ncurses_ver:=6.2}
 : ${popt_ver:=1.16}
-: ${babeltrace_ver:=1.5.6}
+: ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=10.1}
 : ${lcov_ver:=1.14}
-: ${strace_ver:=5.5}
+: ${strace_ver:=5.10}
 : ${ltrace_ver:=0.7.3}
 : ${valgrind_ver:=3.15.0}
 : ${zlib_ver:=1.2.11}
 : ${libpng_ver:=1.6.37}
-: ${tiff_ver:=4.1.0}
-: ${jpeg_ver:=v9c}
+: ${tiff_ver:=4.2.0}
+: ${jpeg_ver:=v9d}
 : ${giflib_ver:=5.2.1}
 : ${libXpm_ver:=3.5.11}
 : ${libwebp_ver:=1.0.0}
 : ${libffi_ver:=3.3}
 : ${emacs_ver:=27.1}
-: ${libiconv_ver:=1.15}
+: ${libiconv_ver:=1.16}
 : ${vim_ver:=8.2.2425}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
@@ -94,29 +94,29 @@
 : ${nano_ver:=5.5}
 : ${grep_ver:=3.6}
 : ${global_ver:=6.6.5}
-: ${pcre_ver:=8.43}
-: ${pcre2_ver:=10.32}
+: ${pcre_ver:=8.44}
+: ${pcre2_ver:=10.36}
 : ${the_silver_searcher_ver:=2.2.0}
 : ${the_platinum_searcher_ver:=2.2.0}
 : ${highway_ver:=1.1.0}
 : ${ghostscript_ver:=9.52}
 : ${graphviz_ver:=2.44.1}
-: ${doxygen_ver:=1.8.16}
+: ${doxygen_ver:=1.9.1}
 : ${freetype_ver:=2.9.1}
 : ${fontconfig_ver:=2.13.1}
-: ${plantuml_ver:=1.2020.15}
+: ${plantuml_ver:=1.2021.1}
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
 : ${findutils_ver:=4.8.0}
 : ${procps_ver:=3.3.15}
-: ${lsof_ver:=4.93.2}
-: ${sysstat_ver:=12.4.0}
+: ${lsof_ver:=4.94.0}
+: ${sysstat_ver:=12.5.2}
 : ${less_ver:=563}
 : ${groff_ver:=1.22.4}
 : ${gdbm_ver:=1.19}
 : ${libpipeline_ver:=1.5.2}
 : ${man_db_ver:=2.9.0}
-: ${file_ver:=5.38}
+: ${file_ver:=5.39}
 : ${source_highlight_ver:=3.1.9}
 : ${screen_ver:=4.8.0}
 : ${libevent_ver:=2.1.11-stable}
@@ -127,16 +127,16 @@
 : ${bash_ver:=5.0}
 : ${inetutils_ver:=1.9.4}
 : ${iproute2_ver:=5.9.0}
-: ${util_linux_ver:=2.35.1}
+: ${util_linux_ver:=2.36.1}
 : ${e2fsprogs_ver:=1.45.6}
 : ${squashfs_ver:=4.4}
 : ${openssl_ver:=1.1.1i}
 : ${openssh_ver:=8.4p1}
-: ${nghttp2_ver:=1.40.0}
-: ${curl_ver:=7.72.0}
-: ${expat_ver:=2.2.9}
+: ${nghttp2_ver:=1.43.0}
+: ${curl_ver:=7.75.0}
+: ${expat_ver:=2.2.10}
 : ${asciidoc_ver:=8.6.9}
-: ${libxml2_ver:=2.9.9}
+: ${libxml2_ver:=2.9.10}
 : ${libxslt_ver:=1.1.34}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.21}
@@ -147,14 +147,14 @@
 : ${apr_ver:=1.7.0}
 : ${apr_util_ver:=1.6.1}
 : ${utf8proc_ver:=2.4.0}
-: ${subversion_ver:=1.13.0}
-: ${ninja_ver:=1.10.1}
-: ${meson_ver:=0.54.0}
-: ${cmake_ver:=3.19.2}
+: ${subversion_ver:=1.14.0}
+: ${ninja_ver:=1.10.2}
+: ${meson_ver:=0.56.2}
+: ${cmake_ver:=3.19.4}
 : ${bazel_ver:=2.2.0}
 : ${Bear_ver:=2.4.3}
 : ${ccache_ver:=3.7.9}
-: ${libedit_ver:=20181209-3.1}
+: ${libedit_ver:=20191231-3.1}
 : ${swig_ver:=4.0.2}
 : ${llvm_ver:=11.0.1}
 : ${compiler_rt_ver:=${llvm_ver}}
@@ -173,26 +173,26 @@
 : ${rustc_ver:=1.49.0}
 : ${rustup_ver:=1.23.1}
 : ${ruby_ver:=3.0.0}
-: ${go_ver:=1.14.14}
-: ${perl_ver:=5.30.3}
-: ${tcl_ver:=8.6.9}
-: ${tk_ver:=8.6.9}
+: ${go_ver:=1.14.15}
+: ${perl_ver:=5.32.1}
+: ${tcl_ver:=8.6.11}
+: ${tk_ver:=8.6.11}
 : ${libunistring_ver:=0.9.10}
 : ${libidn2_ver:=2.3.0}
 : ${libpsl_ver:=0.21.0}
 : ${libatomic_ops_ver:=7.6.10}
 : ${gc_ver:=7.6.12}
 : ${guile_ver:=3.0.5}
-: ${lua_ver:=5.3.5}
-: ${node_ver:=12.16.1}
+: ${lua_ver:=5.4.2}
+: ${node_ver:=14.15.4}
 : ${jdk_ver:=15.0.2}
-: ${nasm_ver:=2.14.02}
+: ${nasm_ver:=2.15.05}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=master}
 : ${x265_ver:=3.2.1}
 : ${libav_ver:=11.9}
-: ${opencv_ver:=4.5.0}
-: ${opencv_contrib_ver:=4.5.0}
+: ${opencv_ver:=4.5.1}
+: ${opencv_contrib_ver:=4.5.1}
 : ${v4l_utils_ver:=1.20.0}
 : ${yavta_ver:=git}
 : ${googletest_ver:=1.10.0}
@@ -5533,22 +5533,22 @@ install_native_lua()
 +++ src/Makefile
 @@ -6,7 +6,7 @@
  # Your platform. See PLATS for possible values.
- PLAT= none
+ PLAT= guess
 
 -CC= gcc -std=gnu99
 +CC= gcc -std=gnu99 -fPIC
- CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
+ CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
  LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
  LIBS= -lm $(SYSLIBS) $(MYLIBS)
-@@ -29,6 +29,7 @@
- PLATS= aix bsd c89 freebsd generic linux macosx mingw posix solaris
+@@ -33,6 +33,7 @@
+ PLATS= guess aix bsd c89 freebsd generic linux linux-readline macosx mingw posix solaris
 
  LUA_A=	liblua.a
 +LUA_SO=	liblua.so
- CORE_O=	lapi.o lcode.o lctype.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o \
- 	lmem.o lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o \
- 	ltm.o lundump.o lvm.o lzio.o
-@@ -43,7 +44,7 @@
+ CORE_O=	lapi.o lcode.o lctype.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o lmem.o lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o ltm.o lundump.o lvm.o lzio.o
+ LIB_O=	lauxlib.o lbaselib.o lcorolib.o ldblib.o liolib.o lmathlib.o loadlib.o loslib.o lstrlib.o ltablib.o lutf8lib.o linit.o
+ BASE_O= $(CORE_O) $(LIB_O) $(MYOBJS)
+@@ -44,7 +45,7 @@
  LUAC_O=	luac.o
 
  ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O)
@@ -5557,7 +5557,7 @@ install_native_lua()
  ALL_A= $(LUA_A)
 
  # Targets start here.
-@@ -59,6 +60,9 @@
+@@ -60,6 +61,9 @@
  	$(AR) $@ $(BASE_O)
  	$(RANLIB) $@
 

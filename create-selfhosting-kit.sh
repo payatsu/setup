@@ -116,7 +116,7 @@ EOF
 
 : ${ncurses_ver:=6.2}
 : ${readline_ver:=8.1}
-: ${expat_ver:=2.2.9}
+: ${expat_ver:=2.2.10}
 : ${libffi_ver:=3.3}
 : ${openssl_ver:=1.1.1i}
 : ${Python_ver:=3.9.1}
@@ -125,14 +125,14 @@ EOF
 : ${bzip2_ver:=1.0.8}
 : ${xz_ver:=5.2.5}
 : ${elfutils_ver:=0.182}
-: ${pcre_ver:=8.43}
-: ${pcre2_ver:=10.32}
-: ${util_linux_ver:=2.35.1}
+: ${pcre_ver:=8.44}
+: ${pcre2_ver:=10.36}
+: ${util_linux_ver:=2.36.1}
 : ${popt_ver:=1.16}
 : ${glib_ver:=2.59.0}
-: ${babeltrace_ver:=1.5.6}
+: ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=10.1}
-: ${strace_ver:=5.5}
+: ${strace_ver:=5.10}
 : ${systemtap_ver:=4.4}
 : ${linux_ver:=5.7.10}
 : ${perf_ver:=${linux_ver}}
@@ -142,14 +142,14 @@ EOF
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
 : ${procps_ver:=3.3.15}
-: ${sysstat_ver:=12.4.0}
+: ${sysstat_ver:=12.5.2}
 : ${inetutils_ver:=1.9.4}
 : ${iproute2_ver:=5.9.0}
 : ${nmap_ver:=7.80}
 : ${i2c_tools_ver:=4.2}
 
 : ${m4_ver:=1.4.18}
-: ${perl_ver:=5.30.3}
+: ${perl_ver:=5.32.1}
 : ${autoconf_ver:=2.71}
 : ${automake_ver:=1.16.3}
 : ${bison_ver:=3.7.5}
@@ -159,7 +159,7 @@ EOF
 : ${sed_ver:=4.8}
 : ${gawk_ver:=5.1.0}
 : ${gettext_ver:=0.21}
-: ${curl_ver:=7.72.0}
+: ${curl_ver:=7.75.0}
 : ${git_ver:=2.30.0}
 : ${openssh_ver:=8.4p1}
 : ${lzip_ver:=1.22}
@@ -167,7 +167,7 @@ EOF
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.1.3}
 : ${dtc_ver:=1.6.0}
-: ${kmod_ver:=27}
+: ${kmod_ver:=28}
 : ${u_boot_ver:=2020.10}
 : ${tar_ver:=1.33}
 : ${cpio_ver:=2.13}
@@ -192,14 +192,14 @@ EOF
 
 : ${help2man_ver:=1.47.16}
 : ${coreutils_ver:=8.32}
-: ${file_ver:=5.38}
+: ${file_ver:=5.39}
 
-: ${go_ver:=1.14.14}
-: ${cmake_ver:=3.19.2}
-: ${ninja_ver:=1.10.1}
-: ${meson_ver:=0.54.0}
-: ${libxml2_ver:=2.9.9}
-: ${libedit_ver:=20181209-3.1}
+: ${go_ver:=1.14.15}
+: ${cmake_ver:=3.19.4}
+: ${ninja_ver:=1.10.2}
+: ${meson_ver:=0.56.2}
+: ${libxml2_ver:=2.9.10}
+: ${libedit_ver:=20191231-3.1}
 : ${swig_ver:=4.0.2}
 : ${llvm_ver:=11.0.1}
 : ${compiler_rt_ver:=${llvm_ver}}
