@@ -70,7 +70,7 @@
 : ${gcc_ver:=10.2.0}
 : ${readline_ver:=8.1}
 : ${ncurses_ver:=6.2}
-: ${popt_ver:=1.16}
+: ${popt_ver:=1.18}
 : ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=10.1}
 : ${lcov_ver:=1.14}
@@ -842,7 +842,7 @@ fetch()
 			done || return;;
 		popt)
 			wget -O ${popt_src_dir}.tar.gz \
-				http://anduin.linuxfromscratch.org/BLFS/popt/${popt_name}.tar.gz || return;;
+				http://ftp.rpm.org/popt/releases/popt-1.x/${popt_name}.tar.gz || return;;
 		babeltrace)
 			wget -O ${babeltrace_src_dir}.tar.gz \
 				https://github.com/efficios/babeltrace/archive/v${babeltrace_ver}.tar.gz || return;;

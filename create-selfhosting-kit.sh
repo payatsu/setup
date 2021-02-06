@@ -128,7 +128,7 @@ EOF
 : ${pcre_ver:=8.44}
 : ${pcre2_ver:=10.36}
 : ${util_linux_ver:=2.36.1}
-: ${popt_ver:=1.16}
+: ${popt_ver:=1.18}
 : ${glib_ver:=2.59.0}
 : ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=10.1}
