@@ -112,7 +112,8 @@ EOF
 : ${isl_ver:=0.20}
 : ${gcc_ver:=10.2.0}
 : ${make_ver:=4.3}
-: ${ccache_ver:=3.7.9}
+: ${zstd_ver:=1.4.8}
+: ${ccache_ver:=4.2}
 
 : ${ncurses_ver:=6.2}
 : ${readline_ver:=8.1}
@@ -287,6 +288,9 @@ fetch()
 					&& break \
 					|| rm -v ${gcc_src_dir}.tar.${compress_format}
 		done || return;;
+	zstd)
+		wget -O ${zstd_src_dir}.tar.gz \
+			https://github.com/facebook/zstd/releases/download/v${zstd_ver}/${zstd_name}.tar.gz || return;;
 	ccache)
 		wget -O ${ccache_src_dir}.tar.xz \
 			https://github.com/ccache/ccache/releases/download/v${ccache_ver}/${ccache_name}.tar.xz || return;;
@@ -776,20 +780,37 @@ build()
 			make -C ${make_bld_dir} -j ${jobs} -k check || return
 		make -C ${make_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
-	ccache)
-		[ -x ${DESTDIR}${prefix}/bin/ccache -a "${force_install}" != yes ] && return
+	zstd)
+		[ -x ${DESTDIR}${prefix}/bin/zstd -a "${force_install}" != yes ] && return
 		fetch ${1} || return
 		unpack ${1} || return
-		[ -f ${ccache_bld_dir}/Makefile ] ||
-			(cd ${ccache_bld_dir}
-			${ccache_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
-		make -C ${ccache_bld_dir} -j ${jobs} V=1 || return
-		[ "${enable_check}" != yes ] ||
-			make -C ${ccache_bld_dir} -j ${jobs} -k V=1 check || return
-		make -C ${ccache_bld_dir} -j ${jobs} V=1 DESTDIR=${DESTDIR} install || return
-		update_ccache_wrapper -f || return
+		[ -f ${zstd_bld_dir}/Makefile ] || cp -Tvr ${zstd_src_dir} ${zstd_bld_dir} || return
+		make -C ${zstd_bld_dir} -j ${jobs} CC="${CC:-${host:+${host}-}gcc}" || return
+		make -C ${zstd_bld_dir} -j ${jobs} prefix=${DESTDIR}${prefix} install || return
 		[ -z "${strip}" ] && return
-		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/ccache || return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/zstd || return
+		;;
+	ccache)
+		[ -x ${DESTDIR}${prefix}/bin/ccache -a "${force_install}" != yes ] && return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
+		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
+		fetch ${1} || return
+		unpack ${1} || return
+		generate_gcc_wrapper ${ccache_bld_dir} || return
+		generate_gxx_wrapper ${ccache_bld_dir} || return
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${ccache_src_dir} -B ${ccache_bld_dir} \
+			-DCMAKE_C_COMPILER=${ccache_bld_dir}/${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${ccache_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DZSTD_LIBRARY=`print_library_path libzstd.so` \
+			-DZSTD_INCLUDE_DIR=`print_header_dir zstd.h` \
+			|| return
+		cmake --build ${ccache_bld_dir} -v -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			cmake --build ${ccache_bld_dir} -v -j ${jobs} --target check || return
+		cmake --install ${ccache_bld_dir} -v ${strip:+--${strip}} || return
+		update_ccache_wrapper -f || return
 		;;
 	ncurses)
 		[ -f ${DESTDIR}${prefix}/include/ncurses/curses.h -a "${force_install}" != yes ] && return
@@ -3013,7 +3034,7 @@ main()
 	[ -z "${target}" ] && target=${host}
 	DESTDIR=`readlink -m ${host}`
 
-	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} --target ${build} ccache binutils gcc cmake || return
+	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} --target ${build} binutils gcc cmake ccache || return
 	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
 
 	! which ccache > /dev/null || ccache -M 8G || return

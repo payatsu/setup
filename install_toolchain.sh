@@ -153,7 +153,7 @@
 : ${cmake_ver:=3.19.4}
 : ${bazel_ver:=2.2.0}
 : ${Bear_ver:=2.4.3}
-: ${ccache_ver:=3.7.9}
+: ${ccache_ver:=4.2}
 : ${libedit_ver:=20191231-3.1}
 : ${swig_ver:=4.0.2}
 : ${llvm_ver:=11.0.1}
@@ -1457,7 +1457,7 @@ setup_ccache()
 	[ "${enable_ccache}" != yes ] && return
 	which ccache || { echo command not found: ccache >&2; return 1;}
 	mkdir -pv ${src} || return
-	export USE_CCACHE=1 CCACHE_DIR=${HOME}/.ccache CCACHE_BASEDIR=${src}
+	export USE_CCACHE=1 CCACHE_BASEDIR=${src}
 	echo ${CC} | grep -qe ccache || export CC="ccache ${CC:-${host:+${host}-}gcc}" CXX="ccache ${CXX:-${host:+${host}-}g++}"
 }
 
@@ -4416,6 +4416,7 @@ install_native_expat()
 install_native_asciidoc()
 {
 	[ -x ${prefix}/bin/asciidoc -a "${force_install}" != yes ] && return
+	which xsltproc > /dev/null || install_native_libxslt || return
 	fetch asciidoc || return
 	unpack asciidoc || return
 	[ -f ${asciidoc_bld_dir}/configure ] || cp -Tvr ${asciidoc_src_dir} ${asciidoc_bld_dir} || return
@@ -4732,19 +4733,22 @@ install_native_Bear()
 install_native_ccache()
 {
 	[ -x ${prefix}/bin/ccache -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	print_header_path zstd.h > /dev/null || install_native_zstd || return
 	fetch ccache || return
 	unpack ccache || return
-	[ -f ${ccache_bld_dir}/Makefile ] ||
-		(cd ${ccache_bld_dir}
-		${ccache_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${ccache_bld_dir} -j ${jobs} V=1 || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${ccache_src_dir} -B ${ccache_bld_dir} \
+		-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+		-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+		|| return
+	cmake --build ${ccache_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${ccache_bld_dir} -j ${jobs} -k V=1 check || return
-	make -C ${ccache_bld_dir} -j ${jobs} V=1 install || return
+		cmake --build ${ccache_bld_dir} -v -j ${jobs} --target check || return
+	cmake --install ${ccache_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 	update_ccache_wrapper -f || return
-	[ -z "${strip}" ] && return
-	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/ccache || return
 }
 
 install_native_libedit()
