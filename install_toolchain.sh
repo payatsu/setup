@@ -143,7 +143,7 @@
 : ${git_ver:=2.30.0}
 : ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=5.4}
-: ${sqlite_autoconf_ver:=3310100}
+: ${sqlite_ver:=3310100}
 : ${apr_ver:=1.7.0}
 : ${apr_util_ver:=1.6.1}
 : ${utf8proc_ver:=2.4.0}
@@ -574,8 +574,8 @@ help()
 		Specify the version of Git you want, currently '${git_ver}'.
 	mercurial_ver
 		Specify the version of Mercurial you want, currently '${mercurial_ver}'.
-	sqlite_autoconf_ver
-		Specify the version of SQLite you want, currently '${sqlite_autoconf_ver}'.
+	sqlite_ver
+		Specify the version of SQLite you want, currently '${sqlite_ver}'.
 	apr_ver
 		Specify the version of apr you want, currently '${apr_ver}'.
 	apr_util_ver
@@ -1005,9 +1005,9 @@ fetch()
 		mercurial)
 			wget -O ${mercurial_src_dir}.tar.gz \
 				https://www.mercurial-scm.org/release/${mercurial_name}.tar.gz || return;;
-		sqlite-autoconf)
-			wget -O ${sqlite_autoconf_src_dir}.tar.gz \
-				https://www.sqlite.org/2020/${sqlite_autoconf_name}.tar.gz || return;;
+		sqlite)
+			wget -O ${sqlite_src_dir}.tar.gz \
+				https://www.sqlite.org/2020/${sqlite_name}.tar.gz || return;;
 		apr|apr-util)
 			eval wget -O \${${_p}_src_dir}.tar.bz2 \
 				http://ftp.tsukuba.wide.ad.jp/software/apache/apr/\${${_p:-apr}_name}.tar.bz2 || return;;
@@ -1414,6 +1414,8 @@ set_src_directory()
 		eval ${_1}_name=${1}src.\${${_1}_ver};;
 	plantuml)
 		eval ${_1}_name=${1}.\${${_1}_ver};;
+	sqlite)
+		eval ${_1}_name=${1}-autoconf-\${${_1}_ver};;
 	gtk)
 		eval ${_1}_name=${1}+-\${${_1}_ver};;
 	boost|x265)
@@ -1499,7 +1501,6 @@ set_variables()
 			s/source_highlight/source-highlight/
 			s/util_linux/util-linux/
 			s/git_manpages/git-manpages/
-			s/sqlite_autoconf/sqlite-autoconf/
 			s/apr_util/apr-util/
 			s/compiler_rt/compiler-rt/
 			s/clang_tools_extra/clang-tools-extra/
@@ -4549,15 +4550,15 @@ install_native_mercurial()
 install_native_sqlite()
 {
 	[ -f ${prefix}/include/sqlite3.h -a "${force_install}" != yes ] && return
-	fetch sqlite-autoconf || return
-	unpack sqlite-autoconf || return
-	[ -f ${sqlite_autoconf_bld_dir}/Makefile ] ||
-		(cd ${sqlite_autoconf_bld_dir}
-		${sqlite_autoconf_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${sqlite_autoconf_bld_dir} -j ${jobs} || return
+	fetch sqlite || return
+	unpack sqlite || return
+	[ -f ${sqlite_bld_dir}/Makefile ] ||
+		(cd ${sqlite_bld_dir}
+		${sqlite_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${sqlite_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${sqlite_autoconf_bld_dir} -j ${jobs} -k check || return
-	make -C ${sqlite_autoconf_bld_dir} -j ${jobs} install || return
+		make -C ${sqlite_bld_dir} -j ${jobs} -k check || return
+	make -C ${sqlite_bld_dir} -j ${jobs} install || return
 	update_path || return
 }
 
