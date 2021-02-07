@@ -52,9 +52,9 @@
 : ${rsync_ver:=3.2.3}
 : ${linux_ver:=5.7.10}
 : ${perf_ver:=${linux_ver}}
-: ${libbpf_ver:=0.1.1}
-: ${bcc_ver:=0.16.0}
-: ${bpftrace_ver:=0.11.2}
+: ${libbpf_ver:=0.3}
+: ${bcc_ver:=0.18.0}
+: ${bpftrace_ver:=0.11.4}
 : ${kmod_ver:=28}
 : ${dtc_ver:=1.6.0}
 : ${u_boot_ver:=2020.10}
@@ -2447,6 +2447,7 @@ install_native_bcc()
 		|| return
 	cmake --build ${bcc_bld_dir} -v -j ${jobs} || return
 	cmake --install ${bcc_bld_dir} -v ${strip:+--${strip}} || return
+	update_path || return
 }
 
 install_native_bpftrace()

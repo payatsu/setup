@@ -137,9 +137,9 @@ EOF
 : ${systemtap_ver:=4.4}
 : ${linux_ver:=5.7.10}
 : ${perf_ver:=${linux_ver}}
-: ${libbpf_ver:=0.1.1}
-: ${bcc_ver:=0.16.0}
-: ${bpftrace_ver:=0.11.2}
+: ${libbpf_ver:=0.3}
+: ${bcc_ver:=0.18.0}
+: ${bpftrace_ver:=0.11.4}
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
 : ${procps_ver:=3.3.15}
