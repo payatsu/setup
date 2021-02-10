@@ -125,7 +125,7 @@
 : ${dejagnu_ver:=1.6.2}
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.0}
-: ${inetutils_ver:=1.9.4}
+: ${inetutils_ver:=2.0}
 : ${iproute2_ver:=5.9.0}
 : ${util_linux_ver:=2.36.1}
 : ${e2fsprogs_ver:=1.45.6}
