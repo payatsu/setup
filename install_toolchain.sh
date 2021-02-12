@@ -208,6 +208,7 @@
 : ${libassuan_ver:=2.5.4}
 : ${gnupg_ver:=2.2.27}
 : ${protobuf_ver:=3.14.0}
+: ${grpc_ver:=1.35.0}
 : ${libbacktrace_ver:=git}
 
 # TODO X11周りのインストールは未着手。
@@ -686,6 +687,8 @@ help()
 		Specify the version of GnuPG you want, currently '${gnupg_ver}'.
 	protobuf_ver
 		Specify the version of protobuf you want, currently '${protobuf_ver}'.
+	grpc_ver
+		Specify the version of gRPC you want, currently '${grpc_ver}'.
 	libbacktrace_ver
 		Specify the version of libbacktrace you want, currently '${libbacktrace_ver}'.
 	glib_ver
@@ -1151,6 +1154,9 @@ fetch()
 		protobuf)
 			wget -O ${protobuf_src_dir}.tar.gz \
 				https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_ver}/protobuf-all-${protobuf_ver}.tar.gz || return;;
+		grpc)
+			git clone --depth 1 -b v${grpc_ver} -j ${jobs} --recurse-submodules --shallow-submodules \
+				https://github.com/grpc/grpc ${grpc_src_dir} || return;;
 		libbacktrace)
 			git clone --depth 1 \
 				https://github.com/ianlancetaylor/libbacktrace ${libbacktrace_src_dir} || return;;
@@ -1428,6 +1434,8 @@ set_src_directory()
 		eval ${_1}_name=${1}\${${_1}_ver};;
 	googletest)
 		eval ${_1}_name=${1}-release-\${${_1}_ver};;
+	grpc)
+		eval ${_1}_name=${1}-\${${_1}_ver}.git;;
 	*)
 		eval ${_1}_name=${1}-\${${_1}_ver};;
 	esac
@@ -6011,6 +6019,26 @@ install_native_protobuf()
 		make -C ${protobuf_bld_dir} -j ${jobs} -k check || return
 	make -C ${protobuf_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
+}
+
+install_native_grpc()
+{
+	[ -x ${prefix}/bin/grpc_cpp_plugin -a "${force_install}" != yes ] && return
+	which autoconf > /dev/null || install_native_autoconf || return
+	which libtoolize > /dev/null || install_native_libtool || return
+	which pkg-config > /dev/null || install_native_pkg_config || return
+	which cmake > /dev/null || install_native_cmake || return
+	fetch grpc || return
+	unpack grpc || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${grpc_src_dir} -B ${grpc_bld_dir} \
+		-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+		-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+		-DBUILD_SHARED_LIBS=ON \
+		|| return
+	cmake --build ${grpc_bld_dir} -v -j ${jobs} || return
+	cmake --install ${grpc_bld_dir} -v ${strip:+--${strip}} || return
 }
 
 install_native_libbacktrace()
