@@ -13,7 +13,7 @@
 # [TODO] Polly, MySQL, grub
 # [TODO] update-alternatives
 
-: ${tar_ver:=1.33}
+: ${tar_ver:=1.34}
 : ${cpio_ver:=2.13}
 : ${xz_ver:=5.2.5}
 : ${bzip2_ver:=1.0.8}

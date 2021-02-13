@@ -170,7 +170,7 @@ EOF
 : ${dtc_ver:=1.6.0}
 : ${kmod_ver:=28}
 : ${u_boot_ver:=2020.10}
-: ${tar_ver:=1.33}
+: ${tar_ver:=1.34}
 : ${cpio_ver:=2.13}
 : ${e2fsprogs_ver:=1.45.6}
 : ${v4l_utils_ver:=1.20.0}
