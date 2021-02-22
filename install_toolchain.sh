@@ -36,7 +36,7 @@
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.18}
 : ${autoconf_ver:=2.71}
-: ${autoconf_archive_ver:=2019.01.06}
+: ${autoconf_archive_ver:=2021.02.19}
 : ${automake_ver:=1.16.3}
 : ${autogen_ver:=5.18.16}
 : ${libtool_ver:=2.4.6}
@@ -140,7 +140,7 @@
 : ${libxslt_ver:=1.1.34}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.21}
-: ${git_ver:=2.30.0}
+: ${git_ver:=2.30.1}
 : ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=5.4}
 : ${sqlite_ver:=3340100}
