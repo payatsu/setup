@@ -4185,13 +4185,14 @@ install_native_expect()
 	unpack expect || return
 	[ -f ${expect_bld_dir}/Makefile ] ||
 		(cd ${expect_bld_dir}
-		${expect_src_dir}/configure --prefix=${prefix} --build=${build} --enable-threads \
+		${expect_src_dir}/configure --prefix=${prefix} --exec-prefix=${prefix} --build=${build} --enable-threads \
 			--enable-64bit --with-tcl=`print_library_dir tclConfig.sh`) || return
 	make -C ${expect_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${expect_bld_dir} -j ${jobs} -k check || return
 	make -C ${expect_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 	ln -fsv ${expect_name}/lib${expect_name}.so ${DESTDIR}${prefix}/lib || return
+	update_path || return
 }
 
 install_native_dejagnu()
