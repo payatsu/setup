@@ -861,6 +861,7 @@ build()
 		unpack ${1} || return
 		[ -f ${readline_bld_dir}/Makefile ] ||
 			(cd ${readline_bld_dir}
+			sed -i -e 's/\(-Wl,\)\?-rpath[, ]\$(libdir) \?//' ${readline_src_dir}/support/shobj-conf || return
 			${readline_src_dir}/configure --prefix=${prefix} --host=${host} \
 				--enable-multibyte --with-curses) || return
 		make -C ${readline_bld_dir} -j ${jobs} || return
