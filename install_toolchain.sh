@@ -210,6 +210,7 @@
 : ${protobuf_ver:=3.14.0}
 : ${grpc_ver:=1.35.0}
 : ${libbacktrace_ver:=git}
+: ${poke_ver:=1.0}
 
 # TODO X11周りのインストールは未着手。
 : ${xtrans_ver:=1.3.5}
@@ -691,6 +692,8 @@ help()
 		Specify the version of gRPC you want, currently '${grpc_ver}'.
 	libbacktrace_ver
 		Specify the version of libbacktrace you want, currently '${libbacktrace_ver}'.
+	poke_ver
+		Specify the version of GNU poke you want, currently '${poke_ver}'.
 	glib_ver
 		Specify the version of GLib you want, currently '${glib_ver}'.
 
@@ -717,7 +720,7 @@ fetch()
 		case ${p} in
 		tar|cpio|gzip|wget|help2man|texinfo|coreutils|bison|m4|autoconf|autoconf-archive|automake|libtool|sed|gawk|\
 		gnulib|make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|nano|grep|global|\
-		diffutils|patch|findutils|less|groff|gdbm|screen|dejagnu|bash|inetutils|gettext|libunistring|guile)
+		diffutils|patch|findutils|less|groff|gdbm|screen|dejagnu|bash|inetutils|gettext|libunistring|guile|poke)
 			eval [ "\${${p}_ver}" = git ] && {
 				case ${p} in
 				binutils|gdb)
@@ -6055,6 +6058,30 @@ install_native_libbacktrace()
 	[ "${enable_check}" != yes ] ||
 		make -C ${libbacktrace_bld_dir} -j ${jobs} -k check || return
 	make -C ${libbacktrace_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_poke()
+{
+	[ -x ${prefix}/bin/poke -a "${force_install}" != yes ] && return
+	print_header_path gc.h > /dev/null || install_native_gc || return
+	print_header_path readline.h readline > /dev/null || install_native_readline || return
+	which diff > /dev/null || install_native_diffutils || return
+	which awk > /dev/null || install_native_gawk || return
+	which pkg-config > /dev/null || install_native_pkg_config || return
+	[ "${enable_check}" != yes ] || install_native_dejagnu || return
+	fetch poke || return
+	unpack poke || return
+	[ -f ${poke_bld_dir}/Makefile ] ||
+		(cd ${poke_bld_dir}
+		sed -i -e 's/\(\$\(wl\|{wl}\)\)\?-\?-rpath[, ]\(\$\(wl\|{wl}\)\)\?\$\(libdir\|(libdir)\)//' \
+			`grep -le '\<rpath\>' -r ${poke_src_dir} --exclude=configure --exclude=ltmain.sh` || return
+		sed -i -e 's/\(\<runpath_var\>=\).\+/\1dummy_runpath/' `find ${poke_src_dir} -type f -name libtool.m4` || return
+		${poke_src_dir}/configure --prefix=${prefix} --host=${host} --disable-rpath --disable-gui) || return
+	make -C ${poke_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${poke_bld_dir} -j ${jobs} -k check || return
+	make -C ${poke_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
