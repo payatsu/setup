@@ -1059,15 +1059,20 @@ EOF
 		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
 		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
 		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
+		print_header_path curl.h curl > /dev/null || ${0} ${cmdopt} curl || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${elfutils_bld_dir}/Makefile ] ||
 			(cd ${elfutils_bld_dir}
 			${elfutils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				--disable-debuginfod --disable-libdebuginfod \
-				CFLAGS="${CFLAGS} -I`print_header_dir zlib.h`" \
-				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`" \
-				LIBS="${LIBS} -lz -lbz2 -llzma") || return
+				--enable-libdebuginfod --disable-debuginfod \
+				CFLAGS="${CFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir zstd.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libcurl.so`" \
+				LIBS="${LIBS} -lz -lbz2 -llzma -lcurl -lzstd" \
+				PKG_CONFIG_PATH= \
+				PKG_CONFIG_LIBDIR=`print_library_dir libcurl.pc` \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
 		make -C ${elfutils_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${elfutils_bld_dir} -j ${jobs} -k check || return

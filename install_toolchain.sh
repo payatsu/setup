@@ -2318,12 +2318,13 @@ install_native_elfutils()
 	print_header_path bzlib.h > /dev/null || install_native_bzip2 || return
 	print_header_path lzma.h > /dev/null || install_native_xz || return
 	print_header_path zstd.h > /dev/null || install_native_zstd || return
+	print_header_path curl.h curl > /dev/null || install_native_curl || return
 	fetch elfutils || return
 	unpack elfutils || return
 	[ -f ${elfutils_bld_dir}/Makefile ] ||
 		(cd ${elfutils_bld_dir}
 		${elfutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-			--disable-debuginfod --disable-libdebuginfod \
+			--enable-libdebuginfod --disable-debuginfod \
 			CFLAGS="${CFLAGS} -I`print_header_dir zlib.h`" \
 			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -lbz2") || return
 	make -C ${elfutils_bld_dir} -j ${jobs} || return
