@@ -1286,7 +1286,7 @@ EOF
 			${systemtap_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				CPPFLAGS="${CPPFLAGS} -I`print_header_dir libdw.h elfutils`" \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libdw.so` -L`print_library_dir libpython$(print_target_python_version).so` -lpython$(print_target_python_version)" \
-				LIBS="${LIBS} -lz -lbz2 -llzma" \
+				LIBS="${LIBS} -lz -lbz2 -llzma -lzstd" \
 				) || return
 		sed -i -e '/^\<LDFLAGS\>/{
 			s/\( -lc\)\?$/ -lc/
