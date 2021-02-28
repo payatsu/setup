@@ -120,12 +120,12 @@ EOF
 : ${expat_ver:=2.2.10}
 : ${libffi_ver:=3.3}
 : ${openssl_ver:=1.1.1i}
-: ${Python_ver:=3.9.1}
+: ${Python_ver:=3.9.2}
 : ${boost_ver:=1_75_0}
 : ${source_highlight_ver:=3.1.9}
 : ${bzip2_ver:=1.0.8}
 : ${xz_ver:=5.2.5}
-: ${elfutils_ver:=0.182}
+: ${elfutils_ver:=0.183}
 : ${pcre_ver:=8.44}
 : ${pcre2_ver:=10.36}
 : ${util_linux_ver:=2.36.1}

@@ -45,7 +45,7 @@
 : ${gnulib_ver:=git}
 : ${make_ver:=4.3}
 : ${binutils_ver:=2.35.2}
-: ${elfutils_ver:=0.182}
+: ${elfutils_ver:=0.183}
 : ${systemtap_ver:=4.4}
 : ${ed_ver:=1.17}
 : ${bc_ver:=1.07.1}
@@ -168,7 +168,7 @@
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
 : ${boost_ver:=1_75_0}
-: ${Python_ver:=3.9.1}
+: ${Python_ver:=3.9.2}
 : ${Python2_ver:=2.7.18}
 : ${rustc_ver:=1.50.0}
 : ${rustup_ver:=1.23.1}
