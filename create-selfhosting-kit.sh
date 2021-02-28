@@ -1058,6 +1058,7 @@ EOF
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
 		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
+		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${elfutils_bld_dir}/Makefile ] ||

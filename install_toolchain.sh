@@ -2317,6 +2317,7 @@ install_native_elfutils()
 	print_header_path zlib.h > /dev/null || install_native_zlib || return
 	print_header_path bzlib.h > /dev/null || install_native_bzip2 || return
 	print_header_path lzma.h > /dev/null || install_native_xz || return
+	print_header_path zstd.h > /dev/null || install_native_zstd || return
 	fetch elfutils || return
 	unpack elfutils || return
 	[ -f ${elfutils_bld_dir}/Makefile ] ||
