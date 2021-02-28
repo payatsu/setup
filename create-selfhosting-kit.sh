@@ -331,7 +331,7 @@ fetch()
 			https://kernel.org/pub/linux/utils/util-linux/v`print_version util-linux`/${util_linux_name}.tar.xz || return;;
 	popt)
 		wget -O ${popt_src_dir}.tar.gz \
-			http://anduin.linuxfromscratch.org/BLFS/popt/${popt_name}.tar.gz || return;;
+			http://ftp.rpm.org/popt/releases/popt-1.x/${popt_name}.tar.gz || return;;
 	glib)
 		wget -O ${glib_src_dir}.tar.xz \
 			http://ftp.gnome.org/pub/gnome/sources/glib/`print_version glib`/${glib_name}.tar.xz || return;;
@@ -1133,13 +1133,14 @@ EOF
 		;;
 	popt)
 		[ -f ${DESTDIR}${prefix}/include/popt.h -a "${force_install}" != yes ] && return
+		which autopoint > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gettext || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${popt_bld_dir}/Makefile ] ||
 			(cd ${popt_bld_dir}
 			sed -i -e '/^AM_C_PROTOTYPES$/d' ${popt_src_dir}/configure.ac || return
 			sed -i -e '/^TESTS = /d' ${popt_src_dir}/Makefile.am || return
-			autoreconf -fiv ${popt_src_dir} || return
+			gettext_datadir=$(dirname $(which gettext))/../share/gettext autoreconf -fiv ${popt_src_dir} || return
 			${popt_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-rpath) || return
 		make -C ${popt_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
