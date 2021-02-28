@@ -1219,9 +1219,10 @@ EOF
 		;;
 	gdb)
 		[ -x ${DESTDIR}${prefix}/bin/gdb -a "${force_install}" != yes ] && return
+		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
-		print_header_path readline.h readline > /dev/null || ${0} ${cmdopt} readline || return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		print_header_path readline.h readline > /dev/null || ${0} ${cmdopt} readline || return
 		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
 		print_header_path mpfr.h > /dev/null || ${0} ${cmdopt} mpfr || return
 		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
@@ -1236,8 +1237,8 @@ EOF
 --disable-rpath
 CFLAGS='${CFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir curses.h` -I`print_header_dir Python.h`'
 CPPFLAGS='${CPPFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir Python.h`'
-LDFLAGS=-L`print_prefix Python.h`/lib
-LIBS='${LIBS} -lpopt -luuid -lgmodule-2.0 -lglib-2.0 -lpcre -ldw -lelf -lz -lbz2 -llzma'
+LDFLAGS='-L`print_prefix Python.h`/lib -L`print_library_dir libpopt.so`'
+LIBS='${LIBS} -lpopt -luuid -lgmodule-2.0 -lglib-2.0 -lpcre -ldw -lelf -lz -lbz2 -llzma -lcurl'
 PKG_CONFIG_PATH=
 PKG_CONFIG_LIBDIR=`print_library_dir source-highlight.pc`
 PKG_CONFIG_SYSROOT_DIR=${DESTDIR}
@@ -1245,7 +1246,7 @@ EOF
 			${gdb_src_dir}/configure --prefix=${prefix} --host=${host} --target=${target} \
 				--enable-targets=all --enable-64-bit-bfd --enable-tui --enable-source-highlight \
 				--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${target} \
-				--with-system-zlib --with-system-readline \
+				--with-debuginfod --with-system-zlib --with-system-readline \
 				--with-expat=yes --with-libexpat-prefix=`print_prefix expat.h` \
 				--with-mpfr=yes --with-libmpfr-prefix=`print_prefix mpfr.h` \
 				--with-python=python3 --without-guile \

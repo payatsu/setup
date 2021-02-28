@@ -2847,19 +2847,25 @@ install_native_babeltrace()
 install_native_gdb()
 {
 	[ -x ${prefix}/bin/gdb -a "${force_install}" != yes ] && return
+	print_header_path libelf.h > /dev/null || install_native_elfutils || return
 	print_header_path zlib.h > /dev/null || install_native_zlib || return
-	print_header_path readline.h readline > /dev/null || install_native_readline || return
 	print_header_path curses.h > /dev/null || install_native_ncurses || return
+	print_header_path readline.h readline > /dev/null || install_native_readline || return
+	print_header_path expat.h > /dev/null || install_native_expat || return
+	print_header_path mpfr.h > /dev/null || install_native_mpfr || return
 	print_library_path libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`.so > /dev/null || install_native_Python || return
+	print_header_path sourcehighlight.h srchilite > /dev/null || install_native_source_highlight || return
+	print_header_path lzma.h > /dev/null || install_native_xz || return
+	print_header_path babeltrace.h babeltrace > /dev/null || install_native_babeltrace || return
 	which makeinfo > /dev/null || install_native_texinfo || return
 	fetch gdb || return
 	unpack gdb || return
 	[ -f ${gdb_bld_dir}/Makefile ] ||
 		(cd ${gdb_bld_dir}
 		${gdb_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --target=${target} \
-			--enable-targets=all --enable-64-bit-bfd --enable-tui \
+			--enable-targets=all --enable-64-bit-bfd --enable-tui --enable-source-highlight \
 			--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${target} --with-python=python3 \
-			--with-system-zlib --with-system-readline \
+			--with-debuginfod --with-system-zlib --with-system-readline \
 			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libncurses.so`" \
 			host_configargs='--disable-rpath 'CFLAGS=\'"${CFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir curses.h`"\') || return
 	make -C ${gdb_bld_dir} -j ${jobs} V=1 || return
