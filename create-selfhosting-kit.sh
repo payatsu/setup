@@ -635,17 +635,24 @@ build()
 	binutils)
 		[ -x ${DESTDIR}${prefix}/bin/${target}-as -a "${force_install}" != yes ] && return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${binutils_bld_dir}/Makefile ] ||
 			(cd ${binutils_bld_dir}
+			[ -f host_configargs ] || cat << EOF | tr '\n' ' ' > host_configargs || return
+--disable-rpath
+LIBS='-lcurl'
+EOF
 			${binutils_src_dir}/configure --prefix=${prefix} --host=${host} --target=${target} \
 				--enable-shared --enable-gold --enable-threads --enable-plugins \
 				--enable-compressed-debug-sections=all --enable-targets=all --enable-64-bit-bfd \
-				--with-system-zlib \
-				CFLAGS="${CFLAGS} -I`print_header_dir zlib.h`" \
+				--with-system-zlib --with-debuginfod \
+				CFLAGS="${CFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir debuginfod.h elfutils`" \
 				CXXFLAGS="${CXXFLAGS} -I`print_header_dir zlib.h`" \
-				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`") || return
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libdebuginfod.so`" \
+				LIBS='-lcurl' \
+				host_configargs="`cat host_configargs`") || return
 		make -C ${binutils_bld_dir} -j 1 || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${binutils_bld_dir} -j 1 -k check || return
