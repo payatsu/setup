@@ -119,7 +119,7 @@ EOF
 : ${readline_ver:=8.1}
 : ${expat_ver:=2.2.10}
 : ${libffi_ver:=3.3}
-: ${openssl_ver:=1.1.1i}
+: ${openssl_ver:=1.1.1j}
 : ${Python_ver:=3.9.2}
 : ${boost_ver:=1_75_0}
 : ${source_highlight_ver:=3.1.9}
