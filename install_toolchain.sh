@@ -2285,6 +2285,7 @@ install_native_binutils()
 {
 	[ -x ${prefix}/bin/${target}-as -a "${force_install}" != yes ] && return
 	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path libelf.h > /dev/null || install_native_elfutils || return
 	fetch binutils || return
 	unpack binutils || return
 	[ -f ${binutils_bld_dir}/Makefile ] ||
@@ -2294,7 +2295,7 @@ install_native_binutils()
 			`echo ${target} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' || echo --enable-compressed-debug-sections=all` \
 			--enable-targets=all --enable-64-bit-bfd \
 			`check_platform ${build} ${host} ${target} | grep -qe '\<native\>' || echo --with-sysroot=${sysroot}` \
-			--with-system-zlib \
+			--with-system-zlib --with-debuginfod \
 			CFLAGS="${CFLAGS} -I`print_header_dir zlib.h`" CXXFLAGS="${CXXFLAGS} -I`print_header_dir zlib.h`" \
 			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`") || return
 	make -C ${binutils_bld_dir} -j 1 || return
