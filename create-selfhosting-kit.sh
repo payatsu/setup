@@ -640,6 +640,9 @@ build()
 		unpack ${1} || return
 		[ -f ${binutils_bld_dir}/Makefile ] ||
 			(cd ${binutils_bld_dir}
+			sed -i -e 's/\(\$\(wl\|{wl}\)\)\?-\?-rpath[, ]\(\$\(wl\|{wl}\)\)\?\$\(libdir\|(libdir)\)//' \
+				`grep -le '\<rpath\>' -r ${binutils_src_dir} --exclude=ltmain.sh --exclude=Makefile.in` || return
+			sed -i -e 's/\(\<runpath_var\>=\).\+/\1dummy_runpath/' `find ${binutils_src_dir} -type f -name libtool.m4` || return
 			[ -f host_configargs ] || cat << EOF | tr '\n' ' ' > host_configargs || return
 --disable-rpath
 LIBS='-lcurl'
@@ -662,6 +665,10 @@ EOF
 			readelf size srconv strings strip sysdump windmc windres; do
 			[ -f ${DESTDIR}${prefix}/bin/${target}-${b} ] && continue
 			ln -fsv ${b} ${DESTDIR}${prefix}/bin/${target}-${b} || return
+			truncate_path_in_elf ${DESTDIR}${prefix}/bin/${b} ${DESTDIR} ${prefix}/lib: || return
+		done
+		for l in libbfd.so libctf-nobfd.so libctf.so libopcodes.so; do
+			truncate_path_in_elf ${DESTDIR}${prefix}/lib/${l} ${DESTDIR} ${prefix}/lib: || return
 		done
 		;;
 	gmp)
