@@ -162,7 +162,7 @@ EOF
 : ${gettext_ver:=0.21}
 : ${curl_ver:=7.75.0}
 : ${git_ver:=2.30.1}
-: ${openssh_ver:=8.4p1}
+: ${openssh_ver:=8.5p1}
 : ${lzip_ver:=1.22}
 : ${ed_ver:=1.17}
 : ${bc_ver:=1.07.1}
