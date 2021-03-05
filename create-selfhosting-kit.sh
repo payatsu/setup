@@ -224,6 +224,8 @@ build=`gcc -dumpmachine`
 
 init()
 {
+	[ ${1} = perf ] && init linux && perf_ver=${linux_ver}
+
 	_1=`echo ${1} | tr - _`
 	eval ${_1}_src_base=${src_dir}/${1}
 
@@ -260,6 +262,7 @@ check_archive()
 
 fetch()
 {
+	[ ${1} != perf ] || { fetch linux; return $?;}
 	_1=`echo ${1} | tr - _`
 	eval mkdir -pv \${${_1}_src_base} || return
 	eval check_archive \${${_1}_src_dir} || \
@@ -1324,11 +1327,8 @@ EOF
 		[ -x ${DESTDIR}${prefix}/bin/perf -a "${force_install}" != yes ] && return
 		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
-		init linux || return
 		fetch linux || return
 		unpack linux || return
-		perf_ver=${linux_ver}
-		init ${1} || return
 		mkdir -pv ${perf_bld_dir} || return
 		generate_toolchain_wrapper ${perf_bld_dir} || return
 		PKG_CONFIG_PATH= \
