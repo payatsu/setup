@@ -25,7 +25,7 @@
 : ${lzo_ver:=2.10}
 : ${lzop_ver:=1.04}
 : ${lz4_ver:=1.9.3}
-: ${zstd_ver:=1.4.8}
+: ${zstd_ver:=1.4.9}
 : ${wget_ver:=1.21.1}
 : ${pkg_config_ver:=0.29.2}
 : ${help2man_ver:=1.47.16}
@@ -2010,8 +2010,8 @@ install_native_zstd()
 	fetch zstd || return
 	unpack zstd || return
 	[ -f ${zstd_bld_dir}/Makefile ] || cp -Tvr ${zstd_src_dir} ${zstd_bld_dir} || return
-	make -C ${zstd_bld_dir} -j ${jobs} CC=${CC:-${host:+${host}-}gcc} || return
-	make -C ${zstd_bld_dir} -j ${jobs} prefix=${DESTDIR}${prefix} install || return
+	make -C ${zstd_bld_dir} -j ${jobs} V=1 CC=${CC:-${host:+${host}-}gcc} || return
+	make -C ${zstd_bld_dir} -j ${jobs} V=1 prefix=${DESTDIR}${prefix} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/zstd || return

@@ -112,7 +112,7 @@ EOF
 : ${isl_ver:=0.20}
 : ${gcc_ver:=10.2.0}
 : ${make_ver:=4.3}
-: ${zstd_ver:=1.4.8}
+: ${zstd_ver:=1.4.9}
 : ${ccache_ver:=4.2}
 
 : ${ncurses_ver:=6.2}
@@ -802,8 +802,8 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${zstd_bld_dir}/Makefile ] || cp -Tvr ${zstd_src_dir} ${zstd_bld_dir} || return
-		make -C ${zstd_bld_dir} -j ${jobs} CC="${CC:-${host:+${host}-}gcc}" || return
-		make -C ${zstd_bld_dir} -j ${jobs} prefix=${DESTDIR}${prefix} install || return
+		make -C ${zstd_bld_dir} -j ${jobs} V=1 CC="${CC:-${host:+${host}-}gcc}" || return
+		make -C ${zstd_bld_dir} -j ${jobs} V=1 prefix=${DESTDIR}${prefix} install || return
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/zstd || return
 		;;
