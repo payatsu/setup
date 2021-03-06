@@ -105,6 +105,12 @@ EOF
 }
 
 : ${zlib_ver:=1.2.11}
+: ${bzip2_ver:=1.0.8}
+: ${xz_ver:=5.2.5}
+: ${zstd_ver:=1.4.9}
+: ${openssl_ver:=1.1.1j}
+: ${curl_ver:=7.75.0}
+: ${elfutils_ver:=0.183}
 : ${binutils_ver:=2.35.2}
 : ${gmp_ver:=6.2.1}
 : ${mpfr_ver:=4.1.0}
@@ -112,20 +118,15 @@ EOF
 : ${isl_ver:=0.20}
 : ${gcc_ver:=10.2.0}
 : ${make_ver:=4.3}
-: ${zstd_ver:=1.4.9}
 : ${ccache_ver:=4.2}
 
 : ${ncurses_ver:=6.2}
 : ${readline_ver:=8.1}
 : ${expat_ver:=2.2.10}
 : ${libffi_ver:=3.3}
-: ${openssl_ver:=1.1.1j}
 : ${Python_ver:=3.9.2}
 : ${boost_ver:=1_75_0}
 : ${source_highlight_ver:=3.1.9}
-: ${bzip2_ver:=1.0.8}
-: ${xz_ver:=5.2.5}
-: ${elfutils_ver:=0.183}
 : ${pcre_ver:=8.44}
 : ${pcre2_ver:=10.36}
 : ${util_linux_ver:=2.36.1}
@@ -160,7 +161,6 @@ EOF
 : ${sed_ver:=4.8}
 : ${gawk_ver:=5.1.0}
 : ${gettext_ver:=0.21}
-: ${curl_ver:=7.75.0}
 : ${git_ver:=2.30.1}
 : ${openssh_ver:=8.5p1}
 : ${lzip_ver:=1.22}
@@ -635,6 +635,138 @@ build()
 			make -C ${zlib_bld_dir} -j ${jobs} -k check || return
 		make -C ${zlib_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		;;
+	bzip2)
+		[ -x ${DESTDIR}${prefix}/bin/bzip2 -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${bzip2_bld_dir}/Makefile ] || cp -Tvr ${bzip2_src_dir} ${bzip2_bld_dir} || return
+		sed -i -e '
+			/^CFLAGS=/{
+				s/ -fPIC//g
+				s/$/ -fPIC/
+			}
+			s/ln -s -f \$(PREFIX)\/bin\//ln -s -f /' ${bzip2_bld_dir}/Makefile || return
+		make -C ${bzip2_bld_dir} -j ${jobs} \
+			CC="${CC:-${host:+${host}-}gcc}" AR=${host}-gcc-ar RANLIB=${host}-gcc-ranlib bzip2 bzip2recover || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${bzip2_bld_dir} -j ${jobs} -k check || return
+		make -C ${bzip2_bld_dir} -j ${jobs} PREFIX=${DESTDIR}${prefix} install || return
+		make -C ${bzip2_bld_dir} -j ${jobs} clean || return
+		make -C ${bzip2_bld_dir} -j ${jobs} -f Makefile-libbz2_so CC="${CC:-${host:+${host}-}gcc}" || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${bzip2_bld_dir} -j ${jobs} -k check || return
+		cp -fv ${bzip2_bld_dir}/libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib || return
+		chmod -v a+r ${DESTDIR}${prefix}/lib/libbz2.so.${bzip2_ver} || return
+		ln -fsv libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib/libbz2.so.`print_version bzip2` || return
+		ln -fsv libbz2.so.`print_version bzip2` ${DESTDIR}${prefix}/lib/libbz2.so || return
+		cp -fv ${bzip2_bld_dir}/bzlib.h ${DESTDIR}${prefix}/include || return
+		cp -fv ${bzip2_bld_dir}/bzlib_private.h ${DESTDIR}${prefix}/include || return
+		[ -z "${strip}" ] && return
+		for b in bunzip2 bzcat bzip2 bzip2recover; do
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		done
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libbz2.so || return
+		;;
+	xz)
+		[ -x ${DESTDIR}${prefix}/bin/xz -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${xz_bld_dir}/Makefile ] ||
+			(cd ${xz_bld_dir}
+			${xz_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+		make -C ${xz_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${xz_bld_dir} -j ${jobs} -k check || return
+		make -C ${xz_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	zstd)
+		[ -x ${DESTDIR}${prefix}/bin/zstd -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${zstd_bld_dir}/Makefile ] || cp -Tvr ${zstd_src_dir} ${zstd_bld_dir} || return
+		make -C ${zstd_bld_dir} -j ${jobs} V=1 CC="${CC:-${host:+${host}-}gcc}" || return
+		make -C ${zstd_bld_dir} -j ${jobs} V=1 prefix=${DESTDIR}${prefix} install || return
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/zstd || return
+		;;
+	openssl)
+		[ -d ${DESTDIR}${prefix}/include/openssl -a "${force_install}" != yes ] && return
+		${0} ${cmdopt} --host ${build} --target ${build} perl || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${openssl_bld_dir}/Makefile ] ||
+			(cd ${openssl_bld_dir}
+			MACHINE=`echo ${host} | cut -d- -f1` SYSTEM=Linux \
+				${openssl_src_dir}/config --prefix=${prefix} shared) || return
+		make -C ${openssl_bld_dir} -j 1 `[ -z "${CC}" ] && echo CROSS_COMPILE=${host}-` || return # XXX work around for parallel make
+		[ "${enable_check}" != yes ] ||
+			make -C ${openssl_bld_dir} -j 1 -k test || return # XXX work around for parallel make
+		mkdir -pv ${DESTDIR}${prefix}/ssl || return
+		rm -fv ${DESTDIR}${prefix}/ssl/certs || return
+		[ ! -d /etc/ssl/certs ] || ln -fsv /etc/ssl/certs ${DESTDIR}${prefix}/ssl/certs || return
+		[   -d /etc/ssl/certs ] || mkdir -pv ${DESTDIR}${prefix}/ssl/certs || return
+		make -C ${openssl_bld_dir} -j 1 DESTDIR=${DESTDIR} install || return # XXX work around for parallel make
+		mkdir -pv ${DESTDIR}${prefix}/lib/pkgconfig || return
+		for f in libcrypto.pc libssl.pc openssl.pc; do
+			[ ! -f ${DESTDIR}${prefix}/lib64/pkgconfig/${f} ] || ln -fsv ../../lib64/pkgconfig/${f} ${DESTDIR}${prefix}/lib/pkgconfig || return
+		done
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/openssl || return
+		;;
+	curl)
+		[ -x ${DESTDIR}${prefix}/bin/curl -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
+		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
+		fetch ${1} || return
+		unpack ${1} || return
+		(cd ${curl_bld_dir}
+		${curl_src_dir}/configure --prefix=${prefix} --host=${host} \
+			--enable-optimize --disable-silent-rules \
+			--enable-http --enable-ftp --enable-file \
+			--enable-ldap --enable-ldaps --enable-rtsp --enable-proxy \
+			--enable-dict --enable-telnet --enable-tftp --enable-pop3 \
+			--enable-imap --enable-smb --enable-smtp --enable-gopher \
+			--enable-manual --enable-ipv6 --enable-openssl-auto-load-config \
+			--enable-sspi --enable-crypto-auth --enable-tls-srp \
+			--enable-unix-sockets --enable-cookies --enable-http-auth \
+			--enable-doh --enable-mime --enable-dateparse --enable-netrc \
+			--enable-progress-meter --enable-dnsshuffle --enable-alt-svc \
+			--with-zlib=`print_prefix zlib.h` \
+			--with-zstd=`print_prefix zstd.h` \
+			--with-ssl=`print_prefix ssl.h openssl` \
+			LDFLAGS="${LDFLAGS} -L`print_library_dir libzstd.so`" \
+			LIBS='-lzstd') || return
+		make -C ${curl_bld_dir} -j ${jobs} || return
+		make -C ${curl_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/curl || return
+		;;
+	elfutils)
+		[ -x ${DESTDIR}${prefix}/bin/eu-addr2line -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
+		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
+		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
+		print_header_path curl.h curl > /dev/null || ${0} ${cmdopt} curl || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${elfutils_bld_dir}/Makefile ] ||
+			(cd ${elfutils_bld_dir}
+			${elfutils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--enable-libdebuginfod --disable-debuginfod \
+				CFLAGS="${CFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir zstd.h`" \
+				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libcurl.so`" \
+				LIBS="${LIBS} -lz -lbz2 -llzma -lcurl -lzstd" \
+				PKG_CONFIG_PATH= \
+				PKG_CONFIG_LIBDIR=`print_library_dir libcurl.pc` \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
+		make -C ${elfutils_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${elfutils_bld_dir} -j ${jobs} -k check || return
+		make -C ${elfutils_bld_dir} -j 1 STRIPPROG=${host:+${host}-}strip DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
 	binutils)
 		[ -x ${DESTDIR}${prefix}/bin/${target}-as -a "${force_install}" != yes ] && return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
@@ -648,7 +780,7 @@ build()
 			sed -i -e 's/\(\<runpath_var\>=\).\+/\1dummy_runpath/' `find ${binutils_src_dir} -type f -name libtool.m4` || return
 			[ -f host_configargs ] || cat << EOF | tr '\n' ' ' > host_configargs || return
 --disable-rpath
-LIBS='-lcurl'
+LIBS='-lcurl -lzstd'
 EOF
 			${binutils_src_dir}/configure --prefix=${prefix} --host=${host} --target=${target} \
 				--enable-shared --enable-gold --enable-threads --enable-plugins \
@@ -657,7 +789,7 @@ EOF
 				CFLAGS="${CFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir debuginfod.h elfutils`" \
 				CXXFLAGS="${CXXFLAGS} -I`print_header_dir zlib.h`" \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libdebuginfod.so`" \
-				LIBS='-lcurl' \
+				LIBS='-lcurl -lzstd' \
 				host_configargs="`cat host_configargs`") || return
 		make -C ${binutils_bld_dir} -j 1 || return
 		[ "${enable_check}" != yes ] ||
@@ -797,16 +929,6 @@ EOF
 			make -C ${make_bld_dir} -j ${jobs} -k check || return
 		make -C ${make_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
-	zstd)
-		[ -x ${DESTDIR}${prefix}/bin/zstd -a "${force_install}" != yes ] && return
-		fetch ${1} || return
-		unpack ${1} || return
-		[ -f ${zstd_bld_dir}/Makefile ] || cp -Tvr ${zstd_src_dir} ${zstd_bld_dir} || return
-		make -C ${zstd_bld_dir} -j ${jobs} V=1 CC="${CC:-${host:+${host}-}gcc}" || return
-		make -C ${zstd_bld_dir} -j ${jobs} V=1 prefix=${DESTDIR}${prefix} install || return
-		[ -z "${strip}" ] && return
-		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/zstd || return
-		;;
 	ccache)
 		[ -x ${DESTDIR}${prefix}/bin/ccache -a "${force_install}" != yes ] && return
 		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
@@ -924,30 +1046,6 @@ EOF
 			ln -fsv ../lib64/`basename ${f}` ${DESTDIR}${prefix}/lib || return
 		done
 		;;
-	openssl)
-		[ -d ${DESTDIR}${prefix}/include/openssl -a "${force_install}" != yes ] && return
-		${0} ${cmdopt} --host ${build} --target ${build} perl || return
-		fetch ${1} || return
-		unpack ${1} || return
-		[ -f ${openssl_bld_dir}/Makefile ] ||
-			(cd ${openssl_bld_dir}
-			MACHINE=`echo ${host} | cut -d- -f1` SYSTEM=Linux \
-				${openssl_src_dir}/config --prefix=${prefix} shared) || return
-		make -C ${openssl_bld_dir} -j 1 `[ -z "${CC}" ] && echo CROSS_COMPILE=${host}-` || return # XXX work around for parallel make
-		[ "${enable_check}" != yes ] ||
-			make -C ${openssl_bld_dir} -j 1 -k test || return # XXX work around for parallel make
-		mkdir -pv ${DESTDIR}${prefix}/ssl || return
-		rm -fv ${DESTDIR}${prefix}/ssl/certs || return
-		[ ! -d /etc/ssl/certs ] || ln -fsv /etc/ssl/certs ${DESTDIR}${prefix}/ssl/certs || return
-		[   -d /etc/ssl/certs ] || mkdir -pv ${DESTDIR}${prefix}/ssl/certs || return
-		make -C ${openssl_bld_dir} -j 1 DESTDIR=${DESTDIR} install || return # XXX work around for parallel make
-		mkdir -pv ${DESTDIR}${prefix}/lib/pkgconfig || return
-		for f in libcrypto.pc libssl.pc openssl.pc; do
-			[ ! -f ${DESTDIR}${prefix}/lib64/pkgconfig/${f} ] || ln -fsv ../../lib64/pkgconfig/${f} ${DESTDIR}${prefix}/lib/pkgconfig || return
-		done
-		[ -z "${strip}" ] && return
-		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/openssl || return
-		;;
 	Python)
 		[ -x ${DESTDIR}${prefix}/bin/python3 -a "${force_install}" != yes ] && return
 		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
@@ -1025,75 +1123,6 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${source_highlight_bld_dir} -j ${jobs} -k check || return
 		make -C ${source_highlight_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} -k || true
-		;;
-	bzip2)
-		[ -x ${DESTDIR}${prefix}/bin/bzip2 -a "${force_install}" != yes ] && return
-		fetch ${1} || return
-		unpack ${1} || return
-		[ -f ${bzip2_bld_dir}/Makefile ] || cp -Tvr ${bzip2_src_dir} ${bzip2_bld_dir} || return
-		sed -i -e '
-			/^CFLAGS=/{
-				s/ -fPIC//g
-				s/$/ -fPIC/
-			}
-			s/ln -s -f \$(PREFIX)\/bin\//ln -s -f /' ${bzip2_bld_dir}/Makefile || return
-		make -C ${bzip2_bld_dir} -j ${jobs} \
-			CC="${CC:-${host:+${host}-}gcc}" AR=${host}-gcc-ar RANLIB=${host}-gcc-ranlib bzip2 bzip2recover || return
-		[ "${enable_check}" != yes ] ||
-			make -C ${bzip2_bld_dir} -j ${jobs} -k check || return
-		make -C ${bzip2_bld_dir} -j ${jobs} PREFIX=${DESTDIR}${prefix} install || return
-		make -C ${bzip2_bld_dir} -j ${jobs} clean || return
-		make -C ${bzip2_bld_dir} -j ${jobs} -f Makefile-libbz2_so CC="${CC:-${host:+${host}-}gcc}" || return
-		[ "${enable_check}" != yes ] ||
-			make -C ${bzip2_bld_dir} -j ${jobs} -k check || return
-		cp -fv ${bzip2_bld_dir}/libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib || return
-		chmod -v a+r ${DESTDIR}${prefix}/lib/libbz2.so.${bzip2_ver} || return
-		ln -fsv libbz2.so.${bzip2_ver} ${DESTDIR}${prefix}/lib/libbz2.so.`print_version bzip2` || return
-		ln -fsv libbz2.so.`print_version bzip2` ${DESTDIR}${prefix}/lib/libbz2.so || return
-		cp -fv ${bzip2_bld_dir}/bzlib.h ${DESTDIR}${prefix}/include || return
-		cp -fv ${bzip2_bld_dir}/bzlib_private.h ${DESTDIR}${prefix}/include || return
-		[ -z "${strip}" ] && return
-		for b in bunzip2 bzcat bzip2 bzip2recover; do
-			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
-		done
-		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libbz2.so || return
-		;;
-	xz)
-		[ -x ${DESTDIR}${prefix}/bin/xz -a "${force_install}" != yes ] && return
-		fetch ${1} || return
-		unpack ${1} || return
-		[ -f ${xz_bld_dir}/Makefile ] ||
-			(cd ${xz_bld_dir}
-			${xz_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
-		make -C ${xz_bld_dir} -j ${jobs} || return
-		[ "${enable_check}" != yes ] ||
-			make -C ${xz_bld_dir} -j ${jobs} -k check || return
-		make -C ${xz_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
-		;;
-	elfutils)
-		[ -x ${DESTDIR}${prefix}/bin/eu-addr2line -a "${force_install}" != yes ] && return
-		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
-		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
-		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
-		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
-		print_header_path curl.h curl > /dev/null || ${0} ${cmdopt} curl || return
-		fetch ${1} || return
-		unpack ${1} || return
-		[ -f ${elfutils_bld_dir}/Makefile ] ||
-			(cd ${elfutils_bld_dir}
-			${elfutils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				--enable-libdebuginfod --disable-debuginfod \
-				CFLAGS="${CFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir zstd.h`" \
-				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libcurl.so`" \
-				LIBS="${LIBS} -lz -lbz2 -llzma -lcurl -lzstd" \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_library_dir libcurl.pc` \
-				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-				) || return
-		make -C ${elfutils_bld_dir} -j ${jobs} || return
-		[ "${enable_check}" != yes ] ||
-			make -C ${elfutils_bld_dir} -j ${jobs} -k check || return
-		make -C ${elfutils_bld_dir} -j 1 STRIPPROG=${host:+${host}-}strip DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	pcre)
 		[ -f ${DESTDIR}${prefix}/include/pcre.h -a "${force_install}" != yes ] && return
@@ -1216,7 +1245,7 @@ EOF
 			${babeltrace_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				CPPFLAGS="${CPPFLAGS} -I`print_header_dir popt.h`" \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libpopt.so`" \
-				LIBS="${LIBS} -lpcre -lz -lbz2 -llzma" \
+				LIBS="${LIBS} -lpcre -lz -lbz2 -llzma -lzstd" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir glib-2.0.pc` \
 				PKG_CONFIG_SYSROOT_DIR=`print_pkg_config_sysroot glib-2.0.pc` \
@@ -1414,9 +1443,11 @@ EOF
 			-DCMAKE_CXX_COMPILER=${bpftrace_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_C_FLAGS="${CFLAGS} -L`print_library_dir libelf.so` -L`print_library_dir libz.so` -lelf -lz" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`print_header_dir bpf.h bcc/compat/linux`/bcc/compat -I`print_header_dir libelf.h` -I`print_header_dir bfd.h` -L`print_library_dir libelf.so` -L`print_library_dir libz.so` -lelf -lz" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} -I`print_header_dir bpf.h bcc/compat/linux`/bcc/compat -I`print_header_dir libelf.h` -I`print_header_dir bfd.h` -L`print_library_dir libelf.so` -L`print_library_dir libz.so` -lelf -lz -ltinfo" \
+			-DLIBBCC_INCLUDE_DIRS=`print_header_dir bcc_version.h bcc` \
+			-DLIBBCC_LIBRARIES=`print_library_path libbcc.so` \
 			-DLIBBFD_INCLUDE_DIRS=`print_header_dir bfd.h` \
-			-DLIBBFD_LIBRARIES=`print_library_path libbfd.so` \
+			-DLIBBFD_LIBRARIES="`print_library_path libbfd.so`;`print_library_path libcurl.so`;`print_library_path libzstd.so`" \
 			-DLIBOPCODES_INCLUDE_DIRS=`print_header_dir dis-asm.h` \
 			-DLIBOPCODES_LIBRARIES=`print_library_path libopcodes.so` \
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
@@ -1724,31 +1755,6 @@ EOF
 			make -C ${gettext_bld_dir} -j ${jobs} -k check || return
 		make -C ${gettext_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
-	curl)
-		[ -x ${DESTDIR}${prefix}/bin/curl -a "${force_install}" != yes ] && return
-		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
-		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
-		fetch ${1} || return
-		unpack ${1} || return
-		(cd ${curl_bld_dir}
-		${curl_src_dir}/configure --prefix=${prefix} --host=${host} \
-			--enable-optimize --disable-silent-rules \
-			--enable-http --enable-ftp --enable-file \
-			--enable-ldap --enable-ldaps --enable-rtsp --enable-proxy \
-			--enable-dict --enable-telnet --enable-tftp --enable-pop3 \
-			--enable-imap --enable-smb --enable-smtp --enable-gopher \
-			--enable-manual --enable-ipv6 --enable-openssl-auto-load-config \
-			--enable-sspi --enable-crypto-auth --enable-tls-srp \
-			--enable-unix-sockets --enable-cookies --enable-http-auth \
-			--enable-doh --enable-mime --enable-dateparse --enable-netrc \
-			--enable-progress-meter --enable-dnsshuffle --enable-alt-svc \
-			--with-zlib=`print_prefix zlib.h` \
-			--with-ssl=`print_prefix ssl.h openssl`) || return
-		make -C ${curl_bld_dir} -j ${jobs} || return
-		make -C ${curl_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
-		[ -z "${strip}" ] && return
-		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/curl || return
-		;;
 	git)
 		[ -x ${DESTDIR}${prefix}/bin/git -a "${force_install}" != yes ] && return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
@@ -1851,6 +1857,8 @@ EOF
 	rsync)
 		[ -x ${DESTDIR}${prefix}/bin/rsync -a "${force_install}" != yes ] && return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
+		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
 		print_header_path popt.h > /dev/null || ${0} ${cmdopt} popt || return
 		fetch ${1} || return
 		unpack ${1} || return
@@ -1861,7 +1869,7 @@ EOF
 					s!\( --strip-program=[[:graph:]]\+\)\?\$! --strip-program=${host:+${host}-}strip!
 				}" ${rsync_src_dir}/Makefile.in || return
 			${rsync_src_dir}/configure --prefix=${prefix} --host=${host} --without-included-zlib \
-				--disable-xxhash \
+				--disable-simd --disable-xxhash --disable-lz4 \
 				CPPFLAGS="${CPPFLAGS} -I`print_header_dir zlib.h` -I`print_header_dir popt.h`" \
 				LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so` -L`print_library_dir libpopt.so`" \
 				) || return
@@ -2367,7 +2375,7 @@ EOF
 				--system-curl --system-expat --system-zlib --system-bzip2 --system-liblzma -- \
 				-DCMAKE_C_COMPILER=${cmake_bld_dir}/${host:+${host}-}gcc \
 				-DCMAKE_CXX_COMPILER=${cmake_bld_dir}/${host:+${host}-}g++ \
-				-DCMAKE_CXX_FLAGS="${CXXFLAGS} -L`print_library_dir libssl.so` -lssl -lcrypto" \
+				-DCMAKE_CXX_FLAGS="${CXXFLAGS} -L`print_library_dir libssl.so` -lssl -lcrypto -lzstd" \
 				-DCURL_INCLUDE_DIR=`print_header_dir curl.h curl` \
 				-DCURL_LIBRARY_RELEASE=`print_library_path libcurl.so` \
 				-DEXPAT_INCLUDE_DIR=`print_header_dir expat.h` \
@@ -3072,6 +3080,7 @@ main()
 		fi
 		build ${p} || return
 		cleanup ${p} || return
+		setup_pathconfig_for_build || return
 	done
 	[ -n "${fetch_only}" ] || generate_pathconfig ${DESTDIR}${prefix}/pathconfig.sh || return
 	[ -z "${with_libc}" ] || manipulate_libc copy || return

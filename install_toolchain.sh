@@ -4400,6 +4400,7 @@ install_native_nghttp2()
 install_native_curl()
 {
 	[ -x ${prefix}/bin/curl -a "${force_install}" != yes ] && return
+	print_header_path zstd.h > /dev/null || install_native_zstd || return
 	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
 	fetch curl || return
 	unpack curl || return
