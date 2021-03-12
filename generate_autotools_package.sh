@@ -33,7 +33,7 @@ sed -e '
 	}
 	/^# Checks for programs\.$/{
 		aAC_PROG_INSTALL
-		aAC_PROG_LIBTOOL
+		aLT_INIT
 	}
 	/^# Checks for libraries\.$/{
 		aAC_CHECK_LIB([pthread], [main]) # Google Test requires pthread on POSIX system.
@@ -43,11 +43,11 @@ sed -e '
 		iAC_CONFIG_FILES([Makefile include/Makefile src/Makefile test/Makefile])
 		i[warning_options="-Wextra -Wcast-align -Wstrict-aliasing -Wshadow "\\
 		i`LANG=C ${CXX} -fsyntax-only -Q --help=warnings,^joined,^separate,common --help=warnings,^joined,^separate,c++ |
-		igrep -v '\''\\@<:@enabled\\@:>@\\|-Wabi\\|-Waggregate-return\\|-Wchkp\\|-Wc90-c99-compat\\|-Wsuggest-attribute=const\\|-Wsystem-headers\\|-Wtemplates\\|-Wtraditional@<:@^-@:>@'\'' | grep -oe '\''-W@<:@@<:@:graph:@:>@@:>@\\+'\'' | sed -e '\''s/<@<:@0-9,@:>@\\+>//'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
+		igrep -v '\''\\@<:@enabled\\@:>@\\|-Wabi\\|-Waggregate-return\\|-Wchkp\\|-Wc90-c99-compat\\|-Wredundant-tags\\|-Wsuggest-attribute=const\\|-Wsystem-headers\\|-Wtemplates\\|-Wtraditional@<:@^-@:>@'\'' | grep -oe '\''-W@<:@@<:@:graph:@:>@@:>@\\+'\'' | sed -e '\''s/<@<:@0-9,@:>@\\+>//'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
 		iAC_SUBST([warning_options])
 		i[system_include_dirs=`LANG=C ${CPP} ${CPPFLAGS} -v -x c /dev/null -o /dev/null 2>&1 | sed -e '\''/^#include "/,/^End of search list\\.$/p;d'\'' | sed -e '\''/^ /{s///;s/$/\\/\\\\\\\\*/;p};d'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
 		iAC_SUBST([system_include_dirs])
-		iAC_ARG_ENABLE([sanitizer], [AC_HELP_STRING([--enable-sanitizer], [enable sanitizer])], [AS_VAR_IF([enable_sanitizer], [yes], [sanitizer_flags='\''-static-libasan -static-liblsan -static-libubsan'\'']) AC_SUBST([sanitizer_flags])])
+		iAC_ARG_ENABLE([sanitizer], [AS_HELP_STRING([--enable-sanitizer], [enable sanitizer])], [AS_VAR_IF([enable_sanitizer], [yes], [sanitizer_flags='\''-static-libasan -static-liblsan -static-libubsan'\'']) AC_SUBST([sanitizer_flags])])
 	}
 ' configure.scan > configure.ac || return
 rm ${verbose:+-v} configure.scan || return
