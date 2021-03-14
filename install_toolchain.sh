@@ -140,7 +140,7 @@
 : ${libxslt_ver:=1.1.34}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.21}
-: ${git_ver:=2.30.1}
+: ${git_ver:=2.30.2}
 : ${git_manpages_ver:=${git_ver}}
 : ${mercurial_ver:=5.4}
 : ${sqlite_ver:=3340100}
