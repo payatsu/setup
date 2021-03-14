@@ -136,7 +136,7 @@ EOF
 : ${gdb_ver:=10.1}
 : ${strace_ver:=5.10}
 : ${systemtap_ver:=4.4}
-: ${linux_ver:=5.7.10}
+: ${linux_ver:=5.11.6}
 : ${perf_ver:=${linux_ver}}
 : ${libbpf_ver:=0.3}
 : ${bcc_ver:=0.18.0}
@@ -1356,6 +1356,8 @@ EOF
 		[ -x ${DESTDIR}${prefix}/bin/perf -a "${force_install}" != yes ] && return
 		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
+		print_header_path babeltrace.h babeltrace > /dev/null || ${0} ${cmdopt} babeltrace || return
+		print_header_path bpf.h bpf > /dev/null || ${0} ${cmdopt} libbpf || return
 		fetch linux || return
 		unpack linux || return
 		mkdir -pv ${perf_bld_dir} || return
@@ -1363,8 +1365,8 @@ EOF
 		PKG_CONFIG_PATH= \
 		PKG_CONFIG_LIBDIR= \
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" NO_LIBPERL=1 NO_SLANG=1 all || return
-		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lelf -lbz2 -llzma -lz" DESTDIR=${DESTDIR}${prefix} install || return
+		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so` -L`print_library_dir libbpf.so`" LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" NO_LIBPERL=1 NO_SLANG=1 all || return
+		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so` -L`print_library_dir libbpf.so`" LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" DESTDIR=${DESTDIR}${prefix} install || return
 		[ -z "${strip}" ] && return
 		for b in perf trace; do
 			[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue
