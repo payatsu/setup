@@ -52,6 +52,7 @@
 : ${rsync_ver:=3.2.3}
 : ${linux_ver:=5.11.6}
 : ${perf_ver:=${linux_ver}}
+: ${numactl_ver:=2.0.14}
 : ${libbpf_ver:=0.3}
 : ${bcc_ver:=0.18.0}
 : ${bpftrace_ver:=0.11.4}
@@ -398,6 +399,8 @@ help()
 		Specify the version of Linux kernel you want, currently '${linux_ver}'.
 	perf_ver
 		Specify the version of perf you want, currently '${perf_ver}'.
+	numactl_ver
+		Specify the version of numactl you want, currently '${numactl_ver}'.
 	libbpf_ver
 		Specify the version of libbpf you want, currently '${libbpf_ver}'.
 	bcc_ver
@@ -806,6 +809,9 @@ fetch()
 			esac
 			wget -O ${linux_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/kernel/${linux_major_ver:-v`print_version linux 1`.x}/${linux_name}.tar.xz || return;;
+		numactl)
+			wget -O ${numactl_src_dir}.tar.gz \
+				https://github.com/numactl/numactl/releases/download/v${numactl_ver}/${numactl_name}.tar.gz || return;;
 		libbpf)
 			wget -O ${libbpf_src_dir}.tar.gz \
 				https://github.com/libbpf/libbpf/archive/v${libbpf_ver}.tar.gz || return;;
@@ -2418,6 +2424,24 @@ install_native_perf()
 	mkdir -pv ${perf_bld_dir} || return
 	make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" NO_LIBPERL=1 NO_LIBPYTHON=1 NO_SLANG=1 all || return
 	make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" DESTDIR=${DESTDIR}${prefix} install || return
+}
+
+install_native_numactl()
+{
+	[ -x ${prefix}/bin/numactl -a "${force_install}" != yes ] && return
+	fetch numactl || return
+	unpack numactl || return
+	[ -f ${numactl_bld_dir}/Makefile ] ||
+		(cd ${numactl_bld_dir}
+		sed -i -e 's/\(\$\(wl\|{wl}\)\)\?-\?-rpath[, ]\(\$\(wl\|{wl}\)\)\?\$\(libdir\|(libdir)\)//' \
+			`grep -le '\<rpath\>' -r ${numactl_src_dir} --exclude=configure --exclude=ltmain.sh` || return
+		sed -i -e 's/\(\<runpath_var\>=\).\+/\1dummy_runpath/' `find ${numactl_src_dir} -type f -name libtool.m4` || return
+		${numactl_src_dir}/configure --prefix=${prefix} --host=${host}) || return
+	make -C ${numactl_bld_dir} -j ${jobs} V=1 || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${numactl_bld_dir} -j ${jobs} -k check V=1 || return
+	make -C ${numactl_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_libbpf()

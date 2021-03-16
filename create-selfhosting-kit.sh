@@ -138,6 +138,7 @@ EOF
 : ${systemtap_ver:=4.4}
 : ${linux_ver:=5.11.6}
 : ${perf_ver:=${linux_ver}}
+: ${numactl_ver:=2.0.14}
 : ${libbpf_ver:=0.3}
 : ${bcc_ver:=0.18.0}
 : ${bpftrace_ver:=0.11.4}
@@ -350,6 +351,9 @@ fetch()
 	linux|perf)
 		wget -O ${linux_src_dir}.tar.xz \
 			https://www.kernel.org/pub/linux/kernel/v`print_version ${_1} 1`.x/${linux_name}.tar.xz || return;;
+	numactl)
+		wget -O ${numactl_src_dir}.tar.gz \
+			https://github.com/numactl/numactl/releases/download/v${numactl_ver}/${numactl_name}.tar.gz || return;;
 	libbpf)
 		wget -O ${libbpf_src_dir}.tar.gz \
 			https://github.com/libbpf/libbpf/archive/v${libbpf_ver}.tar.gz || return;;
@@ -1373,6 +1377,21 @@ EOF
 			[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
+		;;
+	numactl)
+		[ -x ${DESTDIR}${prefix}/bin/numactl -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${numactl_bld_dir}/Makefile ] ||
+			(cd ${numactl_bld_dir}
+			sed -i -e 's/\(\$\(wl\|{wl}\)\)\?-\?-rpath[, ]\(\$\(wl\|{wl}\)\)\?\$\(libdir\|(libdir)\)//' \
+				`grep -le '\<rpath\>' -r ${numactl_src_dir} --exclude=configure --exclude=ltmain.sh` || return
+			sed -i -e 's/\(\<runpath_var\>=\).\+/\1dummy_runpath/' `find ${numactl_src_dir} -type f -name libtool.m4` || return
+			${numactl_src_dir}/configure --prefix=${prefix} --host=${host}) || return
+		make -C ${numactl_bld_dir} -j ${jobs} V=1 || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${numactl_bld_dir} -j ${jobs} -k check V=1 || return
+		make -C ${numactl_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	libbpf)
 		[ -f ${DESTDIR}${prefix}/include/bpf/bpf.h -a "${force_install}" != yes ] && return
