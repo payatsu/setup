@@ -780,6 +780,7 @@ build()
 			sed -i -e 's/\(\<runpath_var\>=\).\+/\1dummy_runpath/' `find ${binutils_src_dir} -type f -name libtool.m4` || return
 			[ -f host_configargs ] || cat << EOF | tr '\n' ' ' > host_configargs || return
 --disable-rpath
+--enable-install-libiberty
 LIBS='-lcurl -lzstd'
 EOF
 			${binutils_src_dir}/configure --prefix=${prefix} --host=${host} --target=${target} \

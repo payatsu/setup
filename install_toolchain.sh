@@ -2297,7 +2297,8 @@ install_native_binutils()
 			`check_platform ${build} ${host} ${target} | grep -qe '\<native\>' || echo --with-sysroot=${sysroot}` \
 			--with-system-zlib --with-debuginfod \
 			CFLAGS="${CFLAGS} -I`print_header_dir zlib.h`" CXXFLAGS="${CXXFLAGS} -I`print_header_dir zlib.h`" \
-			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`") || return
+			LDFLAGS="${LDFLAGS} -L`print_library_dir libz.so`" \
+			host_configargs=--enable-install-libiberty) || return
 	make -C ${binutils_bld_dir} -j 1 || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${binutils_bld_dir} -j 1 -k check || return
