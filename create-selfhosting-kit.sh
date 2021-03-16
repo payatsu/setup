@@ -1363,6 +1363,7 @@ EOF
 		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
 		print_header_path babeltrace.h babeltrace > /dev/null || ${0} ${cmdopt} babeltrace || return
 		print_header_path bpf.h bpf > /dev/null || ${0} ${cmdopt} libbpf || return
+		print_header_path numa.h > /dev/null || ${0} ${cmdopt} numactl || return
 		fetch linux || return
 		unpack linux || return
 		mkdir -pv ${perf_bld_dir} || return

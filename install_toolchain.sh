@@ -2419,6 +2419,7 @@ install_native_perf()
 	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
 	print_header_path babeltrace.h babeltrace > /dev/null || install_native_babeltrace || return
 	print_header_path bpf.h bpf > /dev/null || install_native_libbpf || return
+	print_header_path numa.h > /dev/null || install_native_numactl || return
 	fetch linux || return
 	unpack linux || return
 	mkdir -pv ${perf_bld_dir} || return
