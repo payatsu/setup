@@ -333,7 +333,7 @@ fetch()
 			https://ftp.pcre.org/pub/pcre/\${${_1}_name}.tar.bz2 || return;;
 	util-linux)
 		wget -O ${util_linux_src_dir}.tar.xz \
-			https://kernel.org/pub/linux/utils/util-linux/v`print_version util-linux`/${util_linux_name}.tar.xz || return;;
+			https://www.kernel.org/pub/linux/utils/util-linux/v`print_version util-linux`/${util_linux_name}.tar.xz || return;;
 	popt)
 		wget -O ${popt_src_dir}.tar.gz \
 			http://ftp.rpm.org/popt/releases/popt-1.x/${popt_name}.tar.gz || return;;
@@ -378,7 +378,7 @@ fetch()
 			https://github.com/sysstat/sysstat/archive/v${sysstat_ver}.tar.gz || return;;
 	iproute2)
 		wget -O ${iproute2_src_dir}.tar.xz \
-			https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/${iproute2_name}.tar.xz || return;;
+			https://www.kernel.org/pub/linux/utils/net/iproute2/${iproute2_name}.tar.xz || return;;
 	nmap)
 		wget -O ${nmap_src_dir}.tar.bz2 \
 			https://nmap.org/dist/${nmap_name}.tar.bz2 || return;;

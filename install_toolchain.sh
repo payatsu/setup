@@ -978,10 +978,10 @@ fetch()
 				https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return;;
 		iproute2)
 			wget -O ${iproute2_src_dir}.tar.xz \
-				https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/${iproute2_name}.tar.xz || return;;
+				https://www.kernel.org/pub/linux/utils/net/iproute2/${iproute2_name}.tar.xz || return;;
 		util-linux)
 			wget -O ${util_linux_src_dir}.tar.xz \
-				https://kernel.org/pub/linux/utils/util-linux/v`print_version util-linux`/${util_linux_name}.tar.xz || return;;
+				https://www.kernel.org/pub/linux/utils/util-linux/v`print_version util-linux`/${util_linux_name}.tar.xz || return;;
 		e2fsprogs)
 			wget -O ${e2fsprogs_src_dir}.tar.gz \
 				https://sourceforge.net/projects/e2fsprogs/files/e2fsprogs/v${e2fsprogs_ver}/${e2fsprogs_name}.tar.gz/download || return;;
