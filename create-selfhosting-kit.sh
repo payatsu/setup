@@ -138,6 +138,7 @@ EOF
 : ${systemtap_ver:=4.4}
 : ${linux_ver:=5.11.6}
 : ${perf_ver:=${linux_ver}}
+: ${libcap_ver:=2.49}
 : ${numactl_ver:=2.0.14}
 : ${libbpf_ver:=0.3}
 : ${bcc_ver:=0.18.0}
@@ -351,6 +352,9 @@ fetch()
 	linux|perf)
 		wget -O ${linux_src_dir}.tar.xz \
 			https://www.kernel.org/pub/linux/kernel/v`print_version ${_1} 1`.x/${linux_name}.tar.xz || return;;
+	libcap)
+		wget -O ${libcap_src_dir}.tar.gz \
+			https://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/${libcap_name}.tar.gz || return;;
 	numactl)
 		wget -O ${numactl_src_dir}.tar.gz \
 			https://github.com/numactl/numactl/releases/download/v${numactl_ver}/${numactl_name}.tar.gz || return;;
@@ -1363,6 +1367,7 @@ EOF
 		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
 		print_header_path babeltrace.h babeltrace > /dev/null || ${0} ${cmdopt} babeltrace || return
 		print_header_path bpf.h bpf > /dev/null || ${0} ${cmdopt} libbpf || return
+		print_header_path capability.h sys > /dev/null || ${0} ${cmdopt} libcap || return
 		print_header_path numa.h > /dev/null || ${0} ${cmdopt} numactl || return
 		fetch linux || return
 		unpack linux || return
@@ -1377,6 +1382,24 @@ EOF
 		for b in perf trace; do
 			[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		done
+		;;
+	libcap)
+		[ -x ${DESTDIR}${prefix}/sbin/getcap -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libcap_bld_dir}/Makefile ] || cp -Tvr ${libcap_src_dir} ${libcap_bld_dir} || return
+		generate_toolchain_wrapper ${libcap_bld_dir} || return
+		make -C ${libcap_bld_dir} -j ${jobs} prefix=${prefix} lib=lib CROSS_COMPILE=${libcap_bld_dir}/${host:+${host}-} BUILD_CC=cc GOLANG=no || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${libcap_bld_dir} -j ${jobs} -k CROSS_COMPILE=${libcap_bld_dir}/${host:+${host}-} test || return
+		make -C ${libcap_bld_dir} -j ${jobs} prefix=${prefix} lib=lib CROSS_COMPILE=${libcap_bld_dir}/${host:+${host}-} BUILD_CC=cc GOLANG=no DESTDIR=${DESTDIR} install || return
+		[ -z "${strip}" ] && return
+		for b in capsh getcap getpcaps setcap; do
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/sbin/${b} || return
+		done
+		for l in libcap.so libpsx.so; do
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${l} || return
 		done
 		;;
 	numactl)

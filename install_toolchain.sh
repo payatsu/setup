@@ -52,6 +52,7 @@
 : ${rsync_ver:=3.2.3}
 : ${linux_ver:=5.11.6}
 : ${perf_ver:=${linux_ver}}
+: ${libcap_ver:=2.49}
 : ${numactl_ver:=2.0.14}
 : ${libbpf_ver:=0.3}
 : ${bcc_ver:=0.18.0}
@@ -399,6 +400,8 @@ help()
 		Specify the version of Linux kernel you want, currently '${linux_ver}'.
 	perf_ver
 		Specify the version of perf you want, currently '${perf_ver}'.
+	libcap_ver
+		Specify the version of libcap you want, currently '${libcap_ver}'.
 	numactl_ver
 		Specify the version of numactl you want, currently '${numactl_ver}'.
 	libbpf_ver
@@ -809,6 +812,9 @@ fetch()
 			esac
 			wget -O ${linux_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/kernel/${linux_major_ver:-v`print_version linux 1`.x}/${linux_name}.tar.xz || return;;
+		libcap)
+			wget -O ${libcap_src_dir}.tar.gz \
+				https://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/${libcap_name}.tar.gz || return;;
 		numactl)
 			wget -O ${numactl_src_dir}.tar.gz \
 				https://github.com/numactl/numactl/releases/download/v${numactl_ver}/${numactl_name}.tar.gz || return;;
@@ -2419,12 +2425,33 @@ install_native_perf()
 	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
 	print_header_path babeltrace.h babeltrace > /dev/null || install_native_babeltrace || return
 	print_header_path bpf.h bpf > /dev/null || install_native_libbpf || return
+	print_header_path capability.h sys > /dev/null || install_native_libcap || return
 	print_header_path numa.h > /dev/null || install_native_numactl || return
 	fetch linux || return
 	unpack linux || return
 	mkdir -pv ${perf_bld_dir} || return
 	make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" NO_LIBPERL=1 NO_LIBPYTHON=1 NO_SLANG=1 all || return
 	make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" DESTDIR=${DESTDIR}${prefix} install || return
+}
+
+install_native_libcap()
+{
+	[ -x ${prefix}/sbin/getcap -a "${force_install}" != yes ] && return
+	fetch libcap || return
+	unpack libcap || return
+	[ -f ${libcap_bld_dir}/Makefile ] || cp -Tvr ${libcap_src_dir} ${libcap_bld_dir} || return
+	make -C ${libcap_bld_dir} -j ${jobs} prefix=${prefix} lib=lib CROSS_COMPILE=${host:+${host}-} BUILD_CC=${CC:-gcc} GOLANG=no || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libcap_bld_dir} -j ${jobs} -k CROSS_COMPILE=${host:+${host}-} test || return
+	make -C ${libcap_bld_dir} -j ${jobs} prefix=${prefix} lib=lib CROSS_COMPILE=${host:+${host}-} BUILD_CC=${CC:-gcc} GOLANG=no DESTDIR=${DESTDIR} install || return
+	update_path || return
+	[ -z "${strip}" ] && return
+	for b in capsh getcap getpcaps setcap; do
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/sbin/${b} || return
+	done
+	for l in libcap.so libpsx.so; do
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${l} || return
+	done
 }
 
 install_native_numactl()
