@@ -1373,7 +1373,6 @@ EOF
 		unpack linux || return
 		mkdir -pv ${perf_bld_dir} || return
 		generate_toolchain_wrapper ${perf_bld_dir} || return
-		generate_llvm_config_proxy ${perf_bld_dir} || return
 		PKG_CONFIG_PATH= \
 		PKG_CONFIG_LIBDIR= \
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
@@ -1382,12 +1381,14 @@ EOF
 			EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so` -L`print_library_dir libbpf.so`" \
 			EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so` -L`print_library_dir libbpf.so`" \
 			LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
-			LIBCLANGLLVM=1 LLVM_CONFIG=${perf_bld_dir}/llvm-config NO_LIBPERL=1 NO_SLANG=1 all || return
+			NO_LIBPERL=1 NO_SLANG=1 \
+			all || return
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} \
 			EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so` -L`print_library_dir libbpf.so`" \
 			EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so` -L`print_library_dir libbpf.so`" \
 			LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
+			NO_LIBPERL=1 NO_SLANG=1 \
 			DESTDIR=${DESTDIR}${prefix} install || return
 		[ -z "${strip}" ] && return
 		for b in perf trace; do

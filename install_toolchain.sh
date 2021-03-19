@@ -2435,12 +2435,14 @@ install_native_perf()
 		EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" \
 		EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so` -L`print_library_dir libbpf.so`" \
 		LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
-		LIBCLANGLLVM=1 NO_LIBPERL=1 NO_LIBPYTHON=1 NO_SLANG=1 all || return
+		NO_LIBPERL=1 NO_LIBPYTHON=1 NO_SLANG=1 \
+		all || return
 	make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 		ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} \
 		EXTRA_CFLAGS="${CFLAGS} -I`print_header_dir libelf.h` -L`print_library_dir libelf.so`" \
 		EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so` -L`print_library_dir libbpf.so`" \
 		LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
+		NO_LIBPERL=1 NO_LIBPYTHON=1 NO_SLANG=1 \
 		DESTDIR=${DESTDIR}${prefix} install || return
 }
 
