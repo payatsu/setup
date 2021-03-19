@@ -140,6 +140,7 @@ EOF
 : ${perf_ver:=${linux_ver}}
 : ${libcap_ver:=2.49}
 : ${numactl_ver:=2.0.14}
+: ${OpenCSD_ver:=1.0.0}
 : ${libbpf_ver:=0.3}
 : ${bcc_ver:=0.18.0}
 : ${bpftrace_ver:=0.11.4}
@@ -358,6 +359,9 @@ fetch()
 	numactl)
 		wget -O ${numactl_src_dir}.tar.gz \
 			https://github.com/numactl/numactl/releases/download/v${numactl_ver}/${numactl_name}.tar.gz || return;;
+	OpenCSD)
+		wget -O ${OpenCSD_src_dir}.tar.gz \
+			https://github.com/Linaro/OpenCSD/archive/refs/tags/v${OpenCSD_ver}.tar.gz || return;;
 	libbpf)
 		wget -O ${libbpf_src_dir}.tar.gz \
 			https://github.com/libbpf/libbpf/archive/v${libbpf_ver}.tar.gz || return;;
@@ -1428,6 +1432,20 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${numactl_bld_dir} -j ${jobs} -k check V=1 || return
 		make -C ${numactl_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	OpenCSD)
+		[ -f ${DESTDIR}${prefix}/include/opencsd/ocsd_if_version.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${OpenCSD_bld_dir}/README.md ] || cp -Tvr ${OpenCSD_src_dir} ${OpenCSD_bld_dir} || return
+		generate_toolchain_wrapper ${OpenCSD_bld_dir} || return
+		make -C ${OpenCSD_bld_dir}/decoder/build/linux -j ${jobs} CROSS_COMPILE=${OpenCSD_bld_dir}/${host:+${host}-} || return
+		make -C ${OpenCSD_bld_dir}/decoder/build/linux -j ${jobs} PREFIX=${prefix} DESTDIR=${DESTDIR} install || return
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/trc_pkt_lister || return
+		for l in libopencsd.so libopencsd_c_api.so; do
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${l} || return
+		done
 		;;
 	libbpf)
 		[ -f ${DESTDIR}${prefix}/include/bpf/bpf.h -a "${force_install}" != yes ] && return
@@ -2843,6 +2861,7 @@ generate_toolchain_wrapper()
 {
 	if [ $# -eq 1 ]; then
 		generate_gcc_wrapper ${1} || return
+		generate_gxx_wrapper ${1} || return
 		for t in ar as nm objcopy objdump ranlib strip cpp ld; do
 			generate_toolchain_wrapper ${1} ${t} || return
 		done

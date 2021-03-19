@@ -54,6 +54,7 @@
 : ${perf_ver:=${linux_ver}}
 : ${libcap_ver:=2.49}
 : ${numactl_ver:=2.0.14}
+: ${OpenCSD_ver:=1.0.0}
 : ${libbpf_ver:=0.3}
 : ${bcc_ver:=0.18.0}
 : ${bpftrace_ver:=0.11.4}
@@ -404,6 +405,8 @@ help()
 		Specify the version of libcap you want, currently '${libcap_ver}'.
 	numactl_ver
 		Specify the version of numactl you want, currently '${numactl_ver}'.
+	OpenCSD_ver
+		Specify the version of OpenCSD you want, currently '${OpenCSD_ver}'.
 	libbpf_ver
 		Specify the version of libbpf you want, currently '${libbpf_ver}'.
 	bcc_ver
@@ -818,6 +821,9 @@ fetch()
 		numactl)
 			wget -O ${numactl_src_dir}.tar.gz \
 				https://github.com/numactl/numactl/releases/download/v${numactl_ver}/${numactl_name}.tar.gz || return;;
+		OpenCSD)
+			wget -O ${OpenCSD_src_dir}.tar.gz \
+				https://github.com/Linaro/OpenCSD/archive/refs/tags/v${OpenCSD_ver}.tar.gz || return;;
 		libbpf)
 			wget -O ${libbpf_src_dir}.tar.gz \
 				https://github.com/libbpf/libbpf/archive/v${libbpf_ver}.tar.gz || return;;
@@ -2482,6 +2488,22 @@ install_native_numactl()
 		make -C ${numactl_bld_dir} -j ${jobs} -k check V=1 || return
 	make -C ${numactl_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
+}
+
+install_native_OpenCSD()
+{
+	[ -f ${prefix}/include/opencsd/ocsd_if_version.h -a "${force_install}" != yes ] && return
+	fetch OpenCSD || return
+	unpack OpenCSD || return
+	[ -f ${OpenCSD_bld_dir}/README.md ] || cp -Tvr ${OpenCSD_src_dir} ${OpenCSD_bld_dir} || return
+	make -C ${OpenCSD_bld_dir}/decoder/build/linux -j ${jobs} CROSS_COMPILE=${host:+${host}-} || return
+	make -C ${OpenCSD_bld_dir}/decoder/build/linux -j ${jobs} PREFIX=${prefix} install || return
+	update_path || return
+	[ -z "${strip}" ] && return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/trc_pkt_lister || return
+	for l in libopencsd.so libopencsd_c_api.so; do
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${l} || return
+	done
 }
 
 install_native_libbpf()
