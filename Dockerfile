@@ -16,7 +16,8 @@ cmake ninja meson Bear ccache llvm lld compiler-rt libunwind libcxxabi libcxx cl
 ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux popt babeltrace gdb make \
 autogen gettext pcre2 libxslt asciidoc git openssh go rustc zsh bash screen libevent tmux lua vim neovim global \
 the_silver_searcher the_platinum_searcher gperf highway fzf tiff freetype fontconfig ghostscript graphviz jdk plantuml \
-jq protobuf rsync dtc strace systemtap libpcap tcpdump nmap libpng jpeg giflib emacs"
+jq protobuf rsync dtc strace systemtap libbpf bcc bpftrace libcap numactl perf libpcap tcpdump iproute2 nmap \
+libpng jpeg giflib emacs"
 
 RUN \
 apt-get update && apt-get upgrade -y && \

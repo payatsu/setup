@@ -726,6 +726,7 @@ fetch()
 		_p=`echo ${p} | tr - _`
 		eval [ -n \"\${${_p}_src_base}\" ] && eval mkdir -pv \${${_p}_src_base} || return
 		eval check_archive \${${_p}_src_dir} || eval [ -d \${${_p}_src_dir} -o -h \${${_p}_src_dir} ] && continue
+		[ ${_p} != perf ] || { fetch linux || return; continue;}
 		case ${p} in
 		tar|cpio|gzip|wget|help2man|texinfo|coreutils|bison|m4|autoconf|autoconf-archive|automake|libtool|sed|gawk|\
 		gnulib|make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|nano|grep|global|\
@@ -2549,7 +2550,7 @@ install_native_bcc()
 		-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
 		-DPYTHON_CMD=python3 \
 		|| return
-	cmake --build ${bcc_bld_dir} -v -j ${jobs} || return
+	cmake --build ${bcc_bld_dir} -v -j 1 || return # don't run parallel build to avoid out of memory.
 	cmake --install ${bcc_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
