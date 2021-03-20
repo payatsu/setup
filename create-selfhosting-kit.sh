@@ -2701,7 +2701,7 @@ EOF
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		fetch ${1} || return
 		unpack ${1} || return
-		generate_llvm_config_proxy ${lld_bld_dir} || return
+		generate_llvm_config_wrapper ${lld_bld_dir} || return
 		generate_gcc_wrapper ${lld_bld_dir} || return
 		generate_gxx_wrapper ${lld_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -2876,7 +2876,7 @@ generate_toolchain_wrapper()
 		} | tr '\n' ' '`" || return
 }
 
-generate_llvm_config_proxy()
+generate_llvm_config_wrapper()
 {
 	generate_command_wrapper ${1} llvm-config \
 		"\
@@ -2890,7 +2890,6 @@ while [ \$# -gt 0 ]; do
 	--src-root)    echo not-used;;
 	--system-libs) ;;
 	esac
-	shift
 	shift
 done
 " || return
