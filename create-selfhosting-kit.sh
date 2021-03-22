@@ -1387,14 +1387,14 @@ EOF
 			EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so` -L`print_library_dir libbpf.so`" \
 			LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 \
-			all || return
+			prefix=${prefix} all || return
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} \
 			EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so` -L`print_library_dir libbpf.so`" \
 			EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` -L`print_library_dir libelf.so` -L`print_library_dir libbpf.so`" \
 			LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 \
-			DESTDIR=${DESTDIR}${prefix} install || return
+			prefix=${prefix} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		for b in perf trace; do
 			[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue
