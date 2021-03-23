@@ -1810,6 +1810,13 @@ print_version()
 	eval echo \${${_1}_ver} | cut -d. -f-${2:-2}
 }
 
+remove_rpath_option()
+{
+	sed -i -e 's/\(\$\(wl\|{wl}\)\)\?-\?-rpath[, ]\(\$\(wl\|{wl}\)\)\?\$\(libdir\|(libdir)\)//' \
+		`grep -le '\<rpath\>' -r ${1} --exclude=configure --exclude=ltmain.sh` || return
+	sed -i -e 's/\(\<runpath_var\>=\).\+/\1dummy_runpath/' `find ${1} -type f -name libtool.m4` || return
+}
+
 install_prerequisites()
 {
 	[ -n "${prerequisites_have_been_already_installed}" ] && return
@@ -2481,9 +2488,7 @@ install_native_numactl()
 	unpack numactl || return
 	[ -f ${numactl_bld_dir}/Makefile ] ||
 		(cd ${numactl_bld_dir}
-		sed -i -e 's/\(\$\(wl\|{wl}\)\)\?-\?-rpath[, ]\(\$\(wl\|{wl}\)\)\?\$\(libdir\|(libdir)\)//' \
-			`grep -le '\<rpath\>' -r ${numactl_src_dir} --exclude=configure --exclude=ltmain.sh` || return
-		sed -i -e 's/\(\<runpath_var\>=\).\+/\1dummy_runpath/' `find ${numactl_src_dir} -type f -name libtool.m4` || return
+		remove_rpath_option ${numactl_src_dir} || return
 		${numactl_src_dir}/configure --prefix=${prefix} --host=${host}) || return
 	make -C ${numactl_bld_dir} -j ${jobs} V=1 || return
 	[ "${enable_check}" != yes ] ||
@@ -6176,9 +6181,7 @@ install_native_poke()
 	unpack poke || return
 	[ -f ${poke_bld_dir}/Makefile ] ||
 		(cd ${poke_bld_dir}
-		sed -i -e 's/\(\$\(wl\|{wl}\)\)\?-\?-rpath[, ]\(\$\(wl\|{wl}\)\)\?\$\(libdir\|(libdir)\)//' \
-			`grep -le '\<rpath\>' -r ${poke_src_dir} --exclude=configure --exclude=ltmain.sh` || return
-		sed -i -e 's/\(\<runpath_var\>=\).\+/\1dummy_runpath/' `find ${poke_src_dir} -type f -name libtool.m4` || return
+		remove_rpath_option ${poke_src_dir} || return
 		${poke_src_dir}/configure --prefix=${prefix} --host=${host} --disable-rpath --disable-gui) || return
 	make -C ${poke_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||

@@ -1425,9 +1425,7 @@ EOF
 		unpack ${1} || return
 		[ -f ${numactl_bld_dir}/Makefile ] ||
 			(cd ${numactl_bld_dir}
-			sed -i -e 's/\(\$\(wl\|{wl}\)\)\?-\?-rpath[, ]\(\$\(wl\|{wl}\)\)\?\$\(libdir\|(libdir)\)//' \
-				`grep -le '\<rpath\>' -r ${numactl_src_dir} --exclude=configure --exclude=ltmain.sh` || return
-			sed -i -e 's/\(\<runpath_var\>=\).\+/\1dummy_runpath/' `find ${numactl_src_dir} -type f -name libtool.m4` || return
+			remove_rpath_option ${numactl_src_dir} || return
 			${numactl_src_dir}/configure --prefix=${prefix} --host=${host}) || return
 		make -C ${numactl_bld_dir} -j ${jobs} V=1 || return
 		[ "${enable_check}" != yes ] ||
@@ -2901,6 +2899,13 @@ truncate_path_in_elf()
 	[ -z "${seek}" ] && return
 	dirname_count=`echo -n ${2} | wc -c`
 	dd bs=c count=`echo ${3} | wc -c` if=${1} of=${1} conv=notrunc seek=${seek} skip=`expr ${seek} + ${dirname_count}` || return
+}
+
+remove_rpath_option()
+{
+	sed -i -e 's/\(\$\(wl\|{wl}\)\)\?-\?-rpath[, ]\(\$\(wl\|{wl}\)\)\?\$\(libdir\|(libdir)\)//' \
+		`grep -le '\<rpath\>' -r ${1} --exclude=configure --exclude=ltmain.sh` || return
+	sed -i -e 's/\(\<runpath_var\>=\).\+/\1dummy_runpath/' `find ${1} -type f -name libtool.m4` || return
 }
 
 print_linux_arch()
