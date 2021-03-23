@@ -961,7 +961,7 @@ fetch()
 		libpipeline|man-db)
 			for compress_format in xz gz; do
 				eval wget -O \${${_p}_src_dir}.tar.${compress_format:-xz} \
-					http://download.savannah.nongnu.org/releases/${p:-man-db}/\${${_p:-man_db}_name}.tar.${compress_format} \
+					http://download.savannah.nongnu.org/releases/${p:-man-db}/\${${_p:-man_db}_name}.tar.${compress_format:-xz} \
 					&& break \
 					|| eval rm -v \${${_p}_src_dir}.tar.${compress_format:-xz}
 			done || return;;
