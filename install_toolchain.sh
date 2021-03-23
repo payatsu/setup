@@ -1814,7 +1814,9 @@ remove_rpath_option()
 {
 	sed -i -e 's/\(\$\(wl\|{wl}\)\)\?-\?-rpath[, ]\(\$\(wl\|{wl}\)\)\?\$\(libdir\|(libdir)\)//' \
 		`grep -le '\<rpath\>' -r ${1} --exclude=configure --exclude=ltmain.sh` || return
-	sed -i -e 's/\(\<runpath_var\>=\).\+/\1dummy_runpath/' `find ${1} -type f -name libtool.m4` || return
+	for f in `find ${1} -type f -name libtool.m4`; do
+		sed -i -e 's/\(\<runpath_var\>=\).\+/\1dummy_runpath/' ${f} || return
+	done
 }
 
 install_prerequisites()
