@@ -185,7 +185,7 @@ EOF
 : ${bash_ver:=5.0}
 : ${vim_ver:=8.2.2425}
 : ${vimdoc_ja_ver:=master}
-: ${emacs_ver:=27.1}
+: ${emacs_ver:=27.2}
 : ${nano_ver:=5.6.1}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.6}
