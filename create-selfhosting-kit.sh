@@ -2903,9 +2903,14 @@ truncate_path_in_elf()
 
 remove_rpath_option()
 {
+	eval d=\${${1}_bld_dir}
+	[ ! -f ${d}/libtool ] ||
+		{ sed -i -e 's/^\(\<runpath_var\>=\).\+/\1dummy_runpath/' ${d}/libtool && return;} || return
+
 	eval d=\${${1}_src_dir}
-	sed -i -e 's/\(\$\(wl\|{wl}\)\)\?-\?-rpath[, ]\(\$\(wl\|{wl}\)\)\?\$\(libdir\|(libdir)\)//' \
-		`grep -le '\<rpath\>' -r ${d} --exclude=ltmain.sh --exclude=Makefile.in` || return
+	for f in `grep -le '\<rpath\>' -r ${d} --exclude=ltmain.sh --exclude=Makefile.in`; do
+		sed -i -e 's/\(\$\(wl\|{wl}\)\)\?-\?-rpath[, ]\(\$\(wl\|{wl}\)\)\?\$\(libdir\|(libdir)\)//' ${f} || return
+	done
 	for f in `find ${d} -type f -name libtool.m4`; do
 		sed -i -e 's/\(\<runpath_var\>=\).\+/\1dummy_runpath/' ${f} || return
 	done
