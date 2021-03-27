@@ -55,6 +55,7 @@
 : ${libcap_ver:=2.49}
 : ${numactl_ver:=2.0.14}
 : ${OpenCSD_ver:=1.0.0}
+: ${libunwindnongnu_ver:=1.5.0}
 : ${libbpf_ver:=0.3}
 : ${bcc_ver:=0.18.0}
 : ${bpftrace_ver:=0.11.4}
@@ -407,6 +408,8 @@ help()
 		Specify the version of numactl you want, currently '${numactl_ver}'.
 	OpenCSD_ver
 		Specify the version of OpenCSD you want, currently '${OpenCSD_ver}'.
+	libunwindnongnu_ver
+		Specify the version of libunwind you want, currently '${libunwindnongnu_ver}'.
 	libbpf_ver
 		Specify the version of libbpf you want, currently '${libbpf_ver}'.
 	bcc_ver
@@ -825,6 +828,9 @@ fetch()
 		OpenCSD)
 			wget -O ${OpenCSD_src_dir}.tar.gz \
 				https://github.com/Linaro/OpenCSD/archive/refs/tags/v${OpenCSD_ver}.tar.gz || return;;
+		libunwindnongnu)
+			wget -O ${libunwindnongnu_src_dir}.tar.gz \
+				http://download.savannah.nongnu.org/releases/libunwind/${libunwindnongnu_name}.tar.gz || return;;
 		libbpf)
 			wget -O ${libbpf_src_dir}.tar.gz \
 				https://github.com/libbpf/libbpf/archive/v${libbpf_ver}.tar.gz || return;;
@@ -1438,6 +1444,8 @@ set_src_directory()
 	case ${1} in
 	zip|unzip)
 		eval ${_1}_name=${1}`eval echo \\${${_1}_ver} | tr -d .`;;
+	libunwindnongnu)
+		eval ${_1}_name=libunwind-\${${_1}_ver};;
 	jpeg)
 		eval ${_1}_name=${1}src.\${${_1}_ver};;
 	plantuml)
@@ -2519,6 +2527,32 @@ install_native_OpenCSD()
 	for l in libopencsd.so libopencsd_c_api.so; do
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${l} || return
 	done
+}
+
+install_native_libunwindnongnu()
+{
+	[ -f ${prefix}/include/libunwind.h -a "${force_install}" != yes ] && return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path lzma.h > /dev/null || install_native_xz || return
+	fetch libunwindnongnu || return
+	unpack libunwindnongnu || return
+	[ -f ${libunwindnongnu_bld_dir}/Makefile ] ||
+		(cd ${libunwindnongnu_bld_dir}
+		remove_rpath_option libunwindnongnu || return
+		${libunwindnongnu_src_dir}/configure --prefix=${prefix} --host=${host} \
+			--enable-coredump --enable-ptrace --enable-setjmp \
+			--enable-cxx-exceptions --enable-debug-frame \
+			--enable-minidebuginfo --enable-zlibdebuginfo \
+			LDFLAGS="${LDFLAGS} -L${libunwindnongnu_bld_dir}/src/.libs" \
+			LIBS="${LIBS} -lunwind" \
+			|| return
+		remove_rpath_option libunwindnongnu || return
+		) || return
+	make -C ${libunwindnongnu_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libunwindnongnu_bld_dir} -j ${jobs} -k check || return
+	make -C ${libunwindnongnu_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_libbpf()
