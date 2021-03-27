@@ -146,6 +146,7 @@
 : ${gettext_ver:=0.21}
 : ${git_ver:=2.31.0}
 : ${git_manpages_ver:=${git_ver}}
+: ${git_lfs_ver:=2.13.3}
 : ${mercurial_ver:=5.4}
 : ${sqlite_ver:=3340100}
 : ${apr_ver:=1.7.0}
@@ -586,6 +587,8 @@ help()
 		Specify the version of gettext you want, currently '${gettext_ver}'.
 	git_ver
 		Specify the version of Git you want, currently '${git_ver}'.
+	git_lfs_ver
+		Specify the version of Git LFS you want, currently '${git_lfs_ver}'.
 	mercurial_ver
 		Specify the version of Mercurial you want, currently '${mercurial_ver}'.
 	sqlite_ver
@@ -1033,6 +1036,9 @@ fetch()
 		git-manpages)
 			wget -O ${git_manpages_src_dir}.tar.xz \
 				https://www.kernel.org/pub/software/scm/git/${git_manpages_name}.tar.xz || return;;
+		git-lfs)
+			wget -O ${git_lfs_src_dir}.tar.gz \
+				https://github.com/git-lfs/git-lfs/releases/download/v${git_lfs_ver}/git-lfs-v${git_lfs_ver}.tar.gz || return;;
 		mercurial)
 			wget -O ${mercurial_src_dir}.tar.gz \
 				https://www.mercurial-scm.org/release/${mercurial_name}.tar.gz || return;;
@@ -1539,6 +1545,7 @@ set_variables()
 			s/source_highlight/source-highlight/
 			s/util_linux/util-linux/
 			s/git_manpages/git-manpages/
+			s/git_lfs/git-lfs/
 			s/apr_util/apr-util/
 			s/compiler_rt/compiler-rt/
 			s/clang_tools_extra/clang-tools-extra/
@@ -4697,6 +4704,17 @@ install_native_git_manpages()
 	[ -f ${prefix}/share/man/man1/git.1 -a "${force_install}" != yes ] && return
 	fetch git-manpages || return
 	unpack git-manpages ${DESTDIR}${prefix}/share/man || return
+}
+
+install_native_git_lfs()
+{
+	[ -x ${prefix}/bin/git-lfs -a "${force_install}" != yes ] && return
+	fetch git-lfs || return
+	unpack git-lfs || return
+	[ -f ${git_lfs_bld_dir}/Makefile ] || cp -Tvr ${git_lfs_src_dir} ${git_lfs_bld_dir} || return
+	make -C ${git_lfs_bld_dir} -j ${jobs} || return
+	mkdir -pv ${DESTDIR}${prefix}/bin || return
+	cp -fv ${git_lfs_bld_dir}/bin/git-lfs ${DESTDIR}${prefix}/bin || return
 }
 
 install_native_mercurial()
