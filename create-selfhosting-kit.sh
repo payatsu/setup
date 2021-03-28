@@ -141,6 +141,7 @@ EOF
 : ${libcap_ver:=2.49}
 : ${numactl_ver:=2.0.14}
 : ${OpenCSD_ver:=1.0.0}
+: ${libunwindnongnu_ver:=1.5.0}
 : ${libbpf_ver:=0.3}
 : ${bcc_ver:=0.18.0}
 : ${bpftrace_ver:=0.11.4}
@@ -245,6 +246,8 @@ init()
 	case ${1} in
 	boost)
 		eval ${_1}_name=${1}_\${${_1}_ver};;
+	libunwindnongnu)
+		eval ${_1}_name=libunwind-\${${_1}_ver};;
 	procps)
 		eval ${_1}_name=${1}-v\${${_1}_ver};;
 	*)
@@ -362,6 +365,9 @@ fetch()
 	OpenCSD)
 		wget -O ${OpenCSD_src_dir}.tar.gz \
 			https://github.com/Linaro/OpenCSD/archive/refs/tags/v${OpenCSD_ver}.tar.gz || return;;
+	libunwindnongnu)
+		wget -O ${libunwindnongnu_src_dir}.tar.gz \
+			http://download.savannah.nongnu.org/releases/libunwind/${libunwindnongnu_name}.tar.gz || return;;
 	libbpf)
 		wget -O ${libbpf_src_dir}.tar.gz \
 			https://github.com/libbpf/libbpf/archive/v${libbpf_ver}.tar.gz || return;;
@@ -1374,6 +1380,7 @@ EOF
 		print_header_path capability.h sys > /dev/null || ${0} ${cmdopt} libcap || return
 		print_header_path numa.h > /dev/null || ${0} ${cmdopt} numactl || return
 		print_header_path ocsd_if_version.h opencsd > /dev/null || ${0} ${cmdopt} OpenCSD || return
+		print_library_path libunwind.so > /dev/null || ${0} ${cmdopt} libunwindnongnu || return
 		fetch linux || return
 		unpack linux || return
 		mkdir -pv ${perf_bld_dir} || return
@@ -1445,6 +1452,27 @@ EOF
 		for l in libopencsd.so libopencsd_c_api.so; do
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${l} || return
 		done
+		;;
+	libunwindnongnu)
+		[ -f ${DESTDIR}${prefix}/include/libunwind.h -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libunwindnongnu_bld_dir}/Makefile ] ||
+			(cd ${libunwindnongnu_bld_dir}
+			remove_rpath_option libunwindnongnu || return
+			${libunwindnongnu_src_dir}/configure --prefix=${prefix} --host=${host} \
+				--enable-coredump --enable-ptrace --enable-setjmp \
+				--enable-cxx-exceptions --enable-debug-frame \
+				--enable-minidebuginfo --enable-zlibdebuginfo \
+				|| return
+			remove_rpath_option libunwindnongnu || return
+			) || return
+		make -C ${libunwindnongnu_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${libunwindnongnu_bld_dir} -j ${jobs} -k check || return
+		make -C ${libunwindnongnu_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	libbpf)
 		[ -f ${DESTDIR}${prefix}/include/bpf/bpf.h -a "${force_install}" != yes ] && return
@@ -2585,7 +2613,7 @@ EOF
 	libcxxabi)
 		[ -e ${DESTDIR}${prefix}/lib/libc++abi.so -a "${force_install}" != yes ] && return
 		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
-		print_library_path libunwind.so > /dev/null || ${0} ${cmdopt} libunwind || return
+		print_library_path libunwind.so > /dev/null || ${0} ${cmdopt} libunwindnongnu || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		init libcxx || return
 		fetch libcxx || return
@@ -2642,7 +2670,7 @@ EOF
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		print_header_path allocator_interface.h sanitizer > /dev/null || ${0} ${cmdopt} compiler-rt || return
-		print_library_path libunwind.so > /dev/null || ${0} ${cmdopt} libunwind || return
+		print_library_path libunwind.so > /dev/null || ${0} ${cmdopt} libunwindnongnu || return
 		print_library_path libc++abi.so > /dev/null || ${0} ${cmdopt} libcxxabi || return
 		print_header_path iostream c++/v1 > /dev/null || ${0} ${cmdopt} libcxx || return
 		print_binary_path lld > /dev/null || ${0} ${cmdopt} lld || return
