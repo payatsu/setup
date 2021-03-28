@@ -2550,8 +2550,7 @@ install_native_libunwindnongnu()
 			--enable-coredump --enable-ptrace --enable-setjmp \
 			--enable-cxx-exceptions --enable-debug-frame \
 			--enable-minidebuginfo --enable-zlibdebuginfo \
-			LDFLAGS="${LDFLAGS} -L${libunwindnongnu_bld_dir}/src/.libs" \
-			LIBS="${LIBS} -lunwind" \
+			LDFLAGS="${LDFLAGS} -Wl,-rpath-link,${libunwindnongnu_bld_dir}/src/.libs" \
 			|| return
 		remove_rpath_option libunwindnongnu || return
 		) || return
