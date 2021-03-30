@@ -2465,6 +2465,7 @@ install_native_perf()
 	print_header_path capability.h sys > /dev/null || install_native_libcap || return
 	print_header_path numa.h > /dev/null || install_native_numactl || return
 	print_header_path ocsd_if_version.h opencsd > /dev/null || install_native_OpenCSD || return
+	print_library_path libunwind.so > /dev/null || install_native_libunwindnongnu || return
 	fetch linux || return
 	unpack linux || return
 	mkdir -pv ${perf_bld_dir} || return
@@ -5025,7 +5026,7 @@ install_native_libcxxabi()
 {
 	[ -e ${prefix}/lib/libc++abi.so -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
-	print_library_path libunwind.so > /dev/null || install_native_libunwind || return
+	print_library_path libunwind.so > /dev/null || install_native_libunwindnongnu || return
 	print_header_path llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	fetch libcxx || return
 	unpack libcxx || return
@@ -5075,7 +5076,7 @@ install_native_clang()
 	which cmake > /dev/null || install_native_cmake || return
 	print_header_path llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
 	print_header_path allocator_interface.h sanitizer > /dev/null || install_native_compiler_rt || return
-	print_library_path libunwind.so > /dev/null || install_native_libunwind || return
+	print_library_path libunwind.so > /dev/null || install_native_libunwindnongnu || return
 	print_library_path libc++abi.so > /dev/null || install_native_libcxxabi || return
 	print_header_path iostream c++/v1 > /dev/null || install_native_libcxx || return
 	fetch clang || return

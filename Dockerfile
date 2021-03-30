@@ -12,7 +12,7 @@ ARG pkgs="zlib m4 gmp mpfr mpc isl zstd gcc bzip2 xz openssl nghttp2 curl elfuti
 bison flex perl autoconf autoconf-archive automake libtool ncurses readline less texinfo \
 gawk cpio zip unzip lzip lunzip lzo lzop lz4 file groff gdbm libpipeline man-db ed bc patch \
 pcre swig libffi Python2 Python libxml2 libiconv glib pkg-config \
-cmake ninja meson Bear ccache llvm lld compiler-rt libunwind libcxxabi libcxx clang libedit lldb \
+cmake ninja meson Bear ccache llvm lld compiler-rt libunwindnongnu libcxxabi libcxx clang libedit lldb \
 ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux popt babeltrace gdb make \
 autogen gettext pcre2 libxslt asciidoc git openssh go rustc zsh bash screen libevent tmux lua vim neovim global \
 the_silver_searcher the_platinum_searcher gperf highway fzf tiff freetype fontconfig ghostscript graphviz jdk plantuml \
