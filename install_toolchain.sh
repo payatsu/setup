@@ -1778,13 +1778,23 @@ update_path()
 	source_path || return
 }
 
+filter_shortest_hierarchy()
+{
+	awk '{print split($0, a, /\//), $0}' | sort -n | cut -d ' ' -f 2 | head -n 1
+}
+
+squash_options()
+{
+	uniq | tr '\n' ' ' | sed -e 's/ $//' || return
+}
+
 print_library_path()
 {
 	for dir in ${DESTDIR}${prefix}/lib64 ${DESTDIR}${prefix}/lib `LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
 		sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs realpath -eq`; do
 		[ -d ${dir}${2:+/${2}} ] || continue
-		candidates=`find ${dir}${2:+/${2}} \( -type f -o -type l \) -name ${1} | sort`
-		[ -n "${candidates}" ] && echo "${candidates}" | head -n 1 && return
+		candidates=`find ${dir}${2:+/${2}} \( -type f -o -type l \) -name ${1} | filter_shortest_hierarchy`
+		[ -n "${candidates}" ] && echo "${candidates}" && return
 	done
 	return 1
 }
@@ -1801,7 +1811,7 @@ L()
 		echo ${l} | grep -qe '/' && d=`dirname ${l}` || d=
 		f=`basename ${l}`
 		print_library_dir ${f} ${d} || return
-	done | sed -e 's/^/-L/' | uniq | tr '\n' ' ' | sed -e 's/ $//' || return
+	done | sed -e 's/^/-L/' | squash_options || return
 }
 
 print_header_path()
@@ -1810,8 +1820,8 @@ print_header_path()
 		`LANG=C ${CC:-${host:+${host}-}gcc} -x c -E -v /dev/null -o /dev/null 2>&1 |
 			sed -e '/^#include /,/^End of search list.$/p;d' | xargs realpath -eq`; do
 		[ -d ${dir}${2:+/${2}} ] || continue
-		candidates=`find ${dir}${2:+/${2}} \( -type f -o -type l \) -name ${1} | sort`
-		[ -n "${candidates}" ] && echo "${candidates}" | head -n 1 && return
+		candidates=`find ${dir}${2:+/${2}} \( -type f -o -type l \) -name ${1} | filter_shortest_hierarchy`
+		[ -n "${candidates}" ] && echo "${candidates}" && return
 	done
 	return 1
 }
@@ -1828,7 +1838,7 @@ I()
 		echo ${h} | grep -qe '/' && d=`dirname ${h}` || d=
 		f=`basename ${h}`
 		print_header_dir ${f} ${d} || return
-	done | sed -e 's/^/-I/' | uniq | tr '\n' ' ' | sed -e 's/ $//' || return
+	done | sed -e 's/^/-I/' | squash_options || return
 }
 
 print_prefix()
