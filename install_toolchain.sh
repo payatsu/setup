@@ -144,7 +144,7 @@
 : ${libxslt_ver:=1.1.34}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.21}
-: ${git_ver:=2.31.0}
+: ${git_ver:=2.31.1}
 : ${git_manpages_ver:=${git_ver}}
 : ${git_lfs_ver:=2.13.3}
 : ${mercurial_ver:=5.4}
