@@ -1406,7 +1406,7 @@ EOF
 		print_header_path babeltrace.h babeltrace > /dev/null || ${0} ${cmdopt} babeltrace || return
 		print_header_path bpf.h bpf > /dev/null || ${0} ${cmdopt} libbpf || return
 		print_header_path capability.h sys > /dev/null || ${0} ${cmdopt} libcap || return
-		print_header_path numa.h > /dev/null || ${0} ${cmdopt} numactl || return
+		print_header_path numaif.h > /dev/null || ${0} ${cmdopt} numactl || return
 		print_header_path ocsd_if_version.h opencsd > /dev/null || ${0} ${cmdopt} OpenCSD || return
 		print_library_path libunwind.so > /dev/null || ${0} ${cmdopt} libunwindnongnu || return
 		fetch linux || return

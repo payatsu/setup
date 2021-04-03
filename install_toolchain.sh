@@ -2491,7 +2491,7 @@ install_native_perf()
 	print_header_path babeltrace.h babeltrace > /dev/null || install_native_babeltrace || return
 	print_header_path bpf.h bpf > /dev/null || install_native_libbpf || return
 	print_header_path capability.h sys > /dev/null || install_native_libcap || return
-	print_header_path numa.h > /dev/null || install_native_numactl || return
+	print_header_path numaif.h > /dev/null || install_native_numactl || return
 	print_header_path ocsd_if_version.h opencsd > /dev/null || install_native_OpenCSD || return
 	print_library_path libunwind.so > /dev/null || install_native_libunwindnongnu || return
 	fetch linux || return
