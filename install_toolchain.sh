@@ -1797,11 +1797,11 @@ print_library_dir()
 
 L()
 {
-	for p in "$@"; do
-		echo ${p} | grep -qe '/' && d=`dirname ${p}` || d=
-		f=`basename ${p}`
+	for l in "$@"; do
+		echo ${l} | grep -qe '/' && d=`dirname ${l}` || d=
+		f=`basename ${l}`
 		print_library_dir ${f} ${d} || return
-	done | sed -e 's/^/-L/' | uniq || return
+	done | sed -e 's/^/-L/' | uniq | tr '\n' ' ' | sed -e 's/ $//' || return
 }
 
 print_header_path()
@@ -1824,11 +1824,11 @@ print_header_dir()
 
 I()
 {
-	for p in "$@"; do
-		echo ${p} | grep -qe '/' && d=`dirname ${p}` || d=
-		f=`basename ${p}`
+	for h in "$@"; do
+		echo ${h} | grep -qe '/' && d=`dirname ${h}` || d=
+		f=`basename ${h}`
 		print_header_dir ${f} ${d} || return
-	done | sed -e 's/^/-I/' | uniq || return
+	done | sed -e 's/^/-I/' | uniq | tr '\n' ' ' | sed -e 's/ $//' || return
 }
 
 print_prefix()
