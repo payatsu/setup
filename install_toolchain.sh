@@ -56,6 +56,7 @@
 : ${numactl_ver:=2.0.14}
 : ${OpenCSD_ver:=1.0.0}
 : ${libunwindnongnu_ver:=1.5.0}
+: ${libpfm_ver:=4.11.0}
 : ${libbpf_ver:=0.3}
 : ${bcc_ver:=0.18.0}
 : ${bpftrace_ver:=0.11.4}
@@ -411,6 +412,8 @@ help()
 		Specify the version of OpenCSD you want, currently '${OpenCSD_ver}'.
 	libunwindnongnu_ver
 		Specify the version of libunwind you want, currently '${libunwindnongnu_ver}'.
+	libpfm_ver
+		Specify the version of libpfm you want, currently '${libpfm_ver}'.
 	libbpf_ver
 		Specify the version of libbpf you want, currently '${libbpf_ver}'.
 	bcc_ver
@@ -834,6 +837,9 @@ fetch()
 		libunwindnongnu)
 			wget -O ${libunwindnongnu_src_dir}.tar.gz \
 				http://download.savannah.nongnu.org/releases/libunwind/${libunwindnongnu_name}.tar.gz || return;;
+		libpfm)
+			wget -O ${libpfm_src_dir}.tar.gz \
+				https://sourceforge.net/projects/perfmon2/files/libpfm4/${libpfm_name}.tar.gz/download || return;;
 		libbpf)
 			wget -O ${libbpf_src_dir}.tar.gz \
 				https://github.com/libbpf/libbpf/archive/v${libbpf_ver}.tar.gz || return;;
@@ -2493,7 +2499,8 @@ install_native_perf()
 	print_header_path capability.h sys > /dev/null || install_native_libcap || return
 	print_header_path numaif.h > /dev/null || install_native_numactl || return
 	print_header_path ocsd_if_version.h opencsd > /dev/null || install_native_OpenCSD || return
-	print_library_path libunwind.so > /dev/null || install_native_libunwindnongnu || return
+	print_header_path libunwind.h > /dev/null || install_native_libunwindnongnu || return
+	print_header_path pfmlib.h perfmon > /dev/null || install_native_libpfm || return
 	fetch linux || return
 	unpack linux || return
 	mkdir -pv ${perf_bld_dir} || return
@@ -2502,14 +2509,14 @@ install_native_perf()
 		EXTRA_CFLAGS="${CFLAGS} `I libelf.h` `L libelf.so`" \
 		EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so`" \
 		LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
-		NO_LIBPERL=1 NO_LIBPYTHON=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 \
+		NO_LIBPERL=1 NO_LIBPYTHON=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 		prefix=${prefix} all || return
 	make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 		ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} \
 		EXTRA_CFLAGS="${CFLAGS} `I libelf.h` `L libelf.so`" \
 		EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so`" \
 		LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
-		NO_LIBPERL=1 NO_LIBPYTHON=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 \
+		NO_LIBPERL=1 NO_LIBPYTHON=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 		prefix=${prefix} DESTDIR=${DESTDIR} install || return
 }
 
@@ -2588,6 +2595,21 @@ install_native_libunwindnongnu()
 		make -C ${libunwindnongnu_bld_dir} -j ${jobs} -k check || return
 	make -C ${libunwindnongnu_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
+}
+
+install_native_libpfm()
+{
+	[ -f ${prefix}/include/perfmon/pfmlib.h -a "${force_install}" != yes ] && return
+	fetch libpfm || return
+	unpack libpfm || return
+	[ -f ${libpfm_bld_dir}/Makefile ] || cp -Tvr ${libpfm_src_dir} ${libpfm_bld_dir} || return
+	sed -i -e '/^DIRS=/s/\<tests\>//' ${libpfm_bld_dir}/Makefile || return
+	sed -i -e '/^ARCH :=/s/\$(shell uname -m)/'${linux_arch}'/' ${libpfm_bld_dir}/config.mk || return
+	make -C ${libpfm_bld_dir} -j ${jobs} PREFIX=${prefix} CC=${CC:-${host:+${host}-}gcc} || return
+	make -C ${libpfm_bld_dir} -j ${jobs} PREFIX=${prefix} DESTDIR=${DESTDIR} install || return
+	update_path || return
+	[ -z "${strip}" ] && return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libpfm.so || return
 }
 
 install_native_libbpf()
