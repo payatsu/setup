@@ -63,7 +63,7 @@
 : ${kmod_ver:=28}
 : ${dtc_ver:=1.6.0}
 : ${u_boot_ver:=2021.01}
-: ${qemu_ver:=4.2.0}
+: ${qemu_ver:=5.2.0}
 : ${gperf_ver:=3.1}
 : ${glibc_ver:=2.33}
 : ${newlib_ver:=4.1.0}
