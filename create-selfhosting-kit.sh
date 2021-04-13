@@ -182,7 +182,7 @@ EOF
 
 : ${screen_ver:=4.8.0}
 : ${libevent_ver:=2.1.11-stable}
-: ${tmux_ver:=3.1b}
+: ${tmux_ver:=3.2}
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.0}
 : ${vim_ver:=8.2.2425}
