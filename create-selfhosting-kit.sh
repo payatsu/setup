@@ -108,7 +108,7 @@ EOF
 : ${bzip2_ver:=1.0.8}
 : ${xz_ver:=5.2.5}
 : ${zstd_ver:=1.4.9}
-: ${openssl_ver:=1.1.1j}
+: ${openssl_ver:=1.1.1k}
 : ${curl_ver:=7.75.0}
 : ${elfutils_ver:=0.183}
 : ${binutils_ver:=2.35.2}
