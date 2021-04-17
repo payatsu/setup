@@ -17,7 +17,7 @@ ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight uti
 autogen gettext pcre2 libxslt asciidoc git openssh go rustc zsh bash screen libevent tmux lua vim neovim global \
 the_silver_searcher the_platinum_searcher gperf highway fzf tiff freetype fontconfig ghostscript graphviz jdk plantuml \
 jq protobuf rsync dtc strace systemtap libbpf bcc bpftrace libcap numactl OpenCSD libpfm perf \
-libpcap tcpdump iproute2 nmap libpng jpeg giflib emacs"
+libpcap tcpdump iproute2 nmap libpng jpeg giflib emacs diffutils poke"
 
 RUN \
 apt-get update && apt-get upgrade -y && \
