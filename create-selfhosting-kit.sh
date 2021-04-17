@@ -124,7 +124,7 @@ EOF
 : ${readline_ver:=8.1}
 : ${expat_ver:=2.2.10}
 : ${libffi_ver:=3.3}
-: ${Python_ver:=3.9.2}
+: ${Python_ver:=3.9.4}
 : ${boost_ver:=1_75_0}
 : ${source_highlight_ver:=3.1.9}
 : ${pcre_ver:=8.44}
@@ -145,7 +145,7 @@ EOF
 : ${libpfm_ver:=4.11.0}
 : ${libbpf_ver:=0.3}
 : ${bcc_ver:=0.18.0}
-: ${bpftrace_ver:=0.11.4}
+: ${bpftrace_ver:=0.12.1}
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
 : ${procps_ver:=3.3.15}
@@ -207,7 +207,7 @@ EOF
 : ${libxml2_ver:=2.9.10}
 : ${libedit_ver:=20191231-3.1}
 : ${swig_ver:=4.0.2}
-: ${llvm_ver:=11.1.0}
+: ${llvm_ver:=12.0.0}
 : ${compiler_rt_ver:=${llvm_ver}}
 : ${libunwind_ver:=${llvm_ver}}
 : ${libcxxabi_ver:=${llvm_ver}}
@@ -1499,6 +1499,8 @@ EOF
 				--enable-coredump --enable-ptrace --enable-setjmp \
 				--enable-cxx-exceptions --enable-debug-frame \
 				--enable-minidebuginfo --enable-zlibdebuginfo \
+				CFLAGS="${CFLAGS} `I lzma.h`" \
+				LDFLAGS="${LDFLAGS} -Wl,-rpath-link,${libunwindnongnu_bld_dir}/src/.libs" \
 				|| return
 			remove_rpath_option libunwindnongnu || return
 			) || return
@@ -2640,8 +2642,15 @@ EOF
 	libunwind)
 		[ -e ${DESTDIR}${prefix}/lib/libunwind.so -a "${force_install}" != yes ] && return
 		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
+		init llvm || return
+		fetch llvm || return
+		unpack llvm || return
+		init libcxx || return
+		fetch libcxx || return
+		unpack libcxx || return
 		fetch ${1} || return
 		unpack ${1} || return
+		ln -Tfsv ${libcxx_src_dir} ${libunwind_src_dir}/../libcxx || return
 		generate_gcc_wrapper ${libunwind_bld_dir} || return
 		generate_gxx_wrapper ${libunwind_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -2649,7 +2658,8 @@ EOF
 			-DCMAKE_C_COMPILER=${libunwind_bld_dir}/${host:+${host}-}gcc \
 			-DCMAKE_CXX_COMPILER=${libunwind_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-			-DCMAKE_INSTALL_RPATH=';' -DLIBUNWIND_USE_COMPILER_RT=ON || return
+			-DCMAKE_INSTALL_RPATH=';' -DLIBUNWIND_USE_COMPILER_RT=ON \
+			-DLLVM_PATH=${llvm_src_dir} || return
 		cmake --build ${libunwind_bld_dir} -v -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			cmake --build ${libunwind_bld_dir} -v -j ${jobs} --target check-unwind || return
@@ -2660,6 +2670,9 @@ EOF
 		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
 		print_library_path libunwind.so > /dev/null || ${0} ${cmdopt} libunwindnongnu || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
+		init llvm || return
+		fetch llvm || return
+		unpack llvm || return
 		init libcxx || return
 		fetch libcxx || return
 		unpack libcxx || return
@@ -2675,7 +2688,8 @@ EOF
 			-DCMAKE_CXX_FLAGS=`L libunwind.so` \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_INSTALL_RPATH=';' \
-			-DLIBCXXABI_USE_LLVM_UNWINDER=ON || return
+			-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+			-DLLVM_PATH=${llvm_src_dir} || return
 		cmake --build ${libcxxabi_bld_dir} -v -j ${jobs} || return
 		cmake --install ${libcxxabi_bld_dir} -v ${strip:+--${strip}} || return
 		;;
@@ -2727,6 +2741,7 @@ EOF
 		[ -d ${clang_src_dir}/tools/extra ] ||
 			(unpack clang-tools-extra &&
 			mv -v ${clang_tools_extra_src_dir} ${clang_src_dir}/tools/extra) || return
+		ln -Tfsv ${clang_src_dir}/tools/extra ${clang_src_dir}/../clang-tools-extra || return
 		patch -N -p0 -d ${clang_src_dir} <<EOF || [ $? = 1 ] || return
 --- tools/extra/clangd/CodeComplete.h
 +++ tools/extra/clangd/CodeComplete.h
@@ -2770,8 +2785,15 @@ EOF
 		[ -x ${DESTDIR}${prefix}/bin/lld -a "${force_install}" != yes ] && return
 		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
+		init llvm || return
+		fetch llvm || return
+		unpack llvm || return
+		init libunwind || return
+		fetch libunwind || return
+		unpack libunwind || return
 		fetch ${1} || return
 		unpack ${1} || return
+		ln -Tfsv ${libunwind_src_dir} ${llvm_src_dir}/../libunwind || return
 		generate_llvm_config_wrapper ${lld_bld_dir} || return
 		generate_gcc_wrapper ${lld_bld_dir} || return
 		generate_gxx_wrapper ${lld_bld_dir} || return
@@ -2844,7 +2866,7 @@ EOF
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
 			-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON \
 			-DCMAKE_C_FLAGS="${CFLAGS} `I clang/Basic/Version.h`" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I curses.h histedit.h` `L libcurses.so` -ledit -lpython$(print_version Python 2) -lncurses -lpanel -lxml2 -llzma -lz" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I curses.h histedit.h` `L libcurses.so libedit.so` -ledit -lpython$(print_version Python 2) -lncurses -lpanel -lxml2 -llzma -lz" \
 			`[ ${build} != ${host} ] && { echo -n -DLLVM_TABLEGEN=; which llvm-tblgen;}` \
 			`[ ${build} != ${host} ] && { echo -n -DLLDB_TABLEGEN_EXE=; which lldb-tblgen;}` \
 			-DLibEdit_INCLUDE_DIRS=`print_header_dir histedit.h` \
@@ -2958,7 +2980,7 @@ while [ \$# -gt 0 ]; do
 	--libdir)      echo `print_library_dir libLLVM.so`;;
 	--libs)        echo -lLLVM-`print_version llvm 1`;;
 	--obj-root)    echo `print_library_dir libLLVM.so`;;
-	--src-root)    echo not-used;;
+	--src-root)    echo ${llvm_src_dir};;
 	--system-libs) ;;
 	esac
 	shift

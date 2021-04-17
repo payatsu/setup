@@ -59,7 +59,7 @@
 : ${libpfm_ver:=4.11.0}
 : ${libbpf_ver:=0.3}
 : ${bcc_ver:=0.18.0}
-: ${bpftrace_ver:=0.11.4}
+: ${bpftrace_ver:=0.12.1}
 : ${kmod_ver:=28}
 : ${dtc_ver:=1.6.0}
 : ${u_boot_ver:=2021.01}
@@ -162,7 +162,7 @@
 : ${ccache_ver:=4.2}
 : ${libedit_ver:=20191231-3.1}
 : ${swig_ver:=4.0.2}
-: ${llvm_ver:=11.1.0}
+: ${llvm_ver:=12.0.0}
 : ${compiler_rt_ver:=${llvm_ver}}
 : ${libunwind_ver:=${llvm_ver}}
 : ${libcxxabi_ver:=${llvm_ver}}
@@ -174,7 +174,7 @@
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
 : ${boost_ver:=1_75_0}
-: ${Python_ver:=3.9.2}
+: ${Python_ver:=3.9.4}
 : ${Python2_ver:=2.7.18}
 : ${rustc_ver:=1.51.0}
 : ${rustup_ver:=1.23.1}
@@ -5058,13 +5058,19 @@ install_native_libunwind()
 {
 	[ -e ${prefix}/lib/libunwind.so -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
+	fetch llvm || return
+	unpack llvm || return
+	fetch libcxx || return
+	unpack libcxx || return
 	fetch libunwind || return
 	unpack libunwind || return
+	ln -Tfsv ${libcxx_src_dir} ${libunwind_src_dir}/../libcxx || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${libunwind_src_dir} -B ${libunwind_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DCMAKE_INSTALL_RPATH=';' -DLIBUNWIND_USE_COMPILER_RT=ON || return
+		-DCMAKE_INSTALL_RPATH=';' -DLIBUNWIND_USE_COMPILER_RT=ON \
+		-DLLVM_PATH=${llvm_src_dir} || return
 	cmake --build ${libunwind_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		cmake --build ${libunwind_bld_dir} -v -j ${jobs} --target check-unwind || return
@@ -5078,6 +5084,8 @@ install_native_libcxxabi()
 	which cmake > /dev/null || install_native_cmake || return
 	print_library_path libunwind.so > /dev/null || install_native_libunwindnongnu || return
 	print_header_path llvm-config.h llvm/Config > /dev/null || install_native_llvm || return
+	fetch llvm || return
+	unpack llvm || return
 	fetch libcxx || return
 	unpack libcxx || return
 	fetch libcxxabi || return
@@ -5088,7 +5096,8 @@ install_native_libcxxabi()
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_INSTALL_RPATH=';' \
-		-DLIBCXXABI_USE_LLVM_UNWINDER=ON || return
+		-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+		-DLLVM_PATH=${llvm_src_dir} || return
 	cmake --build ${libcxxabi_bld_dir} -v -j ${jobs} || return
 	cmake --install ${libcxxabi_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
@@ -5135,6 +5144,7 @@ install_native_clang()
 	[ -d ${clang_src_dir}/tools/extra ] ||
 		(unpack clang-tools-extra &&
 		mv -v ${clang_tools_extra_src_dir} ${clang_src_dir}/tools/extra) || return
+	ln -Tfsv ${clang_src_dir}/tools/extra ${clang_src_dir}/../clang-tools-extra || return
 	patch -N -p0 -d ${clang_src_dir} <<EOF || [ $? = 1 ] || return
 --- tools/extra/clangd/CodeComplete.h
 +++ tools/extra/clangd/CodeComplete.h
@@ -5167,8 +5177,13 @@ install_native_lld()
 {
 	[ -x ${prefix}/bin/lld -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
+	fetch llvm || return
+	unpack llvm || return
+	fetch libunwind || return
+	unpack libunwind || return
 	fetch lld || return
 	unpack lld || return
+	ln -Tfsv ${libunwind_src_dir} ${llvm_src_dir}/../libunwind || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${lld_src_dir} -B ${lld_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
