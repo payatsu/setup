@@ -216,7 +216,7 @@
 : ${protobuf_ver:=3.14.0}
 : ${grpc_ver:=1.35.0}
 : ${libbacktrace_ver:=git}
-: ${poke_ver:=1.1}
+: ${poke_ver:=1.2}
 
 # TODO X11周りのインストールは未着手。
 : ${xtrans_ver:=1.3.5}
