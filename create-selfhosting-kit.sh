@@ -133,7 +133,7 @@ EOF
 : ${popt_ver:=1.18}
 : ${glib_ver:=2.59.0}
 : ${babeltrace_ver:=1.5.8}
-: ${gdb_ver:=10.1}
+: ${gdb_ver:=10.2}
 : ${strace_ver:=5.10}
 : ${systemtap_ver:=4.4}
 : ${linux_ver:=5.11.6}
