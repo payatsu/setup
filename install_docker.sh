@@ -34,7 +34,7 @@ install_docker_compose()
 {
 	which docker-compose > /dev/null && return
 
-	latest_version=`curl -fsSI https://github.com/docker/compose/releases/latest | grep -e '^Location:' | grep -oPe '\d+(\.\d+)*'`
+	latest_version=`curl -fsSI https://github.com/docker/compose/releases/latest | grep -e '^\(L\|l\)ocation:' | grep -oPe '\d+(\.\d+)*'`
 	[ -n "${latest_version}" ] || return
 	curl -fSL -o /usr/local/bin/docker-compose \
 		https://github.com/docker/compose/releases/download/${latest_version}/docker-compose-`uname -s`-`uname -m` || return
