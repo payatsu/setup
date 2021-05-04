@@ -23,6 +23,7 @@ install_docker_engine()
 		yum install -y docker-ce || return
 		systemctl start docker || return
 		systemctl enable docker || return
+		systemctl enable containerd || return
 		;;
 	*)
 		return 1;;
