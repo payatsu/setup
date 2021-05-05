@@ -125,7 +125,7 @@ EOF
 : ${expat_ver:=2.2.10}
 : ${libffi_ver:=3.3}
 : ${Python_ver:=3.9.4}
-: ${boost_ver:=1_75_0}
+: ${boost_ver:=1_76_0}
 : ${source_highlight_ver:=3.1.9}
 : ${pcre_ver:=8.44}
 : ${pcre2_ver:=10.36}
@@ -320,7 +320,7 @@ fetch()
 			https://www.python.org/ftp/python/${Python_ver}/${Python_name}.tar.xz || return;;
 	boost)
 		wget --trust-server-names -O ${boost_src_dir}.tar.bz2 \
-			https://dl.bintray.com/boostorg/release/`echo ${boost_ver} | tr _ .`/source/${boost_name}.tar.bz2 || return;;
+			https://boostorg.jfrog.io/artifactory/main/release/`echo ${boost_ver} | tr _ .`/source/${boost_name}.tar.bz2 || return;;
 	source-highlight)
 		wget -O ${source_highlight_src_dir}.tar.gz \
 			https://ftp.gnu.org/gnu/src-highlite/${source_highlight_name}.tar.gz || return;;

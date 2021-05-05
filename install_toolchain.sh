@@ -173,7 +173,7 @@
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
-: ${boost_ver:=1_75_0}
+: ${boost_ver:=1_76_0}
 : ${Python_ver:=3.9.4}
 : ${Python2_ver:=2.7.18}
 : ${rustc_ver:=1.51.0}
@@ -188,7 +188,7 @@
 : ${libpsl_ver:=0.21.0}
 : ${libatomic_ops_ver:=7.6.10}
 : ${gc_ver:=7.6.12}
-: ${guile_ver:=3.0.5}
+: ${guile_ver:=3.0.6}
 : ${lua_ver:=5.4.2}
 : ${node_ver:=14.15.4}
 : ${jdk_ver:=16.0.1}
@@ -1105,7 +1105,7 @@ fetch()
 				https://github.com/MaskRay/ccls ${ccls_src_dir} || return;;
 		boost)
 			wget --trust-server-names -O ${boost_src_dir}.tar.bz2 \
-				https://dl.bintray.com/boostorg/release/`echo ${boost_ver} | tr _ .`/source/${boost_name}.tar.bz2 || return;;
+				https://boostorg.jfrog.io/artifactory/main/release/`echo ${boost_ver} | tr _ .`/source/${boost_name}.tar.bz2 || return;;
 		Python2|Python)
 			eval wget -O ${Python_src_base}/Python-\${${_p}_ver}.tar.xz \
 				https://www.python.org/ftp/python/\${${_p:-Python}_ver}/Python-\${${_p:-Python}_ver}.tar.xz || return;;
