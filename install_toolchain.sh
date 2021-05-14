@@ -188,7 +188,7 @@
 : ${libpsl_ver:=0.21.0}
 : ${libatomic_ops_ver:=7.6.10}
 : ${gc_ver:=7.6.12}
-: ${guile_ver:=3.0.6}
+: ${guile_ver:=3.0.7}
 : ${lua_ver:=5.4.2}
 : ${node_ver:=14.15.4}
 : ${jdk_ver:=16.0.1}
