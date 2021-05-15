@@ -25,7 +25,7 @@
 : ${lzo_ver:=2.10}
 : ${lzop_ver:=1.04}
 : ${lz4_ver:=1.9.3}
-: ${zstd_ver:=1.4.9}
+: ${zstd_ver:=1.5.0}
 : ${wget_ver:=1.21.1}
 : ${pkg_config_ver:=0.29.2}
 : ${help2man_ver:=1.47.16}
