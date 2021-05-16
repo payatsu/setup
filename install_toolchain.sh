@@ -159,7 +159,7 @@
 : ${cmake_ver:=3.19.4}
 : ${bazel_ver:=2.2.0}
 : ${Bear_ver:=2.4.3}
-: ${ccache_ver:=4.2}
+: ${ccache_ver:=4.3}
 : ${libedit_ver:=20191231-3.1}
 : ${swig_ver:=4.0.2}
 : ${llvm_ver:=12.0.0}
