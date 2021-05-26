@@ -153,7 +153,7 @@
 : ${apr_ver:=1.7.0}
 : ${apr_util_ver:=1.6.1}
 : ${utf8proc_ver:=2.4.0}
-: ${subversion_ver:=1.14.0}
+: ${subversion_ver:=1.14.1}
 : ${ninja_ver:=1.10.2}
 : ${meson_ver:=0.56.2}
 : ${cmake_ver:=3.19.4}
@@ -4858,7 +4858,7 @@ install_native_subversion()
 		(cd ${subversion_bld_dir}
 		${subversion_src_dir}/configure --prefix=${prefix} --build=${build} --with-zlib=`print_prefix zlib.h` \
 			--with-sqlite=`print_prefix sqlite3.h` --with-lz4=internal ${strip:+--enable-optimize} \
-			LDFLAGS="${LDFLAGS} `L libiconv.so`" LIBS=-liconv) || return
+			LDFLAGS="${LDFLAGS} `L libiconv.so libutf8proc.so`" LIBS=-liconv) || return
 	make -C ${subversion_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${subversion_bld_dir} -j ${jobs} -k check || return
