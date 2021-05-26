@@ -185,7 +185,7 @@ EOF
 : ${tmux_ver:=3.2}
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.0}
-: ${vim_ver:=8.2.2425}
+: ${vim_ver:=8.2.2886}
 : ${vimdoc_ja_ver:=master}
 : ${emacs_ver:=27.2}
 : ${nano_ver:=5.7}
