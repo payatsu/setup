@@ -122,7 +122,7 @@ EOF
 
 : ${ncurses_ver:=6.2}
 : ${readline_ver:=8.1}
-: ${expat_ver:=2.2.10}
+: ${expat_ver:=2.4.1}
 : ${libffi_ver:=3.3}
 : ${Python_ver:=3.9.4}
 : ${boost_ver:=1_76_0}

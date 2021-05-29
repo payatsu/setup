@@ -139,7 +139,7 @@
 : ${openssh_ver:=8.5p1}
 : ${nghttp2_ver:=1.43.0}
 : ${curl_ver:=7.75.0}
-: ${expat_ver:=2.2.10}
+: ${expat_ver:=2.4.1}
 : ${asciidoc_ver:=8.6.9}
 : ${libxml2_ver:=2.9.10}
 : ${libxslt_ver:=1.1.34}
