@@ -34,7 +34,7 @@
 : ${busybox_ver:=1.33.0}
 : ${bison_ver:=3.7.5}
 : ${flex_ver:=2.6.4}
-: ${m4_ver:=1.4.18}
+: ${m4_ver:=1.4.19}
 : ${autoconf_ver:=2.71}
 : ${autoconf_archive_ver:=2021.02.19}
 : ${automake_ver:=1.16.3}

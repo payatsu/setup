@@ -155,7 +155,7 @@ EOF
 : ${nmap_ver:=7.80}
 : ${i2c_tools_ver:=4.2}
 
-: ${m4_ver:=1.4.18}
+: ${m4_ver:=1.4.19}
 : ${perl_ver:=5.32.1}
 : ${autoconf_ver:=2.71}
 : ${automake_ver:=1.16.3}
