@@ -1759,7 +1759,7 @@ func_place_holder()
 		&& export MANPATH=${prefix}/share/man:`echo ${MANPATH} | sed -e 's%\(^\|:\)'${prefix}'/share/man\($\|:\)%\1\2%g;s/::/:/g;s/^://'` \
 		|| export MANPATH=${prefix}/share/man:${MANPATH}
 EOF
-	! which python3 > /dev/null 2>&1 && echo '}\n'${func_name} >> ${1} && return
+	! which python3 > /dev/null 2>&1 && { echo '}'; echo ${func_name};} >> ${1} && return
 	python_site_packages=`python3 -c 'import sys; print("lib/python{}.{}/site-packages".format(*sys.version_info[:2]))'`
 	cat <<\EOF | sed -e 's%py_place_holder%'${python_site_packages}'%g;$s%func_place_holder%'${func_name}'%' >> ${1} || return
 	[ ! -d ${prefix}/py_place_holder ] && return
