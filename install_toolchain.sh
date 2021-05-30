@@ -1626,8 +1626,15 @@ list_duplication()
 list_major_commands()
 {
 	echo '[Available commands]'
-	eval "`grep -A 1 -e '^[[:alnum:]]\+()$' ${0} |
-		sed -e '/^--$/d; /^{$/d; s/()$//; s/^# /\t/; s/^/\t/; 1s/^/echo "/; $s/$/"/'`"
+	grep -A 1 -e '^[[:alnum:]]\+()$' ${0} |
+		sed -e '
+			/^--$/d
+			/^{$/d
+			s/()$//
+			/^\(I\|L\)$/d
+			s/^# /\t/
+			s/^/\t/
+		'
 }
 
 list_all_commands()
