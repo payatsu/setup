@@ -4330,7 +4330,8 @@ install_native_source_highlight()
 	unpack source-highlight || return
 	[ -f ${source_highlight_bld_dir}/Makefile ] ||
 		(cd ${source_highlight_bld_dir}
-		${source_highlight_src_dir}/configure --prefix=${prefix} --build=${build}) || return
+		${source_highlight_src_dir}/configure --prefix=${prefix} --build=${build} \
+			CXXFLAGS="${CXXFLAGS} -std=c++14") || return # XXX: workaround for Dynamic Exception Specification.
 	make -C ${source_highlight_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${source_highlight_bld_dir} -j ${jobs} -k check || return
