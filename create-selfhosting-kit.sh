@@ -2032,8 +2032,8 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${dtc_bld_dir}/Makefile ] || cp -Tvr ${dtc_src_dir} ${dtc_bld_dir} || return
-		(unset CFLAGS; make -C ${dtc_bld_dir} -j 1 V=1 NO_PYTHON=1 CC="${CC:-${host:+${host}-}gcc}") || return # XXX work around for parallel make
-		(unset CFLAGS; make -C ${dtc_bld_dir} -j 1 V=1 NO_PYTHON=1 PREFIX=${DESTDIR}${prefix} install) || return # XXX work around for parallel make
+		(export EXTRA_CFLAGS="${CFLAGS} -Wno-error"; unset CFLAGS; make -C ${dtc_bld_dir} -j 1 V=1 NO_PYTHON=1 CC="${CC:-${host:+${host}-}gcc}") || return # XXX work around for parallel make
+		(export EXTRA_CFLAGS="${CFLAGS} -Wno-error"; unset CFLAGS; make -C ${dtc_bld_dir} -j 1 V=1 NO_PYTHON=1 PREFIX=${DESTDIR}${prefix} install) || return # XXX work around for parallel make
 		[ -z "${strip}" ] && return
 		for b in convert-dtsv0 dtc fdtdump fdtget fdtoverlay fdtput; do
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
