@@ -3865,7 +3865,7 @@ install_native_ctags()
 	[ -f ${ctags_bld_dir}/Makefile ] ||
 		(cd ${ctags_bld_dir}
 		${ctags_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules \
-			LDFLAGS="${LDFLAGS} -liconv") || return
+			LDFLAGS="${LDFLAGS} `L libiconv.so` -liconv") || return
 	make -C ${ctags_bld_dir} -j ${jobs} || return
 	make -C ${ctags_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
