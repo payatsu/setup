@@ -189,7 +189,7 @@
 : ${libatomic_ops_ver:=7.6.10}
 : ${gc_ver:=7.6.12}
 : ${guile_ver:=3.0.7}
-: ${lua_ver:=5.4.2}
+: ${lua_ver:=5.4.3}
 : ${node_ver:=14.15.4}
 : ${jdk_ver:=16.0.1}
 : ${nasm_ver:=2.15.05}
