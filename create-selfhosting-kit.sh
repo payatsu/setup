@@ -1285,6 +1285,7 @@ EOF
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		print_header_path uuid.h uuid > /dev/null || ${0} ${cmdopt} util-linux || return
 		print_header_path popt.h > /dev/null || ${0} ${cmdopt} popt || return
+		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
 		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		fetch ${1} || return
 		unpack ${1} || return
@@ -1295,7 +1296,7 @@ EOF
 			(cd ${babeltrace_bld_dir}
 			${babeltrace_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				CPPFLAGS="${CPPFLAGS} `I popt.h`" \
-				LDFLAGS="${LDFLAGS} `L libz.so libpopt.so`" \
+				LDFLAGS="${LDFLAGS} `L libz.so libpopt.so libzstd.so`" \
 				LIBS="${LIBS} -lpcre -lz -lbz2 -llzma -lzstd" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir glib-2.0.pc` \
@@ -1423,15 +1424,15 @@ EOF
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} \
-			EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so`" \
-			EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so`" \
+			EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
+			EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
 			LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 			prefix=${prefix} all || return
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} \
-			EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so`" \
-			EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so`" \
+			EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
+			EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
 			LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 			prefix=${prefix} DESTDIR=${DESTDIR} install || return
@@ -3040,7 +3041,7 @@ generate_pathconfig()
 	func_name=`basename ${1} | tr . _ | tr -cd '[:alpha:]_'`
 	extfile_name=`echo ${1} | sed -e 's/\(\.[-_.[:alnum:]]\+\)\?$/.ext&/;s!'^${DESTDIR}'!!;s!'^${prefix}'!${prefix}!'`
 	cat << 'EOF' | sed -e '1,/^{$/{s%prefix_place_holder%'${prefix}'%;s%host_place_holder%'${host}'%;s%func_place_holder%'${func_name}'%};s!ext_place_holder!'${extfile_name}'!g;$s%func_place_holder%'${func_name}'%' > ${1} || return
-prefix=$({ cd $(dirname ${BASH_SOURCE:-${(%):-%N}}) && pwd || echo prefix_place_holder;} | sed -e "s!^${DESTDIR}!!")
+prefix=$({ cd $(dirname ${BASH_SOURCE:-${(%):-%N}}); [ `pwd` = ${HOME} ] && echo prefix_place_holder || pwd;} | sed -e "s!^${DESTDIR}!!")
 host=host_place_holder
 func_place_holder()
 {
