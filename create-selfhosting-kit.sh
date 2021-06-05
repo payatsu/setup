@@ -492,7 +492,8 @@ unpack()
 	_1=`echo ${1} | tr - _`
 	eval mkdir -pv \${${_1}_bld_dir} || return
 	eval d=\${${_1}_src_dir}
-	[ -z "${2}" -a -d ${d} -o -d ${2}/`basename ${d}` ] && return
+	[ -z "${2}" -a -d ${d} ] && return
+	[ -n "${2}" -a -d ${2}/`basename ${d}` ] && return
 	${2:+eval mkdir -pv ${2} || return}
 	[ -f ${d}.tar.gz  -a -s ${d}.tar.gz  ] && tar xzvf ${d}.tar.gz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${d}`} && return
 	[ -f ${d}.tar.bz2 -a -s ${d}.tar.bz2 ] && tar xjvf ${d}.tar.bz2 --no-same-owner --no-same-permissions -C ${2:-`dirname ${d}`} && return
