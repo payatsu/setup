@@ -42,7 +42,7 @@ EOF
 
 init()
 {
-	: ${linux_ver:=5.11.6}
+	: ${linux_ver:=5.12.9}
 	: ${jobs:=`grep -ce '^processor\>' /proc/cpuinfo`}
 	: ${ARCH:=`uname -m`}
 	: ${CROSS_COMPILE:=`gcc -dumpmachine`-}
@@ -95,27 +95,19 @@ make()
 
 build()
 {
-	[ -z "${kernel_build}" ] || {
-		[ -f .config ] || make ${make_opts} defconfig || return
-		make ${make_opts} || return
-	}
+	[ -f .config ] || { make ${make_opts} defconfig && make ${make_opts} prepare;} || return
+	[ -z "${kernel_build}" ] || make ${make_opts} || return
 	[ -z "${modules_install}" ] || make ${make_opts} modules_install || return
 	[ -z "${headers_install}" ] || make ${make_opts} headers_install || return
 	[ -z "${tags_generate}" ] || make ${make_opts} tags gtags || return
-	[ -z "${cgroup_install}" ] || {
-		make ${make_opts} -C tools cgroup || return
-	}
-	[ -z "${gpio_install}" ] || {
-		make ${make_opts} -C tools gpio || return
-	}
+	[ -z "${cgroup_install}" ] || make ${make_opts} -C tools cgroup || return
+	[ -z "${gpio_install}" ] || make ${make_opts} -C tools gpio || return
 	[ -z "${perf_install}" ] || {
 		make ${make_opts} -C tools/perf all || return
 		make ${make_opts} -C tools/perf doc || return
 		make ${make_opts} -C tools/perf DESTDIR=${prefix} install || return
 	}
-	[ -z "${spi_install}" ] || {
-		make ${make_opts} -C tools spi || return
-	}
+	[ -z "${spi_install}" ] || make ${make_opts} -C tools spi || return
 	[ -z "${documents_build}" ] || {
 		virtualenv sphinx_1.7.9 || return
 		. sphinx_1.7.9/bin/activate || return
@@ -141,6 +133,11 @@ EOF
 	cat << EOF > mymodules/mymodule.c || return
 #include <linux/init.h>
 #include <linux/module.h>
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("${USER}");
+MODULE_DESCRIPTION("my module");
+MODULE_VERSION("0.1");
 
 static int __init mymodule_init(void)
 {

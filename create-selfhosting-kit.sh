@@ -136,7 +136,7 @@ EOF
 : ${gdb_ver:=10.2}
 : ${strace_ver:=5.10}
 : ${systemtap_ver:=4.4}
-: ${linux_ver:=5.11.6}
+: ${linux_ver:=5.12.9}
 : ${perf_ver:=${linux_ver}}
 : ${libcap_ver:=2.49}
 : ${numactl_ver:=2.0.14}
