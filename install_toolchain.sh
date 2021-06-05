@@ -1855,6 +1855,15 @@ I()
 	done | sed -e 's/^/-I/' | squash_options || return
 }
 
+idirafter()
+{
+	for h in "$@"; do
+		echo ${h} | grep -qe '/' && d=`dirname ${h}` || d=
+		f=`basename ${h}`
+		print_header_dir ${f} ${d} || return
+	done | sed -e 's/^/-idirafter/' | squash_options || return
+}
+
 print_prefix()
 {
 	path=`print_header_path $@`
@@ -2515,14 +2524,14 @@ install_native_perf()
 	make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 		ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} \
 		EXTRA_CFLAGS="${CFLAGS} `I libelf.h` `L libelf.so`" \
-		EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so`" \
+		EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h` `L libelf.so libbpf.so`" \
 		LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
 		NO_LIBPERL=1 NO_LIBPYTHON=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 		prefix=${prefix} all || return
 	make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 		ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} \
 		EXTRA_CFLAGS="${CFLAGS} `I libelf.h` `L libelf.so`" \
-		EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so`" \
+		EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h` `L libelf.so libbpf.so`" \
 		LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
 		NO_LIBPERL=1 NO_LIBPYTHON=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 		prefix=${prefix} DESTDIR=${DESTDIR} install || return

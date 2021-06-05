@@ -572,6 +572,15 @@ I()
 	done | sed -e 's/^/-I/' | squash_options || return
 }
 
+idirafter()
+{
+	for h in "$@"; do
+		echo ${h} | grep -qe '/' && d=`dirname ${h}` || d=
+		f=`basename ${h}`
+		print_header_dir ${f} ${d} || return
+	done | sed -e 's/^/-idirafter/' | squash_options || return
+}
+
 print_aclocal_dir()
 {
 	for d in ${DESTDIR}${prefix}/share/aclocal \
@@ -1424,15 +1433,15 @@ EOF
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} \
-			EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
-			EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
+			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
+			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
 			LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 			prefix=${prefix} all || return
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} \
-			EXTRA_CFLAGS="${CFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
-			EXTRA_CXXFLAGS="${CXXFLAGS} -idirafter`print_header_dir libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
+			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
+			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
 			LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 			prefix=${prefix} DESTDIR=${DESTDIR} install || return
@@ -2075,7 +2084,7 @@ EOF
 		[ -f ${u_boot_bld_dir}/.config ] ||
 			make -C ${u_boot_bld_dir} -j ${jobs} V=1 sandbox_defconfig || return
 		sed -i -e 's/^	\$(Q)\$(MAKE) \$(build)=\$@$/& HOSTCC=$(MYCC)/' ${u_boot_bld_dir}/Makefile || return
-		sed -i -e '/^\<hostc_flags\>/s! \$(__hostc_flags)$!& -idirafter'`print_header_dir evp.h openssl`'!' ${u_boot_bld_dir}/scripts/Makefile.host || return
+		sed -i -e '/^\<hostc_flags\>/s! \$(__hostc_flags)$!& '`idirafter openssl/evp.h`'!' ${u_boot_bld_dir}/scripts/Makefile.host || return
 		make -C ${u_boot_bld_dir} -j ${jobs} V=1 NO_SDL=1 MYCC=${u_boot_bld_dir}/${host:+${host}-}gcc HOSTLDFLAGS=`L libssl.so` tools || return
 		mkdir -pv ${DESTDIR}${prefix}/bin || return
 		find ${u_boot_bld_dir}/tools -maxdepth 1 -type f -perm /100 -exec install -vt ${DESTDIR}${prefix}/bin {} + || return
