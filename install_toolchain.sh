@@ -1632,7 +1632,7 @@ list_major_commands()
 			/^--$/d
 			/^{$/d
 			s/()$//
-			/^\(I\|L\)$/d
+			/^\(I\|L\|l\)$/d
 			s/^# /\t/
 			s/^/\t/
 		'
@@ -1826,6 +1826,12 @@ L()
 		f=lib`basename ${l}`.so
 		print_library_dir ${f} ${d} || return
 	done | sed -e 's/^/-L/' | squash_options || return
+}
+
+l()
+{
+	L "$@" || return
+	echo "$@" | sed -e 's/^/ /;s/ / -l/g' || return
 }
 
 print_header_path()
@@ -2144,7 +2150,7 @@ install_native_pkg_config()
 		(cd ${pkg_config_bld_dir}
 		${pkg_config_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules \
 			GLIB_CFLAGS="`I glib.h` -I`print_library_dir libglib-2.0.so`/glib-2.0/include" \
-			GLIB_LIBS="`L glib-2.0` -lglib-2.0") || return
+			GLIB_LIBS="`l glib-2.0`") || return
 	make -C ${pkg_config_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${pkg_config_bld_dir} -j ${jobs} -k check || return
@@ -2428,7 +2434,7 @@ install_native_elfutils()
 		${elfutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			--enable-libdebuginfod --disable-debuginfod \
 			CFLAGS="${CFLAGS} `I zlib.h`" \
-			LDFLAGS="${LDFLAGS} `L z` -lbz2") || return
+			LDFLAGS="${LDFLAGS} `l bz2 z`") || return
 	make -C ${elfutils_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${elfutils_bld_dir} -j ${jobs} -k check || return
@@ -2525,14 +2531,14 @@ install_native_perf()
 		ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} \
 		EXTRA_CFLAGS="${CFLAGS} `I libelf.h` `L elf`" \
 		EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h` `L elf bpf`" \
-		LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
+		LDFLAGS="${LDFLAGS} `l babeltrace popt elf bz2 lzma z curl zstd`" \
 		NO_LIBPERL=1 NO_LIBPYTHON=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 		prefix=${prefix} all || return
 	make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 		ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} \
 		EXTRA_CFLAGS="${CFLAGS} `I libelf.h` `L elf`" \
 		EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h` `L elf bpf`" \
-		LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
+		LDFLAGS="${LDFLAGS} `l babeltrace popt elf bz2 lzma z curl zstd`" \
 		NO_LIBPERL=1 NO_LIBPYTHON=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 		prefix=${prefix} DESTDIR=${DESTDIR} install || return
 }
@@ -2668,7 +2674,7 @@ install_native_bcc()
 		-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 		-DCMAKE_C_FLAGS="${CFLAGS} `L elf z`" \
-		-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I FlexLexer.h` `L elf z tinfo` -ltinfo -lelf -lz" \
+		-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I FlexLexer.h` `l elf z tinfo`" \
 		-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
 		-DPYTHON_CMD=python3 \
 		|| return
@@ -2695,8 +2701,8 @@ install_native_bpftrace()
 		-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
 		-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-		-DCMAKE_C_FLAGS="${CFLAGS} `L elf z` -lelf -lz" \
-		-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bcc/compat/linux/bpf.h`/bcc/compat `I libelf.h bfd.h` `L elf z` -lelf -lz" \
+		-DCMAKE_C_FLAGS="${CFLAGS} `l elf z`" \
+		-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bcc/compat/linux/bpf.h`/bcc/compat `I libelf.h bfd.h` `l elf z`" \
 		-DLIBBFD_INCLUDE_DIRS=`print_header_dir bfd.h` \
 		-DLIBBFD_LIBRARIES=`print_library_path libbfd.so` \
 		-DLIBOPCODES_INCLUDE_DIRS=`print_header_dir dis-asm.h` \
@@ -3872,7 +3878,7 @@ install_native_ctags()
 	[ -f ${ctags_bld_dir}/Makefile ] ||
 		(cd ${ctags_bld_dir}
 		${ctags_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules \
-			LDFLAGS="${LDFLAGS} `L iconv` -liconv") || return
+			LDFLAGS="${LDFLAGS} `l iconv`") || return
 	make -C ${ctags_bld_dir} -j ${jobs} || return
 	make -C ${ctags_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
@@ -4006,8 +4012,8 @@ install_native_the_silver_searcher()
 		update_pkg_config_path
 		${the_silver_searcher_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			LDFLAGS="${LDFLAGS} `L z`" LIBS=-lz \
-			PCRE_CFLAGS=`I pcre.h` PCRE_LIBS="`L pcre` -lpcre" \
-			LZMA_CFLAGS=`I lzma.h` LZMA_LIBS="`L lzma` -llzma") || return
+			PCRE_CFLAGS=`I pcre.h` PCRE_LIBS="`l pcre`" \
+			LZMA_CFLAGS=`I lzma.h` LZMA_LIBS="`l lzma`") || return
 	make -C ${the_silver_searcher_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${the_silver_searcher_bld_dir} -j ${jobs} -k check || return
@@ -5768,9 +5774,9 @@ install_native_guile()
 		(cd ${guile_bld_dir}
 		${guile_src_dir}/configure --prefix=${prefix} -build=${build} --host=${host} \
 			--disable-silent-rules --with-libunistring-prefix=`print_prefix unistr.h` \
-			LIBFFI_CFLAGS=`I ffi.h` LIBFFI_LIBS="`L ffi` -lffi" \
+			LIBFFI_CFLAGS=`I ffi.h` LIBFFI_LIBS="`l ffi`" \
 			BDW_GC_CFLAGS="`I gc/gc.h` -DHAVE_GC_SET_FINALIZER_NOTIFIER -DHAVE_GC_GET_HEAP_USAGE_SAFE -DHAVE_GC_GET_FREE_SPACE_DIVISOR -DHAVE_GC_SET_FINALIZE_ON_DEMAND" \
-			BDW_GC_LIBS="`L gc` -lgc") || return
+			BDW_GC_LIBS="`l gc`") || return
 	make -C ${guile_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${guile_bld_dir} -j ${jobs} -k check || return
