@@ -540,7 +540,7 @@ L()
 {
 	for l in "$@"; do
 		echo ${l} | grep -qe '/' && d=`dirname ${l}` || d=
-		f=`basename ${l}`
+		f=lib`basename ${l}`.so
 		print_library_dir ${f} ${d} || return
 	done | sed -e 's/^/-L/' | squash_options || return
 }
@@ -795,7 +795,7 @@ build()
 			--with-zlib=`print_prefix zlib.h` \
 			--with-zstd=`print_prefix zstd.h` \
 			--with-ssl=`print_prefix ssl.h openssl` \
-			LDFLAGS="${LDFLAGS} `L libzstd.so`" \
+			LDFLAGS="${LDFLAGS} `L zstd`" \
 			LIBS='-lzstd') || return
 		make -C ${curl_bld_dir} -j ${jobs} || return
 		make -C ${curl_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
@@ -816,7 +816,7 @@ build()
 			${elfutils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--enable-libdebuginfod --disable-debuginfod \
 				CFLAGS="${CFLAGS} `I zlib.h zstd.h`" \
-				LDFLAGS="${LDFLAGS} `L libz.so libcurl.so`" \
+				LDFLAGS="${LDFLAGS} `L z curl`" \
 				LIBS="${LIBS} -lz -lbz2 -llzma -lcurl -lzstd" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir libcurl.pc` \
@@ -849,7 +849,7 @@ EOF
 				--with-system-zlib --with-debuginfod \
 				CFLAGS="${CFLAGS} `I zlib.h elfutils/debuginfod.h`" \
 				CXXFLAGS="${CXXFLAGS} `I zlib.h`" \
-				LDFLAGS="${LDFLAGS} `L libz.so libdebuginfod.so`" \
+				LDFLAGS="${LDFLAGS} `L z debuginfod`" \
 				LIBS='-lcurl -lzstd' \
 				host_configargs="`cat host_configargs`") || return
 		make -C ${binutils_bld_dir} -j 1 || return
@@ -919,7 +919,7 @@ EOF
 			(cd ${isl_bld_dir}
 			${isl_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--with-gmp-prefix=`print_prefix gmp.h` \
-				LDFLAGS="${LDFLAGS} `L libz.so libgmp.so`" LIBS=-lgmp) || return
+				LDFLAGS="${LDFLAGS} `L z gmp`" LIBS=-lgmp) || return
 		make -C ${isl_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${isl_bld_dir} -j ${jobs} -k check || return
@@ -958,7 +958,7 @@ EOF
 			CPPFLAGS="${CPPFLAGS} -DLIBICONV_PLUG" \
 			CPPFLAGS_FOR_TARGET="${CPPFLAGS} -DLIBICONV_PLUG" \
 			CFLAGS_FOR_TARGET="${CFLAGS} -Wno-error" \
-			LDFLAGS="${LDFLAGS} `L libz.so`" || return
+			LDFLAGS="${LDFLAGS} `L z`" || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${gcc_bld_dir} -j ${jobs} -k check || return
 		make -C ${gcc_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
@@ -1129,7 +1129,7 @@ EOF
 				--with-doc-strings --with-pymalloc \
 				LDSHARED= \
 				CFLAGS="${CFLAGS} -I`{ print_header_dir curses.h ncursesw | sed -e 's/include$/&\/ncursesw/'; print_header_dir curses.h;} | head -n 1` `I expat.h`" \
-				LDFLAGS="${LDFLAGS} `L libexpat.so`" \
+				LDFLAGS="${LDFLAGS} `L expat`" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir libffi.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
@@ -1197,7 +1197,7 @@ EOF
 				--enable-pcre16 --enable-pcre32 --enable-jit --enable-utf --enable-unicode-properties \
 				--enable-newline-is-any --enable-pcregrep-libz --enable-pcregrep-libbz2 \
 				CPPFLAGS="${CPPFLAGS} `I zlib.h`" \
-				LDFLAGS="${LDFLAGS} `L libz.so`") || return
+				LDFLAGS="${LDFLAGS} `L z`") || return
 		make -C ${pcre_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${pcre_bld_dir} -j ${jobs} -k check || return
@@ -1214,7 +1214,7 @@ EOF
 				--enable-pcre2-16 --enable-pcre2-32 --enable-jit --enable-newline-is-any \
 				--enable-pcre2grep-libz --enable-pcre2grep-libbz2 \
 				CPPFLAGS="${CPPFLAGS} `I bzlib.h`" \
-				LDFLAGS="${LDFLAGS} `L libbz2.so`") || return
+				LDFLAGS="${LDFLAGS} `L bz2`") || return
 		make -C ${pcre2_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${pcre2_bld_dir} -j ${jobs} -k check || return
@@ -1229,7 +1229,7 @@ EOF
 			${util_linux_src_dir}/configure --prefix=${prefix} --host=${host} --build=${build} --disable-silent-rules \
 				--enable-write --disable-use-tty-group --with-bashcompletiondir=${prefix}/share/bash-completion \
 				CFLAGS="${CFLAGS} `I zlib.h Python.h`" \
-				LDFLAGS="`L libtinfo.so`" \
+				LDFLAGS="`L tinfo`" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=) || return
 		make -C ${util_linux_bld_dir} -j ${jobs} || return
@@ -1268,9 +1268,9 @@ EOF
 			${glib_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-static \
 				--disable-silent-rules --disable-libmount --disable-dtrace --enable-systemtap \
 				CPPFLAGS="${CPPFLAGS} `I zlib.h`" \
-				LIBFFI_CFLAGS=`I ffi.h` LIBFFI_LIBS="`L libffi.so` -lffi" \
-				PCRE_CFLAGS=`I pcre.h` PCRE_LIBS="`L libpcre.so` -lpcre" \
-				LIBS="`L libffi.so libpcre.so` -lffi -lpcre -lz" \
+				LIBFFI_CFLAGS=`I ffi.h` LIBFFI_LIBS="`L ffi` -lffi" \
+				PCRE_CFLAGS=`I pcre.h` PCRE_LIBS="`L pcre` -lpcre" \
+				LIBS="`L ffi pcre` -lffi -lpcre -lz" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir libffi.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
@@ -1305,7 +1305,7 @@ EOF
 			(cd ${babeltrace_bld_dir}
 			${babeltrace_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				CPPFLAGS="${CPPFLAGS} `I popt.h`" \
-				LDFLAGS="${LDFLAGS} `L libz.so libpopt.so libzstd.so`" \
+				LDFLAGS="${LDFLAGS} `L z popt zstd`" \
 				LIBS="${LIBS} -lpcre -lz -lbz2 -llzma -lzstd" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir glib-2.0.pc` \
@@ -1344,7 +1344,7 @@ EOF
 --disable-rpath
 CFLAGS='${CFLAGS} `I zlib.h curses.h Python.h`'
 CPPFLAGS='${CPPFLAGS} `I zlib.h Python.h`'
-LDFLAGS='-L`print_prefix Python.h`/lib `L libpopt.so`'
+LDFLAGS='-L`print_prefix Python.h`/lib `L popt`'
 LIBS='${LIBS} -lpopt -luuid -lgmodule-2.0 -lglib-2.0 -lpcre -ldw -lelf -lz -lbz2 -llzma -lcurl -lzstd'
 PKG_CONFIG_PATH=
 PKG_CONFIG_LIBDIR=`print_library_dir source-highlight.pc`
@@ -1359,7 +1359,7 @@ EOF
 				--with-python=python3 --without-guile \
 				--with-lzma=yes --with-liblzma-prefix=`print_prefix lzma.h` \
 				--with-babeltrace=yes --with-libbabeltrace-prefix=`print_prefix babeltrace.h babeltrace` \
-				LDFLAGS="${LDFLAGS} `L libz.so libncurses.so libpopt.so`" \
+				LDFLAGS="${LDFLAGS} `L z ncurses popt`" \
 				host_configargs="`cat host_configargs`") || return
 		make -C ${gdb_bld_dir} -j ${jobs} V=1 || return
 		[ "${enable_check}" != yes ] ||
@@ -1392,7 +1392,7 @@ EOF
 			(cd ${systemtap_bld_dir}
 			${systemtap_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				CPPFLAGS="${CPPFLAGS} `I elfutils/libdw.h`" \
-				LDFLAGS="${LDFLAGS} `L libdw.so libpython$(print_target_python_version).so` -lpython$(print_target_python_version)" \
+				LDFLAGS="${LDFLAGS} `L dw python$(print_target_python_version)` -lpython$(print_target_python_version)" \
 				LIBS="${LIBS} -lz -lbz2 -llzma -lzstd" \
 				) || return
 		sed -i -e '/^\<LDFLAGS\>/{
@@ -1433,15 +1433,15 @@ EOF
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} \
-			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
-			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
+			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h` `L elf bpf babeltrace popt curl zstd`" \
+			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h` `L elf bpf babeltrace popt curl zstd`" \
 			LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 			prefix=${prefix} all || return
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} \
-			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
-			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h` `L libelf.so libbpf.so libbabeltrace.so libpopt.so libcurl.so libzstd.so`" \
+			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h` `L elf bpf babeltrace popt curl zstd`" \
+			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h` `L elf bpf babeltrace popt curl zstd`" \
 			LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 			prefix=${prefix} DESTDIR=${DESTDIR} install || return
@@ -1573,8 +1573,8 @@ EOF
 			-DCMAKE_C_COMPILER=${bcc_bld_dir}/${host:+${host}-}gcc \
 			-DCMAKE_CXX_COMPILER=${bcc_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-			-DCMAKE_C_FLAGS="${CFLAGS} `L libelf.so libz.so`" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I FlexLexer.h` `L libelf.so libz.so libtinfo.so` -ltinfo -lelf -lz" \
+			-DCMAKE_C_FLAGS="${CFLAGS} `L elf z`" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I FlexLexer.h` `L elf z tinfo` -ltinfo -lelf -lz" \
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
 			-DPYTHON_CMD=python3 \
 			|| return
@@ -1602,8 +1602,8 @@ EOF
 			-DCMAKE_C_COMPILER=${bpftrace_bld_dir}/${host:+${host}-}gcc \
 			-DCMAKE_CXX_COMPILER=${bpftrace_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-			-DCMAKE_C_FLAGS="${CFLAGS} `L libelf.so libz.so` -lelf -lz" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bcc/compat/linux/bpf.h`/bcc/compat `I libelf.h bfd.h` `L libelf.so libz.so` -lelf -lz -ltinfo" \
+			-DCMAKE_C_FLAGS="${CFLAGS} `L elf z` -lelf -lz" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bcc/compat/linux/bpf.h`/bcc/compat `I libelf.h bfd.h` `L elf z` -lelf -lz -ltinfo" \
 			-DLIBBCC_INCLUDE_DIRS=`print_header_dir bcc_version.h bcc` \
 			-DLIBBCC_LIBRARIES=`print_library_path libbcc.so` \
 			-DLIBBFD_INCLUDE_DIRS=`print_header_dir bfd.h` \
@@ -1639,7 +1639,7 @@ EOF
 				--with-system-libpcap \
 				ac_cv_path_PCAP_CONFIG=: \
 				CPPFLAGS="${CPPFLAGS} `I pcap.h`" \
-				LDFLAGS="${LDFLAGS} `L libpcap.so`" \
+				LDFLAGS="${LDFLAGS} `L pcap`" \
 				LIBS="${LIBS} -lpcap" \
 				) || return
 		make -C ${tcpdump_bld_dir} -j ${jobs} || return
@@ -1660,7 +1660,7 @@ EOF
 			(cd ${procps_bld_dir}
 			./configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				CFLAGS="${CFLAGS} `I ncurses.h`" \
-				LDFLAGS="${LDFLAGS} `L libncurses.so`" \
+				LDFLAGS="${LDFLAGS} `L ncurses`" \
 				ac_cv_func_realloc_0_nonnull=yes \
 				ac_cv_func_malloc_0_nonnull=yes \
 				) || return
@@ -1697,7 +1697,7 @@ EOF
 			(cd ${inetutils_bld_dir}
 			${inetutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			CFLAGS="${CFLAGS} `I curses.h` -DPATH_PROCNET_DEV=\\\"/proc/net/dev\\\"" \
-			LDFLAGS="${LDFLAGS} `L libtinfo.so` -ltinfo" \
+			LDFLAGS="${LDFLAGS} `L tinfo` -ltinfo" \
 			) || return
 		make -C ${inetutils_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
@@ -2031,7 +2031,7 @@ EOF
 			${rsync_src_dir}/configure --prefix=${prefix} --host=${host} --without-included-zlib \
 				--disable-simd --disable-xxhash --disable-lz4 \
 				CPPFLAGS="${CPPFLAGS} `I zlib.h popt.h`" \
-				LDFLAGS="${LDFLAGS} `L libz.so libpopt.so`" \
+				LDFLAGS="${LDFLAGS} `L z popt`" \
 				) || return
 		make -C ${rsync_bld_dir} -j ${jobs} || return
 		make -C ${rsync_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
@@ -2085,7 +2085,7 @@ EOF
 			make -C ${u_boot_bld_dir} -j ${jobs} V=1 sandbox_defconfig || return
 		sed -i -e 's/^	\$(Q)\$(MAKE) \$(build)=\$@$/& HOSTCC=$(MYCC)/' ${u_boot_bld_dir}/Makefile || return
 		sed -i -e '/^\<hostc_flags\>/s! \$(__hostc_flags)$!& '`idirafter openssl/evp.h`'!' ${u_boot_bld_dir}/scripts/Makefile.host || return
-		make -C ${u_boot_bld_dir} -j ${jobs} V=1 NO_SDL=1 MYCC=${u_boot_bld_dir}/${host:+${host}-}gcc HOSTLDFLAGS=`L libssl.so` tools || return
+		make -C ${u_boot_bld_dir} -j ${jobs} V=1 NO_SDL=1 MYCC=${u_boot_bld_dir}/${host:+${host}-}gcc HOSTLDFLAGS=`L ssl` tools || return
 		mkdir -pv ${DESTDIR}${prefix}/bin || return
 		find ${u_boot_bld_dir}/tools -maxdepth 1 -type f -perm /100 -exec install -vt ${DESTDIR}${prefix}/bin {} + || return
 		[ -z "${strip}" ] && return
@@ -2164,7 +2164,7 @@ EOF
 			(cd ${screen_bld_dir}
 			${screen_src_dir}/configure --prefix=${prefix} --host=${host} \
 				--enable-telnet --enable-colors256 --enable-rxvt_osc \
-				LDFLAGS="${LDFLAGS} `L libtinfo.so`") || return
+				LDFLAGS="${LDFLAGS} `L tinfo`") || return
 		make -C ${screen_bld_dir} -j ${jobs} || return
 		mkdir -pv ${DESTDIR}${prefix}/share/screen/utf8encodings || return
 		make -C ${screen_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
@@ -2202,7 +2202,7 @@ EOF
 			(cd ${tmux_bld_dir}
 			${tmux_src_dir}/configure --prefix=${prefix} --host=${host} \
 				CPPFLAGS="${CPPFLAGS} `I curses.h event.h`" \
-				LDFLAGS="${LDFLAGS} `L libtinfo.so libevent.so`" \
+				LDFLAGS="${LDFLAGS} `L tinfo event`" \
 				LIBTINFO_LIBS=-ltinfo) || return
 		make -C ${tmux_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
@@ -2222,7 +2222,7 @@ EOF
 			./configure --prefix=${prefix} --build=${build} --host=${host} \
 				--enable-multibyte --enable-unicode9 --with-tcsetpgrp \
 				CPPFLAGS="${CPPFLAGS} `I curses.h`" \
-				LDFLAGS="${LDFLAGS} `L libcurses.so`") || return
+				LDFLAGS="${LDFLAGS} `L curses`") || return
 		make -C ${zsh_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${zsh_bld_dir} -j ${jobs} -k check || return
@@ -2272,7 +2272,7 @@ EOF
 				--enable-python3interp=dynamic --with-python3-command=python3 \
 				--enable-cscope --enable-terminal --enable-autoservername --enable-multibyte \
 				--with-tlib=tinfo \
-				LDFLAGS="${LDFLAGS} `L libtinfo.so`" \
+				LDFLAGS="${LDFLAGS} `L tinfo`" \
 				STRIP=${host:+${host}-}strip \
 			) || return
 		patch -N -p0 -d ${vim_bld_dir} <<'EOF' || [ $? = 1 ] || return
@@ -2339,7 +2339,7 @@ EOF
 			}' ${emacs_src_dir}/lib-src/Makefile.in || return
 		[ -f ${emacs_bld_dir}/Makefile ] ||
 			(cd ${emacs_bld_dir}
-			CPPFLAGS="${CPPFLAGS} `I ncurses.h`" LDFLAGS="${LDFLAGS} `L libncurses.so` -lz -llzma" \
+			CPPFLAGS="${CPPFLAGS} `I ncurses.h`" LDFLAGS="${LDFLAGS} `L ncurses` -lz -llzma" \
 				${emacs_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--without-sound --with-dumping=none --without-dbus --without-gnutls --with-modules --without-x \
 				PKG_CONFIG_PATH= \
@@ -2360,7 +2360,7 @@ EOF
 			(cd ${nano_bld_dir}
 			${nano_src_dir}/configure --prefix=${prefix} --host=${host} --disable-rpath \
 				CFLAGS="${CFLAGS} `I ncurses.h`" \
-				LDFLAGS="${LDFLAGS} `L libncurses.so`" \
+				LDFLAGS="${LDFLAGS} `L ncurses`" \
 			) || return
 		make -C ${nano_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
@@ -2494,7 +2494,7 @@ EOF
 			(cd ${file_bld_dir}
 			${file_src_dir}/configure --prefix=${prefix} --host=${host} --enable-static --disable-silent-rules \
 				CFLAGS="${CFLAGS} `I zlib.h bzlib.h lzma.h`" \
-				LDFLAGS="${LDFLAGS} `L libz.so libbz2.so liblzma.so`" \
+				LDFLAGS="${LDFLAGS} `L z bz2 lzma`" \
 				) || return
 		make -C ${file_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
@@ -2535,7 +2535,7 @@ EOF
 				--system-curl --system-expat --system-zlib --system-bzip2 --system-liblzma -- \
 				-DCMAKE_C_COMPILER=${cmake_bld_dir}/${host:+${host}-}gcc \
 				-DCMAKE_CXX_COMPILER=${cmake_bld_dir}/${host:+${host}-}g++ \
-				-DCMAKE_CXX_FLAGS="${CXXFLAGS} `L libssl.so` -lssl -lcrypto -lzstd" \
+				-DCMAKE_CXX_FLAGS="${CXXFLAGS} `L ssl` -lssl -lcrypto -lzstd" \
 				-DCURL_INCLUDE_DIR=`print_header_dir curl.h curl` \
 				-DCURL_LIBRARY_RELEASE=`print_library_path libcurl.so` \
 				-DEXPAT_INCLUDE_DIR=`print_header_dir expat.h` \
@@ -2590,7 +2590,7 @@ EOF
 			${libxml2_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 				--without-python --disable-silent-rules \
 				CFLAGS="${CFLAGS} `I zlib.h`" \
-				LDFLAGS="${LDFLAGS} `L libz.so`" \
+				LDFLAGS="${LDFLAGS} `L z`" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir zlib.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
@@ -2695,7 +2695,7 @@ EOF
 			-S ${libcxxabi_src_dir} -B ${libcxxabi_bld_dir} \
 			-DCMAKE_C_COMPILER=${libcxxabi_bld_dir}/${host:+${host}-}gcc \
 			-DCMAKE_CXX_COMPILER=${libcxxabi_bld_dir}/${host:+${host}-}g++ \
-			-DCMAKE_CXX_FLAGS=`L libunwind.so` \
+			-DCMAKE_CXX_FLAGS=`L unwind` \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_INSTALL_RPATH=';' \
 			-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
@@ -2723,7 +2723,7 @@ EOF
 			-S ${libcxx_src_dir} -B ${libcxx_bld_dir} \
 			-DCMAKE_C_COMPILER=${libcxx_bld_dir}/${host:+${host}-}gcc \
 			-DCMAKE_CXX_COMPILER=${libcxx_bld_dir}/${host:+${host}-}g++ \
-			-DCMAKE_CXX_FLAGS=`L libunwind.so` \
+			-DCMAKE_CXX_FLAGS=`L unwind` \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_INSTALL_RPATH=';' -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${libcxx_src_dir}/../libcxxabi/include \
 			-DLIBCXXABI_USE_LLVM_UNWINDER=ON || return
@@ -2771,7 +2771,7 @@ EOF
 			-S ${clang_src_dir} -B ${clang_bld_dir} \
 			-DCMAKE_C_COMPILER=${clang_bld_dir}/${host:+${host}-}gcc \
 			-DCMAKE_CXX_COMPILER=${clang_bld_dir}/${host:+${host}-}g++ \
-			-DCMAKE_CXX_FLAGS="`I llvm/Config/llvm-config.h` `L libLLVM.so`" \
+			-DCMAKE_CXX_FLAGS="`I llvm/Config/llvm-config.h` `L LLVM`" \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_CROSSCOMPILING=True \
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
@@ -2827,7 +2827,7 @@ EOF
 			(cd ${libedit_bld_dir}
 			${libedit_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 				--disable-silent-rules CFLAGS="${CFLAGS} `I curses.h`" \
-				LDFLAGS="${LDFLAGS} `L libncurses.so`") || return
+				LDFLAGS="${LDFLAGS} `L ncurses`") || return
 		make -C ${libedit_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${libedit_bld_dir} -j ${jobs} -k check || return
@@ -2842,8 +2842,8 @@ EOF
 		[ -f ${swig_bld_dir}/Makefile ] ||
 			(cd ${swig_bld_dir}
 			${swig_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-cpp11-testing \
-				CFLAGS="${CFLAGS} `I pcre.h` `L libz.so`" \
-				LDFLAGS="${LDFLAGS} `L libpcre.so`") || return
+				CFLAGS="${CFLAGS} `I pcre.h` `L z`" \
+				LDFLAGS="${LDFLAGS} `L pcre`") || return
 		make -C ${swig_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${swig_bld_dir} -j ${jobs} -k check || return
@@ -2876,7 +2876,7 @@ EOF
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
 			-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON \
 			-DCMAKE_C_FLAGS="${CFLAGS} `I clang/Basic/Version.h`" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I curses.h histedit.h` `L libcurses.so libedit.so` -ledit -lpython$(print_version Python 2) -lncurses -lpanel -lxml2 -llzma -lz" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I curses.h histedit.h` `L curses edit` -ledit -lpython$(print_version Python 2) -lncurses -lpanel -lxml2 -llzma -lz" \
 			`[ ${build} != ${host} ] && { echo -n -DLLVM_TABLEGEN=; which llvm-tblgen;}` \
 			`[ ${build} != ${host} ] && { echo -n -DLLDB_TABLEGEN_EXE=; which lldb-tblgen;}` \
 			-DLibEdit_INCLUDE_DIRS=`print_header_dir histedit.h` \
