@@ -120,8 +120,8 @@ build()
 
 create_my_module()
 {
-	mkdir -p${verbose:+v} mymodules || return
-	cat << EOF > mymodules/Makefile || return
+	mkdir -p${verbose:+v} ${O}/module || return
+	cat << EOF > ${O}/module/Makefile || return
 ifneq (\$(KERNELRELEASE),)
 	obj-m := mymodule.o
 else
@@ -130,7 +130,7 @@ default:
 	\$(MAKE) ${make_opts} -C \$(KERNELDIR) M=\`pwd\` modules
 endif
 EOF
-	cat << EOF > mymodules/mymodule.c || return
+	cat << EOF > ${O}/module/mymodule.c || return
 #include <linux/init.h>
 #include <linux/module.h>
 
@@ -150,7 +150,7 @@ static void __exit mymodule_exit(void)
 module_init(mymodule_init);
 module_exit(mymodule_exit);
 EOF
-	make -C mymodules KERNELDIR=`pwd` || return
+	make -C ${O}/module KERNELDIR=`pwd` || return
 }
 
 main()
