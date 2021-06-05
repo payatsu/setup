@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:experimental
 
-ARG baseimage=ubuntu:18.04
+ARG baseimage=ubuntu:20.04
 ARG prefix=/usr/local
 ARG prefixbase=local
 ARG njobs=4
@@ -28,7 +28,7 @@ apt-get install -y --no-install-recommends \
 wget xz-utils ccache \
 make gcc g++ \
 texinfo \
-pkg-config \
+pkg-config dpkg-dev \
 ca-certificates \
 xmlto \
 libxt-dev \

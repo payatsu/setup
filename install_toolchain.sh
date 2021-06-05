@@ -72,7 +72,7 @@
 : ${mpfr_ver:=4.1.0}
 : ${mpc_ver:=1.2.1}
 : ${isl_ver:=0.20}
-: ${gcc_ver:=10.3.0}
+: ${gcc_ver:=11.1.0}
 : ${readline_ver:=8.1}
 : ${ncurses_ver:=6.2}
 : ${popt_ver:=1.18}
@@ -2941,7 +2941,6 @@ install_native_readline()
 install_native_ncurses()
 {
 	[ -f ${prefix}/include/ncurses/curses.h -a "${force_install}" != yes ] && return
-	which libtool > /dev/null || install_native_libtool || return
 	fetch ncurses || return
 	unpack ncurses || return
 
@@ -2978,16 +2977,16 @@ EOF
 	[ -f ${ncurses_bld_dir}/Makefile ] ||
 		(cd ${ncurses_bld_dir}
 		${ncurses_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-			--with-libtool --with-shared --with-cxx-shared --with-termlib \
-			--enable-termcap --enable-colors) || return
+			--with-shared --with-cxx-shared --with-termlib \
+			--with-versioned-syms --enable-termcap --enable-colors) || return
 	make -C ${ncurses_bld_dir} -j 1 || return # XXX work around for parallel make
 	make -C ${ncurses_bld_dir} -j ${jobs} install || return
 	make -C ${ncurses_bld_dir} -j ${jobs} distclean || return
 	[ -f ${ncurses_bld_dir}/Makefile ] ||
 		(cd ${ncurses_bld_dir}
 		${ncurses_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-			--with-libtool --with-shared --with-cxx-shared --with-termlib \
-			--enable-termcap --enable-widec --enable-colors --with-pthread --enable-reentrant) || return
+			--with-shared --with-cxx-shared --with-termlib \
+			--with-versioned-syms --enable-termcap --enable-widec --enable-colors --with-pthread --enable-reentrant) || return
 	make -C ${ncurses_bld_dir} -j 1 || return # XXX work around for parallel make
 	make -C ${ncurses_bld_dir} -j ${jobs} install || return
 	update_path || return
@@ -2997,9 +2996,7 @@ EOF
 	rm -fv ${DESTDIR}${prefix}/lib/libncurses.so || return
 	echo 'INPUT(libncurses.so.'`print_version ncurses 1`' -ltinfo)' > ${DESTDIR}${prefix}/lib/libncurses.so || return
 	echo 'INPUT(libncurses.so.'`print_version ncurses 1`' -ltinfo)' > ${DESTDIR}${prefix}/lib/libcurses.so || return
-	for ext in a la; do
-		ln -fsv libncurses.${ext} ${DESTDIR}${prefix}/lib/libcurses.${ext} || return
-	done
+	ln -fsv libncurses.a ${DESTDIR}${prefix}/lib/libcurses.a || return
 	[ -z "${strip}" ] && return
 	for b in clear infocmp tabs tic toe tput tset; do
 		[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue

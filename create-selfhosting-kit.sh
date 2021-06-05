@@ -116,7 +116,7 @@ EOF
 : ${mpfr_ver:=4.1.0}
 : ${mpc_ver:=1.2.1}
 : ${isl_ver:=0.20}
-: ${gcc_ver:=10.3.0}
+: ${gcc_ver:=11.1.0}
 : ${make_ver:=4.3}
 : ${ccache_ver:=4.3}
 
@@ -1015,7 +1015,7 @@ EOF
 				}" ${ncurses_src_dir}/progs/Makefile.in || return
 			${ncurses_src_dir}/configure --prefix=${prefix} --host=${host} \
 				--with-shared --with-cxx-shared --with-termlib \
-				--enable-termcap --enable-colors) || return
+				--with-versioned-syms --enable-termcap --enable-colors) || return
 		make -C ${ncurses_bld_dir} -j 1 DESTDIR=${DESTDIR} || return # XXX work around for parallel make
 		make -C ${ncurses_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		make -C ${ncurses_bld_dir} -j ${jobs} distclean || return
@@ -1023,7 +1023,7 @@ EOF
 			(cd ${ncurses_bld_dir}
 			${ncurses_src_dir}/configure --prefix=${prefix} --host=${host} \
 				--with-shared --with-cxx-shared --with-termlib \
-				--enable-termcap --enable-widec --enable-colors) || return
+				--with-versioned-syms --enable-termcap --enable-widec --enable-colors) || return
 		make -C ${ncurses_bld_dir} -j 1 DESTDIR=${DESTDIR} || return # XXX work around for parallel make
 		make -C ${ncurses_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		for h in `find ${DESTDIR}${prefix}/include/ncurses \( -type f -o -type l \) -name '*.h'`; do
@@ -1032,9 +1032,7 @@ EOF
 		rm -fv ${DESTDIR}${prefix}/lib/libncurses.so || return
 		echo 'INPUT(libncurses.so.'`print_version ncurses 1`' -ltinfo)' > ${DESTDIR}${prefix}/lib/libncurses.so || return
 		echo 'INPUT(libncurses.so.'`print_version ncurses 1`' -ltinfo)' > ${DESTDIR}${prefix}/lib/libcurses.so || return
-		for ext in a la; do
-			ln -fsv libncurses.${ext} ${DESTDIR}${prefix}/lib/libcurses.${ext} || return
-		done
+		ln -fsv libncurses.a ${DESTDIR}${prefix}/lib/libcurses.a || return
 		[ -z "${strip}" ] && return
 		for b in clear infocmp tabs tic toe tput tset; do
 			[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue
