@@ -545,6 +545,12 @@ L()
 	done | sed -e 's/^/-L/' | squash_options || return
 }
 
+l()
+{
+	L "$@" || return
+	echo "$@" | sed -e 's/^/ /;s/ / -l/g' || return
+}
+
 print_header_path()
 {
 	for d in ${DESTDIR}${prefix}/include \
@@ -816,8 +822,8 @@ build()
 			${elfutils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--enable-libdebuginfod --disable-debuginfod \
 				CFLAGS="${CFLAGS} `I zlib.h zstd.h`" \
-				LDFLAGS="${LDFLAGS} `L z curl`" \
-				LIBS="${LIBS} -lz -lbz2 -llzma -lcurl -lzstd" \
+				LDFLAGS="${LDFLAGS}" \
+				LIBS="${LIBS} `l z bz2 lzma curl zstd`" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir libcurl.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
@@ -841,7 +847,7 @@ build()
 			[ -f host_configargs ] || cat << EOF | tr '\n' ' ' > host_configargs || return
 --disable-rpath
 --enable-install-libiberty
-LIBS='-lcurl -lzstd'
+LIBS='`l curl zstd`'
 EOF
 			${binutils_src_dir}/configure --prefix=${prefix} --host=${host} --target=${target} \
 				--enable-shared --enable-gold --enable-threads --enable-plugins \
@@ -850,7 +856,7 @@ EOF
 				CFLAGS="${CFLAGS} `I zlib.h elfutils/debuginfod.h`" \
 				CXXFLAGS="${CXXFLAGS} `I zlib.h`" \
 				LDFLAGS="${LDFLAGS} `L z debuginfod`" \
-				LIBS='-lcurl -lzstd' \
+				LIBS="`l curl zstd`" \
 				host_configargs="`cat host_configargs`") || return
 		make -C ${binutils_bld_dir} -j 1 || return
 		[ "${enable_check}" != yes ] ||
@@ -1268,9 +1274,9 @@ EOF
 			${glib_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-static \
 				--disable-silent-rules --disable-libmount --disable-dtrace --enable-systemtap \
 				CPPFLAGS="${CPPFLAGS} `I zlib.h`" \
-				LIBFFI_CFLAGS=`I ffi.h` LIBFFI_LIBS="`L ffi` -lffi" \
-				PCRE_CFLAGS=`I pcre.h` PCRE_LIBS="`L pcre` -lpcre" \
-				LIBS="`L ffi pcre` -lffi -lpcre -lz" \
+				LIBFFI_CFLAGS=`I ffi.h` LIBFFI_LIBS="`l ffi`" \
+				PCRE_CFLAGS=`I pcre.h` PCRE_LIBS="`l pcre`" \
+				LIBS="`l ffi pcre z`" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir libffi.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
@@ -1305,10 +1311,10 @@ EOF
 			(cd ${babeltrace_bld_dir}
 			${babeltrace_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				CPPFLAGS="${CPPFLAGS} `I popt.h`" \
-				LDFLAGS="${LDFLAGS} `L z popt zstd`" \
-				LIBS="${LIBS} -lpcre -lz -lbz2 -llzma -lzstd" \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_library_dir glib-2.0.pc` \
+				LDFLAGS="${LDFLAGS} `L popt`" \
+				LIBS="${LIBS} `l pcre z bz2 lzma zstd`" \
+				PKG_CONFIG_PATH=`print_library_dir glib-2.0.pc`:`print_library_dir libpcre.pc`  \
+				PKG_CONFIG_LIBDIR= \
 				PKG_CONFIG_SYSROOT_DIR=`print_pkg_config_sysroot glib-2.0.pc` \
 				ac_cv_func_malloc_0_nonnull=yes \
 				ac_cv_func_realloc_0_nonnull=yes \
@@ -1345,7 +1351,7 @@ EOF
 CFLAGS='${CFLAGS} `I zlib.h curses.h Python.h`'
 CPPFLAGS='${CPPFLAGS} `I zlib.h Python.h`'
 LDFLAGS='-L`print_prefix Python.h`/lib `L popt`'
-LIBS='${LIBS} -lpopt -luuid -lgmodule-2.0 -lglib-2.0 -lpcre -ldw -lelf -lz -lbz2 -llzma -lcurl -lzstd'
+LIBS='${LIBS} `l popt uuid gmodule-2.0 glib-2.0 pcre dw elf z bz2 lzma curl zstd`'
 PKG_CONFIG_PATH=
 PKG_CONFIG_LIBDIR=`print_library_dir source-highlight.pc`
 PKG_CONFIG_SYSROOT_DIR=${DESTDIR}
@@ -1388,12 +1394,15 @@ EOF
 		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
 		fetch ${1} || return
 		unpack ${1} || return
+		generate_python_config_dummy ${systemtap_bld_dir} || return
 		[ -f ${systemtap_bld_dir}/Makefile ] ||
 			(cd ${systemtap_bld_dir}
 			${systemtap_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				CPPFLAGS="${CPPFLAGS} `I elfutils/libdw.h`" \
-				LDFLAGS="${LDFLAGS} `L dw python$(print_target_python_version)` -lpython$(print_target_python_version)" \
-				LIBS="${LIBS} -lz -lbz2 -llzma -lzstd" \
+				--without-python2-probes \
+				CPPFLAGS="${CPPFLAGS} `I elfutils/libdw.h Python.h`" \
+				LDFLAGS="${LDFLAGS} `L dw` `l python$(print_target_python_version)$(print_target_python_abi)`" \
+				LIBS="${LIBS} `l z bz2 lzma zstd`" \
+				PYTHON_CONFIG=${systemtap_bld_dir}/python-config \
 				) || return
 		sed -i -e '/^\<LDFLAGS\>/{
 			s/\( -lc\)\?$/ -lc/
@@ -1433,16 +1442,16 @@ EOF
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} \
-			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h` `L elf bpf babeltrace popt curl zstd`" \
-			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h` `L elf bpf babeltrace popt curl zstd`" \
-			LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
+			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
+			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
+			LDFLAGS="${LDFLAGS} `l babeltrace popt elf bz2 lzma z curl zstd`" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 			prefix=${prefix} all || return
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} \
-			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h` `L elf bpf babeltrace popt curl zstd`" \
-			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h` `L elf bpf babeltrace popt curl zstd`" \
-			LDFLAGS="${LDFLAGS} -lbabeltrace -lpopt -lelf -lbz2 -llzma -lz -lcurl -lzstd" \
+			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
+			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
+			LDFLAGS="${LDFLAGS} `l babeltrace popt elf bz2 lzma z curl zstd`" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 			prefix=${prefix} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
@@ -1697,7 +1706,7 @@ EOF
 			(cd ${inetutils_bld_dir}
 			${inetutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			CFLAGS="${CFLAGS} `I curses.h` -DPATH_PROCNET_DEV=\\\"/proc/net/dev\\\"" \
-			LDFLAGS="${LDFLAGS} `L tinfo` -ltinfo" \
+			LDFLAGS="${LDFLAGS} `l tinfo`" \
 			) || return
 		make -C ${inetutils_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
@@ -2339,7 +2348,7 @@ EOF
 			}' ${emacs_src_dir}/lib-src/Makefile.in || return
 		[ -f ${emacs_bld_dir}/Makefile ] ||
 			(cd ${emacs_bld_dir}
-			CPPFLAGS="${CPPFLAGS} `I ncurses.h`" LDFLAGS="${LDFLAGS} `L ncurses` -lz -llzma" \
+			CPPFLAGS="${CPPFLAGS} `I ncurses.h`" LDFLAGS="${LDFLAGS} `L ncurses` `l z lzma`" \
 				${emacs_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--without-sound --with-dumping=none --without-dbus --without-gnutls --with-modules --without-x \
 				PKG_CONFIG_PATH= \
@@ -2535,7 +2544,7 @@ EOF
 				--system-curl --system-expat --system-zlib --system-bzip2 --system-liblzma -- \
 				-DCMAKE_C_COMPILER=${cmake_bld_dir}/${host:+${host}-}gcc \
 				-DCMAKE_CXX_COMPILER=${cmake_bld_dir}/${host:+${host}-}g++ \
-				-DCMAKE_CXX_FLAGS="${CXXFLAGS} `L ssl` -lssl -lcrypto -lzstd" \
+				-DCMAKE_CXX_FLAGS="${CXXFLAGS} `l ssl crypto zstd`" \
 				-DCURL_INCLUDE_DIR=`print_header_dir curl.h curl` \
 				-DCURL_LIBRARY_RELEASE=`print_library_path libcurl.so` \
 				-DEXPAT_INCLUDE_DIR=`print_header_dir expat.h` \
@@ -2804,7 +2813,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		ln -Tfsv ${libunwind_src_dir} ${llvm_src_dir}/../libunwind || return
-		generate_llvm_config_wrapper ${lld_bld_dir} || return
+		generate_llvm_config_dummy ${lld_bld_dir} || return
 		generate_gcc_wrapper ${lld_bld_dir} || return
 		generate_gxx_wrapper ${lld_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -2979,7 +2988,7 @@ generate_toolchain_wrapper()
 		} | tr '\n' ' '`" || return
 }
 
-generate_llvm_config_wrapper()
+generate_llvm_config_dummy()
 {
 	generate_command_wrapper ${1} llvm-config \
 		"\
@@ -2992,6 +3001,24 @@ while [ \$# -gt 0 ]; do
 	--obj-root)    echo `print_library_dir libLLVM.so`;;
 	--src-root)    echo ${llvm_src_dir};;
 	--system-libs) ;;
+	esac
+	shift
+done
+" || return
+}
+
+generate_python_config_dummy()
+{
+	generate_command_wrapper ${1} python-config \
+		"\
+while [ \$# -gt 0 ]; do
+	case \$1 in
+	--prefix)      echo ${prefix};;
+	--exec-prefix) echo ${prefix};;
+	--includes)    echo `I Python.h`;;
+	--libs)        echo -lpython$(print_target_python_version)$(print_target_python_abi) -lpthread -ldl -lutil -lm;;
+	--cflags)      echo `I Python.h`;;
+	--ldflags)     echo -lpython$(print_target_python_version)$(print_target_python_abi) -lpthread -ldl -lutil -lm;;
 	esac
 	shift
 done
