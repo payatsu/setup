@@ -1519,7 +1519,7 @@ EOF
 				--enable-cxx-exceptions --enable-debug-frame \
 				--enable-minidebuginfo --enable-zlibdebuginfo \
 				CFLAGS="${CFLAGS} `I lzma.h`" \
-				LDFLAGS="${LDFLAGS} -Wl,-rpath-link,${libunwindnongnu_bld_dir}/src/.libs" \
+				LDFLAGS="${LDFLAGS} `L lzma` -Wl,-rpath-link,${libunwindnongnu_bld_dir}/src/.libs" \
 				|| return
 			remove_rpath_option libunwindnongnu || return
 			) || return
@@ -1583,7 +1583,7 @@ EOF
 			-DCMAKE_CXX_COMPILER=${bcc_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_C_FLAGS="${CFLAGS} `L elf z`" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I FlexLexer.h` `L elf z tinfo` -ltinfo -lelf -lz" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I FlexLexer.h` `l elf z tinfo`" \
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
 			-DPYTHON_CMD=python3 \
 			|| return
@@ -1611,8 +1611,8 @@ EOF
 			-DCMAKE_C_COMPILER=${bpftrace_bld_dir}/${host:+${host}-}gcc \
 			-DCMAKE_CXX_COMPILER=${bpftrace_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-			-DCMAKE_C_FLAGS="${CFLAGS} `L elf z` -lelf -lz" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bcc/compat/linux/bpf.h`/bcc/compat `I libelf.h bfd.h` `L elf z` -lelf -lz -ltinfo" \
+			-DCMAKE_C_FLAGS="${CFLAGS} `l elf z`" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bcc/compat/linux/bpf.h`/bcc/compat `I libelf.h bfd.h` `l elf z tinfo`" \
 			-DLIBBCC_INCLUDE_DIRS=`print_header_dir bcc_version.h bcc` \
 			-DLIBBCC_LIBRARIES=`print_library_path libbcc.so` \
 			-DLIBBFD_INCLUDE_DIRS=`print_header_dir bfd.h` \
@@ -2885,7 +2885,7 @@ EOF
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
 			-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON \
 			-DCMAKE_C_FLAGS="${CFLAGS} `I clang/Basic/Version.h`" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I curses.h histedit.h` `L curses edit` -ledit -lpython$(print_version Python 2) -lncurses -lpanel -lxml2 -llzma -lz" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I curses.h histedit.h` `l edit python$(print_target_python_version)$(print_target_python_abi) ncurses panel xml2 lzma z`" \
 			`[ ${build} != ${host} ] && { echo -n -DLLVM_TABLEGEN=; which llvm-tblgen;}` \
 			`[ ${build} != ${host} ] && { echo -n -DLLDB_TABLEGEN_EXE=; which lldb-tblgen;}` \
 			-DLibEdit_INCLUDE_DIRS=`print_header_dir histedit.h` \
