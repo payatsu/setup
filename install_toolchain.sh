@@ -216,7 +216,7 @@
 : ${protobuf_ver:=3.14.0}
 : ${grpc_ver:=1.35.0}
 : ${libbacktrace_ver:=git}
-: ${poke_ver:=1.2}
+: ${poke_ver:=1.3}
 
 # TODO X11周りのインストールは未着手。
 : ${xtrans_ver:=1.3.5}
@@ -6327,6 +6327,7 @@ install_native_poke()
 	unpack poke || return
 	[ -f ${poke_bld_dir}/Makefile ] ||
 		(cd ${poke_bld_dir}
+		autoreconf -fiv ${poke_src_dir} || return # copy missing 'build-aux/compile', which is removed at v1.3
 		remove_rpath_option poke || return
 		${poke_src_dir}/configure --prefix=${prefix} --host=${host} --disable-rpath --disable-gui) || return
 	make -C ${poke_bld_dir} -j ${jobs} || return
