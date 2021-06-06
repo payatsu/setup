@@ -124,7 +124,7 @@ EOF
 : ${readline_ver:=8.1}
 : ${expat_ver:=2.4.1}
 : ${libffi_ver:=3.3}
-: ${Python_ver:=3.9.4}
+: ${Python_ver:=3.9.5}
 : ${boost_ver:=1_76_0}
 : ${source_highlight_ver:=3.1.9}
 : ${pcre_ver:=8.44}
