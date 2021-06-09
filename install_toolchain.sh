@@ -5327,6 +5327,7 @@ install_cross_gcc_without_headers()
 install_cross_linux_header()
 {
 	[ -d ${sysroot}/usr/include/linux -a "${force_install}" != yes ] && return
+	which rsync > /dev/null || install_native_rsync || return
 	which ${target}-gcc > /dev/null || install_cross_gcc_without_headers || return
 	fetch linux || return
 	unpack linux || return
