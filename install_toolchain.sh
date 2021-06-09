@@ -2494,12 +2494,17 @@ install_native_rsync()
 	[ -x ${prefix}/bin/rsync -a "${force_install}" != yes ] && return
 	print_header_path zlib.h > /dev/null || install_native_zlib || return
 	print_header_path popt.h > /dev/null || install_native_popt || return
+	print_header_path zstd.h > /dev/null || install_native_zstd || return
+	print_header_path lz4.h > /dev/null || install_native_lz4 || return
 	fetch rsync || return
 	unpack rsync || return
 	[ -f ${rsync_bld_dir}/Makefile ] ||
 		(cd ${rsync_bld_dir}
 		${rsync_src_dir}/configure --prefix=${prefix} --host=${host} --without-included-zlib \
-			--disable-xxhash) || return
+			--disable-xxhash \
+			CFLAGS="${CFLAGS} `I zstd.h lz4.h`" \
+			CPPFLAGS="${CFLAGS} `I openssl/ssl.h`" \
+			LDFLAGS="${LDFLAGS} `L ssl zstd lz4`") || return
 	make -C ${rsync_bld_dir} -j ${jobs} || return
 	make -C ${rsync_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
