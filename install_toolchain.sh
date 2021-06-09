@@ -2434,7 +2434,9 @@ install_native_elfutils()
 		${elfutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			--enable-libdebuginfod --disable-debuginfod \
 			CFLAGS="${CFLAGS} `I zlib.h`" \
-			LDFLAGS="${LDFLAGS} `l bz2 z`") || return
+			LDFLAGS="${LDFLAGS} `l bz2 z`" \
+			libcurl_CFLAGS=`I curl/curl.h` \
+			libcurl_LIBS="`l curl`") || return
 	make -C ${elfutils_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${elfutils_bld_dir} -j ${jobs} -k check || return
