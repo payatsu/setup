@@ -4628,7 +4628,7 @@ install_native_curl()
 		--enable-ldap --enable-ldaps --enable-rtsp --enable-proxy \
 		--enable-dict --enable-telnet --enable-tftp --enable-pop3 \
 		--enable-imap --enable-smb --enable-smtp --enable-gopher \
-		--enable-manual --enable-ipv6 --with-ssl) || return
+		--enable-manual --enable-ipv6 --with-ssl=`print_prefix ssl.h openssl`) || return
 	make -C ${curl_bld_dir} -j ${jobs} || return
 	make -C ${curl_bld_dir} -j ${jobs} install || return
 	update_path || return
