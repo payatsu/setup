@@ -5312,7 +5312,8 @@ install_cross_gcc_without_headers()
 			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` --without-headers \
 			--disable-shared --disable-threads --disable-libssp --disable-libgomp \
 			--disable-libmudflap --disable-libquadmath --disable-libatomic \
-			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv) || return
+			--disable-libsanitizer --disable-nls --disable-libstdc++-v3 --disable-libvtv \
+			CFLAGS="${CFLAGS} `I zlib.h`" LDFLAGS="${LDFLAGS} `L z`") || return
 	make -C ${gcc_bld_dir_crs_1st} -j ${jobs} all-gcc || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_1st} -j ${jobs} -k check-gcc || return
@@ -5459,7 +5460,8 @@ install_cross_functional_gcc()
 			--with-isl=`print_prefix version.h isl` --with-system-zlib --enable-languages=${languages} --disable-multilib \
 			--enable-linker-build-id --enable-libstdcxx-debug \
 			--program-prefix=${target}- --program-suffix=-${gcc_base_ver} --enable-version-specific-runtime-libs \
-			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` --with-sysroot=${sysroot}) || return
+			--with-as=`which ${target}-as` --with-ld=`which ${target}-ld` --with-sysroot=${sysroot} \
+			CFLAGS="${CFLAGS} `I zlib.h`" LDFLAGS="${LDFLAGS} `L z`") || return
 	make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} LIBS=-lgcc_s || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${gcc_bld_dir_crs_2nd} -j ${jobs} -k check || return
