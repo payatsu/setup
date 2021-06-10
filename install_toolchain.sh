@@ -1840,7 +1840,7 @@ print_header_path()
 		`LANG=C ${CC:-${host:+${host}-}gcc} -x c -E -v /dev/null -o /dev/null 2>&1 |
 			sed -e '/^#include /,/^End of search list.$/p;d' | xargs realpath -eq`; do
 		[ -d ${dir}${2:+/${2}} ] || continue
-		candidates=`find ${dir}${2:+/${2}} \( -type f -o -type l \) -name ${1} | filter_shortest_hierarchy`
+		candidates=`find -H ${dir}${2:+/${2}} \( -type f -o -type l \) -name ${1} | filter_shortest_hierarchy`
 		[ -n "${candidates}" ] && echo "${candidates}" && return
 	done
 	return 1
