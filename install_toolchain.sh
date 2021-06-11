@@ -21,7 +21,7 @@
 : ${zip_ver:=3.0}
 : ${unzip_ver:=6.0}
 : ${lzip_ver:=1.22}
-: ${lunzip_ver:=1.11}
+: ${lunzip_ver:=1.12}
 : ${lzo_ver:=2.10}
 : ${lzop_ver:=1.04}
 : ${lz4_ver:=1.9.3}
@@ -31,7 +31,7 @@
 : ${help2man_ver:=1.47.16}
 : ${texinfo_ver:=6.7}
 : ${coreutils_ver:=8.32}
-: ${busybox_ver:=1.33.0}
+: ${busybox_ver:=1.33.1}
 : ${bison_ver:=3.7.6}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.19}
@@ -54,7 +54,7 @@
 : ${perf_ver:=${linux_ver}}
 : ${libcap_ver:=2.49}
 : ${numactl_ver:=2.0.14}
-: ${OpenCSD_ver:=1.0.0}
+: ${OpenCSD_ver:=1.1.0}
 : ${libunwindnongnu_ver:=1.5.0}
 : ${libpfm_ver:=4.11.0}
 : ${libbpf_ver:=0.3}

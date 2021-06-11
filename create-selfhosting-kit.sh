@@ -140,7 +140,7 @@ EOF
 : ${perf_ver:=${linux_ver}}
 : ${libcap_ver:=2.49}
 : ${numactl_ver:=2.0.14}
-: ${OpenCSD_ver:=1.0.0}
+: ${OpenCSD_ver:=1.1.0}
 : ${libunwindnongnu_ver:=1.5.0}
 : ${libpfm_ver:=4.11.0}
 : ${libbpf_ver:=0.3}
