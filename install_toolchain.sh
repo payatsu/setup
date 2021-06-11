@@ -132,8 +132,8 @@
 : ${bash_ver:=5.0}
 : ${inetutils_ver:=2.0}
 : ${iproute2_ver:=5.9.0}
-: ${util_linux_ver:=2.36.1}
-: ${e2fsprogs_ver:=1.45.6}
+: ${util_linux_ver:=2.37}
+: ${e2fsprogs_ver:=1.46.2}
 : ${squashfs_ver:=4.4}
 : ${openssl_ver:=1.1.1k}
 : ${openssh_ver:=8.5p1}

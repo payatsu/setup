@@ -129,7 +129,7 @@ EOF
 : ${source_highlight_ver:=3.1.9}
 : ${pcre_ver:=8.44}
 : ${pcre2_ver:=10.37}
-: ${util_linux_ver:=2.36.1}
+: ${util_linux_ver:=2.37}
 : ${popt_ver:=1.18}
 : ${glib_ver:=2.59.0}
 : ${babeltrace_ver:=1.5.8}
@@ -177,7 +177,7 @@ EOF
 : ${u_boot_ver:=2020.10}
 : ${tar_ver:=1.34}
 : ${cpio_ver:=2.13}
-: ${e2fsprogs_ver:=1.45.6}
+: ${e2fsprogs_ver:=1.46.2}
 : ${v4l_utils_ver:=1.20.0}
 
 : ${screen_ver:=4.8.0}
