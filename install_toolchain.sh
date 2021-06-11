@@ -32,7 +32,7 @@
 : ${texinfo_ver:=6.7}
 : ${coreutils_ver:=8.32}
 : ${busybox_ver:=1.33.0}
-: ${bison_ver:=3.7.5}
+: ${bison_ver:=3.7.6}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.19}
 : ${autoconf_ver:=2.71}
@@ -98,7 +98,7 @@
 : ${neovim_ver:=0.4.4}
 : ${nano_ver:=5.7}
 : ${grep_ver:=3.6}
-: ${global_ver:=6.6.5}
+: ${global_ver:=6.6.6}
 : ${pcre_ver:=8.44}
 : ${pcre2_ver:=10.36}
 : ${the_silver_searcher_ver:=2.2.0}
@@ -116,7 +116,7 @@
 : ${procps_ver:=3.3.15}
 : ${lsof_ver:=4.94.0}
 : ${sysstat_ver:=12.5.2}
-: ${less_ver:=563}
+: ${less_ver:=581.2}
 : ${groff_ver:=1.22.4}
 : ${gdbm_ver:=1.19}
 : ${libpipeline_ver:=1.5.2}
@@ -206,7 +206,7 @@
 : ${jq_ver:=1.6}
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
-: ${nmap_ver:=7.80}
+: ${nmap_ver:=7.90}
 : ${npth_ver:=1.6}
 : ${libgpg_error_ver:=1.41}
 : ${libgcrypt_ver:=1.9.2}
