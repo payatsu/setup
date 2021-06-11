@@ -46,7 +46,7 @@
 : ${make_ver:=4.3}
 : ${binutils_ver:=2.35.2}
 : ${elfutils_ver:=0.183}
-: ${systemtap_ver:=4.4}
+: ${systemtap_ver:=4.5}
 : ${ed_ver:=1.17}
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.2.3}
@@ -2448,12 +2448,16 @@ install_native_systemtap()
 {
 	[ -x ${prefix}/bin/stap -a "${force_install}" != yes ] && return
 	which cpio > /dev/null || install_native_cpio || return
+	print_header_path sqlite3.h > /dev/null || install_native_sqlite || return
 	print_header_path libelf.h > /dev/null || install_native_elfutils || return
 	fetch systemtap || return
 	unpack systemtap || return
 	[ -f ${systemtap_bld_dir}/Makefile ] ||
 		(cd ${systemtap_bld_dir}
-		${systemtap_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		${systemtap_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+			CPPFLAGS="${CPPFLAGS} `I sqlite3.h`" \
+			LDFLAGS="${LDFLAGS} `L sqlite3`" \
+			) || return
 	make -C ${systemtap_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${systemtap_bld_dir} -j ${jobs} -k check || return
