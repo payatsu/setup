@@ -166,7 +166,7 @@ EOF
 : ${sed_ver:=4.8}
 : ${gawk_ver:=5.1.0}
 : ${gettext_ver:=0.21}
-: ${git_ver:=2.31.1}
+: ${git_ver:=2.32.0}
 : ${openssh_ver:=8.5p1}
 : ${lzip_ver:=1.22}
 : ${ed_ver:=1.17}
@@ -201,9 +201,9 @@ EOF
 : ${file_ver:=5.39}
 
 : ${go_ver:=1.16.5}
-: ${cmake_ver:=3.19.4}
+: ${cmake_ver:=3.20.3}
 : ${ninja_ver:=1.10.2}
-: ${meson_ver:=0.56.2}
+: ${meson_ver:=0.58.1}
 : ${libxml2_ver:=2.9.10}
 : ${libedit_ver:=20191231-3.1}
 : ${swig_ver:=4.0.2}

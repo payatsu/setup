@@ -145,7 +145,7 @@
 : ${libxslt_ver:=1.1.34}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.21}
-: ${git_ver:=2.31.1}
+: ${git_ver:=2.32.0}
 : ${git_manpages_ver:=${git_ver}}
 : ${git_lfs_ver:=2.13.3}
 : ${mercurial_ver:=5.4}
@@ -155,8 +155,8 @@
 : ${utf8proc_ver:=2.4.0}
 : ${subversion_ver:=1.14.1}
 : ${ninja_ver:=1.10.2}
-: ${meson_ver:=0.56.2}
-: ${cmake_ver:=3.19.4}
+: ${meson_ver:=0.58.1}
+: ${cmake_ver:=3.20.3}
 : ${bazel_ver:=2.2.0}
 : ${Bear_ver:=2.4.3}
 : ${ccache_ver:=4.3}
