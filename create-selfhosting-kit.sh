@@ -128,13 +128,13 @@ EOF
 : ${boost_ver:=1_76_0}
 : ${source_highlight_ver:=3.1.9}
 : ${pcre_ver:=8.44}
-: ${pcre2_ver:=10.36}
+: ${pcre2_ver:=10.37}
 : ${util_linux_ver:=2.36.1}
 : ${popt_ver:=1.18}
 : ${glib_ver:=2.59.0}
 : ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=10.2}
-: ${strace_ver:=5.10}
+: ${strace_ver:=5.12}
 : ${systemtap_ver:=4.5}
 : ${linux_ver:=5.12.9}
 : ${perf_ver:=${linux_ver}}
@@ -148,8 +148,8 @@ EOF
 : ${bpftrace_ver:=0.12.1}
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
-: ${procps_ver:=3.3.15}
-: ${sysstat_ver:=12.5.2}
+: ${procps_ver:=3.3.16}
+: ${sysstat_ver:=12.5.4}
 : ${inetutils_ver:=2.0}
 : ${iproute2_ver:=5.9.0}
 : ${nmap_ver:=7.90}

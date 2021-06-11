@@ -79,7 +79,7 @@
 : ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=10.2}
 : ${lcov_ver:=1.14}
-: ${strace_ver:=5.10}
+: ${strace_ver:=5.12}
 : ${ltrace_ver:=0.7.3}
 : ${valgrind_ver:=3.16.1}
 : ${zlib_ver:=1.2.11}
@@ -100,7 +100,7 @@
 : ${grep_ver:=3.6}
 : ${global_ver:=6.6.6}
 : ${pcre_ver:=8.44}
-: ${pcre2_ver:=10.36}
+: ${pcre2_ver:=10.37}
 : ${the_silver_searcher_ver:=2.2.0}
 : ${the_platinum_searcher_ver:=2.2.0}
 : ${highway_ver:=1.1.0}
@@ -113,9 +113,9 @@
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
 : ${findutils_ver:=4.8.0}
-: ${procps_ver:=3.3.15}
+: ${procps_ver:=3.3.16}
 : ${lsof_ver:=4.94.0}
-: ${sysstat_ver:=12.5.2}
+: ${sysstat_ver:=12.5.4}
 : ${less_ver:=581.2}
 : ${groff_ver:=1.22.4}
 : ${gdbm_ver:=1.19}
