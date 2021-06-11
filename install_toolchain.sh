@@ -208,10 +208,10 @@
 : ${tcpdump_ver:=4.9.3}
 : ${nmap_ver:=7.90}
 : ${npth_ver:=1.6}
-: ${libgpg_error_ver:=1.41}
-: ${libgcrypt_ver:=1.9.2}
-: ${libksba_ver:=1.5.0}
-: ${libassuan_ver:=2.5.4}
+: ${libgpg_error_ver:=1.42}
+: ${libgcrypt_ver:=1.9.3}
+: ${libksba_ver:=1.6.0}
+: ${libassuan_ver:=2.5.5}
 : ${gnupg_ver:=2.2.27}
 : ${protobuf_ver:=3.14.0}
 : ${grpc_ver:=1.35.0}
