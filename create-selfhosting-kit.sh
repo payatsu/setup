@@ -152,14 +152,14 @@ EOF
 : ${sysstat_ver:=12.5.2}
 : ${inetutils_ver:=2.0}
 : ${iproute2_ver:=5.9.0}
-: ${nmap_ver:=7.80}
+: ${nmap_ver:=7.90}
 : ${i2c_tools_ver:=4.2}
 
 : ${m4_ver:=1.4.19}
 : ${perl_ver:=5.32.1}
 : ${autoconf_ver:=2.71}
 : ${automake_ver:=1.16.3}
-: ${bison_ver:=3.7.5}
+: ${bison_ver:=3.7.6}
 : ${flex_ver:=2.6.4}
 : ${libtool_ver:=2.4.6}
 : ${pkg_config_ver:=0.29.2}
@@ -193,7 +193,7 @@ EOF
 : ${grep_ver:=3.6}
 : ${diffutils_ver:=3.7}
 : ${patch_ver:=2.7.6}
-: ${global_ver:=6.6.5}
+: ${global_ver:=6.6.6}
 : ${findutils_ver:=4.8.0}
 
 : ${help2man_ver:=1.47.16}
