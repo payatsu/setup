@@ -4141,7 +4141,9 @@ install_native_fontconfig()
 	[ -f ${fontconfig_bld_dir}/Makefile ] ||
 		(cd ${fontconfig_bld_dir}
 		${fontconfig_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-			--enable-static --disable-rpath) || return
+			--enable-static --disable-rpath \
+			FREETYPE_CFLAGS="${CFLAGS} `I freetype2/freetype/freetype.h` `I freetype2/freetype/freetype.h`/freetype2" \
+			FREETYPE_LIBS="${LIBS} `l freetype`") || return
 	make -C ${fontconfig_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${fontconfig_bld_dir} -j ${jobs} -k check || return
