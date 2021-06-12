@@ -1965,8 +1965,8 @@ EOF
 		unpack ${1} || return
 		[ -f ${openssh_bld_dir}/Makefile ] ||
 			(cd ${openssh_bld_dir}
-			${openssh_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --with-zlib=`print_prefix zlib.h` \
-				--with-privsep-path=${prefix}/var/empty) || return
+			${openssh_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+				--with-zlib=`print_prefix zlib.h` --with-privsep-path=${prefix}/var/empty) || return
 		make -C ${openssh_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${openssh_bld_dir} -j ${jobs} -k tests || return
