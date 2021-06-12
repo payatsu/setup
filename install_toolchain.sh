@@ -1943,7 +1943,8 @@ install_native_cpio()
 	unpack cpio || return
 	[ -f ${cpio_bld_dir}/Makefile ] ||
 		(cd ${cpio_bld_dir}
-		${cpio_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		${cpio_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+			CFLAGS="${CFLAGS} -fcommon") || return
 	make -C ${cpio_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${cpio_bld_dir} -j ${jobs} -k check || return
