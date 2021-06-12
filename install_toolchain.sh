@@ -4023,6 +4023,7 @@ install_native_the_silver_searcher()
 		(cd ${the_silver_searcher_bld_dir}
 		update_pkg_config_path
 		${the_silver_searcher_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+			CFLAGS="${CFLAGS} -fcommon" \
 			LDFLAGS="${LDFLAGS} `L z`" LIBS=-lz \
 			PCRE_CFLAGS=`I pcre.h` PCRE_LIBS="`l pcre`" \
 			LZMA_CFLAGS=`I lzma.h` LZMA_LIBS="`l lzma`") || return
