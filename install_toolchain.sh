@@ -2456,6 +2456,7 @@ install_native_systemtap()
 	[ -f ${systemtap_bld_dir}/Makefile ] ||
 		(cd ${systemtap_bld_dir}
 		${systemtap_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+			--without-python2-probes \
 			CPPFLAGS="${CPPFLAGS} `I sqlite3.h`" \
 			LDFLAGS="${LDFLAGS} `L sqlite3`" \
 			) || return
