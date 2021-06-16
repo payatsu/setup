@@ -4,7 +4,6 @@
 # [TODO] pigz
 # [TODO] ulibc
 # [TODO] qemu-kvm
-# [TODO] distcc
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] libav<-
 # [TODO] webkitgtk<-libsoup
@@ -160,6 +159,7 @@
 : ${bazel_ver:=2.2.0}
 : ${Bear_ver:=2.4.3}
 : ${ccache_ver:=4.3}
+: ${distcc_ver:=3.4}
 : ${libedit_ver:=20191231-3.1}
 : ${swig_ver:=4.0.2}
 : ${llvm_ver:=12.0.0}
@@ -616,6 +616,8 @@ help()
 		Specify the version of Build EAR you want, currently '${Bear_ver}'.
 	ccache_ver
 		Specify the version of ccache you want, currently '${ccache_ver}'.
+	distcc_ver
+		Specify the version of distcc you want, currently, '${distcc_ver}'
 	libedit_ver
 		Specify the version of libedit you want, currently '${libedit_ver}'.
 	swig_ver
@@ -1078,6 +1080,9 @@ fetch()
 		ccache)
 			wget -O ${ccache_src_dir}.tar.xz \
 				https://github.com/ccache/ccache/releases/download/v${ccache_ver}/${ccache_name}.tar.xz || return;;
+		distcc)
+			wget -O ${distcc_src_dir}.tar.gz \
+				https://github.com/distcc/distcc/releases/download/v${distcc_ver}/${distcc_name}.tar.gz || return;;
 		libedit)
 			wget -O ${libedit_src_dir}.tar.gz \
 				http://thrysoee.dk/editline/${libedit_name}.tar.gz || return;;
@@ -5018,6 +5023,24 @@ install_native_ccache()
 	cmake --install ${ccache_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 	update_ccache_wrapper -f || return
+}
+
+install_native_distcc()
+{
+	[ -x ${prefix}/bin/distcc -a "${force_install}" != yes ] && return
+	fetch distcc || return
+	unpack distcc || return
+	[ -f ${distcc_bld_dir}/Makefile ] ||
+		(cd ${distcc_bld_dir}
+		${distcc_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${distcc_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${distcc_bld_dir} -j ${jobs} -k check || return
+	make -C ${distcc_bld_dir} -j ${jobs} install || return
+	[ -z "${strip}" ] && return
+	for b in distcc  distccd  distccmon-text  lsdistcc; do
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
+	done
 }
 
 install_native_libedit()
