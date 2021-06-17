@@ -126,7 +126,7 @@
 : ${libevent_ver:=2.1.11-stable}
 : ${tmux_ver:=3.2}
 : ${expect_ver:=5.45.4}
-: ${dejagnu_ver:=1.6.2}
+: ${dejagnu_ver:=1.6.3}
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.0}
 : ${inetutils_ver:=2.0}
