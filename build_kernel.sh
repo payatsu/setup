@@ -147,6 +147,7 @@ static int __init mymodule_init(void)
 static void __exit mymodule_exit(void)
 {
 }
+
 module_init(mymodule_init);
 module_exit(mymodule_exit);
 EOF
