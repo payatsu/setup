@@ -28,7 +28,7 @@
 : ${wget_ver:=1.21.1}
 : ${pkg_config_ver:=0.29.2}
 : ${help2man_ver:=1.47.16}
-: ${texinfo_ver:=6.7}
+: ${texinfo_ver:=6.8}
 : ${coreutils_ver:=8.32}
 : ${busybox_ver:=1.33.1}
 : ${bison_ver:=3.7.6}
