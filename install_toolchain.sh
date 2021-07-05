@@ -94,7 +94,7 @@
 : ${vim_ver:=8.2.2886}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
-: ${neovim_ver:=0.4.4}
+: ${neovim_ver:=0.5.0}
 : ${nano_ver:=5.8}
 : ${grep_ver:=3.6}
 : ${global_ver:=6.6.6}
@@ -212,7 +212,7 @@
 : ${libgcrypt_ver:=1.9.3}
 : ${libksba_ver:=1.6.0}
 : ${libassuan_ver:=2.5.5}
-: ${gnupg_ver:=2.2.27}
+: ${gnupg_ver:=2.2.29}
 : ${protobuf_ver:=3.14.0}
 : ${grpc_ver:=1.35.0}
 : ${libbacktrace_ver:=git}
