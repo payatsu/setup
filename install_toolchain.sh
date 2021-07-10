@@ -129,6 +129,7 @@
 : ${dejagnu_ver:=1.6.3}
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.0}
+: ${tcsh_ver:=TCSH6_22_04}
 : ${inetutils_ver:=2.0}
 : ${iproute2_ver:=5.9.0}
 : ${util_linux_ver:=2.37}
@@ -558,6 +559,8 @@ help()
 		Specify the version of Zsh you want, currently '${zsh_ver}'.
 	bash_ver
 		Specify the version of Bash you want, currently '${bash_ver}'.
+	tcsh_ver
+		Specify the version of tcsh you want, currently '${tcsh_ver}'.
 	inetutils_ver
 		Specify the version of inetutils you want, currently '${inetutils_ver}'.
 	iproute2_ver
@@ -1000,6 +1003,9 @@ fetch()
 		zsh)
 			wget --trust-server-names -O ${zsh_src_dir}.tar.xz \
 				https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return;;
+		tcsh)
+			wget -O ${tcsh_src_dir}.tar.gz \
+				https://github.com/tcsh-org/tcsh/archive/refs/tags/${tcsh_ver}.tar.gz || return;;
 		iproute2)
 			wget -O ${iproute2_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/utils/net/iproute2/${iproute2_name}.tar.xz || return;;
@@ -4492,6 +4498,22 @@ install_native_bash()
 	make -C ${bash_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 	update_path || return
 	ln -fsv bash ${DESTDIR}${prefix}/bin/sh || return
+}
+
+install_native_tcsh()
+{
+	[ -x ${prefix}/bin/tcsh -a "${force_install}" != yes ] && return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
+	fetch tcsh || return
+	unpack tcsh || return
+	[ -f ${tcsh_bld_dir}/Makefile ] ||
+		(cd ${tcsh_bld_dir}
+		${tcsh_src_dir}/configure --prefix=${prefix} --host=${host} --disable-rpath) || return
+	make -C ${tcsh_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${tcsh_bld_dir} -j ${jobs} -k check || return
+	make -C ${tcsh_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+	ln -fsv tcsh ${DESTDIR}/${prefix}/bin/csh || return
 }
 
 install_native_inetutils()

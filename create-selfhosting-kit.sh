@@ -185,6 +185,7 @@ EOF
 : ${tmux_ver:=3.2}
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.0}
+: ${tcsh_ver:=TCSH6_22_04}
 : ${vim_ver:=8.2.2886}
 : ${vimdoc_ja_ver:=master}
 : ${emacs_ver:=27.2}
@@ -447,6 +448,9 @@ fetch()
 	zsh)
 		wget --trust-server-names -O ${zsh_src_dir}.tar.xz \
 			https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return;;
+	tcsh)
+		wget -O ${tcsh_src_dir}.tar.gz \
+			https://github.com/tcsh-org/tcsh/archive/refs/tags/${tcsh_ver}.tar.gz || return;;
 	vim)
 		wget -O ${vim_src_dir}.tar.gz \
 			http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return;;
@@ -2252,6 +2256,20 @@ EOF
 			make -C ${bash_bld_dir} -j ${jobs} -k check || return
 		make -C ${bash_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		ln -fsv bash ${DESTDIR}${prefix}/bin/sh || return
+		;;
+	tcsh)
+		[ -x ${DESTDIR}${prefix}/bin/tcsh -a "${force_install}" != yes ] && return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${tcsh_bld_dir}/Makefile ] ||
+			(cd ${tcsh_bld_dir}
+			${tcsh_src_dir}/configure --prefix=${prefix} --host=${host} --disable-rpath) || return
+		make -C ${tcsh_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${tcsh_bld_dir} -j ${jobs} -k check || return
+		make -C ${tcsh_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		ln -fsv tcsh ${DESTDIR}/${prefix}/bin/csh || return
 		;;
 	vim)
 		[ -x ${DESTDIR}${prefix}/bin/vim -a "${force_install}" != yes ] && return
