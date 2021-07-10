@@ -163,7 +163,7 @@
 : ${distcc_ver:=3.4}
 : ${libedit_ver:=20191231-3.1}
 : ${swig_ver:=4.0.2}
-: ${llvm_ver:=12.0.0}
+: ${llvm_ver:=12.0.1}
 : ${compiler_rt_ver:=${llvm_ver}}
 : ${libunwind_ver:=${llvm_ver}}
 : ${libcxxabi_ver:=${llvm_ver}}
