@@ -56,9 +56,9 @@
 : ${OpenCSD_ver:=1.1.0}
 : ${libunwindnongnu_ver:=1.5.0}
 : ${libpfm_ver:=4.11.0}
-: ${libbpf_ver:=0.3}
-: ${bcc_ver:=0.18.0}
-: ${bpftrace_ver:=0.12.1}
+: ${libbpf_ver:=0.4.0}
+: ${bcc_ver:=0.20.0}
+: ${bpftrace_ver:=0.13.0}
 : ${kmod_ver:=28}
 : ${dtc_ver:=1.6.0}
 : ${u_boot_ver:=2021.01}
@@ -2727,6 +2727,7 @@ install_native_bpftrace()
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 		-DCMAKE_C_FLAGS="${CFLAGS} `l elf z`" \
 		-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bcc/compat/linux/bpf.h`/bcc/compat `I libelf.h bfd.h` `l elf z`" \
+		-DBUILD_TESTING=OFF \
 		-DLIBBFD_INCLUDE_DIRS=`print_header_dir bfd.h` \
 		-DLIBBFD_LIBRARIES=`print_library_path libbfd.so` \
 		-DLIBOPCODES_INCLUDE_DIRS=`print_header_dir dis-asm.h` \

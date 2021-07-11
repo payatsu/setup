@@ -143,9 +143,9 @@ EOF
 : ${OpenCSD_ver:=1.1.0}
 : ${libunwindnongnu_ver:=1.5.0}
 : ${libpfm_ver:=4.11.0}
-: ${libbpf_ver:=0.3}
-: ${bcc_ver:=0.18.0}
-: ${bpftrace_ver:=0.12.1}
+: ${libbpf_ver:=0.4.0}
+: ${bcc_ver:=0.20.0}
+: ${bpftrace_ver:=0.13.0}
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
 : ${procps_ver:=3.3.16}
@@ -1617,6 +1617,7 @@ EOF
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_C_FLAGS="${CFLAGS} `l elf z`" \
 			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bcc/compat/linux/bpf.h`/bcc/compat `I libelf.h bfd.h` `l elf z tinfo`" \
+			-DBUILD_TESTING=OFF \
 			-DLIBBCC_INCLUDE_DIRS=`print_header_dir bcc_version.h bcc` \
 			-DLIBBCC_LIBRARIES=`print_library_path libbcc.so` \
 			-DLIBBFD_INCLUDE_DIRS=`print_header_dir bfd.h` \
