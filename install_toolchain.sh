@@ -2961,6 +2961,7 @@ install_native_gcc()
 install_native_readline()
 {
 	[ -f ${prefix}/include/readline/readline.h -a "${force_install}" != yes ] && return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
 	fetch readline || return
 	unpack readline || return
 	[ -f ${readline_bld_dir}/Makefile ] ||
@@ -2968,7 +2969,7 @@ install_native_readline()
 		sed -i -e 's/\(-Wl,\)\?-rpath[, ]\$(libdir) \?//' ${readline_src_dir}/support/shobj-conf || return
 		${readline_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			--enable-multibyte --with-curses) || return
-	make -C ${readline_bld_dir} -j ${jobs} || return
+	make -C ${readline_bld_dir} -j ${jobs} SHLIB_LIBS="`l tinfo`" || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${readline_bld_dir} -j ${jobs} -k check || return
 	make -C ${readline_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
