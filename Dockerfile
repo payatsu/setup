@@ -15,7 +15,7 @@ pcre swig libffi Python2 Python libxml2 libiconv glib pkg-config \
 cmake ninja meson Bear ccache llvm lld compiler-rt libunwindnongnu libcxxabi libcxx clang libedit lldb \
 ruby expat tcl tk libunistring libatomic_ops gc guile boost source-highlight util-linux popt babeltrace gdb make \
 autogen gettext pcre2 libxslt asciidoc git openssh go rustc zsh bash screen libevent tmux lua vim neovim global \
-the_silver_searcher the_platinum_searcher gperf highway fzf tiff freetype fontconfig ghostscript graphviz jdk plantuml \
+the_silver_searcher the_platinum_searcher gperf highway ripgrep fzf tiff freetype fontconfig ghostscript graphviz jdk plantuml \
 jq protobuf rsync dtc strace sqlite systemtap libbpf bcc bpftrace libcap numactl OpenCSD libpfm perf \
 libpcap tcpdump iproute2 nmap libpng jpeg giflib emacs diffutils poke"
 
