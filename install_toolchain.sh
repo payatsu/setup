@@ -77,6 +77,7 @@
 : ${popt_ver:=1.18}
 : ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=10.2}
+: ${crash_ver:=7.3.0}
 : ${lcov_ver:=1.14}
 : ${strace_ver:=5.12}
 : ${ltrace_ver:=0.7.3}
@@ -458,6 +459,8 @@ help()
 		Specify the version of babeltrace you want, currently '${babeltrace_ver}'.
 	gdb_ver
 		Specify the version of GNU Debugger you want, currently '${gdb_ver}'.
+	crash_ver
+		Specify the version of crash you want, currently '${crash_ver}'.
 	lcov_ver
 		Specify the version of lcov you want, currently '${lcov_ver}'.
 	strace_ver
@@ -894,6 +897,9 @@ fetch()
 		babeltrace)
 			wget -O ${babeltrace_src_dir}.tar.gz \
 				https://github.com/efficios/babeltrace/archive/v${babeltrace_ver}.tar.gz || return;;
+		crash)
+			wget -O ${crash_src_dir}.tar.gz \
+				https://github.com/crash-utility/crash/archive/${crash_ver}.tar.gz || return;;
 		lcov)
 			wget -O ${lcov_src_dir}.tar.gz \
 				https://github.com/linux-test-project/lcov/archive/v${lcov_ver}.tar.gz || return;;
@@ -3123,6 +3129,21 @@ install_native_gdb()
 	make -C ${gdb_bld_dir} -j ${jobs} install || return
 	make -C ${gdb_bld_dir}/gdb -j ${jobs} install${strip:+-${strip}} || return
 	make -C ${gdb_bld_dir}/sim -j ${jobs} install || return
+}
+
+install_native_crash()
+{
+	[ -x ${prefix}/bin/crash -a "${force_install}" != yes ] && return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path curses.h > /dev/null || install_native_ncurses || return
+	fetch crash || return
+	unpack crash || return
+	[ -f ${crash_bld_dir}/Makefile ] || cp -Tvr ${crash_src_dir} ${crash_bld_dir} || return
+	sed -i -e "s!^\(INSTALLDIR=\${DESTDIR}\)/usr/bin\$!\1${prefix}/bin!" ${crash_bld_dir}/Makefile || return
+	make -C ${crash_bld_dir} -j ${jobs} target=`echo ${target} | cut -d- -f1` || return
+	make -C ${crash_bld_dir} -j ${jobs} install || return
+	[ -z "${strip}" ] && return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/crash || return
 }
 
 install_native_lcov()

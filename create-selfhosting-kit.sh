@@ -134,6 +134,7 @@ EOF
 : ${glib_ver:=2.59.0}
 : ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=10.2}
+: ${crash_ver:=7.3.0}
 : ${strace_ver:=5.12}
 : ${systemtap_ver:=4.5}
 : ${linux_ver:=5.12.9}
@@ -349,6 +350,9 @@ fetch()
 	babeltrace)
 		wget -O ${babeltrace_src_dir}.tar.gz \
 			https://github.com/efficios/babeltrace/archive/v${babeltrace_ver}.tar.gz || return;;
+	crash)
+		wget -O ${crash_src_dir}.tar.gz \
+			https://github.com/crash-utility/crash/archive/${crash_ver}.tar.gz || return;;
 	strace)
 		wget -O ${strace_src_dir}.tar.xz \
 			https://strace.io/files/${strace_ver}/${strace_name}.tar.xz || return;;
@@ -1378,6 +1382,24 @@ EOF
 		make -C ${gdb_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		make -C ${gdb_bld_dir}/gdb -j ${jobs} DESTDIR=${DESTDIR} STRIPPROG=${host:+${host}-}strip install${strip:+-${strip}} || return
 		make -C ${gdb_bld_dir}/sim -j ${jobs} DESTDIR=${DESTDIR} install || return
+		;;
+	crash)
+		[ -x ${DESTDIR}${prefix}/bin/crash -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${crash_bld_dir}/Makefile ] || cp -Tvr ${crash_src_dir} ${crash_bld_dir} || return
+		sed -i -e "s!^\(INSTALLDIR=\${DESTDIR}\)/usr/bin\$!\1${prefix}/bin!" ${crash_bld_dir}/Makefile || return
+		sed -i -e 's/^	@${CC}\( ${CONF_FLAGS}\)/	${BUILDCC}\1/' ${crash_bld_dir}/Makefile || return
+		sed -i -e "/^CRASH_CFLAGS=/s!\${CFLAGS}\$!& `I zlib.h`!" ${crash_bld_dir}/Makefile || return
+		grep -qe --host ${crash_bld_dir}/configure.c ||
+			sed -i -e '/^#define /s!GDB_CONF_FLAGS=!&--host='${host}' CFLAGS=\\"'"`I curses.h`"' '"`l curses`"'\\" !' \
+				${crash_bld_dir}/configure.c || return
+		make -C ${crash_bld_dir} -j ${jobs} BUILDCC=cc target=`echo ${target} | cut -d- -f1` || return
+		make -C ${crash_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/crash || return
 		;;
 	strace)
 		[ -x ${DESTDIR}${prefix}/bin/strace -a "${force_install}" != yes ] && return
