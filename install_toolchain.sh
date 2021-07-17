@@ -2792,6 +2792,7 @@ install_native_libtracefs()
 	print_header_path kbuffer.h traceevent > /dev/null || install_native_libtraceevent || return
 	fetch libtracefs || return
 	unpack libtracefs || return
+	sed -i -e 's/,-rpath=\$\$ORIGIN//' ${libtracefs_src_dir}/scripts/utils.mk || return
 	make -C ${libtracefs_src_dir} -j ${jobs} V=1 O=${libtracefs_bld_dir} \
 		CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
 		pkgconfig_dir=${prefix}/lib/pkgconfig etcdir=${prefix}/etc || return
@@ -2810,6 +2811,7 @@ install_native_trace_cmd()
 	print_header_path tracefs.h tracefs > /dev/null || install_native_libtracefs || return
 	fetch trace-cmd || return
 	unpack trace-cmd || return
+	sed -i -e 's/ -Wl,-rpath=\$(libdir)//' ${trace_cmd_src_dir}/scripts/utils.mk || return
 	make -C ${trace_cmd_src_dir} -j ${jobs} V=1 O=${trace_cmd_bld_dir} \
 		CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
 		etcdir=${prefix}/etc || return

@@ -1684,6 +1684,7 @@ EOF
 		print_header_path kbuffer.h traceevent > /dev/null || ${0} ${cmdopt} libtraceevent || return
 		fetch ${1} || return
 		unpack ${1} || return
+		sed -i -e 's/,-rpath=\$\$ORIGIN//' ${libtracefs_src_dir}/scripts/utils.mk || return
 		(export \
 			PKG_CONFIG_PATH= \
 			PKG_CONFIG_LIBDIR=`print_library_dir libtraceevent.pc` \
@@ -1704,6 +1705,7 @@ EOF
 		print_header_path tracefs.h tracefs > /dev/null || ${0} ${cmdopt} libtracefs || return
 		fetch ${1} || return
 		unpack ${1} || return
+		sed -i -e 's/ -Wl,-rpath=\$(libdir)//' ${trace_cmd_src_dir}/scripts/utils.mk || return
 		PKG_CONFIG_PATH= \
 		PKG_CONFIG_LIBDIR=`print_library_dir libtracefs.pc` \
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
