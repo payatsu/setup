@@ -4479,6 +4479,7 @@ install_native_file()
 install_native_source_highlight()
 {
 	[ -x ${prefix}/bin/source-highlight -a "${force_install}" != yes ] && return
+	print_header_path version.h boost > /dev/null || install_native_boost || return
 	fetch source-highlight || return
 	unpack source-highlight || return
 	[ -f ${source_highlight_bld_dir}/Makefile ] ||
