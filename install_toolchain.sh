@@ -59,6 +59,9 @@
 : ${libbpf_ver:=0.4.0}
 : ${bcc_ver:=0.20.0}
 : ${bpftrace_ver:=0.13.0}
+: ${libtraceevent_ver:=1.3.3}
+: ${libtracefs_ver:=1.2.3}
+: ${trace_cmd_ver:=v2.9.4}
 : ${kmod_ver:=28}
 : ${dtc_ver:=1.6.0}
 : ${u_boot_ver:=2021.01}
@@ -423,6 +426,12 @@ help()
 		Specify the version of bcc you want, currently '${bcc_ver}'.
 	bpftrace_ver
 		Specify the version of bpftrace you want, currently '${bpftrace_ver}'.
+	libtraceevent_ver
+		Specify the version of libtraceevent you want, currently '${libtraceevent_ver}'.
+	libtracefs_ver
+		Specify the version of libtracefs you want, currently '${libtracefs_ver}'.
+	trace_cmd_ver
+		Specify the version of trace-cmd you want, currently '${trace_cmd_ver}'.
 	kmod_ver
 		Specify the version of kmod you want, currently '${kmod_ver}'.
 	dtc_ver
@@ -860,6 +869,15 @@ fetch()
 		bpftrace)
 			wget -O ${bpftrace_src_dir}.tar.gz \
 				https://github.com/iovisor/bpftrace/archive/v${bpftrace_ver}.tar.gz || return;;
+		libtraceevent)
+			wget -O ${libtraceevent_src_dir}.tar.gz \
+				https://git.kernel.org/pub/scm/libs/libtrace/libtraceevent.git/snapshot/libtraceevent-${libtraceevent_ver}.tar.gz || return;;
+		libtracefs)
+			wget -O ${libtracefs_src_dir}.tar.gz \
+				https://git.kernel.org/pub/scm/libs/libtrace/libtracefs.git/snapshot/libtracefs-${libtracefs_ver}.tar.gz || return;;
+		trace-cmd)
+			wget -O ${trace_cmd_src_dir}.tar.gz \
+				https://git.kernel.org/pub/scm/utils/trace-cmd/trace-cmd.git/snapshot/trace-cmd-${trace_cmd_ver}.tar.gz || return;;
 		kmod)
 			wget -O ${kmod_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/utils/kernel/kmod/${kmod_name}.tar.xz || return;;
@@ -1568,6 +1586,7 @@ set_variables()
 			s//\1/
 			s/pkg_config/pkg-config/
 			s/autoconf_archive/autoconf-archive/
+			s/trace_cmd/trace-cmd/
 			s/u_boot/u-boot/
 			s/mingw_w64/mingw-w64/
 			s/vimdoc_ja/vimdoc-ja/
@@ -2749,6 +2768,56 @@ install_native_bpftrace()
 		|| return
 	cmake --build ${bpftrace_bld_dir} -v -j ${jobs} --target bpftrace man || return
 	cmake --install ${bpftrace_bld_dir} -v ${strip:+--${strip}} || return
+}
+
+install_native_libtraceevent()
+{
+	[ -f ${prefix}/include/traceevent/kbuffer.h -a "${force_install}" != yes ] && return
+	fetch libtraceevent || return
+	unpack libtraceevent || return
+	make -C ${libtraceevent_src_dir} -j ${jobs} V=1 O=${libtraceevent_bld_dir} \
+		CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
+		pkgconfig_dir=${prefix}/lib/pkgconfig || return
+	make -C ${libtraceevent_src_dir} -j ${jobs} V=1 O=${libtraceevent_bld_dir} \
+		CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
+		pkgconfig_dir=${prefix}/lib/pkgconfig install || return
+	update_path || return
+	[ -z "${strip}" ] && return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib64/libtraceevent.so || return
+}
+
+install_native_libtracefs()
+{
+	[ -f ${prefix}/include/tracefs/tracefs.h -a "${force_install}" != yes ] && return
+	print_header_path kbuffer.h traceevent > /dev/null || install_native_libtraceevent || return
+	fetch libtracefs || return
+	unpack libtracefs || return
+	make -C ${libtracefs_src_dir} -j ${jobs} V=1 O=${libtracefs_bld_dir} \
+		CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
+		pkgconfig_dir=${prefix}/lib/pkgconfig etcdir=${prefix}/etc || return
+	make -C ${libtracefs_src_dir} -j ${jobs} V=1 O=${libtracefs_bld_dir} \
+		CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
+		pkgconfig_dir=${prefix}/lib/pkgconfig etcdir=${prefix}/etc install || return
+	update_path || return
+	[ -z "${strip}" ] && return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib64/libtracefs.so || return
+}
+
+install_native_trace_cmd()
+{
+	[ -x ${prefix}/bin/trace-cmd -a "${force_install}" != yes ] && return
+	print_header_path kbuffer.h traceevent > /dev/null || install_native_libtraceevent || return
+	print_header_path tracefs.h tracefs > /dev/null || install_native_libtracefs || return
+	fetch trace-cmd || return
+	unpack trace-cmd || return
+	make -C ${trace_cmd_src_dir} -j ${jobs} V=1 O=${trace_cmd_bld_dir} \
+		CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
+		etcdir=${prefix}/etc || return
+	make -C ${trace_cmd_src_dir} -j ${jobs} V=1 O=${trace_cmd_bld_dir} \
+		CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
+		etcdir=${prefix}/etc install || return
+	[ -z "${strip}" ] && return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/trace-cmd || return
 }
 
 install_native_kmod()
