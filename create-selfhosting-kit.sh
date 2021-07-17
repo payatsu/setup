@@ -147,6 +147,9 @@ EOF
 : ${libbpf_ver:=0.4.0}
 : ${bcc_ver:=0.20.0}
 : ${bpftrace_ver:=0.13.0}
+: ${libtraceevent_ver:=1.3.3}
+: ${libtracefs_ver:=1.2.3}
+: ${trace_cmd_ver:=v2.9.4}
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
 : ${procps_ver:=3.3.16}
@@ -386,6 +389,15 @@ fetch()
 	bpftrace)
 		wget -O ${bpftrace_src_dir}.tar.gz \
 			https://github.com/iovisor/bpftrace/archive/v${bpftrace_ver}.tar.gz || return;;
+	libtraceevent)
+		wget -O ${libtraceevent_src_dir}.tar.gz \
+			https://git.kernel.org/pub/scm/libs/libtrace/libtraceevent.git/snapshot/libtraceevent-${libtraceevent_ver}.tar.gz || return;;
+	libtracefs)
+		wget -O ${libtracefs_src_dir}.tar.gz \
+			https://git.kernel.org/pub/scm/libs/libtrace/libtracefs.git/snapshot/libtracefs-${libtracefs_ver}.tar.gz || return;;
+	trace-cmd)
+		wget -O ${trace_cmd_src_dir}.tar.gz \
+			https://git.kernel.org/pub/scm/utils/trace-cmd/trace-cmd.git/snapshot/trace-cmd-${trace_cmd_ver}.tar.gz || return;;
 	libpcap|tcpdump)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			http://www.tcpdump.org/release/\${${_1}_name}.tar.gz || return;;
@@ -637,6 +649,7 @@ print_packages()
 	grep -oPe '(?<=^: \${)\w+(?=_ver)' ${0} | sed -e '
 		s/source_highlight/source-highlight/
 		s/util_linux/util-linux/
+		s/trace_cmd/trace-cmd/
 		s/i2c_tools/i2c-tools/
 		s/pkg_config/pkg-config/
 		s/vimdoc_ja/vimdoc-ja/
@@ -1652,6 +1665,56 @@ EOF
 			|| return
 		cmake --build ${bpftrace_bld_dir} -v -j ${jobs} --target bpftrace man || return
 		cmake --install ${bpftrace_bld_dir} -v ${strip:+--${strip}} || return
+		;;
+	libtraceevent)
+		[ -f ${DESTDIR}${prefix}/include/traceevent/kbuffer.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		make -C ${libtraceevent_src_dir} -j ${jobs} V=1 O=${libtraceevent_bld_dir} \
+			CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
+			pkgconfig_dir=${prefix}/lib/pkgconfig || return
+		make -C ${libtraceevent_src_dir} -j ${jobs} V=1 O=${libtraceevent_bld_dir} \
+			CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
+			pkgconfig_dir=${prefix}/lib/pkgconfig install || return
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib64/libtraceevent.so || return
+		;;
+	libtracefs)
+		[ -f ${DESTDIR}${prefix}/include/tracefs/tracefs.h -a "${force_install}" != yes ] && return
+		print_header_path kbuffer.h traceevent > /dev/null || ${0} ${cmdopt} libtraceevent || return
+		fetch ${1} || return
+		unpack ${1} || return
+		(export \
+			PKG_CONFIG_PATH= \
+			PKG_CONFIG_LIBDIR=`print_library_dir libtraceevent.pc` \
+			PKG_CONFIG_SYSROOT_DIR=${DESTDIR}
+		make -C ${libtracefs_src_dir} -j ${jobs} V=1 O=${libtracefs_bld_dir} \
+			CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
+			pkgconfig_dir=${prefix}/lib/pkgconfig etcdir=${prefix}/etc || return
+		make -C ${libtracefs_src_dir} -j ${jobs} V=1 O=${libtracefs_bld_dir} \
+			CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
+			pkgconfig_dir=${prefix}/lib/pkgconfig etcdir=${prefix}/etc install || return
+		) || return
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib64/libtracefs.so || return
+		;;
+	trace-cmd)
+		[ -x ${DESTDIR}${prefix}/bin/trace-cmd -a "${force_install}" != yes ] && return
+		print_header_path kbuffer.h traceevent > /dev/null || ${0} ${cmdopt} libtraceevent || return
+		print_header_path tracefs.h tracefs > /dev/null || ${0} ${cmdopt} libtracefs || return
+		fetch ${1} || return
+		unpack ${1} || return
+		PKG_CONFIG_PATH= \
+		PKG_CONFIG_LIBDIR=`print_library_dir libtracefs.pc` \
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+		make -C ${trace_cmd_src_dir} -j ${jobs} V=1 O=${trace_cmd_bld_dir} \
+			CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
+			etcdir=${prefix}/etc || return
+		make -C ${trace_cmd_src_dir} -j ${jobs} V=1 O=${trace_cmd_bld_dir} \
+			CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
+			etcdir=${prefix}/etc install || return
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/trace-cmd || return
 		;;
 	libpcap)
 		[ -f ${DESTDIR}${prefix}/include/pcap/pcap.h -a "${force_install}" != yes ] && return
