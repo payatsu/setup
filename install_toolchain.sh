@@ -1790,7 +1790,7 @@ func_place_holder()
 		&& export GOPATH=${prefix}/.go`echo ${GOPATH} | sed -e 's%\(^\|:\)'${prefix}'/.go\($\|:\)%\1\2%g;s/::/:/g;s/^://;s/:$//;s/^./:&/'` \
 		|| export GOPATH=${prefix}/.go${GOPATH:+:${GOPATH}}
 	[ ${prefix} = /usr/local -a "${force_set}" != yes ] && return
-	for p in ${prefix}/lib ${prefix}/lib64 `[ -d ${prefix}/${host} ] && find ${prefix}/${host} -mindepth 2 -maxdepth 2 -type d -name lib` \
+	for p in ${prefix}/lib ${prefix}/lib64 ${prefix}/lib/${host} `[ -d ${prefix}/${host} ] && find ${prefix}/${host} -mindepth 2 -maxdepth 2 -type d -name lib` \
 		`[ -d ${prefix}/lib/gcc/${host} ] && find ${prefix}/lib/gcc/${host} -mindepth 1 -maxdepth 1 -type d -name '*.?.?' | sort -rV | head -n 1`; do
 		[ -d ${p} ] || continue
 		echo ${LD_LIBRARY_PATH} | tr : '\n' | grep -qe ^${p}\$ \
@@ -3159,7 +3159,8 @@ install_native_babeltrace()
 	print_header_path libelf.h > /dev/null || install_native_elfutils || return
 	fetch babeltrace || return
 	unpack babeltrace || return
-	[ -f ${babeltrace_src_dir}/configure ] || (cd ${babeltrace_src_dir}; ./bootstrap) || return
+	[ -f ${babeltrace_src_dir}/configure ] ||
+		autoreconf -fiv -I `print_prefix glib.h glib-2.0`/share/aclocal ${babeltrace_src_dir} || return
 	[ -f ${babeltrace_bld_dir}/Makefile ] ||
 		(cd ${babeltrace_bld_dir}
 		${babeltrace_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return

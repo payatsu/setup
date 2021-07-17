@@ -3205,7 +3205,8 @@ func_place_holder()
 	unset p
 
 	tmp_LD_LIBRARY_PATH=${LD_LIBRARY_PATH}
-	for p in ${DESTDIR}${prefix}/lib ${DESTDIR}${prefix}/lib64 `[ -d ${DESTDIR}${prefix}/${host} ] && find ${DESTDIR}${prefix}/${host} -mindepth 2 -maxdepth 2 -type d -name lib` \
+	for p in ${DESTDIR}${prefix}/lib ${DESTDIR}${prefix}/lib64 ${prefix}/lib/${host} \
+		`[ -d ${DESTDIR}${prefix}/${host} ] && find ${DESTDIR}${prefix}/${host} -mindepth 2 -maxdepth 2 -type d -name lib` \
 		`[ -d ${DESTDIR}${prefix}/lib/gcc/${host} ] && find ${DESTDIR}${prefix}/lib/gcc/${host} -mindepth 1 -maxdepth 1 -type d -name '*.?.?' | sort -rn | head -n 1` \
 		${DESTDIR}${prefix}/lib/`uname -m`-linux; do
 		[ -n "${DESTDIR}" -o -d ${p} ] || continue
