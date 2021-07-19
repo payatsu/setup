@@ -4377,8 +4377,12 @@ install_native_sysstat()
 	[ -f ${sysstat_bld_dir}/configure ] || cp -Tvr ${sysstat_src_dir} ${sysstat_bld_dir} || return
 	[ -f ${sysstat_bld_dir}/Makefile ] ||
 		(cd ${sysstat_bld_dir}
-		./configure --prefix=${prefix} --host=${host} --enable-install-cron --enable-collect-all \
-			--enable-copy-only) || return
+		./configure --prefix=${prefix} --host=${host} \
+			--with-systemdsystemunitdir=${prefix}/lib/systemd/system \
+			--with-systemdsleepdir=${prefix}/lib/systemd/system-sleep \
+			--enable-install-cron --enable-collect-all --enable-copy-only \
+			sa_dir=${prefix}/var/log/sa \
+			conf_dir=${prefix}/etc/sysconfig) || return
 	make -C ${sysstat_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${sysstat_bld_dir} -j ${jobs} -k check || return
