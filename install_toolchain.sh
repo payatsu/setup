@@ -190,7 +190,7 @@
 : ${tcl_ver:=8.6.11}
 : ${tk_ver:=8.6.11}
 : ${libunistring_ver:=0.9.10}
-: ${libidn2_ver:=2.3.0}
+: ${libidn2_ver:=2.3.2}
 : ${libpsl_ver:=0.21.0}
 : ${libatomic_ops_ver:=7.6.10}
 : ${gc_ver:=7.6.12}
