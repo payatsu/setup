@@ -4782,6 +4782,7 @@ install_native_curl()
 	[ -x ${prefix}/bin/curl -a "${force_install}" != yes ] && return
 	print_header_path zstd.h > /dev/null || install_native_zstd || return
 	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
+	print_header_path libpsl.h > /dev/null || install_native_libpsl || return
 	fetch curl || return
 	unpack curl || return
 	(cd ${curl_bld_dir}
@@ -4791,7 +4792,10 @@ install_native_curl()
 		--enable-ldap --enable-ldaps --enable-rtsp --enable-proxy \
 		--enable-dict --enable-telnet --enable-tftp --enable-pop3 \
 		--enable-imap --enable-smb --enable-smtp --enable-gopher \
-		--enable-manual --enable-ipv6 --with-ssl=`print_prefix ssl.h openssl`) || return
+		--enable-mqtt --enable-manual --enable-ipv6 \
+		--disable-versioned-symbols \
+		--with-ssl=`print_prefix ssl.h openssl` \
+		LDFLAGS="${LDFLAGS} `L psl`") || return
 	make -C ${curl_bld_dir} -j ${jobs} || return
 	make -C ${curl_bld_dir} -j ${jobs} install || return
 	update_path || return

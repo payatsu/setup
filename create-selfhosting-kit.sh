@@ -814,11 +814,12 @@ build()
 			--enable-ldap --enable-ldaps --enable-rtsp --enable-proxy \
 			--enable-dict --enable-telnet --enable-tftp --enable-pop3 \
 			--enable-imap --enable-smb --enable-smtp --enable-gopher \
-			--enable-manual --enable-ipv6 --enable-openssl-auto-load-config \
+			--enable-mqtt --enable-manual --enable-ipv6 --enable-openssl-auto-load-config \
 			--enable-sspi --enable-crypto-auth --enable-tls-srp \
 			--enable-unix-sockets --enable-cookies --enable-http-auth \
 			--enable-doh --enable-mime --enable-dateparse --enable-netrc \
 			--enable-progress-meter --enable-dnsshuffle --enable-alt-svc \
+			--disable-versioned-symbols \
 			--with-zlib=`print_prefix zlib.h` \
 			--with-zstd=`print_prefix zstd.h` \
 			--with-ssl=`print_prefix ssl.h openssl` \
