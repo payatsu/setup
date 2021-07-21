@@ -43,7 +43,7 @@
 : ${gawk_ver:=5.1.0}
 : ${gnulib_ver:=git}
 : ${make_ver:=4.3}
-: ${binutils_ver:=2.35.2}
+: ${binutils_ver:=2.37}
 : ${elfutils_ver:=0.183}
 : ${systemtap_ver:=4.5}
 : ${ed_ver:=1.17}
@@ -2477,7 +2477,7 @@ install_native_elfutils()
 		${elfutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 			--enable-libdebuginfod --disable-debuginfod \
 			CFLAGS="${CFLAGS} `I zlib.h`" \
-			LDFLAGS="${LDFLAGS} `l bz2 z`" \
+			LDFLAGS="${LDFLAGS} `l z bz2 lzma zstd `" \
 			libcurl_CFLAGS=`I curl/curl.h` \
 			libcurl_LIBS="`l curl`") || return
 	make -C ${elfutils_bld_dir} -j ${jobs} || return

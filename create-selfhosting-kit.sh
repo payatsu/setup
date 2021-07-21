@@ -111,7 +111,7 @@ EOF
 : ${openssl_ver:=1.1.1k}
 : ${curl_ver:=7.75.0}
 : ${elfutils_ver:=0.183}
-: ${binutils_ver:=2.35.2}
+: ${binutils_ver:=2.37}
 : ${gmp_ver:=6.2.1}
 : ${mpfr_ver:=4.1.0}
 : ${mpc_ver:=1.2.1}
@@ -843,8 +843,8 @@ build()
 			${elfutils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--enable-libdebuginfod --disable-debuginfod \
 				CFLAGS="${CFLAGS} `I zlib.h zstd.h`" \
-				LDFLAGS="${LDFLAGS}" \
-				LIBS="${LIBS} `l z bz2 lzma curl zstd`" \
+				LDFLAGS="${LDFLAGS} `L z bz2 lzma zstd`" \
+				LIBS="${LIBS} `l z bz2 lzma curl zstd ssl crypto`" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir libcurl.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
@@ -868,7 +868,7 @@ build()
 			[ -f host_configargs ] || cat << EOF | tr '\n' ' ' > host_configargs || return
 --disable-rpath
 --enable-install-libiberty
-LIBS='`l curl zstd`'
+LIBS='`l z curl zstd ssl crypto`'
 EOF
 			${binutils_src_dir}/configure --prefix=${prefix} --host=${host} --target=${target} \
 				--enable-shared --enable-gold --enable-threads --enable-plugins \
@@ -877,7 +877,7 @@ EOF
 				CFLAGS="${CFLAGS} `I zlib.h elfutils/debuginfod.h`" \
 				CXXFLAGS="${CXXFLAGS} `I zlib.h`" \
 				LDFLAGS="${LDFLAGS} `L z debuginfod`" \
-				LIBS="`l curl zstd`" \
+				LIBS="`l z curl zstd ssl crypto`" \
 				host_configargs="`cat host_configargs`") || return
 		make -C ${binutils_bld_dir} -j 1 || return
 		[ "${enable_check}" != yes ] ||
