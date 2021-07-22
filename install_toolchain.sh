@@ -209,6 +209,7 @@
 : ${yavta_ver:=git}
 : ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.25.1}
+: ${bat_ver:=0.18.2}
 : ${jq_ver:=1.6}
 : ${libpcap_ver:=1.9.1}
 : ${tcpdump_ver:=4.9.3}
@@ -704,6 +705,8 @@ help()
 		Specify the version of google test you want, currently '${googletest_ver}'.
 	fzf_ver
 		Specify the version of fzf you want, currently '${fzf_ver}'.
+	bat_ver
+		Specify the version of bat you want, currently '${bat_ver}'.
 	jq_ver
 		Specify the version of jq you want, currently '${jq_ver}'.
 	libpcap_ver
@@ -1220,6 +1223,9 @@ fetch()
 		fzf)
 			wget -O ${fzf_src_dir}.tar.gz \
 				https://github.com/junegunn/fzf/archive/${fzf_ver}.tar.gz || return;;
+		bat)
+			wget -O ${bat_src_dir}.tar.gz \
+				https://github.com/sharkdp/bat/archive/refs/tags/v${bat_ver}.tar.gz || return;;
 		jq)
 			wget -O ${jq_src_dir}.tar.gz \
 				https://github.com/stedolan/jq/releases/download/${jq_name}/${jq_name}.tar.gz || return;;
@@ -6277,6 +6283,19 @@ install_native_fzf()
 	cp -fv ${fzf_src_dir}/plugin/fzf.vim ${DESTDIR}${prefix}/share/vim/vim`print_version vim | tr -d .`/plugin || return
 	[ -z "${strip}" ] && return
 	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/fzf || return
+}
+
+install_native_bat()
+{
+	[ -x ${prefix}/bin/bat -a "${force_install}" != yes ] && return
+	which cargo > /dev/null || install_native_rustc || return
+	fetch bat || return
+	unpack bat || return
+	(cd ${bat_src_dir}
+	cargo install -j ${jobs} -v --path . --no-track \
+		--root ${DESTDIR}${prefix} --locked) || return
+	[ -z "${strip}" ] && return
+	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/bat || return
 }
 
 install_native_jq()
