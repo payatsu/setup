@@ -1,13 +1,10 @@
 #!/bin/sh -e
-# [TODO] ホームディレクトリにusr/ができてしますバグ。
-# [TODO] canadiancross対応する。host, target柔軟性上げる。
-# [TODO] pigz
 # [TODO] ulibc
 # [TODO] qemu-kvm
 # [TODO] haskell(stack<-(ghc, cabal))
 # [TODO] libav<-
 # [TODO] webkitgtk<-libsoup
-# [TODO] libmount, dtrace (GLib)
+# [TODO] libmount
 # [TODO] rsvg, imagemagick
 # [TODO] Polly, MySQL, grub
 # [TODO] update-alternatives
@@ -86,6 +83,7 @@
 : ${ltrace_ver:=0.7.3}
 : ${valgrind_ver:=3.16.1}
 : ${zlib_ver:=1.2.11}
+: ${pigz_ver:=2.6}
 : ${libpng_ver:=1.6.37}
 : ${tiff_ver:=4.2.0}
 : ${jpeg_ver:=v9d}
@@ -481,6 +479,8 @@ help()
 		Specify the version of Valgrind you want, currently '${valgrind_ver}'.
 	zlib_ver
 		Specify the version of zlib you want, currently '${zlib_ver}'.
+	pigz_ver
+		Specify the version of pigz you want, currently '${pigz_ver}'.
 	libpng_ver
 		Specify the version of libpng you want, currently '${libpng_ver}'.
 	tiff_ver
@@ -936,6 +936,9 @@ fetch()
 		zlib)
 			wget -O ${zlib_src_dir}.tar.xz \
 				http://zlib.net/${zlib_name}.tar.xz || return;;
+		pigz)
+			wget -O ${pigz_src_dir}.tar.gz \
+				https://zlib.net/pigz/${pigz_name}.tar.gz || return;;
 		libpng)
 			wget --trust-server-names -O ${libpng_src_dir}.tar.xz \
 				https://download.sourceforge.net/libpng/${libpng_name}.tar.xz || return;;
@@ -3292,6 +3295,26 @@ install_native_zlib()
 		make -C ${zlib_bld_dir} -j ${jobs} -k check || return
 	make -C ${zlib_bld_dir} -j ${jobs} install || return
 	update_path || return
+}
+
+install_native_pigz()
+{
+	[ -x ${prefix}/bin/pigz -a "${force_install}" != yes ] && return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	fetch pigz || return
+	unpack pigz || return
+	[ -f ${pigz_bld_dir}/Makefile ] || cp -Tvr ${pigz_src_dir} ${pigz_bld_dir} || return
+	sed -i -e "
+		/^CC=.\+\$/s!!CC=${CC:-${host:+${host}-}gcc}!
+		/^CFLAGS=/s!\$! `I zlib.h`!
+		/^LDFLAGS=\$/s!\$! `L z`!
+		" ${pigz_bld_dir}/Makefile || return
+	make -C ${pigz_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${pigz_bld_dir} -j ${jobs} -k test || return
+	command install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${pigz_bld_dir}/pigz || return
+	command install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${pigz_bld_dir}/unpigz || return
+	command install -D -v -t ${DESTDIR}${prefix}/share/man/man1 ${pigz_bld_dir}/pigz.1 || return
 }
 
 install_native_libpng()
