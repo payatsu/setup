@@ -8,7 +8,7 @@ ARG njobs=4
 FROM ${baseimage} AS builder
 ARG prefix
 ARG njobs
-ARG pkgs="zlib m4 gmp mpfr mpc isl zstd gcc bzip2 xz openssl nghttp2 \
+ARG pkgs="zlib m4 gmp mpfr mpc isl zstd gcc pigz bzip2 xz openssl nghttp2 \
 libunistring libidn2 libpsl curl elfutils binutils bison flex perl autoconf \
 autoconf-archive automake libtool ncurses readline less texinfo gawk cpio zip \
 unzip lzip lunzip lzo lzop lz4 file groff gdbm libpipeline man-db ed bc patch \

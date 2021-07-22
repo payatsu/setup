@@ -1308,7 +1308,7 @@ unpack()
 		[ -z "${2}" -a -d ${d} ] && return
 		[ -n "${2}" -a -d ${2}/`basename ${d}` ] && return
 		${2:+eval mkdir -pv ${2} || return}
-		[ -f ${d}.tar.gz  -a -s ${d}.tar.gz  ] && tar xzvf ${d}.tar.gz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${d}`} && return
+		[ -f ${d}.tar.gz  -a -s ${d}.tar.gz  ] && tar xvf  ${d}.tar.gz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${d}`} `which pigz > /dev/null && echo -I pigz` && return
 		[ -f ${d}.tar.bz2 -a -s ${d}.tar.bz2 ] && tar xjvf ${d}.tar.bz2 --no-same-owner --no-same-permissions -C ${2:-`dirname ${d}`} && return
 		[ -f ${d}.tar.xz  -a -s ${d}.tar.xz  ] && tar xJvf ${d}.tar.xz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${d}`} && return
 		[ -f ${d}.tar.lz  -a -s ${d}.tar.lz  ] && tar xvf  ${d}.tar.lz  --no-same-owner --no-same-permissions -C ${2:-`dirname ${d}`} && return
