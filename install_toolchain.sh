@@ -22,6 +22,7 @@
 : ${lzop_ver:=1.04}
 : ${lz4_ver:=1.9.3}
 : ${zstd_ver:=1.5.0}
+: ${libarchive_ver:=3.5.1}
 : ${wget_ver:=1.21.1}
 : ${pkg_config_ver:=0.29.2}
 : ${help2man_ver:=1.47.16}
@@ -357,6 +358,8 @@ help()
 		Specify the version of lz4 you want, currently '${lz4_ver}'.
 	zstd_ver
 		Specify the version of Zstd you want, currently '${zstd_ver}'.
+	libarchive_ver
+		Specify the version of libarchive you want, currently '${libarchive_ver}'.
 	wget_ver
 		Specify the version of GNU wget you want, currently '${wget_ver}'.
 	pkg_config_ver
@@ -824,6 +827,9 @@ fetch()
 		zstd)
 			wget -O ${zstd_src_dir}.tar.gz \
 				https://github.com/facebook/zstd/releases/download/v${zstd_ver}/${zstd_name}.tar.gz || return;;
+		libarchive)
+			wget -O ${libarchive_src_dir}.tar.gz \
+				http://www.libarchive.org/downloads/${libarchive_name}.tar.xz || return;;
 		busybox)
 			wget -O ${busybox_src_dir}.tar.bz2 \
 				https://www.busybox.net/downloads/${busybox_name}.tar.bz2 || return;;
@@ -2175,6 +2181,32 @@ install_native_zstd()
 	update_path || return
 	[ -z "${strip}" ] && return
 	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/zstd || return
+}
+
+install_native_libarchive()
+{
+	[ -x ${prefix}/bin/bsdtar -a "${force_install}" != yes ] && return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path bzlib.h > /dev/null || install_native_bzip2 || return
+	print_header_path lz4.h > /dev/null || install_native_lz4 || return
+	print_header_path zstd.h > /dev/null || install_native_zstd || return
+	print_header_path lzma.h > /dev/null || install_native_xz || return
+	print_header_path lzoconf.h lzo > /dev/null || install_native_lzo || return
+	print_header_path xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
+	fetch libarchive || return
+	unpack libarchive || return
+	[ -f ${libarchive_bld_dir}/Makefile ] ||
+		(cd ${libarchive_bld_dir}
+		${libarchive_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+			--disable-silent-rules --disable-rpath \
+			CPPFLAGS="${CPPFLAGS} `I zlib.h bzlib.h lz4.h zstd.h lzma.h lzo/lzoconf.h libxml2/libxml/xmlversion.h`" \
+			LDFLAGS="${LDFLAGS} `L z bz2 lz4 zstd lzma lzo2 xml2`" \
+			) || return
+	make -C ${libarchive_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libarchive_bld_dir} -j ${jobs} -k check || return
+	make -C ${libarchive_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_wget()
@@ -4871,11 +4903,14 @@ install_native_asciidoc()
 install_native_libxml2()
 {
 	[ -d ${prefix}/include/libxml2 -a "${force_install}" != yes ] && return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path lzma.h > /dev/null || install_native_xz || return
 	print_header_path Python.h > /dev/null || install_native_Python || return
 	fetch libxml2 || return
 	unpack libxml2 || return
 	[ -f ${libxml2_bld_dir}/Makefile ] ||
 		(cd ${libxml2_bld_dir}
+		remove_rpath_option libxml2 || return
 		${libxml2_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			--without-python --disable-silent-rules) || return
 	make -C ${libxml2_bld_dir} -j ${jobs} || return
