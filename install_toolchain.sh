@@ -2121,7 +2121,7 @@ install_native_lunzip()
 
 install_native_lzo()
 {
-	[ -f ${prefix}/include/lzo/lzo1.h -a "${force_install}" != yes ] && return
+	[ -f ${prefix}/include/lzo/lzoconf.h -a "${force_install}" != yes ] && return
 	fetch lzo || return
 	unpack lzo || return
 	[ -f ${lzo_bld_dir}/Makefile ] ||
@@ -2137,7 +2137,7 @@ install_native_lzo()
 install_native_lzop()
 {
 	[ -x ${prefix}/bin/lzop -a "${force_install}" != yes ] && return
-	print_header_path lzo1.h lzo > /dev/null || install_native_lzo || return
+	print_header_path lzoconf.h lzo > /dev/null || install_native_lzo || return
 	fetch lzop || return
 	unpack lzop || return
 	[ -f ${lzop_bld_dir}/Makefile ] ||
