@@ -760,6 +760,7 @@ build()
 		unpack ${1} || return
 		[ -f ${xz_bld_dir}/Makefile ] ||
 			(cd ${xz_bld_dir}
+			remove_rpath_option ${1} || return
 			${xz_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
 		make -C ${xz_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
@@ -1525,7 +1526,7 @@ EOF
 		unpack ${1} || return
 		[ -f ${numactl_bld_dir}/Makefile ] ||
 			(cd ${numactl_bld_dir}
-			remove_rpath_option numactl || return
+			remove_rpath_option ${1} || return
 			${numactl_src_dir}/configure --prefix=${prefix} --host=${host}) || return
 		make -C ${numactl_bld_dir} -j ${jobs} V=1 || return
 		[ "${enable_check}" != yes ] ||
@@ -1554,15 +1555,16 @@ EOF
 		unpack ${1} || return
 		[ -f ${libunwindnongnu_bld_dir}/Makefile ] ||
 			(cd ${libunwindnongnu_bld_dir}
-			remove_rpath_option libunwindnongnu || return
+			remove_rpath_option ${1} || return
 			${libunwindnongnu_src_dir}/configure --prefix=${prefix} --host=${host} \
 				--enable-coredump --enable-ptrace --enable-setjmp \
 				--enable-cxx-exceptions --enable-debug-frame \
 				--enable-minidebuginfo --enable-zlibdebuginfo \
-				CFLAGS="${CFLAGS} `I lzma.h`" \
-				LDFLAGS="${LDFLAGS} `L lzma` -Wl,-rpath-link,${libunwindnongnu_bld_dir}/src/.libs" \
+				CFLAGS="${CFLAGS} `I zlib.h lzma.h`" \
+				LDFLAGS="${LDFLAGS} -Wl,-rpath-link,${libunwindnongnu_bld_dir}/src/.libs" \
+				LIBS="${LIBS} `l z lzma`" \
 				|| return
-			remove_rpath_option libunwindnongnu || return
+			remove_rpath_option ${1} || return
 			) || return
 		make -C ${libunwindnongnu_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||

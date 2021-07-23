@@ -2009,7 +2009,9 @@ install_native_xz()
 	unpack xz || return
 	[ -f ${xz_bld_dir}/Makefile ] ||
 		(cd ${xz_bld_dir}
-		${xz_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+		remove_rpath_option xz || return
+		${xz_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+			--disable-rpath) || return
 	make -C ${xz_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${xz_bld_dir} -j ${jobs} -k check || return
