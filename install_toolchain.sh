@@ -5932,6 +5932,7 @@ install_native_libpsl()
 {
 	[ -f ${prefix}/include/libpsl.h -a "${force_install}" != yes ] && return
 	print_header_path idn2.h > /dev/null || install_native_libidn2 || return
+	which python3 > /dev/null || install_native_Python || return
 	fetch libpsl || return
 	unpack libpsl || return
 	[ -f ${libpsl_bld_dir}/Makefile ] ||

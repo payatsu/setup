@@ -8,17 +8,18 @@ ARG njobs=4
 FROM ${baseimage} AS builder
 ARG prefix
 ARG njobs
-ARG pkgs="zlib m4 gmp mpfr mpc isl zstd gcc pigz bzip2 xz openssl nghttp2 \
-libunistring libidn2 libpsl curl elfutils binutils bison flex perl autoconf \
-autoconf-archive automake libtool ncurses readline less texinfo gawk cpio zip \
-unzip lzip lunzip lzo lzop lz4 file groff gdbm libpipeline man-db ed bc patch \
-pcre swig libffi Python2 Python libxml2 libiconv glib pkg-config cmake ninja meson Bear ccache \
+ARG pkgs="zlib m4 gmp mpfr mpc isl zstd gcc pigz bzip2 xz ncurses readline \
+openssl expat libffi gdbm sqlite Python2 Python nghttp2 libunistring libidn2 \
+libpsl curl elfutils binutils bison flex perl autoconf autoconf-archive \
+automake libtool less texinfo gawk cpio zip unzip lzip lunzip lzo lzop lz4 \
+file groff libpipeline man-db ed bc patch pcre swig libxml2 libiconv glib \
+pkg-config cmake ninja meson Bear ccache \
 llvm lld compiler-rt libunwindnongnu libcxxabi libcxx clang libedit lldb \
-ruby expat tcl tk libatomic_ops gc guile boost source-highlight util-linux popt \
+ruby tcl tk libatomic_ops gc guile boost source-highlight util-linux popt \
 babeltrace gdb make autogen gettext pcre2 libxslt asciidoc git openssh go rustc \
 zsh bash screen libevent tmux lua vim neovim global the_silver_searcher \
 the_platinum_searcher gperf highway ripgrep fzf tiff freetype fontconfig \
-ghostscript graphviz jdk plantuml jq protobuf rsync dtc strace sqlite \
+ghostscript graphviz jdk plantuml jq protobuf rsync dtc strace \
 systemtap libbpf bcc bpftrace libcap numactl OpenCSD libpfm perf libpcap \
 tcpdump iproute2 nmap libpng jpeg giflib emacs diffutils poke"
 
