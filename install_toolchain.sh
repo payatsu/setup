@@ -828,7 +828,7 @@ fetch()
 			wget -O ${zstd_src_dir}.tar.gz \
 				https://github.com/facebook/zstd/releases/download/v${zstd_ver}/${zstd_name}.tar.gz || return;;
 		libarchive)
-			wget -O ${libarchive_src_dir}.tar.gz \
+			wget -O ${libarchive_src_dir}.tar.xz \
 				http://www.libarchive.org/downloads/${libarchive_name}.tar.xz || return;;
 		busybox)
 			wget -O ${busybox_src_dir}.tar.bz2 \
