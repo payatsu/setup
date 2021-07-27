@@ -142,6 +142,7 @@
 : ${openssl_ver:=1.1.1k}
 : ${openssh_ver:=8.5p1}
 : ${nghttp2_ver:=1.43.0}
+: ${brotli_ver:=1.0.9}
 : ${curl_ver:=7.75.0}
 : ${expat_ver:=2.4.1}
 : ${asciidoc_ver:=8.6.9}
@@ -596,6 +597,8 @@ help()
 		Specify the version of openssh you want, currently '${openssh_ver}'.
 	nghttp2_ver
 		Specify the version of nghttp2 you want, currently '${nghttp2_ver}'.
+	brotli_ver
+		Specify the version of brotli you want, currently '${brotli_ver}'.
 	curl_ver
 		Specify the version of Curl you want, currently '${libcur_ver}'.
 	expat_ver
@@ -1071,6 +1074,9 @@ fetch()
 		nghttp2)
 			wget -O ${nghttp2_src_dir}.tar.xz \
 				https://github.com/nghttp2/nghttp2/releases/download/v${nghttp2_ver}/${nghttp2_name}.tar.xz || return;;
+		brotli)
+			wget -O ${brotli_src_dir}.tar.gz \
+				https://github.com/google/brotli/archive/refs/tags/v${brotli_ver}.tar.gz || return;;
 		curl)
 			wget -O ${curl_src_dir}.tar.bz2 \
 				https://curl.haxx.se/download/${curl_name}.tar.bz2 || return;;
@@ -4837,6 +4843,22 @@ install_native_nghttp2()
 		${nghttp2_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules --enable-lib-only) || return
 	make -C ${nghttp2_bld_dir} -j ${jobs} || return
 	make -C ${nghttp2_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_brotli()
+{
+	[ -x ${prefix}/bin/brotli -a "${force_install}" != yes ] && return
+	fetch brotli || return
+	unpack brotli || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${brotli_src_dir} -B ${brotli_bld_dir} \
+		-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+		-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+		|| return
+	cmake --build ${brotli_bld_dir} -v -j ${jobs} || return
+	cmake --install ${brotli_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
 
