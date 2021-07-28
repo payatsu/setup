@@ -5133,6 +5133,8 @@ install_native_subversion()
 	unpack subversion || return
 	[ -f ${subversion_bld_dir}/Makefile ] ||
 		(cd ${subversion_bld_dir}
+		remove_rpath_option subversion || return
+		autoreconf -fiv ${subversion_src_dir} || return
 		${subversion_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--with-zlib=`print_prefix zlib.h` \
 			--with-sqlite=`print_prefix sqlite3.h` \
