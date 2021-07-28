@@ -5123,6 +5123,7 @@ install_native_subversion()
 	print_header_path apr.h apr-1 > /dev/null || install_native_apr || return
 	print_header_path apu.h apr-1 > /dev/null || install_native_apr_util || return
 	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path lz4.h > /dev/null || install_native_lz4 || return
 	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
 	print_header_path utf8proc.h > /dev/null || install_native_utf8proc || return
 	which python3 > /dev/null || install_native_Python || return
@@ -5132,8 +5133,10 @@ install_native_subversion()
 	unpack subversion || return
 	[ -f ${subversion_bld_dir}/Makefile ] ||
 		(cd ${subversion_bld_dir}
-		${subversion_src_dir}/configure --prefix=${prefix} --build=${build} --with-zlib=`print_prefix zlib.h` \
-			--with-sqlite=`print_prefix sqlite3.h` --with-lz4=internal ${strip:+--enable-optimize} \
+		${subversion_src_dir}/configure --prefix=${prefix} --build=${build} \
+			--with-zlib=`print_prefix zlib.h` \
+			--with-sqlite=`print_prefix sqlite3.h` \
+			--with-lz4=`print_prefix lz4.h` ${strip:+--enable-optimize} \
 			CFLAGS="${CFLAGS} `I utf8proc.h`" \
 			LDFLAGS="${LDFLAGS} `L utf8proc`") || return
 	make -C ${subversion_bld_dir} -j ${jobs} || return
