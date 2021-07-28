@@ -5134,7 +5134,8 @@ install_native_subversion()
 		(cd ${subversion_bld_dir}
 		${subversion_src_dir}/configure --prefix=${prefix} --build=${build} --with-zlib=`print_prefix zlib.h` \
 			--with-sqlite=`print_prefix sqlite3.h` --with-lz4=internal ${strip:+--enable-optimize} \
-			LDFLAGS="${LDFLAGS} `L iconv utf8proc`" LIBS=-liconv) || return
+			CFLAGS="${CFLAGS} `I utf8proc.h`" \
+			LDFLAGS="${LDFLAGS} `L utf8proc`") || return
 	make -C ${subversion_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${subversion_bld_dir} -j ${jobs} -k check || return
