@@ -27,7 +27,7 @@ sed -e '
 		s/FULL-PACKAGE-NAME/'${package_name}'/
 		s/VERSION/0.0.1/
 		aAC_CONFIG_AUX_DIR([config])
-		aAM_INIT_AUTOMAKE([subdir-objects])
+		aAM_INIT_AUTOMAKE([foreign subdir-objects])
 		aAM_SILENT_RULES([yes])
 		aAC_LANG([C++])
 	}
@@ -103,7 +103,7 @@ mkdir -p${verbose:+v} config m4 || return
 aclocal ${verbose:+--verbose} -W all || return
 autoheader ${verbose:+-v} -W all || return
 
-touch NEWS README.md AUTHORS ChangeLog COPYING || return
+touch README.md || return
 ln -s${verbose:+v} README.md README || return
 
 automake -ac${verbose:+v} -W all || return
@@ -126,5 +126,5 @@ echo '*.gcda' '*.gcno' '*.la' '*.lo' '*.o' '*.swp' '*~' .deps .libs \
 git rev-parse > /dev/null 2>&1 || git init . || return
 git add .gitignore || return
 git add config m4 || return
-git add AUTHORS COPYING ChangeLog INSTALL NEWS README README.md || return
+git add README README.md || return
 git add configure.ac Makefile.am src/Makefile.am src/${package_name}.cpp tests/Makefile.am tests/test.cpp || return
