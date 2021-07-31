@@ -1,9 +1,9 @@
 #!/bin/sh
 
-: ${package_name:=sample}
+: ${package_name:=`basename \`pwd\``}
 
 mkdir -p${verbose:+v} src tests || return
-cat << EOF > src/main.cpp || return
+cat << EOF > src/${package_name}.cpp || return
 #include "config.h"
 
 int main(void)
@@ -58,7 +58,7 @@ ACLOCAL_AMFLAGS = -I m4
 EOF
 cat << EOF > src/Makefile.am || return
 bin_PROGRAMS = ${package_name}
-${package_name}_SOURCES = main.cpp
+${package_name}_SOURCES = ${package_name}.cpp
 ${package_name}_CXXFLAGS = -std=c++17 \$(warning_options)
 EOF
 cat << EOF > tests/Makefile.am || return
@@ -127,4 +127,4 @@ git rev-parse > /dev/null 2>&1 || git init . || return
 git add .gitignore || return
 git add config m4 || return
 git add AUTHORS COPYING ChangeLog INSTALL NEWS README README.md || return
-git add configure.ac Makefile.am src/Makefile.am src/main.cpp tests/Makefile.am tests/test.cpp || return
+git add configure.ac Makefile.am src/Makefile.am src/${package_name}.cpp tests/Makefile.am tests/test.cpp || return
