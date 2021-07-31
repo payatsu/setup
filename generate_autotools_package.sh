@@ -2,7 +2,7 @@
 
 : ${package_name:=sample}
 
-mkdir -p${verbose:+v} include src test || return
+mkdir -p${verbose:+v} src test || return
 cat << EOF > src/main.cpp || return
 #include "config.h"
 
@@ -40,7 +40,7 @@ sed -e '
 	}
 	${
 		iAC_CONFIG_MACRO_DIR([m4])
-		iAC_CONFIG_FILES([Makefile include/Makefile src/Makefile test/Makefile])
+		iAC_CONFIG_FILES([Makefile src/Makefile test/Makefile])
 		i[warning_options="-Wextra -Wcast-align -Wstrict-aliasing -Wshadow "\\
 		i`LANG=C ${CXX} -fsyntax-only -Q --help=warnings,^joined,^separate,common --help=warnings,^joined,^separate,c++ |
 		igrep -v '\''\\@<:@enabled\\@:>@\\|-Wabi\\|-Waggregate-return\\|-Wchkp\\|-Wc90-c99-compat\\|-Wredundant-tags\\|-Wsuggest-attribute=const\\|-Wsystem-headers\\|-Wtemplates\\|-Wtraditional@<:@^-@:>@'\'' | grep -oe '\''-W@<:@@<:@:graph:@:>@@:>@\\+'\'' | sed -e '\''s/<@<:@0-9,@:>@\\+>//'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
@@ -53,10 +53,9 @@ sed -e '
 rm ${verbose:+-v} configure.scan || return
 
 cat << EOF > Makefile.am || return
-SUBDIRS = include src test
+SUBDIRS = src test
 ACLOCAL_AMFLAGS = -I m4
 EOF
-touch include/Makefile.am || return
 cat << EOF > src/Makefile.am || return
 bin_PROGRAMS = ${package_name}
 ${package_name}_SOURCES = main.cpp
@@ -78,7 +77,7 @@ testsuite_CXXFLAGS += -Wno-ctor-dtor-privacy -Wno-duplicated-branches \\
 -Wno-unused-macros -Wno-useless-cast -Wno-zero-as-null-pointer-constant
 testsuite_LDFLAGS = @LIBS@
 
-gtest_ver = release-1.8.1
+gtest_ver = release-1.10.0
 
 \$(testsuite_SOURCES) gtest/gtest-all.cc: gtest/gtest.h
 gtest/gtest.h: googletest-\$(gtest_ver)
@@ -101,6 +100,8 @@ myclean:
 	\$(RM) -r html *.gcda *.gcno
 EOF
 
+mkdir -p${verbose:+v} config m4 || return
+
 libtoolize -c || return
 aclocal ${verbose:+--verbose} || return
 autoheader ${verbose:+-v} || return
@@ -122,4 +123,4 @@ git rev-parse > /dev/null 2>&1 || git init . || return
 git add .gitignore || return
 git add config m4 || return
 git add AUTHORS COPYING ChangeLog INSTALL NEWS README || return
-git add configure.ac Makefile.am include/Makefile.am src/Makefile.am src/main.cpp test/Makefile.am test/test.cpp || return
+git add configure.ac Makefile.am src/Makefile.am src/main.cpp test/Makefile.am test/test.cpp || return
