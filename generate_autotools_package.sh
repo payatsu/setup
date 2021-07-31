@@ -2,7 +2,7 @@
 
 : ${package_name:=sample}
 
-mkdir -p${verbose:+v} src test || return
+mkdir -p${verbose:+v} src tests || return
 cat << EOF > src/main.cpp || return
 #include "config.h"
 
@@ -11,7 +11,7 @@ int main(void)
 	return 0;
 }
 EOF
-cat << EOF > test/test.cpp || return
+cat << EOF > tests/test.cpp || return
 #include "config.h"
 #include "gtest/gtest.h"
 int main(int argc, char* argv[])
@@ -33,14 +33,14 @@ sed -e '
 	}
 	/^# Checks for programs\.$/{
 		aAC_PROG_INSTALL
-		aLT_INIT
+		# aLT_INIT
 	}
 	/^# Checks for libraries\.$/{
 		aAC_CHECK_LIB([pthread], [main]) # Google Test requires pthread on POSIX system.
 	}
 	${
 		iAC_CONFIG_MACRO_DIR([m4])
-		iAC_CONFIG_FILES([Makefile src/Makefile test/Makefile])
+		iAC_CONFIG_FILES([Makefile src/Makefile tests/Makefile])
 		i[warning_options="-Wextra -Wcast-align -Wstrict-aliasing -Wshadow "\\
 		i`LANG=C ${CXX} -fsyntax-only -Q --help=warnings,^joined,^separate,common --help=warnings,^joined,^separate,c++ |
 		igrep -v '\''\\@<:@enabled\\@:>@\\|-Wabi\\|-Waggregate-return\\|-Wchkp\\|-Wc90-c99-compat\\|-Wredundant-tags\\|-Wsuggest-attribute=const\\|-Wsystem-headers\\|-Wtemplates\\|-Wtraditional@<:@^-@:>@'\'' | grep -oe '\''-W@<:@@<:@:graph:@:>@@:>@\\+'\'' | sed -e '\''s/<@<:@0-9,@:>@\\+>//'\'' | sed -e '\''$!s/$/ \\\\\\\\/'\''`]
@@ -53,7 +53,7 @@ sed -e '
 rm ${verbose:+-v} configure.scan || return
 
 cat << EOF > Makefile.am || return
-SUBDIRS = src test
+SUBDIRS = src tests
 ACLOCAL_AMFLAGS = -I m4
 EOF
 cat << EOF > src/Makefile.am || return
@@ -61,7 +61,7 @@ bin_PROGRAMS = ${package_name}
 ${package_name}_SOURCES = main.cpp
 ${package_name}_CXXFLAGS = -std=c++17 \$(warning_options)
 EOF
-cat << EOF > test/Makefile.am || return
+cat << EOF > tests/Makefile.am || return
 noinst_PROGRAMS = testsuite
 testsuite_SOURCES = test.cpp
 nodist_testsuite_SOURCES = gtest/gtest.h gtest/gtest-all.cc
@@ -102,7 +102,7 @@ EOF
 
 mkdir -p${verbose:+v} config m4 || return
 
-libtoolize -c || return
+# libtoolize -c || return
 aclocal ${verbose:+--verbose} || return
 autoheader ${verbose:+-v} || return
 
@@ -123,4 +123,4 @@ git rev-parse > /dev/null 2>&1 || git init . || return
 git add .gitignore || return
 git add config m4 || return
 git add AUTHORS COPYING ChangeLog INSTALL NEWS README || return
-git add configure.ac Makefile.am src/Makefile.am src/main.cpp test/Makefile.am test/test.cpp || return
+git add configure.ac Makefile.am src/Makefile.am src/main.cpp tests/Makefile.am tests/test.cpp || return
