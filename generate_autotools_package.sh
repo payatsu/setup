@@ -117,7 +117,12 @@ echo '*.gcda' '*.gcno' '*.la' '*.lo' '*.o' '*.swp' '*~' .deps .libs \
 	GTAGS GRTAGS GPATH \
 	Makefile Makefile.in aclocal.m4 autom4te.cache autoscan.log \
 	config.h config.h.in config.log config.status \
-	configure libtool stamp-h1 tags | tr ' ' '\n' > .gitignore || return
+	configure libtool stamp-h1 tags \
+	src/${package_name} \
+	tests/googletest-release-*/ \
+	tests/gtest/ \
+	tests/testsuite \
+	| tr ' ' '\n' > .gitignore || return
 
 git rev-parse > /dev/null 2>&1 || git init . || return
 git add .gitignore || return
