@@ -75,7 +75,7 @@ testsuite_CXXFLAGS += -Wno-ctor-dtor-privacy -Wno-duplicated-branches \\
 -Wno-suggest-final-types -Wno-suggest-override -Wno-padded -Wno-switch-default \\
 -Wno-switch-enum -Wno-templates -Wno-undef -Wno-unused-const-variable \\
 -Wno-unused-macros -Wno-useless-cast -Wno-zero-as-null-pointer-constant
-testsuite_LDFLAGS = @LIBS@
+testsuite_LDADD = @LIBS@
 
 gtest_ver = release-1.10.0
 
@@ -93,23 +93,22 @@ check:
 	genhtml -p \`cd ..; pwd\` -o html -s @PACKAGE_NAME@-@PACKAGE_VERSION@.info
 	\$(RM) @PACKAGE_NAME@-@PACKAGE_VERSION@.info *.gcda
 
-.PHONY: myclean
-clean: clean-am myclean
-distclean: distclean-am myclean
-myclean:
+clean-local:
 	\$(RM) -r html *.gcda *.gcno
 EOF
 
 mkdir -p${verbose:+v} config m4 || return
 
 # libtoolize -c || return
-aclocal ${verbose:+--verbose} || return
-autoheader ${verbose:+-v} || return
+aclocal ${verbose:+--verbose} -W all || return
+autoheader ${verbose:+-v} -W all || return
 
-touch NEWS README AUTHORS ChangeLog COPYING || return
-automake -ac${verbose:+v} || return
+touch NEWS README.md AUTHORS ChangeLog COPYING || return
+ln -s${verbose:+v} README.md README || return
 
-autoconf ${verbose:+-v} || return
+automake -ac${verbose:+v} -W all || return
+
+autoconf ${verbose:+-v} -W all || return
 
 ! which git > /dev/null 2>&1 && return
 
@@ -127,5 +126,5 @@ echo '*.gcda' '*.gcno' '*.la' '*.lo' '*.o' '*.swp' '*~' .deps .libs \
 git rev-parse > /dev/null 2>&1 || git init . || return
 git add .gitignore || return
 git add config m4 || return
-git add AUTHORS COPYING ChangeLog INSTALL NEWS README || return
+git add AUTHORS COPYING ChangeLog INSTALL NEWS README README.md || return
 git add configure.ac Makefile.am src/Makefile.am src/main.cpp tests/Makefile.am tests/test.cpp || return
