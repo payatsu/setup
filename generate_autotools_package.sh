@@ -26,7 +26,7 @@ sed -e '
 	/^AC_INIT/{
 		s/FULL-PACKAGE-NAME/'${package_name}'/
 		s/VERSION/0.0.1/
-		aAC_CONFIG_AUX_DIR([config])
+		aAC_CONFIG_AUX_DIR([build-aux])
 		aAM_INIT_AUTOMAKE([foreign subdir-objects])
 		aAM_SILENT_RULES([yes])
 		aAC_LANG([C++])
@@ -35,7 +35,7 @@ sed -e '
 		aAC_PROG_INSTALL
 		aAC_PROG_GREP
 		aAC_PROG_SED
-		# aLT_INIT
+		aLT_INIT
 	}
 	/^# Checks for libraries\.$/{
 		aAC_CHECK_LIB([pthread], [main]) # Google Test requires pthread on POSIX system.
@@ -113,9 +113,9 @@ clean-local:
 	\$(RM) -r html *.gcda *.gcno
 EOF
 
-mkdir -p${verbose:+v} config m4 || return
+mkdir -p${verbose:+v} build-aux m4 || return
 
-# libtoolize -c || return
+libtoolize -c || return
 aclocal ${verbose:+--verbose} -W all || return
 autoheader ${verbose:+-v} -W all || return
 
@@ -140,6 +140,6 @@ echo '*.gcda' '*.gcno' '*.la' '*.lo' '*.o' '*.swp' '*~' .deps .libs \
 
 git rev-parse > /dev/null 2>&1 || git init . || return
 git add .gitignore || return
-git add config m4 || return
+git add build-aux m4 || return
 git add README README.md || return
 git add configure.ac Makefile.am src/Makefile.am src/${package_name}.cpp tests/Makefile.am tests/test.cpp || return
