@@ -116,7 +116,7 @@ EOF
 : ${mpfr_ver:=4.1.0}
 : ${mpc_ver:=1.2.1}
 : ${isl_ver:=0.20}
-: ${gcc_ver:=11.1.0}
+: ${gcc_ver:=11.2.0}
 : ${make_ver:=4.3}
 : ${ccache_ver:=4.3}
 
