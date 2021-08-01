@@ -56,7 +56,10 @@ sed -e '
 		i${SED} -e '\''$!s/$/ \\\\\\\\/'\''`]
 		iAC_SUBST([system_include_dirs])
 		iAC_ARG_ENABLE([sanitizer],
-		i\	[AS_HELP_STRING([--enable-sanitizer], [enable sanitizer])], [AS_VAR_IF([enable_sanitizer], [yes], [sanitizer_flags='\''-static-libasan -static-liblsan -static-libubsan'\'']) AC_SUBST([sanitizer_flags])])
+		i\	[AS_HELP_STRING([--enable-sanitizer], [enable sanitizer])],
+		i\	[AS_VAR_IF([enable_sanitizer], [yes],
+		i\	\	[sanitizer_flags='\''-static-libasan -static-liblsan -static-libubsan'\''])
+		i\	AC_SUBST([sanitizer_flags])])
 	}
 ' configure.scan > configure.ac || return
 rm ${verbose:+-v} configure.scan || return
@@ -120,7 +123,6 @@ touch README.md || return
 ln -s${verbose:+v} README.md README || return
 
 automake -ac${verbose:+v} -W all || return
-
 autoconf ${verbose:+-v} -W all || return
 
 ! which git > /dev/null 2>&1 && return
