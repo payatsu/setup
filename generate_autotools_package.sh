@@ -78,20 +78,23 @@ list-warning-options:
 	\$(AM_V_CXX)LANG=C \$(CXX) -Q --help=warnings,^joined,^separate,common --help=warnings,^joined,^separate,c++ \$(warning_options) -x c++ -o /dev/null /dev/null
 EOF
 cat << EOF > tests/Makefile.am || return
-noinst_PROGRAMS = testsuite
+TESTS = testsuite
+check_PROGRAMS = testsuite
+
 testsuite_SOURCES = test.cpp
 nodist_testsuite_SOURCES = gtest/gtest.h gtest/gtest-all.cc
-testsuite_CPPFLAGS = -I../src
-testsuite_CXXFLAGS = -std=c++17 --coverage \$(warning_options) \$(sanitizer_flags)
+
+AM_CPPFLAGS = -I\$(top_srcdir)/src
+AM_CXXFLAGS = -std=c++17 --coverage \$(warning_options) \$(sanitizer_flags)
 ## XXX: Warning suppresions(workaround) for Google Test header("gtest/gtest.h").
-testsuite_CXXFLAGS += -Wno-ctor-dtor-privacy -Wno-duplicated-branches \\
+AM_CXXFLAGS += -Wno-ctor-dtor-privacy -Wno-duplicated-branches \\
 -Wno-effc++ -Wno-inline -Wno-missing-declarations -Wno-multiple-inheritance \\
 -Wno-namespaces -Wno-null-dereference -Wno-sign-conversion -Wno-suggest-attribute=format \\
 -Wno-suggest-attribute=noreturn -Wno-suggest-attribute=pure -Wno-suggest-final-methods \\
 -Wno-suggest-final-types -Wno-suggest-override -Wno-padded -Wno-switch-default \\
 -Wno-switch-enum -Wno-templates -Wno-undef -Wno-unused-const-variable \\
 -Wno-unused-macros -Wno-useless-cast -Wno-zero-as-null-pointer-constant
-testsuite_LDADD = @LIBS@
+LDADD = @LIBS@
 
 gtest_ver = release-1.10.0
 
@@ -102,15 +105,12 @@ gtest/gtest.h: googletest-\$(gtest_ver)
 googletest-\$(gtest_ver):
 	wget -nv -O - https://github.com/google/googletest/archive/\$(gtest_ver).tar.gz | tar xzvf -
 
-check:
-	./testsuite\$(EXEEXT)
-	lcov -c -d . -o @PACKAGE_NAME@-@PACKAGE_VERSION@.info
-	lcov -r @PACKAGE_NAME@-@PACKAGE_VERSION@.info \$(system_include_dirs) \`pwd\`/gtest/\* -o @PACKAGE_NAME@-@PACKAGE_VERSION@.info
-	genhtml -p \`cd ..; pwd\` -o html -s @PACKAGE_NAME@-@PACKAGE_VERSION@.info
-	\$(RM) @PACKAGE_NAME@-@PACKAGE_VERSION@.info *.gcda
+check-local:
+	gcovr -s -r \$(top_srcdir) --filter='^\$(top_srcdir)/src/' --html --html-details -o coverage.html
+	\$(RM) *.gcda \$(top_builddir)/src/*.gcda
 
 clean-local:
-	\$(RM) -r html *.gcda *.gcno
+	\$(RM) -r *.log *.trs *.css *.html *.gcda *.gcno
 EOF
 
 mkdir -p${verbose:+v} build-aux m4 || return
@@ -127,7 +127,9 @@ autoconf ${verbose:+-v} -W all || return
 
 ! which git > /dev/null 2>&1 && return
 
-echo '*.gcda' '*.gcno' '*.la' '*.lo' '*.o' '*.swp' '*~' .deps .libs \
+echo \
+	'*.css' '*.gcda' '*.gcno' '*.html' '*.la' '*.lo' '*.log' '*.o' '*.swp' '*.trs' '*~' \
+	.deps .libs \
 	GTAGS GRTAGS GPATH \
 	Makefile Makefile.in aclocal.m4 autom4te.cache autoscan.log \
 	config.h config.h.in config.log config.status \
