@@ -4,7 +4,9 @@
 
 mkdir -p${verbose:+v} src tests || return
 cat << EOF > src/${package_name}.cpp || return
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 int main(void)
 {
@@ -12,8 +14,11 @@ int main(void)
 }
 EOF
 cat << EOF > tests/test.cpp || return
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 #include "gtest/gtest.h"
+
 int main(int argc, char* argv[])
 {
 	::testing::InitGoogleTest(&argc, argv);
