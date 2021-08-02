@@ -115,7 +115,7 @@ EOF
 
 mkdir -p${verbose:+v} build-aux m4 || return
 
-libtoolize -c || return
+libtoolize -c ${verbose:+-v} -W all || return
 aclocal ${verbose:+--verbose} -W all || return
 autoheader ${verbose:+-v} -W all || return
 
