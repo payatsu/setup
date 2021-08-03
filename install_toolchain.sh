@@ -113,7 +113,7 @@
 : ${freetype_ver:=2.9.1}
 : ${fontconfig_ver:=2.13.1}
 : ${plantuml_ver:=1.2021.1}
-: ${diffutils_ver:=3.7}
+: ${diffutils_ver:=3.8}
 : ${patch_ver:=2.7.6}
 : ${findutils_ver:=4.8.0}
 : ${procps_ver:=3.3.16}
@@ -134,7 +134,7 @@
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.0}
 : ${tcsh_ver:=TCSH6_22_04}
-: ${inetutils_ver:=2.0}
+: ${inetutils_ver:=2.1}
 : ${iproute2_ver:=5.9.0}
 : ${util_linux_ver:=2.37}
 : ${e2fsprogs_ver:=1.46.2}

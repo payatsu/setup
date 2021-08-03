@@ -154,7 +154,7 @@ EOF
 : ${tcpdump_ver:=4.9.3}
 : ${procps_ver:=3.3.16}
 : ${sysstat_ver:=12.5.4}
-: ${inetutils_ver:=2.0}
+: ${inetutils_ver:=2.1}
 : ${iproute2_ver:=5.9.0}
 : ${nmap_ver:=7.90}
 : ${i2c_tools_ver:=4.2}
@@ -196,7 +196,7 @@ EOF
 : ${nano_ver:=5.8}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.6}
-: ${diffutils_ver:=3.7}
+: ${diffutils_ver:=3.8}
 : ${patch_ver:=2.7.6}
 : ${global_ver:=6.6.6}
 : ${findutils_ver:=4.8.0}
