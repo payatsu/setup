@@ -1229,8 +1229,8 @@ EOF
 			${pcre_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--enable-pcre16 --enable-pcre32 --enable-jit --enable-utf --enable-unicode-properties \
 				--enable-newline-is-any --enable-pcregrep-libz --enable-pcregrep-libbz2 \
-				CPPFLAGS="${CPPFLAGS} `I zlib.h`" \
-				LDFLAGS="${LDFLAGS} `L z`") || return
+				CPPFLAGS="${CPPFLAGS} `I zlib.h bzlib.h`" \
+				LDFLAGS="${LDFLAGS} `L z bz2`") || return
 		make -C ${pcre_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${pcre_bld_dir} -j ${jobs} -k check || return
