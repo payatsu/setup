@@ -2894,6 +2894,8 @@ install_native_dtc()
 {
 	[ -x ${prefix}/bin/dtc -a "${force_install}" != yes ] && return
 	which swig > /dev/null || install_native_swig || return
+	which bison > /dev/null || install_native_bison || return
+	which flex > /dev/null || install_native_flex || return
 	fetch dtc || return
 	unpack dtc || return
 	[ -f ${dtc_bld_dir}/Makefile ] || cp -Tvr ${dtc_src_dir} ${dtc_bld_dir} || return
