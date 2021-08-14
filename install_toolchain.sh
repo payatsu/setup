@@ -1078,8 +1078,8 @@ fetch()
 			wget -O ${brotli_src_dir}.tar.gz \
 				https://github.com/google/brotli/archive/refs/tags/v${brotli_ver}.tar.gz || return;;
 		curl)
-			wget -O ${curl_src_dir}.tar.bz2 \
-				https://curl.haxx.se/download/${curl_name}.tar.bz2 || return;;
+			wget -O ${curl_src_dir}.tar.xz \
+				https://curl.se/download/${curl_name}.tar.xz || return;;
 		expat)
 			wget -O ${expat_src_dir}.tar.bz2 \
 				https://sourceforge.net/projects/expat/files/expat/${expat_ver}/${expat_name}.tar.bz2/download || return;;

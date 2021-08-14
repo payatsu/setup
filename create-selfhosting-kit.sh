@@ -426,8 +426,8 @@ fetch()
 		wget -O ${pkg_config_src_dir}.tar.gz \
 			https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
 	curl)
-		wget -O ${curl_src_dir}.tar.bz2 \
-			https://curl.haxx.se/download/${curl_name}.tar.bz2 || return;;
+		wget -O ${curl_src_dir}.tar.xz \
+			https://curl.se/download/${curl_name}.tar.xz || return;;
 	git)
 		wget -O ${git_src_dir}.tar.xz \
 			https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return;;
