@@ -1902,6 +1902,7 @@ EOF
 		;;
 	autoconf)
 		[ -x ${DESTDIR}${prefix}/bin/autoconf -a "${force_install}" != yes ] && return
+		print_binary_path autoconf > /dev/null || ${0} ${cmdopt} m4 || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${autoconf_bld_dir}/Makefile ] ||
