@@ -1378,7 +1378,7 @@ EOF
 CFLAGS='${CFLAGS} `I zlib.h curses.h Python.h`'
 CPPFLAGS='${CPPFLAGS} `I zlib.h Python.h`'
 LDFLAGS='-L`print_prefix Python.h`/lib `L popt`'
-LIBS='${LIBS} `l popt uuid gmodule-2.0 glib-2.0 pcre dw elf z bz2 lzma curl zstd`'
+LIBS='${LIBS} `l popt uuid gmodule-2.0 ffi glib-2.0 pcre dw elf z bz2 lzma curl ssl crypto zstd`'
 PKG_CONFIG_PATH=
 PKG_CONFIG_LIBDIR=`print_library_dir source-highlight.pc`
 PKG_CONFIG_SYSROOT_DIR=${DESTDIR}
