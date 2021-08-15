@@ -3266,6 +3266,8 @@ setup_pathconfig_for_build()
 	host=${orig_host}
 	DESTDIR=${orig_DESTDIR}
 	unset orig_host orig_DESTDIR
+
+	set_compiler_as_env_vars || return
 }
 
 set_compiler_as_env_vars()
@@ -3275,6 +3277,14 @@ set_compiler_as_env_vars()
 	unset CFLAGS CXXFLAGS LDFLAGS
 	unset CROSS_COMPILE CONFIGURE_FLAGS
 	[ ${build} = ${host} ] && unset PKG_CONFIG_PATH
+
+	for f in autoconf autoheader autom4te; do
+		export `echo ${f} | tr a-z A-Z`=`which ${f}`
+	done
+	export AC_MACRODIR=$(readlink -m $(dirname ${AUTOCONF})/../share/autoconf)
+	export autom4te_perllibdir=${AC_MACRODIR}
+	export trailer_m4=${AC_MACRODIR}/autoconf/trailer.m4
+	export AUTOCONF="${AUTOCONF} -I ${AC_MACRODIR}"
 
 	[ ${build} = ${host} ] && return
 
@@ -3418,7 +3428,6 @@ main()
 	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
 
 	! which ccache > /dev/null || ccache -M 8G || return
-	set_compiler_as_env_vars || return
 	[ -z "${without_libc}" ] || manipulate_libc remove || return
 
 	for p in $@; do
