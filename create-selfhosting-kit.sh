@@ -195,7 +195,7 @@ EOF
 : ${emacs_ver:=27.2}
 : ${nano_ver:=5.8}
 : ${ctags_ver:=git}
-: ${grep_ver:=3.6}
+: ${grep_ver:=3.7}
 : ${diffutils_ver:=3.8}
 : ${patch_ver:=2.7.6}
 : ${global_ver:=6.6.6}

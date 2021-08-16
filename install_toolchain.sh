@@ -99,7 +99,7 @@
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.5.0}
 : ${nano_ver:=5.8}
-: ${grep_ver:=3.6}
+: ${grep_ver:=3.7}
 : ${global_ver:=6.6.6}
 : ${pcre_ver:=8.44}
 : ${pcre2_ver:=10.37}
