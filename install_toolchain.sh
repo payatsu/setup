@@ -182,8 +182,8 @@
 : ${boost_ver:=1_76_0}
 : ${Python_ver:=3.9.5}
 : ${Python2_ver:=2.7.18}
-: ${rustc_ver:=1.52.1}
-: ${rustup_ver:=1.24.1}
+: ${rustc_ver:=1.54.0}
+: ${rustup_ver:=1.24.3}
 : ${ruby_ver:=3.0.0}
 : ${go_ver:=1.16.6}
 : ${perl_ver:=5.32.1}
@@ -5831,7 +5831,6 @@ install_native_rustc()
 	(cd ${rustc_src_dir}
 	sed -e '
 		/^#ninja = .\+/s//ninja = '`which ninja > /dev/null && echo true || echo false`'/
-		/^#extended = .\+/s//extended = true/
 		/^#profiler = .\+/s//profiler = true/
 		/^#prefix = .\+/s%%prefix = "'${prefix}'"%
 		/^#sysconfdir = .\+/s//sysconfdir = "etc"/
@@ -5840,7 +5839,9 @@ install_native_rustc()
 			config.toml.example > config.toml || return
 	./x.py build -j ${jobs} || return
 	./x.py doc -j ${jobs} --stage 1 || return
-	./x.py install -j ${jobs}) || return
+	./x.py install -j ${jobs} || return
+	./x.py install -j ${jobs} cargo || return
+	) || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	for b in cargo cargo-clippy cargo-fmt cargo-miri clippy-driver miri rls rustc rustdoc rustfmt; do
