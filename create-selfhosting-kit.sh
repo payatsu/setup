@@ -3267,6 +3267,43 @@ setup_pathconfig_for_build()
 	DESTDIR=${orig_DESTDIR}
 	unset orig_host orig_DESTDIR
 
+	d=`dirname ${0}`
+	! which autoconf > /dev/null || [ ${d}/autoconf = `which autoconf` ] ||
+		generate_command_wrapper ${d} autoconf "\
+export AUTOM4TE=`which autom4te`
+export autom4te_perllibdir=$(readlink -m $(dirname $(which autoconf))/../share/autoconf)
+export AC_MACRODIR=\${autom4te_perllibdir}
+export trailer_m4=\${AC_MACRODIR}/autoconf/trailer.m4
+exec `which autoconf` -I \${AC_MACRODIR} \"\$@\"" || return
+
+	a=`which automake`
+	! which automake > /dev/null || [ ${d}/automake = ${a} ] || {
+		am_ver=$(grep -m 1 -oPe "(?<=automake-)[\d.]+(?='\)$)" ${a})
+		generate_command_wrapper ${d} automake "\
+export PERLLIB=$(readlink -m $(dirname ${a})/../share/automake)-${am_ver}
+exec ${a} \"\$@\"" || return
+		generate_command_wrapper ${d} aclocal-${am_ver} "\
+export autom4te_perllibdir=$(readlink -m $(dirname $(which autoconf))/../share/autoconf)
+export AC_MACRODIR=\${autom4te_perllibdir}
+export PERLLIB=$(readlink -m $(dirname ${a})/../share/automake)-${am_ver}
+export AUTOMAKE_UNINSTALLED=1
+exec `which aclocal-${am_ver}` --automake-acdir=$(readlink -m $(dirname ${a})/../share/aclocal)-${am_ver} \"\$@\"" || return
+		unset am_ver
+	}
+
+	echo ${PATH} | tr : '\n' | grep -qe ^${d}\$ \
+		&& PATH=${d}`echo ${PATH} | sed -e "
+				s%\(^\|:\)${d}\(\$\|:\)%\1\2%g
+				s/::/:/g
+				s/^://
+				s/:\$//
+				s/^./:&/
+			"` \
+		|| PATH=${d}${PATH:+:${PATH}}
+
+	unset a
+	unset d
+
 	set_compiler_as_env_vars || return
 }
 
@@ -3277,14 +3314,6 @@ set_compiler_as_env_vars()
 	unset CFLAGS CXXFLAGS LDFLAGS
 	unset CROSS_COMPILE CONFIGURE_FLAGS
 	[ ${build} = ${host} ] && unset PKG_CONFIG_PATH
-
-	for f in autoconf autoheader autom4te; do
-		export `echo ${f} | tr a-z A-Z`=`which ${f}`
-	done
-	export AC_MACRODIR=$(readlink -m $(dirname ${AUTOCONF})/../share/autoconf)
-	export autom4te_perllibdir=${AC_MACRODIR}
-	export trailer_m4=${AC_MACRODIR}/autoconf/trailer.m4
-	export AUTOCONF="${AUTOCONF} -I ${AC_MACRODIR}"
 
 	[ ${build} = ${host} ] && return
 
