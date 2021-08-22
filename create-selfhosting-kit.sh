@@ -3064,7 +3064,7 @@ generate_command_wrapper()
 #!/bin/sh
 ${3}
 EOF
-	chmod -v a+x ${1}/${2} || return
+	chmod a+x ${1}/${2} || return
 }
 
 generate_gcc_wrapper()
@@ -3269,26 +3269,37 @@ setup_pathconfig_for_build()
 
 	d=`dirname ${0}`
 	! which autoconf > /dev/null || [ ${d}/autoconf = `which autoconf` ] ||
-		generate_command_wrapper ${d} autoconf "\
+		for f in autoconf autoheader; do
+			generate_command_wrapper ${d} ${f} "\
 export AUTOM4TE=`which autom4te`
 export autom4te_perllibdir=$(readlink -m $(dirname $(which autoconf))/../share/autoconf)
 export AC_MACRODIR=\${autom4te_perllibdir}
 export trailer_m4=\${AC_MACRODIR}/autoconf/trailer.m4
-exec `which autoconf` -I \${AC_MACRODIR} \"\$@\"" || return
+exec `which ${f}` -I \${AC_MACRODIR} \"\$@\"" || return
+		done
 
 	a=`which automake`
 	! which automake > /dev/null || [ ${d}/automake = ${a} ] || {
 		am_ver=$(grep -m 1 -oPe "(?<=automake-)[\d.]+(?='\)$)" ${a})
-		generate_command_wrapper ${d} automake "\
+
+		for f in automake automake-${am_ver}; do
+			generate_command_wrapper ${d} ${f} "\
 export PERLLIB=$(readlink -m $(dirname ${a})/../share/automake)-${am_ver}
-exec ${a} \"\$@\"" || return
-		generate_command_wrapper ${d} aclocal-${am_ver} "\
+exec `which ${f}` --libdir \${PERLLIB} \"\$@\"" || return
+		done
+
+		for f in aclocal aclocal-${am_ver}; do
+			generate_command_wrapper ${d} ${f} "\
 export autom4te_perllibdir=$(readlink -m $(dirname $(which autoconf))/../share/autoconf)
 export AC_MACRODIR=\${autom4te_perllibdir}
 export PERLLIB=$(readlink -m $(dirname ${a})/../share/automake)-${am_ver}
 export AUTOMAKE_UNINSTALLED=1
-exec `which aclocal-${am_ver}` --automake-acdir=$(readlink -m $(dirname ${a})/../share/aclocal)-${am_ver} \"\$@\"" || return
+exec `which ${f}` --automake-acdir=$(readlink -m $(dirname ${a})/../share/aclocal)-${am_ver} \"\$@\"" || return
+		done
+
 		unset am_ver
+		generate_command_wrapper ${d} autom4te "\
+exec `which autom4te` -B $(readlink -m $(dirname $(which autoconf))/../share/autoconf) \"\$@\"" || return
 	}
 
 	echo ${PATH} | tr : '\n' | grep -qe ^${d}\$ \
