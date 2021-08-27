@@ -139,7 +139,7 @@
 : ${util_linux_ver:=2.37}
 : ${e2fsprogs_ver:=1.46.2}
 : ${squashfs_ver:=4.4}
-: ${openssl_ver:=1.1.1k}
+: ${openssl_ver:=1.1.1l}
 : ${openssh_ver:=8.6p1}
 : ${nghttp2_ver:=1.43.0}
 : ${brotli_ver:=1.0.9}
