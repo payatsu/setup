@@ -136,7 +136,7 @@
 : ${tcsh_ver:=TCSH6_22_04}
 : ${inetutils_ver:=2.1}
 : ${iproute2_ver:=5.9.0}
-: ${util_linux_ver:=2.37}
+: ${util_linux_ver:=2.37.2}
 : ${e2fsprogs_ver:=1.46.2}
 : ${squashfs_ver:=4.4}
 : ${openssl_ver:=1.1.1l}

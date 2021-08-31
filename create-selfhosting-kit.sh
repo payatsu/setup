@@ -129,7 +129,7 @@ EOF
 : ${source_highlight_ver:=3.1.9}
 : ${pcre_ver:=8.44}
 : ${pcre2_ver:=10.37}
-: ${util_linux_ver:=2.37}
+: ${util_linux_ver:=2.37.2}
 : ${popt_ver:=1.18}
 : ${glib_ver:=2.59.0}
 : ${babeltrace_ver:=1.5.8}
