@@ -13,7 +13,7 @@
 : ${cpio_ver:=2.13}
 : ${xz_ver:=5.2.5}
 : ${bzip2_ver:=1.0.8}
-: ${gzip_ver:=1.10}
+: ${gzip_ver:=1.11}
 : ${zip_ver:=3.0}
 : ${unzip_ver:=6.0}
 : ${lzip_ver:=1.22}
@@ -121,7 +121,7 @@
 : ${sysstat_ver:=12.5.4}
 : ${less_ver:=581.2}
 : ${groff_ver:=1.22.4}
-: ${gdbm_ver:=1.20}
+: ${gdbm_ver:=1.21}
 : ${libpipeline_ver:=1.5.2}
 : ${man_db_ver:=2.9.0}
 : ${file_ver:=5.39}
@@ -134,7 +134,7 @@
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.0}
 : ${tcsh_ver:=TCSH6_22_04}
-: ${inetutils_ver:=2.1}
+: ${inetutils_ver:=2.2}
 : ${iproute2_ver:=5.9.0}
 : ${util_linux_ver:=2.37.2}
 : ${e2fsprogs_ver:=1.46.2}
