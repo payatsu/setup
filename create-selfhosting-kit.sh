@@ -205,7 +205,7 @@ EOF
 : ${coreutils_ver:=8.32}
 : ${file_ver:=5.39}
 
-: ${go_ver:=1.16.6}
+: ${go_ver:=1.16.8}
 : ${cmake_ver:=3.19.4}
 : ${ninja_ver:=1.10.2}
 : ${meson_ver:=0.58.1}
