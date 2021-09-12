@@ -163,7 +163,7 @@ EOF
 : ${perl_ver:=5.32.1}
 : ${autoconf_ver:=2.71}
 : ${automake_ver:=1.16.4}
-: ${bison_ver:=3.7.6}
+: ${bison_ver:=3.8.1}
 : ${flex_ver:=2.6.4}
 : ${libtool_ver:=2.4.6}
 : ${pkg_config_ver:=0.29.2}

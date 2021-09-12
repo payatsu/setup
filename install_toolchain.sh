@@ -23,13 +23,13 @@
 : ${lz4_ver:=1.9.3}
 : ${zstd_ver:=1.5.0}
 : ${libarchive_ver:=3.5.1}
-: ${wget_ver:=1.21.1}
+: ${wget_ver:=1.21.2}
 : ${pkg_config_ver:=0.29.2}
 : ${help2man_ver:=1.47.16}
 : ${texinfo_ver:=6.8}
 : ${coreutils_ver:=8.32}
 : ${busybox_ver:=1.33.1}
-: ${bison_ver:=3.7.6}
+: ${bison_ver:=3.8.1}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.19}
 : ${autoconf_ver:=2.71}
