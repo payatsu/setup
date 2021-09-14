@@ -77,7 +77,7 @@
 : ${ncurses_ver:=6.2}
 : ${popt_ver:=1.18}
 : ${babeltrace_ver:=1.5.8}
-: ${gdb_ver:=10.2}
+: ${gdb_ver:=11.1}
 : ${crash_ver:=7.3.0}
 : ${lcov_ver:=1.14}
 : ${strace_ver:=5.12}
