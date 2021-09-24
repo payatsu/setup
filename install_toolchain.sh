@@ -250,8 +250,8 @@
 : ${mesa_ver:=19.0.5}
 : ${libepoxy_ver:=1.3.1}
 : ${glib_ver:=2.60.1}
-: ${cairo_ver:=1.14.6}
-: ${pixman_ver:=0.38.4}
+: ${pixman_ver:=0.40.0}
+: ${cairo_ver:=1.16.0}
 : ${pango_ver:=1.40.3}
 : ${gdk_pixbuf_ver:=2.36.0}
 : ${atk_ver:=2.22.0}
@@ -3502,19 +3502,6 @@ install_native_glib()
 	done
 }
 
-#install_native_cairo()
-#{
-#	[ -f ${prefix}/include/cairo/cairo.h -a "${force_install}" != yes ] && return
-#	fetch cairo || return
-#	unpack cairo || return
-#	[ -f ${cairo_src_dir}/Makefile ] ||
-#		(cd ${cairo_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${cairo_src_dir} -j ${jobs} || return
-#	make -C ${cairo_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-
 install_native_pixman()
 {
 	[ -f ${prefix}/include/pixman-1.0/pixman.h -a "${force_install}" != yes ] && return
@@ -3527,7 +3514,24 @@ install_native_pixman()
 	make -C ${pixman_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
-#
+
+install_native_cairo()
+{
+	[ -f ${prefix}/include/cairo/cairo.h -a "${force_install}" != yes ] && return
+	print_header_path ft2build.h freetype2 > /dev/null || install_native_freetype || return
+	print_header_path fontconfig.h fontconfig > /dev/null || install_native_fontconfig || return
+	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
+	print_header_path cairo.h cairo > /dev/null || install_native_pixman || return
+	fetch cairo || return
+	unpack cairo || return
+	[ -f ${cairo_src_dir}/Makefile ] ||
+		(cd ${cairo_src_dir}
+		./configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${cairo_src_dir} -j ${jobs} || return
+	make -C ${cairo_src_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
 #install_native_pango()
 #{
 #	[ -f ${prefix}/include/pango-1.0/pango/pango.h -a "${force_install}" != yes ] && return
