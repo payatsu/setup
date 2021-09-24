@@ -252,7 +252,7 @@
 : ${glib_ver:=2.60.1}
 : ${pixman_ver:=0.40.0}
 : ${cairo_ver:=1.16.0}
-: ${pango_ver:=1.40.3}
+: ${pango_ver:=1.49.1}
 : ${gdk_pixbuf_ver:=2.36.0}
 : ${atk_ver:=2.22.0}
 : ${gobject_introspection_ver:=1.50.0}
@@ -1351,14 +1351,9 @@ full()
 	for f in `sed -e '
 		/^install_native_[_[:alnum:]]\+()$/{
 			s/()$//
-			s/install_native_pkg_config//
 			s/install_native_linux_header//
 			s/install_native_glibc//
 			s/install_native_libXpm//
-			s/install_native_glib//
-			s/install_native_cairo//
-			s/install_native_pixman//
-			s/install_native_pango//
 			s/install_native_gdk_pixbuf//
 			s/install_native_atk//
 			s/install_native_gobject_introspection//
@@ -3532,22 +3527,18 @@ install_native_cairo()
 	update_path || return
 }
 
-#install_native_pango()
-#{
-#	[ -f ${prefix}/include/pango-1.0/pango/pango.h -a "${force_install}" != yes ] && return
-#	print_header_path cairo.h cairo > /dev/null || install_native_cairo || return
-#	print_header_path pixman.h pixman-1.0 > /dev/null || install_native_pixman || return
-#	fetch pango || return
-#	unpack pango || return
-#	[ -f ${pango_src_dir}/Makefile ] ||
-#		(cd ${pango_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --enable-static \
-#			--disable-silent-rules) || return
-#	make -C ${pango_src_dir} -j ${jobs} || return
-#	make -C ${pango_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
+install_native_pango()
+{
+	[ -f ${prefix}/include/pango-1.0/pango/pango.h -a "${force_install}" != yes ] && return
+	print_header_path cairo.h cairo > /dev/null || install_native_cairo || return
+	fetch pango || return
+	unpack pango || return
+	meson ${pango_src_dir} ${pango_bld_dir} --prefix ${prefix}|| return
+	ninja -v -C ${pango_bld_dir} || return
+	ninja -v -C ${pango_bld_dir} install || return
+	update_path || return
+}
+
 #install_native_gdk_pixbuf()
 #{
 #	[ -f ${prefix}/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h -a "${force_install}" != yes ] && return
