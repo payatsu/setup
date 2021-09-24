@@ -4061,7 +4061,6 @@ install_native_ctags()
 	[ -x ${prefix}/bin/ctags -a "${force_install}" != yes ] &&
 		${prefix}/bin/ctags --version | grep -qe '\<Universal Ctags\>' && return
 	which pkg-config > /dev/null || install_native_pkg_config || return
-	print_library_path libiconv.so > /dev/null || install_native_libiconv || return
 	fetch ctags || return
 	unpack ctags || return
 	[ -f ${ctags_src_dir}/configure ] ||
