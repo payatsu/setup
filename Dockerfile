@@ -11,12 +11,12 @@ ARG njobs
 ARG pkgs="zlib m4 gmp mpfr mpc isl zstd gcc perl autoconf autoconf-archive \
 automake pigz bzip2 xz ncurses readline openssl expat libffi gdbm sqlite \
 Python2 Python nghttp2 libunistring libidn2 libpsl curl cmake ninja meson \
-pcre libiconv glib pkg-config elfutils binutils bison flex libtool less \
-texinfo gawk cpio zip unzip lzip lunzip lzo lzop lz4 file groff libpipeline \
-man-db ed bc patch swig libxml2 Bear ccache \
-llvm lld compiler-rt libunwindnongnu libcxxabi libcxx clang libedit lldb \
-ruby tcl tk libatomic_ops gc guile boost source-highlight util-linux popt \
-babeltrace gdb make autogen gettext pcre2 libxslt asciidoc git openssh go rustc \
+pcre libiconv glib pkg-config gettext pcre2 libxml2 libxslt asciidoc \
+tcl tk git elfutils binutils bison flex libtool less texinfo gawk cpio zip \
+unzip lzip lunzip lzo lzop lz4 file groff libpipeline man-db ed bc patch \
+swig Bear ccache llvm lld compiler-rt libunwindnongnu libcxxabi libcxx \
+clang libedit lldb ruby libatomic_ops gc guile boost source-highlight \
+util-linux popt babeltrace gdb make autogen openssh go rustc \
 zsh bash screen libevent tmux lua vim neovim global the_silver_searcher \
 the_platinum_searcher gperf highway ripgrep fzf tiff freetype fontconfig \
 ghostscript graphviz jdk plantuml jq protobuf rsync dtc strace \
