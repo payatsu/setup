@@ -202,7 +202,7 @@ EOF
 : ${findutils_ver:=4.8.0}
 
 : ${help2man_ver:=1.47.16}
-: ${coreutils_ver:=8.32}
+: ${coreutils_ver:=9.0}
 : ${file_ver:=5.39}
 
 : ${go_ver:=1.16.8}
