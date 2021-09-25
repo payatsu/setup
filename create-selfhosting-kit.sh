@@ -190,7 +190,7 @@ EOF
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.0}
 : ${tcsh_ver:=TCSH6_22_04}
-: ${vim_ver:=8.2.2886}
+: ${vim_ver:=8.2.3455}
 : ${vimdoc_ja_ver:=master}
 : ${emacs_ver:=27.2}
 : ${nano_ver:=5.8}
