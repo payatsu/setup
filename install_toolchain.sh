@@ -211,8 +211,8 @@
 : ${fzf_ver:=0.25.1}
 : ${bat_ver:=0.18.2}
 : ${jq_ver:=1.6}
-: ${libpcap_ver:=1.9.1}
-: ${tcpdump_ver:=4.9.3}
+: ${libpcap_ver:=1.10.1}
+: ${tcpdump_ver:=4.99.1}
 : ${nmap_ver:=7.90}
 : ${npth_ver:=1.6}
 : ${libgpg_error_ver:=1.42}

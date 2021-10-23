@@ -150,8 +150,8 @@ EOF
 : ${libtraceevent_ver:=1.3.3}
 : ${libtracefs_ver:=1.2.3}
 : ${trace_cmd_ver:=v2.9.4}
-: ${libpcap_ver:=1.9.1}
-: ${tcpdump_ver:=4.9.3}
+: ${libpcap_ver:=1.10.1}
+: ${tcpdump_ver:=4.99.1}
 : ${procps_ver:=3.3.16}
 : ${sysstat_ver:=12.5.4}
 : ${inetutils_ver:=2.2}
