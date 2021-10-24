@@ -208,6 +208,8 @@
 : ${v4l_utils_ver:=1.20.0}
 : ${yavta_ver:=git}
 : ${gstreamer_ver:=1.18.5}
+: ${gst_plugins_base_ver:=${gstreamer_ver}}
+: ${orc_ver:=0.4.32}
 : ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.25.1}
 : ${bat_ver:=0.18.2}
@@ -710,6 +712,8 @@ help()
 		Specify the version of yavta you want, currently '${yavta_ver}'.
 	gstreamer_ver
 		Specify the version of GStreamer you want, currently '${gstreamer_ver}'.
+	orc_ver
+		Specify the version of orc you want, currently '${orc_ver}'.
 	googletest_ver
 		Specify the version of google test you want, currently '${googletest_ver}'.
 	fzf_ver
@@ -1235,9 +1239,9 @@ fetch()
 		yavta)
 			git clone --depth 1 \
 				git://git.ideasonboard.org/yavta.git ${yavta_src_dir} || return;;
-		gstreamer)
-			wget -O ${gstreamer_src_dir}.tar.xz \
-				https://gstreamer.freedesktop.org/src/gstreamer/${gstreamer_name}.tar.xz || return;;
+		gstreamer|gst-plugins-base|orc)
+			eval wget -O \${${_p}_src_dir}.tar.xz \
+				https://gstreamer.freedesktop.org/src/${p:-gstreamer}/\${${_p:-gstreamer}_name}.tar.xz || return;;
 		googletest)
 			wget -O ${googletest_src_dir}.tar.gz \
 				https://github.com/google/googletest/archive/release-${googletest_ver}.tar.gz || return;;
@@ -1625,6 +1629,7 @@ set_variables()
 			s/gdk_pixbuf/gdk-pixbuf/
 			s/gobject_introspection/gobject-introspection/
 			s/v4l_utils/v4l-utils/
+			s/gst_plugins_base/gst-plugins-base/
 			p
 		}
 		d' ${0}`; do
@@ -1784,6 +1789,7 @@ EOF
 update_pkg_config_path()
 {
 	PKG_CONFIG_PATH=`([ -d ${DESTDIR}${prefix}/lib ] && find ${DESTDIR}${prefix}/lib -type d -name pkgconfig
+						[ -d ${DESTDIR}${prefix}/lib64 ] && find ${DESTDIR}${prefix}/lib64 -type d -name pkgconfig
 						[ -d ${DESTDIR}${prefix}/share ] && find ${DESTDIR}${prefix}/share -type d -name pkgconfig
 						LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs | sed -e '/^libraries: =/{s/^libraries: =//;p};d' |
 							tr : '\n' | xargs realpath -eq | xargs -I dir find dir -maxdepth 1 -type d -name pkgconfig
@@ -6351,6 +6357,32 @@ install_native_gstreamer()
 	meson --prefix ${prefix} ${strip:+--${strip}} ${gstreamer_src_dir} ${gstreamer_bld_dir} || return
 	ninja -v -C ${gstreamer_bld_dir} || return
 	ninja -v -C ${gstreamer_bld_dir} install || return
+	update_path || return
+}
+
+install_native_gst_plugins_base()
+{
+	[ -f ${prefix}/include/gstreamer-1.0/gst/video/video.h -a "${force_install}" != yes ] && return
+	which meson > /dev/null || install_native_meson || return
+	print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || install_native_gstreamer || return
+	which orcc > /dev/null || install_native_orc || return
+	fetch gst-plugins-base || return
+	unpack gst-plugins-base || return
+	meson --prefix ${prefix} ${strip:+--${strip}} ${gst_plugins_base_src_dir} ${gst_plugins_base_bld_dir} || return
+	ninja -v -C ${gst_plugins_base_bld_dir} || return
+	ninja -v -C ${gst_plugins_base_bld_dir} install || return
+	update_path || return
+}
+
+install_native_orc()
+{
+	[ -x ${prefix}/bin/orcc -a "${force_install}" != yes ] && return
+	which meson > /dev/null || install_native_meson || return
+	fetch orc || return
+	unpack orc || return
+	meson --prefix ${prefix} ${strip:+--${strip}} ${orc_src_dir} ${orc_bld_dir} || return
+	ninja -v -C ${orc_bld_dir} || return
+	ninja -v -C ${orc_bld_dir} install || return
 	update_path || return
 }
 
