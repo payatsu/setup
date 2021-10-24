@@ -207,6 +207,7 @@
 : ${opencv_contrib_ver:=4.5.3}
 : ${v4l_utils_ver:=1.20.0}
 : ${yavta_ver:=git}
+: ${gstreamer_ver:=1.18.5}
 : ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.25.1}
 : ${bat_ver:=0.18.2}
@@ -707,6 +708,8 @@ help()
 		Specify the version of v4l-utils you want, currently '${v4l_utils_ver}'.
 	yavta_ver
 		Specify the version of yavta you want, currently '${yavta_ver}'.
+	gstreamer_ver
+		Specify the version of GStreamer you want, currently '${gstreamer_ver}'.
 	googletest_ver
 		Specify the version of google test you want, currently '${googletest_ver}'.
 	fzf_ver
@@ -1232,6 +1235,9 @@ fetch()
 		yavta)
 			git clone --depth 1 \
 				git://git.ideasonboard.org/yavta.git ${yavta_src_dir} || return;;
+		gstreamer)
+			wget -O ${gstreamer_src_dir}.tar.xz \
+				https://gstreamer.freedesktop.org/src/gstreamer/${gstreamer_name}.tar.xz || return;;
 		googletest)
 			wget -O ${googletest_src_dir}.tar.gz \
 				https://github.com/google/googletest/archive/release-${googletest_ver}.tar.gz || return;;
@@ -6334,6 +6340,18 @@ install_native_yavta()
 	update_path || return
 	[ -z "${strip}" ] && return
 	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/yavta || return
+}
+
+install_native_gstreamer()
+{
+	[ -x ${prefix}/bin/gst-launch-1.0 -a "${force_install}" != yes ] && return
+	which meson > /dev/null || install_native_meson || return
+	fetch gstreamer || return
+	unpack gstreamer || return
+	meson --prefix ${prefix} ${strip:+--${strip}} ${gstreamer_src_dir} ${gstreamer_bld_dir} || return
+	ninja -v -C ${gstreamer_bld_dir} || return
+	ninja -v -C ${gstreamer_bld_dir} install || return
+	update_path || return
 }
 
 install_native_googletest()
