@@ -211,6 +211,7 @@
 : ${gst_plugins_base_ver:=${gstreamer_ver}}
 : ${gst_plugins_good_ver:=${gstreamer_ver}}
 : ${gst_rtsp_server_ver:=${gstreamer_ver}}
+: ${gst_omx_ver:=${gstreamer_ver}}
 : ${orc_ver:=0.4.32}
 : ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.25.1}
@@ -1241,7 +1242,7 @@ fetch()
 		yavta)
 			git clone --depth 1 \
 				git://git.ideasonboard.org/yavta.git ${yavta_src_dir} || return;;
-		gstreamer|gst-plugins-base|gst-plugins-good|gst-rtsp-server|orc)
+		gstreamer|gst-plugins-base|gst-plugins-good|gst-rtsp-server|gst-omx|orc)
 			eval wget -O \${${_p}_src_dir}.tar.xz \
 				https://gstreamer.freedesktop.org/src/${p:-gstreamer}/\${${_p:-gstreamer}_name}.tar.xz || return;;
 		googletest)
@@ -1634,6 +1635,7 @@ set_variables()
 			s/gst_plugins_base/gst-plugins-base/
 			s/gst_plugins_good/gst-plugins-good/
 			s/gst_rtsp_server/gst-rtsp-server/
+			s/gst_omx/gst-omx/
 			p
 		}
 		d' ${0}`; do
@@ -6404,6 +6406,20 @@ install_native_gst_rtsp_server()
 	meson --prefix ${prefix} -D tests=disabled ${strip:+--${strip}} ${gst_rtsp_server_src_dir} ${gst_rtsp_server_bld_dir} || return
 	ninja -v -C ${gst_rtsp_server_bld_dir} || return
 	ninja -v -C ${gst_rtsp_server_bld_dir} install || return
+	update_path || return
+}
+
+install_native_gst_omx()
+{
+	[ -e ${prefix}/lib64/gstreamer-1.0/libgstomx.so -a "${force_install}" != yes ] && return
+	which meson > /dev/null || install_native_meson || return
+	print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || install_native_gstreamer || return
+	print_header_path video.h gstreamer-1.0/gst/video > /dev/null || install_native_gst_plugins_base || return
+	fetch gst-omx || return
+	unpack gst-omx || return
+	meson --prefix ${prefix} -D target=generic ${strip:+--${strip}} ${gst_omx_src_dir} ${gst_omx_bld_dir} || return
+	ninja -v -C ${gst_omx_bld_dir} || return
+	ninja -v -C ${gst_omx_bld_dir} install || return
 	update_path || return
 }
 
