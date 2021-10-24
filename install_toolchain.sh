@@ -209,6 +209,7 @@
 : ${yavta_ver:=git}
 : ${gstreamer_ver:=1.18.5}
 : ${gst_plugins_base_ver:=${gstreamer_ver}}
+: ${gst_plugins_good_ver:=${gstreamer_ver}}
 : ${orc_ver:=0.4.32}
 : ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.25.1}
@@ -1239,7 +1240,7 @@ fetch()
 		yavta)
 			git clone --depth 1 \
 				git://git.ideasonboard.org/yavta.git ${yavta_src_dir} || return;;
-		gstreamer|gst-plugins-base|orc)
+		gstreamer|gst-plugins-base|gst-plugins-good|orc)
 			eval wget -O \${${_p}_src_dir}.tar.xz \
 				https://gstreamer.freedesktop.org/src/${p:-gstreamer}/\${${_p:-gstreamer}_name}.tar.xz || return;;
 		googletest)
@@ -1630,6 +1631,7 @@ set_variables()
 			s/gobject_introspection/gobject-introspection/
 			s/v4l_utils/v4l-utils/
 			s/gst_plugins_base/gst-plugins-base/
+			s/gst_plugins_good/gst-plugins-good/
 			p
 		}
 		d' ${0}`; do
@@ -6371,6 +6373,21 @@ install_native_gst_plugins_base()
 	meson --prefix ${prefix} ${strip:+--${strip}} ${gst_plugins_base_src_dir} ${gst_plugins_base_bld_dir} || return
 	ninja -v -C ${gst_plugins_base_bld_dir} || return
 	ninja -v -C ${gst_plugins_base_bld_dir} install || return
+	update_path || return
+}
+
+install_native_gst_plugins_good()
+{
+	[ -e ${prefix}/lib64/gstreamer-1.0/libgstautodetect.so -a "${force_install}" != yes ] && return
+	which meson > /dev/null || install_native_meson || return
+	print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || install_native_gstreamer || return
+	print_header_path video.h gstreamer-1.0/gst/video > /dev/null || install_native_gst_plugins_base || return
+	which orcc > /dev/null || install_native_orc || return
+	fetch gst-plugins-good || return
+	unpack gst-plugins-good || return
+	meson --prefix ${prefix} ${strip:+--${strip}} ${gst_plugins_good_src_dir} ${gst_plugins_good_bld_dir} || return
+	ninja -v -C ${gst_plugins_good_bld_dir} || return
+	ninja -v -C ${gst_plugins_good_bld_dir} install || return
 	update_path || return
 }
 
