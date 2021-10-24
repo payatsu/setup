@@ -3487,9 +3487,9 @@ install_native_glib()
 	which meson > /dev/null || install_native_meson || return
 	fetch glib || return
 	unpack glib || return
-	meson ${glib_src_dir} ${glib_src_dir}/_build --prefix ${prefix} -Diconv=gnu -Dlibmount=false || return
-	ninja -v -C ${glib_src_dir}/_build || return
-	ninja -v -C ${glib_src_dir}/_build install || return
+	meson --prefix ${prefix} -Diconv=gnu -Dlibmount=false ${glib_src_dir} ${glib_bld_dir} || return
+	ninja -v -C ${glib_bld_dir} || return
+	ninja -v -C ${glib_bld_dir} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	for b in gapplication gdbus gio gio-launch-desktop gio-querymodules glib-compile-resources glib-compile-schemas gobject-query gresource gsettings gtester; do
@@ -3533,7 +3533,7 @@ install_native_pango()
 	print_header_path cairo.h cairo > /dev/null || install_native_cairo || return
 	fetch pango || return
 	unpack pango || return
-	meson ${pango_src_dir} ${pango_bld_dir} --prefix ${prefix}|| return
+	meson --prefix ${prefix} ${pango_src_dir} ${pango_bld_dir} || return
 	ninja -v -C ${pango_bld_dir} || return
 	ninja -v -C ${pango_bld_dir} install || return
 	update_path || return
