@@ -182,6 +182,8 @@
 : ${boost_ver:=1_76_0}
 : ${Python_ver:=3.10.0}
 : ${Python2_ver:=2.7.18}
+: ${cython_ver:=0.29.24}
+: ${numpy_ver:=1.21.3}
 : ${rustc_ver:=1.56.0}
 : ${rustup_ver:=1.24.3}
 : ${ruby_ver:=3.0.0}
@@ -664,6 +666,10 @@ help()
 		Specify the version of boost you want, currently '${boost_ver}'.
 	Python_ver
 		Specify the version of python you want, currently '${Python_ver}'.
+	cython_ver
+		Specify the version of Cython you want, currently '${cython_ver}'.
+	numpy_ver
+		Specify the version of NumPy you want, currently '${numpy_ver}'.
 	rustc_ver
 		Specify the version of Rust you want, currently '${rustc_ver}'.
 	rustup_ver
@@ -1179,6 +1185,12 @@ fetch()
 		Python2|Python)
 			eval wget -O ${Python_src_base}/Python-\${${_p}_ver}.tar.xz \
 				https://www.python.org/ftp/python/\${${_p:-Python}_ver}/Python-\${${_p:-Python}_ver}.tar.xz || return;;
+		cython)
+			wget -O ${cython_src_dir}.tar.gz \
+				https://github.com/cython/cython/archive/refs/tags/${cython_ver}.tar.gz;;
+		numpy)
+			wget -O ${numpy_src_dir}.tar.gz \
+				https://github.com/numpy/numpy/releases/download/v${numpy_ver}/${numpy_name}.tar.gz;;
 		rustc)
 			wget -O ${rustc_src_dir}.tar.gz \
 				https://static.rust-lang.org/dist/${rustc_name}.tar.gz || return;;
@@ -5829,6 +5841,22 @@ install_native_Python()
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libpython${soname_v} || return
 			chmod -v u-w ${DESTDIR}${prefix}/lib/libpython${soname_v} || return) || return
 	done
+}
+
+install_native_cython()
+{
+	[ -x ${prefix}/bin/cython -a "${force_install}" != yes ] && return
+	fetch cython || return
+	unpack cython || return
+	(cd ${cython_src_dir}; python3 setup.py install --prefix ${prefix}) || return
+}
+
+install_native_numpy()
+{
+	[ -x ${prefix}/bin/f2py -a "${force_install}" != yes ] && return
+	fetch numpy || return
+	unpack numpy || return
+	python3 ${numpy_src_dir}/setup.py build -j ${jobs} install --prefix ${prefix} || return
 }
 
 install_native_rustc()
