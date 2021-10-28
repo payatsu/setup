@@ -5848,7 +5848,8 @@ install_native_cython()
 	[ -x ${prefix}/bin/cython -a "${force_install}" != yes ] && return
 	fetch cython || return
 	unpack cython || return
-	(cd ${cython_src_dir}; python3 setup.py install --prefix ${prefix}) || return
+	(cd ${cython_src_dir}
+	python3 setup.py build -j ${jobs} install --prefix ${prefix}) || return
 }
 
 install_native_numpy()
@@ -5856,7 +5857,8 @@ install_native_numpy()
 	[ -x ${prefix}/bin/f2py -a "${force_install}" != yes ] && return
 	fetch numpy || return
 	unpack numpy || return
-	python3 ${numpy_src_dir}/setup.py build -j ${jobs} install --prefix ${prefix} || return
+	(cd ${numpy_src_dir}
+	python3 setup.py build -j ${jobs} install --prefix ${prefix}) || return
 }
 
 install_native_rustc()
