@@ -5210,7 +5210,7 @@ if not os.path.isdir(d):
 	os.makedirs(d)
 sys.exit(int(not d in sys.path))" || update_path || return
 	(cd ${meson_src_dir}
-	python3 ${meson_src_dir}/setup.py install --prefix ${DESTDIR}${prefix}) || return
+	python3 ${meson_src_dir}/setup.py install ${DESTDIR:+--root ${DESTDIR}} --prefix ${DESTDIR}${prefix}) || return
 }
 
 install_native_cmake()
@@ -5850,7 +5850,7 @@ install_native_cython()
 	unpack cython || return
 	(cd ${cython_src_dir}
 	CC=${CC:-${host:+${host}-}gcc} LDSHARED="${CC:-${host:+${host}-}gcc} --shared" \
-		python3 setup.py build -j ${jobs} install --prefix ${prefix}) || return
+		python3 setup.py build -j ${jobs} install ${DESTDIR:+--root ${DESTDIR}} --prefix ${prefix}) || return
 }
 
 install_native_numpy()
@@ -5860,7 +5860,7 @@ install_native_numpy()
 	unpack numpy || return
 	(cd ${numpy_src_dir}
 	CC=${CC:-${host:+${host}-}gcc} LDSHARED="${CC:-${host:+${host}-}gcc} --shared" \
-		python3 setup.py build -j ${jobs} install --prefix ${prefix}) || return
+		python3 setup.py build -j ${jobs} install ${DESTDIR:+--root ${DESTDIR}} --prefix ${prefix}) || return
 }
 
 install_native_rustc()
