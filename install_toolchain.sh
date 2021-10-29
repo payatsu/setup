@@ -927,7 +927,7 @@ fetch()
 				https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v${mingw_w64_ver}.tar.bz2/download || return;;
 		isl)
 			wget -O ${isl_src_dir}.tar.xz \
-				http://isl.gforge.inria.fr/${isl_name}.tar.xz || return;;
+				https://libisl.sourceforge.io/${isl_name}.tar.xz || return;;
 		gcc)
 			[ "${gcc_ver}" = git ] && {
 				git clone -b master --depth 1 \
