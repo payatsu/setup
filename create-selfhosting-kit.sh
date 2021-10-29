@@ -400,7 +400,7 @@ fetch()
 			https://git.kernel.org/pub/scm/utils/trace-cmd/trace-cmd.git/snapshot/trace-cmd-${trace_cmd_ver}.tar.gz || return;;
 	libpcap|tcpdump)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
-			http://www.tcpdump.org/release/\${${_1}_name}.tar.gz || return;;
+			https://www.tcpdump.org/release/\${${_1}_name}.tar.gz || return;;
 	procps)
 		wget -O ${procps_src_dir}.tar.bz2 \
 			https://gitlab.com/procps-ng/procps/-/archive/v${procps_ver}/procps-v${procps_ver}.tar.bz2 || return;;
@@ -1730,7 +1730,7 @@ EOF
 		unpack ${1} || return
 		[ -f ${libpcap_bld_dir}/Makefile ] ||
 			(cd ${libpcap_bld_dir}
-			${libpcap_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
+			${libpcap_src_dir}/configure --prefix=${prefix} --host=${host}) || return
 		make -C ${libpcap_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${libpcap_bld_dir} -j ${jobs} -k test || return
@@ -1743,7 +1743,7 @@ EOF
 		unpack ${1} || return
 		[ -f ${tcpdump_bld_dir}/Makefile ] ||
 			(cd ${tcpdump_bld_dir}
-			${tcpdump_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+			${tcpdump_src_dir}/configure --prefix=${prefix} --host=${host} \
 				--with-system-libpcap \
 				ac_cv_path_PCAP_CONFIG=: \
 				CPPFLAGS="${CPPFLAGS} `I pcap.h`" \

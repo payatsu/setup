@@ -1272,7 +1272,7 @@ fetch()
 				https://github.com/stedolan/jq/releases/download/${jq_name}/${jq_name}.tar.gz || return;;
 		libpcap|tcpdump)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
-				http://www.tcpdump.org/release/\${${_p:-libpcap}_name}.tar.gz || return;;
+				https://www.tcpdump.org/release/\${${_p:-libpcap}_name}.tar.gz || return;;
 		nmap)
 			wget -O ${nmap_src_dir}.tar.bz2 \
 				https://nmap.org/dist/${nmap_name}.tar.bz2 || return;;
@@ -6556,7 +6556,7 @@ install_native_libpcap()
 	unpack libpcap || return
 	[ -f ${libpcap_bld_dir}/Makefile ] ||
 		(cd ${libpcap_bld_dir}
-		${libpcap_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		${libpcap_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${libpcap_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libpcap_bld_dir} -j ${jobs} -k test || return
@@ -6572,7 +6572,7 @@ install_native_tcpdump()
 	unpack tcpdump || return
 	[ -f ${tcpdump_bld_dir}/Makefile ] ||
 		(cd ${tcpdump_bld_dir}
-		${tcpdump_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		${tcpdump_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
 	make -C ${tcpdump_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${tcpdump_bld_dir} -j ${jobs} -k check || return
