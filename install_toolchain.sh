@@ -5849,7 +5849,8 @@ install_native_cython()
 	fetch cython || return
 	unpack cython || return
 	(cd ${cython_src_dir}
-	python3 setup.py build -j ${jobs} install --prefix ${prefix}) || return
+	CC=${CC:-${host:+${host}-}gcc} LDSHARED="${CC:-${host:+${host}-}gcc} --shared" \
+		python3 setup.py build -j ${jobs} install --prefix ${prefix}) || return
 }
 
 install_native_numpy()
@@ -5858,7 +5859,8 @@ install_native_numpy()
 	fetch numpy || return
 	unpack numpy || return
 	(cd ${numpy_src_dir}
-	python3 setup.py build -j ${jobs} install --prefix ${prefix}) || return
+	CC=${CC:-${host:+${host}-}gcc} LDSHARED="${CC:-${host:+${host}-}gcc} --shared" \
+		python3 setup.py build -j ${jobs} install --prefix ${prefix}) || return
 }
 
 install_native_rustc()
