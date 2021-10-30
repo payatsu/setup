@@ -21,7 +21,9 @@ zsh bash screen libevent tmux lua vim neovim global the_silver_searcher \
 the_platinum_searcher gperf highway ripgrep fzf tiff freetype fontconfig \
 ghostscript graphviz jdk plantuml jq protobuf rsync dtc strace \
 systemtap libbpf bcc bpftrace libcap numactl OpenCSD libpfm perf libpcap \
-tcpdump iproute2 nmap libpng jpeg giflib emacs diffutils poke"
+tcpdump iproute2 nmap libpng jpeg giflib emacs diffutils poke cython numpy \
+gstreamer orc gst-plugins-base gst-plugins-good gst-editing-services \
+gst-rtsp-server gst-omx opencv v4l-utils"
 
 RUN \
 apt-get update && apt-get upgrade -y && \
@@ -39,7 +41,7 @@ libxt-dev \
 libxaw7-dev libxpm-dev
 COPY install_toolchain.sh ${prefix}/
 RUN --mount=type=cache,target=/root/.ccache --mount=type=cache,target=${prefix}/src \
-${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} "fetch ${pkgs} clang-tools-extra vimdoc-ja mingw-w64" && \
+${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} "fetch ${pkgs} clang-tools-extra vimdoc-ja opencv_contrib mingw-w64" && \
 for p in `echo ${pkgs} | tr - _` ctags; do \
 	${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} install_native_${p} clean shrink_archives || exit; \
 done && \

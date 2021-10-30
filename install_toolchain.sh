@@ -5856,6 +5856,7 @@ install_native_cython()
 install_native_numpy()
 {
 	[ -x ${prefix}/bin/f2py -a "${force_install}" != yes ] && return
+	which cython > /dev/null || install_native_cython || return
 	fetch numpy || return
 	unpack numpy || return
 	(cd ${numpy_src_dir}
