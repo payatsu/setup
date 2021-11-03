@@ -262,9 +262,10 @@
 : ${pixman_ver:=0.40.0}
 : ${cairo_ver:=1.16.0}
 : ${pango_ver:=1.49.1}
+: ${gobject_introspection_ver:=1.70.0}
+: ${pygobject_ver:=3.42.0}
 : ${gdk_pixbuf_ver:=2.36.0}
 : ${atk_ver:=2.22.0}
-: ${gobject_introspection_ver:=1.50.0}
 : ${gtk_ver:=3.22.0}
 : ${webkitgtk_ver:=2.14.0}
 
@@ -1315,9 +1316,9 @@ fetch()
 		pixman)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://www.cairographics.org/releases/\${${_p:-pixman}_name}.tar.gz || return;;
-		glib|pango|gdk-pixbuf|atk|gobject-introspection)
+		glib|pango|gdk-pixbuf|atk|gobject-introspection|pygobject)
 			eval wget -O \${${_p}_src_dir}.tar.xz \
-				http://ftp.gnome.org/pub/gnome/sources/${p:-glib}/\`print_version ${p:-glib}\`/\${${_p:-glib}_name}.tar.xz || return;;
+				https://ftp.gnome.org/pub/gnome/sources/${p:-glib}/\`print_version ${p:-glib}\`/\${${_p:-glib}_name}.tar.xz || return;;
 		gtk)
 			eval wget -O \${${_p}_src_dir}.tar.xz \
 				http://ftp.gnome.org/pub/gnome/sources/gtk+/\`print_version ${p:-gtk}\`/\${${_p:-gtk}_name}.tar.xz || return;;
@@ -3571,6 +3572,28 @@ install_native_pango()
 	update_path || return
 }
 
+install_native_gobject_introspection()
+{
+	[ -d ${prefix}/include/gobject-introspection-1.0 -a "${force_install}" != yes ] && return
+	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
+	fetch gobject-introspection || return
+	unpack gobject-introspection || return
+	meson --prefix ${prefix} ${gobject_introspection_src_dir} ${gobject_introspection_bld_dir} || return
+	ninja -v -C ${gobject_introspection_bld_dir} || return
+	ninja -v -C ${gobject_introspection_bld_dir} install || return
+	update_path || return
+}
+
+install_native_pygobject()
+{
+	[ -f ${prefix}/include/pygobject-3.0/pygobject.h -a "${force_install}" != yes ] && return
+	fetch pygobject || return
+	unpack pygobject || return
+	meson --prefix ${prefix} ${pygobject_src_dir} ${pygobject_bld_dir} || return
+	ninja -v -C ${pygobject_bld_dir} || return
+	ninja -v -C ${pygobject_bld_dir} install || return
+}
+
 #install_native_gdk_pixbuf()
 #{
 #	[ -f ${prefix}/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h -a "${force_install}" != yes ] && return
@@ -3600,22 +3623,6 @@ install_native_pango()
 #			--disable-silent-rules) || return
 #	make -C ${atk_src_dir} -j ${jobs} || return
 #	make -C ${atk_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
-#install_native_gobject_introspection()
-#{
-#	[ -d ${prefix}/include/gobject-introspection-1.0 -a "${force_install}" != yes ] && return
-#	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
-#	fetch gobject-introspection || return
-#	unpack gobject-introspection || return
-#	[ -f ${gobject_introspection_src_dir}/Makefile ] ||
-#		(cd ${gobject_introspection_src_dir}
-#		update_pkg_config_path
-#		./configure --prefix=${prefix} --build=${build} \
-#			--disable-silent-rules) || return
-#	make -C ${gobject_introspection_src_dir} -j ${jobs} || return
-#	make -C ${gobject_introspection_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 #	update_path || return
 #}
 #
