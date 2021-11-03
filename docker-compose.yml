@@ -30,6 +30,7 @@ services:
       args: *args
     environment: *environment
     volumes: *volumes
+    profiles: [non-default]
   daemon:
     image: dev:daemon
     hostname: daemon
