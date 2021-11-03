@@ -1,24 +1,47 @@
 version: "3.7"
 
+x-args:
+  &args
+  - USER
+  - njobs=6
+  - http_proxy
+  - https_proxy
+
+x-environment:
+  &environment
+  - TERM
+  - DISPLAY
+  - http_proxy
+  - https_proxy
+
+x-volumes:
+  &volumes
+  - "/tmp/.X11-unix:/tmp/.X11-unix"
+  - "${HOME}/.gitconfig:${HOME}/.gitconfig:ro"
+  - "${HOME}/.ssh:${HOME}/.ssh:ro"
+
 services:
-  dev:
-    image: dev
+  base:
+    image: dev:base
+    hostname: base
     build:
       context: .
-      args:
-        - USER
-        - njobs=6
-        - http_proxy
-        - https_proxy
-    hostname: docker
-    environment:
-      - TERM
-      - DISPLAY
-      - http_proxy
-      - https_proxy
-    volumes:
-      - "/tmp/.X11-unix:/tmp/.X11-unix"
-      - "${HOME}/.gitconfig:${HOME}/.gitconfig:ro"
-      - "${HOME}/.ssh:${HOME}/.ssh:ro"
+      target: base
+      args: *args
+    environment: *environment
+    volumes: *volumes
+  daemon:
+    image: dev:daemon
+    hostname: daemon
+    build:
+      context: .
+      target: daemon
+      args: *args
+    environment: *environment
+    volumes: *volumes
+    init: true
+    restart: unless-stopped
+    ports:
+      - "10022:22"
 
 # vim: set expandtab shiftwidth=0 tabstop=2 :

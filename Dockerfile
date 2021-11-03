@@ -48,7 +48,7 @@ done && \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} -t x86_64-w64-mingw32 -l c,c++ install_native_binutils install_cross_gcc clean
 COPY Dockerfile ${prefix}/
 
-FROM ${baseimage} AS dev
+FROM ${baseimage} AS base
 ARG prefix
 ARG prefixbase
 ARG USER=dev
@@ -99,3 +99,15 @@ rm -vr tmp && \
 echo colorscheme jellybeans > .vim/vimrc.local.vim && \
 vim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .vim/vimrc -U NONE -i NONE -V1 -e -s && \
 nvim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .config/nvim/init.vim -U NONE -i NONE -V1 -e -s
+
+FROM base AS daemon
+USER root
+WORKDIR /
+RUN \
+useradd sshd && \
+apt-get update && apt-get upgrade -y && \
+apt-get install -y --no-install-recommends xauth && \
+apt-get autoremove -y && apt-get autoclean -y && rm -vr /var/lib/apt/lists/* && \
+sed -i -e 's/^#\(X11Forwarding\) no$/\1 yes/' /usr/local/etc/sshd_config
+EXPOSE 22
+CMD ["/usr/local/sbin/sshd", "-D"]
