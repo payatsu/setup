@@ -215,6 +215,7 @@
 : ${gst_editing_services_ver:=${gstreamer_ver}}
 : ${gst_rtsp_server_ver:=${gstreamer_ver}}
 : ${gst_omx_ver:=${gstreamer_ver}}
+: ${gst_python_ver:=${gstreamer_ver}}
 : ${orc_ver:=0.4.32}
 : ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.25.1}
@@ -1256,7 +1257,7 @@ fetch()
 		yavta)
 			git clone --depth 1 \
 				git://git.ideasonboard.org/yavta.git ${yavta_src_dir} || return;;
-		gstreamer|gst-plugins-base|gst-plugins-good|gst-editing-services|gst-rtsp-server|gst-omx|orc)
+		gstreamer|gst-plugins-base|gst-plugins-good|gst-editing-services|gst-rtsp-server|gst-omx|gst-python|orc)
 			eval wget -O \${${_p}_src_dir}.tar.xz \
 				https://gstreamer.freedesktop.org/src/${p:-gstreamer}/\${${_p:-gstreamer}_name}.tar.xz || return;;
 		googletest)
@@ -1651,6 +1652,7 @@ set_variables()
 			s/gst_editing_services/gst-editing-services/
 			s/gst_rtsp_server/gst-rtsp-server/
 			s/gst_omx/gst-omx/
+			s/gst_python/gst-python/
 			p
 		}
 		d' ${0}`; do
@@ -3564,6 +3566,7 @@ install_native_pango()
 {
 	[ -f ${prefix}/include/pango-1.0/pango/pango.h -a "${force_install}" != yes ] && return
 	print_header_path cairo.h cairo > /dev/null || install_native_cairo || return
+	which meson > /dev/null || install_native_meson || return
 	fetch pango || return
 	unpack pango || return
 	meson --prefix ${prefix} ${pango_src_dir} ${pango_bld_dir} || return
@@ -3574,8 +3577,9 @@ install_native_pango()
 
 install_native_gobject_introspection()
 {
-	[ -d ${prefix}/include/gobject-introspection-1.0 -a "${force_install}" != yes ] && return
+	[ -f ${prefix}/include/gobject-introspection-1.0/giversion.h -a "${force_install}" != yes ] && return
 	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
+	which meson > /dev/null || install_native_meson || return
 	fetch gobject-introspection || return
 	unpack gobject-introspection || return
 	meson --prefix ${prefix} ${gobject_introspection_src_dir} ${gobject_introspection_bld_dir} || return
@@ -3587,6 +3591,8 @@ install_native_gobject_introspection()
 install_native_pygobject()
 {
 	[ -f ${prefix}/include/pygobject-3.0/pygobject.h -a "${force_install}" != yes ] && return
+	print_header_path giversion.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return
+	which meson > /dev/null || install_native_meson || return
 	fetch pygobject || return
 	unpack pygobject || return
 	meson --prefix ${prefix} ${pygobject_src_dir} ${pygobject_bld_dir} || return
@@ -6476,6 +6482,19 @@ install_native_gst_omx()
 	meson --prefix ${prefix} -D target=generic ${strip:+--${strip}} ${gst_omx_src_dir} ${gst_omx_bld_dir} || return
 	ninja -v -C ${gst_omx_bld_dir} || return
 	ninja -v -C ${gst_omx_bld_dir} install || return
+	update_path || return
+}
+
+install_native_gst_python()
+{
+	[ -e ${prefix}/lib64/gstreamer-1.0/libgstpython.so -a "${force_install}" != yes ] && return
+	print_header_path pygobject.h pygobject-3.0 > /dev/null || install_native_pygobject || return
+	which meson > /dev/null || install_native_meson || return
+	fetch gst-python || return
+	unpack gst-python || return
+	meson --prefix ${prefix} ${gst_python_src_dir} ${gst_python_bld_dir} || return
+	ninja -v -C ${gst_python_bld_dir} || return
+	ninja -v -C ${gst_python_bld_dir} install || return
 	update_path || return
 }
 
