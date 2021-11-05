@@ -33,12 +33,12 @@ install_docker_engine()
 
 install_docker_compose()
 {
-	which docker-compose > /dev/null && return
+	! echo "$@" | grep -e '--force' > /dev/null 2>&1 && which docker-compose > /dev/null && return
 
 	latest_version=`curl -fsSI https://github.com/docker/compose/releases/latest | grep -e '^\(L\|l\)ocation:' | grep -oPe '\d+(\.\d+)*'`
 	[ -n "${latest_version}" ] || return
 	curl -fSL -o /usr/local/bin/docker-compose \
-		https://github.com/docker/compose/releases/download/${latest_version}/docker-compose-`uname -s`-`uname -m` || return
+		https://github.com/docker/compose/releases/download/v${latest_version}/docker-compose-`uname -s`-`uname -m` || return
 	chmod a+x /usr/local/bin/docker-compose || return
 
 	mkdir -pv /etc/bash_completion.d || return
@@ -52,8 +52,8 @@ install_docker_compose()
 
 install_docker()
 {
-	install_docker_engine || return
-	install_docker_compose || return
+	install_docker_engine "$@" || return
+	install_docker_compose "$@" || return
 }
 
-install_docker || exit
+install_docker "$@" || exit
