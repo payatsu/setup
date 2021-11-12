@@ -74,7 +74,7 @@
 : ${isl_ver:=0.20}
 : ${gcc_ver:=11.2.0}
 : ${readline_ver:=8.1}
-: ${ncurses_ver:=6.2}
+: ${ncurses_ver:=6.3}
 : ${popt_ver:=1.18}
 : ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=11.1}

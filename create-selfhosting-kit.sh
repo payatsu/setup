@@ -120,7 +120,7 @@ EOF
 : ${make_ver:=4.3}
 : ${ccache_ver:=4.3}
 
-: ${ncurses_ver:=6.2}
+: ${ncurses_ver:=6.3}
 : ${readline_ver:=8.1}
 : ${expat_ver:=2.4.1}
 : ${libffi_ver:=3.3}
