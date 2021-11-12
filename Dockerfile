@@ -108,6 +108,9 @@ useradd sshd && \
 apt-get update && apt-get upgrade -y && \
 apt-get install -y --no-install-recommends xauth && \
 apt-get autoremove -y && apt-get autoclean -y && rm -vr /var/lib/apt/lists/* && \
-sed -i -e 's/^#\(X11Forwarding\) no$/\1 yes/' /usr/local/etc/sshd_config
+sed -i -e '\
+	s/^#\(AddressFamily\) any$/\1 inet/;\
+	s/^#\(X11Forwarding\) no$/\1 yes/;\
+	/^X11Forwarding/aXAuthLocation /usr/bin/xauth' /usr/local/etc/sshd_config
 EXPOSE 22
 CMD ["/usr/local/sbin/sshd", "-D"]
