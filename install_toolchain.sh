@@ -101,7 +101,7 @@
 : ${nano_ver:=5.9}
 : ${grep_ver:=3.7}
 : ${global_ver:=6.6.6}
-: ${pcre_ver:=8.44}
+: ${pcre_ver:=8.45}
 : ${pcre2_ver:=10.37}
 : ${the_silver_searcher_ver:=2.2.0}
 : ${the_platinum_searcher_ver:=2.2.0}
@@ -999,7 +999,7 @@ fetch()
 				https://github.com/neovim/neovim/archive/v${neovim_ver}.tar.gz || return;;
 		pcre|pcre2)
 			eval wget -O \${${_p}_src_dir}.tar.bz2 \
-				https://ftp.pcre.org/pub/pcre/\${${_p:-pcre2}_name}.tar.bz2 || return;;
+				https://sourceforge.net/projects/pcre/files/${_p}/\${${_p}_ver}/\${${_p}_name}.tar.bz2/download || return;;
 		the_silver_searcher)
 			wget -O ${the_silver_searcher_src_dir}.tar.gz \
 				https://github.com/ggreer/the_silver_searcher/archive/${the_silver_searcher_ver}.tar.gz || return;;

@@ -127,7 +127,7 @@ EOF
 : ${Python_ver:=3.10.0}
 : ${boost_ver:=1_76_0}
 : ${source_highlight_ver:=3.1.9}
-: ${pcre_ver:=8.44}
+: ${pcre_ver:=8.45}
 : ${pcre2_ver:=10.37}
 : ${util_linux_ver:=2.37.2}
 : ${popt_ver:=1.18}
@@ -340,7 +340,7 @@ fetch()
 			https://sourceware.org/elfutils/ftp/${elfutils_ver}/${elfutils_name}.tar.bz2 || return;;
 	pcre|pcre2)
 		eval wget -O \${${_1}_src_dir}.tar.bz2 \
-			https://ftp.pcre.org/pub/pcre/\${${_1}_name}.tar.bz2 || return;;
+			https://sourceforge.net/projects/pcre/files/${_1}/\${${_1}_ver}/\${${_1}_name}.tar.bz2/download || return;;
 	util-linux)
 		wget -O ${util_linux_src_dir}.tar.xz \
 			https://www.kernel.org/pub/linux/utils/util-linux/v`print_version util-linux`/${util_linux_name}.tar.xz || return;;
