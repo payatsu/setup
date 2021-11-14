@@ -205,8 +205,8 @@
 : ${x264_ver:=master}
 : ${x265_ver:=3.2.1}
 : ${libav_ver:=11.9}
-: ${opencv_ver:=4.5.3}
-: ${opencv_contrib_ver:=4.5.3}
+: ${opencv_ver:=4.5.4}
+: ${opencv_contrib_ver:=${opencv_ver}}
 : ${v4l_utils_ver:=1.20.0}
 : ${yavta_ver:=git}
 : ${gstreamer_ver:=1.18.5}
