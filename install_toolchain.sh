@@ -262,7 +262,7 @@
 : ${glib_ver:=2.60.1}
 : ${pixman_ver:=0.40.0}
 : ${cairo_ver:=1.16.0}
-: ${pango_ver:=1.49.1}
+: ${pango_ver:=1.49.3}
 : ${gobject_introspection_ver:=1.70.0}
 : ${pygobject_ver:=3.42.0}
 : ${gdk_pixbuf_ver:=2.36.0}
