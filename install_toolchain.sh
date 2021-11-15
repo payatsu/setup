@@ -4975,7 +4975,7 @@ install_native_libxml2()
 		(cd ${libxml2_bld_dir}
 		remove_rpath_option libxml2 || return
 		${libxml2_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-			--without-python --disable-silent-rules) || return
+			--disable-silent-rules) || return
 	make -C ${libxml2_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libxml2_bld_dir} -j ${jobs} -k check || return
