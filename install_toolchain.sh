@@ -265,8 +265,10 @@
 : ${pango_ver:=1.49.3}
 : ${gobject_introspection_ver:=1.70.0}
 : ${pygobject_ver:=3.42.0}
-: ${gdk_pixbuf_ver:=2.36.0}
-: ${atk_ver:=2.22.0}
+: ${itstool_ver:=2.0.7}
+: ${shared_mime_info_ver:=2.1}
+: ${gdk_pixbuf_ver:=2.42.6}
+: ${atk_ver:=2.36.0}
 : ${gtk_ver:=3.22.0}
 : ${webkitgtk_ver:=2.14.0}
 
@@ -1317,6 +1319,12 @@ fetch()
 		pixman)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://www.cairographics.org/releases/\${${_p:-pixman}_name}.tar.gz || return;;
+		itstool)
+			wget -O ${itstool_src_dir}.tar.bz2 \
+				http://files.itstool.org/itstool/${itstool_name}.tar.bz2 || return;;
+		shared-mime-info)
+			wget -O ${shared_mime_info_src_dir}.tar.bz2 \
+				https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/${shared_mime_info_ver}/${shared_mime_info_name}.tar.bz2 || return;;
 		glib|pango|gdk-pixbuf|atk|gobject-introspection|pygobject)
 			eval wget -O \${${_p}_src_dir}.tar.xz \
 				https://ftp.gnome.org/pub/gnome/sources/${p:-glib}/\`print_version ${p:-glib}\`/\${${_p:-glib}_name}.tar.xz || return;;
@@ -1644,6 +1652,7 @@ set_variables()
 			s/clang_tools_extra/clang-tools-extra/
 			s/libgpg_error/libgpg-error/
 			s/xcb_proto/xcb-proto/
+			s/shared_mime_info/shared-mime-info/
 			s/gdk_pixbuf/gdk-pixbuf/
 			s/gobject_introspection/gobject-introspection/
 			s/v4l_utils/v4l-utils/
@@ -3600,38 +3609,57 @@ install_native_pygobject()
 	ninja -v -C ${pygobject_bld_dir} install || return
 }
 
-#install_native_gdk_pixbuf()
-#{
-#	[ -f ${prefix}/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h -a "${force_install}" != yes ] && return
-#	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
-#	fetch gdk-pixbuf || return
-#	unpack gdk-pixbuf || return
-#	[ -f ${gdk_pixbuf_src_dir}/Makefile ] ||
-#		(cd ${gdk_pixbuf_src_dir}
-#		update_pkg_config_path
-#		./configure --prefix=${prefix} --build=${build} --enable-static \
-#			--disable-silent-rules) || return
-#	make -C ${gdk_pixbuf_src_dir} -j ${jobs} || return
-#	make -C ${gdk_pixbuf_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
-#install_native_atk()
-#{
-#	[ -f ${prefix}/include/atk-1.0/atk/atk.h -a "${force_install}" != yes ] && return
-#	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
-#	fetch atk || return
-#	unpack atk || return
-#	[ -f ${atk_src_dir}/Makefile ] ||
-#		(cd ${atk_src_dir}
-#		update_pkg_config_path
-#		./configure --prefix=${prefix} --build=${build} --enable-static \
-#			--disable-silent-rules) || return
-#	make -C ${atk_src_dir} -j ${jobs} || return
-#	make -C ${atk_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
+install_native_itstool()
+{
+	[ -x ${prefix}/bin/itstool -a "${force_install}" != yes ] && return
+	fetch itstool || return
+	unpack itstool || return
+	[ -f ${itstool_bld_dir}/Makefile ] ||
+		(cd ${itstool_bld_dir}
+		${itstool_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${itstool_bld_dir} -j ${jobs} || return
+	make -C ${itstool_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_shared_mime_info()
+{
+	[ -x ${prefix}/bin/update-mime-database -a "${force_install}" != yes ] && return
+	which itstool > /dev/null || install_native_itstool || return
+	fetch shared-mime-info || return
+	unpack shared-mime-info || return
+	meson --prefix ${prefix} ${shared_mime_info_src_dir} ${shared_mime_info_bld_dir} || return
+	ninja -v -C ${shared_mime_info_bld_dir} || return
+	ninja -v -C ${shared_mime_info_bld_dir} install || return
+	update_path || return
+}
+
+install_native_gdk_pixbuf()
+{
+	[ -f ${prefix}/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h -a "${force_install}" != yes ] && return
+	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
+	which update-mime-database > /dev/null || install_native_shared_mime_info || return
+	fetch gdk-pixbuf || return
+	unpack gdk-pixbuf || return
+	meson --prefix ${prefix} ${gdk_pixbuf_src_dir} ${gdk_pixbuf_bld_dir} || return
+	ninja -v -C ${gdk_pixbuf_bld_dir} || return
+	ninja -v -C ${gdk_pixbuf_bld_dir} install || return
+	update_path || return
+}
+
+install_native_atk()
+{
+	[ -f ${prefix}/include/atk-1.0/atk/atk.h -a "${force_install}" != yes ] && return
+	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
+	print_header_path giversion.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return
+	fetch atk || return
+	unpack atk || return
+	meson --prefix ${prefix} ${atk_src_dir} ${atk_bld_dir} || return
+	ninja -v -C ${atk_bld_dir} || return
+	ninja -v -C ${atk_bld_dir} install || return
+	update_path || return
+}
+
 #install_native_inputproto()
 #{
 #	[ -d ${prefix}/include/X11/extensions/XI.h -a "${force_install}" != yes ] && return
