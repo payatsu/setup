@@ -258,8 +258,8 @@
 : ${libdrm_ver:=2.4.70}
 : ${libxshmfence_ver:=1.2}
 : ${mesa_ver:=19.0.5}
-: ${libepoxy_ver:=1.3.1}
-: ${glib_ver:=2.60.1}
+: ${libepoxy_ver:=1.5.9}
+: ${glib_ver:=2.70.1}
 : ${pixman_ver:=0.40.0}
 : ${cairo_ver:=1.16.0}
 : ${pango_ver:=1.49.3}
@@ -3531,12 +3531,13 @@ install_native_glib()
 	which meson > /dev/null || install_native_meson || return
 	fetch glib || return
 	unpack glib || return
-	meson --prefix ${prefix} -Diconv=gnu -Dlibmount=false ${glib_src_dir} ${glib_bld_dir} || return
+	CFLAGS="${CFLAGS} -DLIBICONV_PLUG" meson --prefix ${prefix} -Diconv=auto ${glib_src_dir} ${glib_bld_dir} || return
 	ninja -v -C ${glib_bld_dir} || return
 	ninja -v -C ${glib_bld_dir} install || return
 	update_path || return
 	[ -z "${strip}" ] && return
 	for b in gapplication gdbus gio gio-launch-desktop gio-querymodules glib-compile-resources glib-compile-schemas gobject-query gresource gsettings gtester; do
+		[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 	done
 }
