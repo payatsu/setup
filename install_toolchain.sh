@@ -269,7 +269,7 @@
 : ${shared_mime_info_ver:=2.1}
 : ${gdk_pixbuf_ver:=2.42.6}
 : ${atk_ver:=2.36.0}
-: ${gtk_ver:=3.22.0}
+: ${gtk_ver:=4.4.1}
 : ${webkitgtk_ver:=2.14.0}
 
 : ${prefix:=/toolchain}
@@ -1325,12 +1325,9 @@ fetch()
 		shared-mime-info)
 			wget -O ${shared_mime_info_src_dir}.tar.bz2 \
 				https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/${shared_mime_info_ver}/${shared_mime_info_name}.tar.bz2 || return;;
-		glib|pango|gdk-pixbuf|atk|gobject-introspection|pygobject)
+		glib|pango|gdk-pixbuf|atk|gobject-introspection|pygobject|gtk)
 			eval wget -O \${${_p}_src_dir}.tar.xz \
 				https://ftp.gnome.org/pub/gnome/sources/${p:-glib}/\`print_version ${p:-glib}\`/\${${_p:-glib}_name}.tar.xz || return;;
-		gtk)
-			eval wget -O \${${_p}_src_dir}.tar.xz \
-				http://ftp.gnome.org/pub/gnome/sources/gtk+/\`print_version ${p:-gtk}\`/\${${_p:-gtk}_name}.tar.xz || return;;
 		webkitgtk)
 			wget -O ${webkitgtk_src_dir}.tar.xz \
 				https://webkitgtk.org/releases/${webkitgtk_name}.tar.xz || return;;
@@ -1558,8 +1555,6 @@ set_src_directory()
 		eval ${_1}_name=${1}.\${${_1}_ver};;
 	sqlite)
 		eval ${_1}_name=${1}-autoconf-\${${_1}_ver};;
-	gtk)
-		eval ${_1}_name=${1}+-\${${_1}_ver};;
 	boost|x265)
 		eval ${_1}_name=${1}_\${${_1}_ver};;
 	rustc)
@@ -3977,27 +3972,23 @@ install_native_atk()
 #	update_path || return
 #}
 #
-#install_native_gtk()
-#{
+install_native_gtk()
+{
 #	[ -f ${prefix}/include/gtk-3.0/gtk/gtk.h -a "${force_install}" != yes ] && return
-#	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
-#	print_header_path pango.h pango-1.0/pango > /dev/null || install_native_pango || return
-#	print_header_path gdk-pixbuf.h gdk-pixbuf-2.0/gdk-pixbuf > /dev/null || install_native_gdk_pixbuf || return
-#	print_header_path atk.h atk-1.0/atk > /dev/null || install_native_atk || return
-#	print_header_path giversionmacros.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return
+	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
+	print_header_path pango.h pango-1.0/pango > /dev/null || install_native_pango || return
+	print_header_path gdk-pixbuf.h gdk-pixbuf-2.0/gdk-pixbuf > /dev/null || install_native_gdk_pixbuf || return
+	print_header_path atk.h atk-1.0/atk > /dev/null || install_native_atk || return
+	print_header_path giversionmacros.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return
 #	print_header_path egl.h epoxy > /dev/null || install_native_libepoxy || return
-#	fetch gtk || return
-#	unpack gtk || return
-#	[ -f ${gtk_src_dir}/Makefile ] ||
-#		(cd ${gtk_src_dir}
-#		update_pkg_config_path
-#		./configure --prefix=${prefix} --build=${build} --enable-static \
-#			--disable-silent-rules) || return
-#	make -C ${gtk_src_dir} -j ${jobs} || return
-#	make -C ${gtk_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
+	fetch gtk || return
+	unpack gtk || return
+	meson --prefix ${prefix} -Dwayland-backend=false -Dmedia-gstreamer=disabled ${gtk_src_dir} ${gtk_bld_dir} || return
+	ninja -v -C ${gtk_bld_dir} || return
+	ninja -v -C ${gtk_bld_dir} install || return
+	update_path || return
+}
+
 #install_native_webkitgtk()
 #{
 ##	[ -x ${prefix}/bin/gawk -a "${force_install}" != yes ] && return
