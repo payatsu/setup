@@ -3561,7 +3561,7 @@ install_native_cairo()
 	print_header_path ft2build.h freetype2 > /dev/null || install_native_freetype || return
 	print_header_path fontconfig.h fontconfig > /dev/null || install_native_fontconfig || return
 	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
-	print_header_path cairo.h cairo > /dev/null || install_native_pixman || return
+	print_header_path pixman.h pixman-1.0 > /dev/null || install_native_pixman || return
 	fetch cairo || return
 	unpack cairo || return
 	[ -f ${cairo_src_dir}/Makefile ] ||
