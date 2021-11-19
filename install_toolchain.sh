@@ -263,6 +263,7 @@
 : ${pixman_ver:=0.40.0}
 : ${cairo_ver:=1.16.0}
 : ${fribidi_ver:=1.0.11}
+: ${harfbuzz_ver:=3.1.1}
 : ${pango_ver:=1.49.3}
 : ${gobject_introspection_ver:=1.70.0}
 : ${pygobject_ver:=3.42.0}
@@ -1323,6 +1324,9 @@ fetch()
 		fribidi)
 			wget -O ${fribidi_src_dir}.tar.xz \
 				https://github.com/fribidi/fribidi/releases/download/v${fribidi_ver}/${fribidi_name}.tar.xz || return;;
+		harfbuzz)
+			wget -O ${harfbuzz_src_dir}.tar.xz \
+				https://github.com/harfbuzz/harfbuzz/releases/download/${harfbuzz_ver}/${harfbuzz_name}.tar.xz || return;;
 		itstool)
 			wget -O ${itstool_src_dir}.tar.bz2 \
 				http://files.itstool.org/itstool/${itstool_name}.tar.bz2 || return;;
@@ -3587,11 +3591,25 @@ install_native_fribidi()
 	update_path || return
 }
 
+install_native_harfbuzz()
+{
+	[ -f ${prefix}/include/harfbuzz/hb.h -a "${force_install}" != yes ] && return
+	print_header_path cairo.h cairo > /dev/null || install_native_cairo || return
+	print_header_path giversion.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return
+	fetch harfbuzz || return
+	unpack harfbuzz || return
+	meson --prefix ${prefix} ${harfbuzz_src_dir} ${harfbuzz_bld_dir} || return
+	ninja -v -C ${harfbuzz_bld_dir} || return
+	ninja -v -C ${harfbuzz_bld_dir} install || return
+	update_path || return
+}
+
 install_native_pango()
 {
 	[ -f ${prefix}/include/pango-1.0/pango/pango.h -a "${force_install}" != yes ] && return
 	print_header_path cairo.h cairo > /dev/null || install_native_cairo || return
 	print_header_path fribidi.h fribidi > /dev/null || install_native_fribidi || return
+	print_header_path hb.h harfbuzz > /dev/null || install_native_harfbuzz || return
 	which meson > /dev/null || install_native_meson || return
 	fetch pango || return
 	unpack pango || return
