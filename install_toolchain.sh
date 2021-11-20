@@ -271,6 +271,7 @@
 : ${shared_mime_info_ver:=2.1}
 : ${gdk_pixbuf_ver:=2.42.6}
 : ${atk_ver:=2.36.0}
+: ${graphene_ver:=1.10.6}
 : ${gtk_ver:=4.4.1}
 : ${webkitgtk_ver:=2.14.0}
 
@@ -1333,6 +1334,9 @@ fetch()
 		shared-mime-info)
 			wget -O ${shared_mime_info_src_dir}.tar.bz2 \
 				https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/${shared_mime_info_ver}/${shared_mime_info_name}.tar.bz2 || return;;
+		graphene)
+			wget -O ${graphene_src_dir}.tar.xz \
+				https://github.com/ebassi/graphene/releases/download/${graphene_ver}/${graphene_name}.tar.xz || return;;
 		glib|pango|gdk-pixbuf|atk|gobject-introspection|pygobject|gtk)
 			eval wget -O \${${_p}_src_dir}.tar.xz \
 				https://ftp.gnome.org/pub/gnome/sources/${p:-glib}/\`print_version ${p:-glib}\`/\${${_p:-glib}_name}.tar.xz || return;;
@@ -4010,7 +4014,18 @@ install_native_atk()
 #	make -C ${libepoxy_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 #	update_path || return
 #}
-#
+
+install_native_graphene()
+{
+	[ -f ${prefix}/include/graphene-1.0/graphene.h -a "${force_install}" != yes ] && return
+	fetch graphene || return
+	unpack graphene || return
+	meson --prefix ${prefix} ${graphene_src_dir} ${graphene_bld_dir} || return
+	ninja -v -C ${graphene_bld_dir} || return
+	ninja -v -C ${graphene_bld_dir} install || return
+	update_path || return
+}
+
 install_native_gtk()
 {
 #	[ -f ${prefix}/include/gtk-3.0/gtk/gtk.h -a "${force_install}" != yes ] && return
