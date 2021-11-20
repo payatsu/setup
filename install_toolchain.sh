@@ -4028,16 +4028,17 @@ install_native_graphene()
 
 install_native_gtk()
 {
-#	[ -f ${prefix}/include/gtk-3.0/gtk/gtk.h -a "${force_install}" != yes ] && return
+	[ -f ${prefix}/include/gtk-`print_version gtk 1`.0/gtk/gtk.h -a "${force_install}" != yes ] && return
 	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
 	print_header_path pango.h pango-1.0/pango > /dev/null || install_native_pango || return
 	print_header_path gdk-pixbuf.h gdk-pixbuf-2.0/gdk-pixbuf > /dev/null || install_native_gdk_pixbuf || return
 	print_header_path atk.h atk-1.0/atk > /dev/null || install_native_atk || return
 	print_header_path giversionmacros.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return
+	print_header_path graphene.h graphene-1.0 > /dev/null || install_native_graphene || return
 #	print_header_path egl.h epoxy > /dev/null || install_native_libepoxy || return
 	fetch gtk || return
 	unpack gtk || return
-	meson --prefix ${prefix} -Dwayland-backend=false -Dmedia-gstreamer=disabled ${gtk_src_dir} ${gtk_bld_dir} || return
+	LDFLAGS="${LDFLAGS} `L stdc++`" meson --prefix ${prefix} -Dwayland-backend=false -Dmedia-gstreamer=disabled ${gtk_src_dir} ${gtk_bld_dir} || return
 	ninja -v -C ${gtk_bld_dir} || return
 	ninja -v -C ${gtk_bld_dir} install || return
 	update_path || return
