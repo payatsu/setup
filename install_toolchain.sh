@@ -4941,7 +4941,8 @@ install_native_openssh()
 	[ -f ${openssh_bld_dir}/Makefile ] ||
 		(cd ${openssh_bld_dir}
 		${openssh_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-			--with-zlib=`print_prefix zlib.h` --with-privsep-path=${prefix}/var/empty) || return
+			--with-zlib=`print_prefix zlib.h` --with-privsep-path=${prefix}/var/empty \
+			--with-default-path=${prefix}/bin:/usr/bin:/bin:${prefix}/sbin:/usr/sbin:/sbin) || return
 	make -C ${openssh_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${openssh_bld_dir} -j ${jobs} -k tests || return
