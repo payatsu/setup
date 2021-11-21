@@ -1399,7 +1399,7 @@ EOF
 
 update_pkg_config_path()
 {
-	PKG_CONFIG_PATH=`([ -d ${DESTDIR}${prefix}/lib ] && find ${DESTDIR}${prefix}/lib -type d -name pkgconfig
+	PKG_CONFIG_PATH=`([ -d ${DESTDIR}${prefix}/lib ] && find ${DESTDIR}${prefix}/lib -type d -name pkgconfig 2> /dev/null
 						[ -d ${DESTDIR}${prefix}/lib64 ] && find ${DESTDIR}${prefix}/lib64 -type d -name pkgconfig
 						[ -d ${DESTDIR}${prefix}/share ] && find ${DESTDIR}${prefix}/share -type d -name pkgconfig
 						LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs | sed -e '/^libraries: =/{s/^libraries: =//;p};d' |
