@@ -1312,7 +1312,7 @@ list_major_commands()
 			/^--$/d
 			/^{$/d
 			s/()$//
-			/^\(I\|L\|l\)$/d
+			/^\(I\|idirafter\|L\|l\)$/d
 			s/^# /\t/
 			s/^/\t/
 		'
