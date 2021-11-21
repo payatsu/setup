@@ -3551,7 +3551,7 @@ install_native_glib()
 
 install_native_pixman()
 {
-	[ -f ${prefix}/include/pixman-1.0/pixman.h -a "${force_install}" != yes ] && return
+	[ -f ${prefix}/include/pixman-1/pixman.h -a "${force_install}" != yes ] && return
 	fetch pixman || return
 	unpack pixman || return
 	[ -f ${pixman_bld_dir}/Makefile ] ||
