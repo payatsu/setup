@@ -241,6 +241,7 @@
 : ${libXdmcp_ver:=1.1.3}
 : ${xtrans_ver:=1.4.0}
 : ${libICE_ver:=1.0.10}
+: ${libSM_ver:=1.2.3}
 : ${libX11_ver:=1.6.3}
 : ${libxcb_ver:=1.12}
 : ${libXext_ver:=1.3.3}
@@ -876,7 +877,7 @@ fetch()
 		xproto|xextproto|fixesproto|damageproto|presentproto|inputproto|kbproto|glproto|dri2proto|dri3proto)
 			eval wget -O \${${_p}_src_dir}.tar.bz2 \
 				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.bz2 || return;;
-		libXau|libXdmcp|xtrans|libICE|libXext|libXfixes|libXdamage|libX11|libxshmfence|libpciaccess|libXpm|libXt)
+		libXau|libXdmcp|xtrans|libICE|libSM|libXext|libXfixes|libXdamage|libX11|libxshmfence|libpciaccess|libXpm|libXt)
 			eval wget -O \${${_p}_src_dir}.tar.bz2 \
 				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.bz2 || return;;
 		libdrm)
@@ -3340,6 +3341,22 @@ install_native_libICE()
 		${libICE_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libICE_bld_dir} -j ${jobs} || return
 	make -C ${libICE_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libSM()
+{
+	[ -f ${prefix}/include/X11/SM/SM.h -a "${force_install}" != yes ] && return
+	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
+	print_header_path Xtrans.h X11/Xtrans > /dev/null || install_native_xtrans || return
+	print_header_path ICE.h X11/ICE > /dev/null || install_native_libICE || return
+	fetch libSM || return
+	unpack libSM || return
+	[ -f ${libSM_bld_dir}/Makefile ] ||
+		(cd ${libSM_bld_dir}
+		${libSM_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libSM_bld_dir} -j ${jobs} || return
+	make -C ${libSM_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
