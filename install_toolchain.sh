@@ -236,6 +236,8 @@
 : ${poke_ver:=1.3}
 
 # TODO X11周りのインストールは未着手。
+: ${xproto_ver:=7.0.31}
+: ${libXau_ver:=1.0.9}
 : ${xtrans_ver:=1.3.5}
 : ${libX11_ver:=1.6.3}
 : ${libxcb_ver:=1.12}
@@ -248,7 +250,6 @@
 : ${xextproto_ver:=7.3.0}
 : ${fixesproto_ver:=5.0}
 : ${damageproto_ver:=1.2.1}
-: ${xproto_ver:=7.0.31}
 : ${kbproto_ver:=1.0.7}
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
@@ -870,10 +871,10 @@ fetch()
 		pkg-config)
 			wget -O ${pkg_config_src_dir}.tar.gz \
 				https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
-		xextproto|fixesproto|damageproto|presentproto|inputproto|kbproto|xproto|glproto|dri2proto|dri3proto)
+		xproto|xextproto|fixesproto|damageproto|presentproto|inputproto|kbproto|glproto|dri2proto|dri3proto)
 			eval wget -O \${${_p}_src_dir}.tar.bz2 \
-				ftp://ftp.freedesktop.org/pub/individual/proto/\${${_p:-xproto}_name}.tar.bz2 || return;;
-		libXext|libXfixes|libXdamage|xtrans|libX11|libxshmfence|libpciaccess|libXpm|libXt)
+				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.bz2 || return;;
+		libXau|libXext|libXfixes|libXdamage|xtrans|libX11|libxshmfence|libpciaccess|libXpm|libXt)
 			eval wget -O \${${_p}_src_dir}.tar.bz2 \
 				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.bz2 || return;;
 		libdrm)
@@ -3271,6 +3272,33 @@ install_native_atk()
 	update_path || return
 }
 
+install_native_xproto()
+{
+	[ -f ${prefix}/include/X11/Xproto.h -a "${force_install}" != yes ] && return
+	fetch xproto || return
+	unpack xproto || return
+	[ -f ${xproto_bld_dir}/Makefile ] ||
+		(cd ${xproto_bld_dir}
+		${xproto_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+	make -C ${xproto_bld_dir} -j ${jobs} || return
+	make -C ${xproto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libXau()
+{
+	[ -f ${prefix}/include/X11/Xauth.h -a "${force_install}" != yes ] && return
+	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
+	fetch libXau || return
+	unpack libXau || return
+	[ -f ${libXau_bld_dir}/Makefile ] ||
+		(cd ${libXau_bld_dir}
+		${libXau_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXau_bld_dir} -j ${jobs} || return
+	make -C ${libXau_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
 #install_native_inputproto()
 #{
 #	[ -d ${prefix}/include/X11/extensions/XI.h -a "${force_install}" != yes ] && return
@@ -3434,18 +3462,6 @@ install_native_atk()
 #	make -C ${libXt_src_dir} -j ${jobs} || return
 #	make -C ${libXt_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 #	update_path || return
-#}
-#
-#install_native_xproto()
-#{
-#	[ -f ${prefix}/include/X11/Xproto.h -a "${force_install}" != yes ] && return
-#	fetch xproto || return
-#	unpack xproto || return
-#	[ -f ${xproto_src_dir}/Makefile ] ||
-#		(cd ${xproto_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${xproto_src_dir} -j ${jobs} || return
-#	make -C ${xproto_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 #}
 #
 #install_native_kbproto()
