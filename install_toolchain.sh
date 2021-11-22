@@ -238,6 +238,7 @@
 # TODO X11周りのインストールは未着手。
 : ${xproto_ver:=7.0.31}
 : ${libXau_ver:=1.0.9}
+: ${libXdmcp_ver:=1.1.3}
 : ${xtrans_ver:=1.3.5}
 : ${libX11_ver:=1.6.3}
 : ${libxcb_ver:=1.12}
@@ -874,7 +875,7 @@ fetch()
 		xproto|xextproto|fixesproto|damageproto|presentproto|inputproto|kbproto|glproto|dri2proto|dri3proto)
 			eval wget -O \${${_p}_src_dir}.tar.bz2 \
 				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.bz2 || return;;
-		libXau|libXext|libXfixes|libXdamage|xtrans|libX11|libxshmfence|libpciaccess|libXpm|libXt)
+		libXau|libXdmcp|libXext|libXfixes|libXdamage|xtrans|libX11|libxshmfence|libpciaccess|libXpm|libXt)
 			eval wget -O \${${_p}_src_dir}.tar.bz2 \
 				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.bz2 || return;;
 		libdrm)
@@ -3279,7 +3280,7 @@ install_native_xproto()
 	unpack xproto || return
 	[ -f ${xproto_bld_dir}/Makefile ] ||
 		(cd ${xproto_bld_dir}
-		${xproto_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		${xproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${xproto_bld_dir} -j ${jobs} || return
 	make -C ${xproto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
@@ -3296,6 +3297,20 @@ install_native_libXau()
 		${libXau_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libXau_bld_dir} -j ${jobs} || return
 	make -C ${libXau_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libXdmcp()
+{
+	[ -f ${prefix}/include/X11/Xdmcp.h -a "${force_install}" != yes ] && return
+	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
+	fetch libXdmcp || return
+	unpack libXdmcp || return
+	[ -f ${libXdmcp_bld_dir}/Makefile ] ||
+		(cd ${libXdmcp_bld_dir}
+		${libXdmcp_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXdmcp_bld_dir} -j ${jobs} || return
+	make -C ${libXdmcp_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
