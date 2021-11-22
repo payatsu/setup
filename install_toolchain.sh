@@ -249,9 +249,9 @@
 : ${inputproto_ver:=2.3.2}
 : ${kbproto_ver:=1.0.7}
 : ${libX11_ver:=1.7.2}
+: ${libXt_ver:=1.2.1}
 : ${libXfixes_ver:=5.0.2}
 : ${libXdamage_ver:=1.1.4}
-: ${libXt_ver:=1.1.5}
 : ${fixesproto_ver:=5.0}
 : ${damageproto_ver:=1.2.1}
 : ${glproto_ver:=1.4.17}
@@ -877,7 +877,7 @@ fetch()
 		xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto|presentproto|glproto|dri2proto|dri3proto)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.gz || return;;
-		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libXext|libX11|libXfixes|libXdamage|libxshmfence|libpciaccess|libXpm|libXt)
+		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libXext|libX11|libXt|libXfixes|libXdamage|libxshmfence|libpciaccess|libXpm)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.gz || return;;
 		libdrm)
@@ -3458,6 +3458,24 @@ install_native_libX11()
 	update_path || return
 }
 
+install_native_libXt()
+{
+	[ -f ${prefix}/include/X11/Core.h -a "${force_install}" != yes ] && return
+	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
+	print_header_path ICE.h X11/ICE > /dev/null || install_native_libICE || return
+	print_header_path SM.h X11/SM > /dev/null || install_native_libSM || return
+	print_header_path XKBproto.h X11 > /dev/null || install_native_kbproto || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	fetch libXt || return
+	unpack libXt || return
+	[ -f ${libXt_bld_dir}/Makefile ] ||
+		(cd ${libXt_bld_dir}
+		${libXt_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXt_bld_dir} -j ${jobs} || return
+	make -C ${libXt_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
 #install_native_fixesproto()
 #{
 #	[ -f ${prefix}/include/X11/extensions/xfixesproto.h -a "${force_install}" != yes ] && return
@@ -3510,19 +3528,6 @@ install_native_libX11()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libXdamage_src_dir} -j ${jobs} || return
 #	make -C ${libXdamage_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
-#install_native_libXt()
-#{
-#	[ -f ${prefix}/include/X11/Core.h -a "${force_install}" != yes ] && return
-#	fetch libXt || return
-#	unpack libXt || return
-#	[ -f ${libXt_src_dir}/Makefile ] ||
-#		(cd ${libXt_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${libXt_src_dir} -j ${jobs} || return
-#	make -C ${libXt_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 #	update_path || return
 #}
 #
