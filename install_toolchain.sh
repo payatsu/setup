@@ -244,16 +244,16 @@
 : ${libSM_ver:=1.2.3}
 : ${xcb_proto_ver:=1.14.1}
 : ${libxcb_ver:=1.14}
-: ${libX11_ver:=1.6.3}
-: ${libXext_ver:=1.3.3}
+: ${xextproto_ver:=7.3.0}
+: ${libXext_ver:=1.3.4}
+: ${inputproto_ver:=2.3.2}
+: ${kbproto_ver:=1.0.7}
+: ${libX11_ver:=1.7.2}
 : ${libXfixes_ver:=5.0.2}
 : ${libXdamage_ver:=1.1.4}
 : ${libXt_ver:=1.1.5}
-: ${inputproto_ver:=2.3}
-: ${xextproto_ver:=7.3.0}
 : ${fixesproto_ver:=5.0}
 : ${damageproto_ver:=1.2.1}
-: ${kbproto_ver:=1.0.7}
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
 : ${dri3proto_ver:=1.0}
@@ -874,10 +874,10 @@ fetch()
 		pkg-config)
 			wget -O ${pkg_config_src_dir}.tar.gz \
 				https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
-		xproto|xcb-proto|xextproto|fixesproto|damageproto|presentproto|inputproto|kbproto|glproto|dri2proto|dri3proto)
+		xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto|presentproto|glproto|dri2proto|dri3proto)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.gz || return;;
-		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libXext|libXfixes|libXdamage|libX11|libxshmfence|libpciaccess|libXpm|libXt)
+		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libXext|libX11|libXfixes|libXdamage|libxshmfence|libpciaccess|libXpm|libXt)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.gz || return;;
 		libdrm)
@@ -3385,63 +3385,79 @@ install_native_libxcb()
 	update_path || return
 }
 
-#install_native_inputproto()
-#{
-#	[ -d ${prefix}/include/X11/extensions/XI.h -a "${force_install}" != yes ] && return
-#	fetch inputproto || return
-#	unpack inputproto || return
-#	[ -f ${inputproto_src_dir}/Makefile ] ||
-#		(cd ${inputproto_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${inputproto_src_dir} -j ${jobs} || return
-#	make -C ${inputproto_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
-#install_native_libX11()
-#{
-#	[ -f ${prefix}/include/X11/Xlib.h -a "${force_install}" != yes ] && return
-#	print_header_path XI.h X11/extensions > /dev/null || install_native_inputproto || return
-#	print_header_path Xtrans.h X11/Xtrans > /dev/null || install_native_xtrans || return
-#	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
-#	print_header_path xcb.h xcb > /dev/null || install_native_libxcb || return
-#	fetch libX11 || return
-#	unpack libX11 || return
-#	[ -f ${libX11_src_dir}/Makefile ] ||
-#		(cd ${libX11_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${libX11_src_dir} -j ${jobs} || return
-#	make -C ${libX11_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
-#install_native_xextproto()
-#{
-#	[ -f ${prefix}/include/X11/extensions/lbx.h -a "${force_install}" != yes ] && return
-#	fetch xextproto || return
-#	unpack xextproto || return
-#	[ -f ${xextproto_src_dir}/Makefile ] ||
-#		(cd ${xextproto_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${xextproto_src_dir} -j ${jobs} || return
-#	make -C ${xextproto_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
-#install_native_libXext()
-#{
-#	[ -f ${prefix}/include/X11/extensions/Xext.h -a "${force_install}" != yes ] && return
-#	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
-#	fetch libXext || return
-#	unpack libXext || return
-#	[ -f ${libXext_src_dir}/Makefile ] ||
-#		(cd ${libXext_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${libXext_src_dir} -j ${jobs} || return
-#	make -C ${libXext_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
+install_native_xextproto()
+{
+	[ -f ${prefix}/include/X11/extensions/lbx.h -a "${force_install}" != yes ] && return
+	fetch xextproto || return
+	unpack xextproto || return
+	[ -f ${xextproto_bld_dir}/Makefile ] ||
+		(cd ${xextproto_bld_dir}
+		${xextproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${xextproto_bld_dir} -j ${jobs} || return
+	make -C ${xextproto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libXext()
+{
+	[ -f ${prefix}/include/X11/extensions/Xext.h -a "${force_install}" != yes ] && return
+	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
+	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
+	fetch libXext || return
+	unpack libXext || return
+	[ -f ${libXext_bld_dir}/Makefile ] ||
+		(cd ${libXext_bld_dir}
+		${libXext_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXext_bld_dir} -j ${jobs} || return
+	make -C ${libXext_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_inputproto()
+{
+	[ -d ${prefix}/include/X11/extensions/XI.h -a "${force_install}" != yes ] && return
+	fetch inputproto || return
+	unpack inputproto || return
+	[ -f ${inputproto_bld_dir}/Makefile ] ||
+		(cd ${inputproto_bld_dir}
+		${inputproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${inputproto_bld_dir} -j ${jobs} || return
+	make -C ${inputproto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_kbproto()
+{
+	[ -f ${prefix}/include/X11/XKBproto.h -a "${force_install}" != yes ] && return
+	fetch kbproto || return
+	unpack kbproto || return
+	[ -f ${kbproto_bld_dir}/Makefile ] ||
+		(cd ${kbproto_bld_dir}
+		${kbproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${kbproto_bld_dir} -j ${jobs} || return
+	make -C ${kbproto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libX11()
+{
+	[ -f ${prefix}/include/X11/Xlib.h -a "${force_install}" != yes ] && return
+	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
+	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
+	print_header_path xcb.h xcb > /dev/null || install_native_libxcb || return
+	print_header_path Xtrans.h X11/Xtrans > /dev/null || install_native_xtrans || return
+	print_header_path XI.h X11/extensions > /dev/null || install_native_inputproto || return
+	print_header_path XKBproto.h X11 > /dev/null || install_native_kbproto || return
+	fetch libX11 || return
+	unpack libX11 || return
+	[ -f ${libX11_bld_dir}/Makefile ] ||
+		(cd ${libX11_bld_dir}
+		${libX11_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libX11_bld_dir} -j ${jobs} || return
+	make -C ${libX11_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
 #install_native_fixesproto()
 #{
 #	[ -f ${prefix}/include/X11/extensions/xfixesproto.h -a "${force_install}" != yes ] && return
@@ -3508,18 +3524,6 @@ install_native_libxcb()
 #	make -C ${libXt_src_dir} -j ${jobs} || return
 #	make -C ${libXt_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 #	update_path || return
-#}
-#
-#install_native_kbproto()
-#{
-#	[ -f ${prefix}/include/X11/XKBproto.h -a "${force_install}" != yes ] && return
-#	fetch kbproto || return
-#	unpack kbproto || return
-#	[ -f ${kbproto_src_dir}/Makefile ] ||
-#		(cd ${kbproto_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${kbproto_src_dir} -j ${jobs} || return
-#	make -C ${kbproto_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 #}
 #
 #install_native_glproto()
