@@ -242,14 +242,14 @@
 : ${xtrans_ver:=1.4.0}
 : ${libICE_ver:=1.0.10}
 : ${libSM_ver:=1.2.3}
+: ${xcb_proto_ver:=1.14.1}
+: ${libxcb_ver:=1.14}
 : ${libX11_ver:=1.6.3}
-: ${libxcb_ver:=1.12}
 : ${libXext_ver:=1.3.3}
 : ${libXfixes_ver:=5.0.2}
 : ${libXdamage_ver:=1.1.4}
 : ${libXt_ver:=1.1.5}
 : ${inputproto_ver:=2.3}
-: ${xcb_proto_ver:=1.12}
 : ${xextproto_ver:=7.3.0}
 : ${fixesproto_ver:=5.0}
 : ${damageproto_ver:=1.2.1}
@@ -874,18 +874,15 @@ fetch()
 		pkg-config)
 			wget -O ${pkg_config_src_dir}.tar.gz \
 				https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
-		xproto|xextproto|fixesproto|damageproto|presentproto|inputproto|kbproto|glproto|dri2proto|dri3proto)
-			eval wget -O \${${_p}_src_dir}.tar.bz2 \
-				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.bz2 || return;;
-		libXau|libXdmcp|xtrans|libICE|libSM|libXext|libXfixes|libXdamage|libX11|libxshmfence|libpciaccess|libXpm|libXt)
-			eval wget -O \${${_p}_src_dir}.tar.bz2 \
-				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.bz2 || return;;
+		xproto|xcb-proto|xextproto|fixesproto|damageproto|presentproto|inputproto|kbproto|glproto|dri2proto|dri3proto)
+			eval wget -O \${${_p}_src_dir}.tar.gz \
+				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.gz || return;;
+		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libXext|libXfixes|libXdamage|libX11|libxshmfence|libpciaccess|libXpm|libXt)
+			eval wget -O \${${_p}_src_dir}.tar.gz \
+				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.gz || return;;
 		libdrm)
 			wget -O ${libdrm_src_dir}.tar.bz2 \
 				https://dri.freedesktop.org/libdrm/${libdrm_name}.tar.bz2 || return;;
-		xcb-proto|libxcb)
-			eval wget -O \${${_p}_src_dir}.tar.bz2 \
-				https://www.x.org/releases/individual/xcb/\${${_p:-xcb_proto}_name}.tar.bz2 || return;;
 		libepoxy)
 			wget -O ${libepoxy_src_dir}.tar.bz2 \
 				https://github.com/anholt/libepoxy/releases/download/v${libepoxy_ver}/${libepoxy_name}.tar.bz2 || return;;
@@ -3360,6 +3357,34 @@ install_native_libSM()
 	update_path || return
 }
 
+install_native_xcb_proto()
+{
+	[ -f ${prefix}/lib/pkgconfig/xcb-proto.pc -a "${force_install}" != yes ] && return
+	fetch xcb-proto || return
+	unpack xcb-proto || return
+	[ -f ${xcb_proto_bld_dir}/Makefile ] ||
+		(cd ${xcb_proto_bld_dir}
+		${xcb_proto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${xcb_proto_bld_dir} -j ${jobs} || return
+	make -C ${xcb_proto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libxcb()
+{
+	[ -f ${prefix}/include/xcb/xcb.h -a "${force_install}" != yes ] && return
+	print_library_path xcb-proto.pc > /dev/null || install_native_xcb_proto || return
+	print_header_path Xauth.h X11 > /dev/null || install_native_libXau || return
+	fetch libxcb || return
+	unpack libxcb || return
+	[ -f ${libxcb_bld_dir}/Makefile ] ||
+		(cd ${libxcb_bld_dir}
+		${libxcb_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libxcb_bld_dir} -j ${jobs} || return
+	make -C ${libxcb_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
 #install_native_inputproto()
 #{
 #	[ -d ${prefix}/include/X11/extensions/XI.h -a "${force_install}" != yes ] && return
@@ -3387,33 +3412,6 @@ install_native_libSM()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${libX11_src_dir} -j ${jobs} || return
 #	make -C ${libX11_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
-#install_native_libxcb()
-#{
-#	[ -f ${prefix}/include/xcb/xcb.h -a "${force_install}" != yes ] && return
-#	[ -d ${prefix}/share/xcb ] || install_native_xcb_proto || return
-#	fetch libxcb || return
-#	unpack libxcb || return
-#	[ -f ${libxcb_src_dir}/Makefile ] ||
-#		(cd ${libxcb_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${libxcb_src_dir} -j ${jobs} || return
-#	make -C ${libxcb_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
-#install_native_xcb_proto()
-#{
-#	[ -d ${prefix}/share/xcb -a "${force_install}" != yes ] && return
-#	fetch xcb-proto || return
-#	unpack xcb-proto || return
-#	[ -f ${xcb_proto_src_dir}/Makefile ] ||
-#		(cd ${xcb_proto_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${xcb_proto_src_dir} -j ${jobs} || return
-#	make -C ${xcb_proto_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 #	update_path || return
 #}
 #
