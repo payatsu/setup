@@ -3047,13 +3047,12 @@ install_native_libXpm()
 {
 	[ -f ${prefix}/include/X11/xpm.h -a "${force_install}" != yes ] && return
 	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
-	print_header_path XKBproto.h X11 > /dev/null || install_native_kbproto || return
 	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
 	fetch libXpm || return
 	unpack libXpm || return
 	[ -f ${libXpm_bld_dir}/Makefile ] ||
 		(cd ${libXpm_bld_dir}
-		${libXpm_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		${libXpm_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libXpm_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${libXpm_bld_dir} -j ${jobs} -k check || return
