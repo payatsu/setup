@@ -239,7 +239,8 @@
 : ${xproto_ver:=7.0.31}
 : ${libXau_ver:=1.0.9}
 : ${libXdmcp_ver:=1.1.3}
-: ${xtrans_ver:=1.3.5}
+: ${xtrans_ver:=1.4.0}
+: ${libICE_ver:=1.0.10}
 : ${libX11_ver:=1.6.3}
 : ${libxcb_ver:=1.12}
 : ${libXext_ver:=1.3.3}
@@ -875,7 +876,7 @@ fetch()
 		xproto|xextproto|fixesproto|damageproto|presentproto|inputproto|kbproto|glproto|dri2proto|dri3proto)
 			eval wget -O \${${_p}_src_dir}.tar.bz2 \
 				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.bz2 || return;;
-		libXau|libXdmcp|libXext|libXfixes|libXdamage|xtrans|libX11|libxshmfence|libpciaccess|libXpm|libXt)
+		libXau|libXdmcp|xtrans|libICE|libXext|libXfixes|libXdamage|libX11|libxshmfence|libpciaccess|libXpm|libXt)
 			eval wget -O \${${_p}_src_dir}.tar.bz2 \
 				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.bz2 || return;;
 		libdrm)
@@ -3314,6 +3315,34 @@ install_native_libXdmcp()
 	update_path || return
 }
 
+install_native_xtrans()
+{
+	[ -f ${prefix}/include/X11/Xtrans/Xtrans.h -a "${force_install}" != yes ] && return
+	fetch xtrans || return
+	unpack xtrans || return
+	[ -f ${xtrans_bld_dir}/Makefile ] ||
+		(cd ${xtrans_bld_dir}
+		${xtrans_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${xtrans_bld_dir} -j ${jobs} || return
+	make -C ${xtrans_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libICE()
+{
+	[ -f ${prefix}/include/X11/ICE/ICE.h -a "${force_install}" != yes ] && return
+	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
+	print_header_path Xtrans.h X11/Xtrans > /dev/null || install_native_xtrans || return
+	fetch libICE || return
+	unpack libICE || return
+	[ -f ${libICE_bld_dir}/Makefile ] ||
+		(cd ${libICE_bld_dir}
+		${libICE_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libICE_bld_dir} -j ${jobs} || return
+	make -C ${libICE_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
 #install_native_inputproto()
 #{
 #	[ -d ${prefix}/include/X11/extensions/XI.h -a "${force_install}" != yes ] && return
@@ -3324,19 +3353,6 @@ install_native_libXdmcp()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${inputproto_src_dir} -j ${jobs} || return
 #	make -C ${inputproto_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
-#install_native_xtrans()
-#{
-#	[ -f ${prefix}/include/X11/Xtrans/Xtrans.h -a "${force_install}" != yes ] && return
-#	fetch xtrans || return
-#	unpack xtrans || return
-#	[ -f ${xtrans_src_dir}/Makefile ] ||
-#		(cd ${xtrans_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${xtrans_src_dir} -j ${jobs} || return
-#	make -C ${xtrans_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 #	update_path || return
 #}
 #
