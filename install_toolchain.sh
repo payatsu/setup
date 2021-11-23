@@ -252,6 +252,7 @@
 : ${libXt_ver:=1.2.1}
 : ${libXmu_ver:=1.1.3}
 : ${libXaw_ver:=1.0.14}
+: ${libXi_ver:=1.7}
 : ${libXfixes_ver:=5.0.2}
 : ${libXdamage_ver:=1.1.4}
 : ${fixesproto_ver:=5.0}
@@ -879,7 +880,7 @@ fetch()
 		xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto|presentproto|glproto|dri2proto|dri3proto)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.gz || return;;
-		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libXext|libX11|libXt|libXpm|libXmu|libXaw|libXfixes|libXdamage|libxshmfence|libpciaccess)
+		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXpm|libXmu|libXaw|libXi|libXfixes|libXdamage|libxshmfence|libpciaccess)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.gz || return;;
 		libdrm)
@@ -3512,6 +3513,24 @@ install_native_libXaw()
 		${libXaw_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libXaw_bld_dir} -j ${jobs} || return
 	make -C ${libXaw_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libXi()
+{
+	[ -f ${prefix}/include/X11/extensions/XInput.h -a "${force_install}" != yes ] && return
+	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
+	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
+	print_header_path XI.h X11/extensions > /dev/null || install_native_inputproto || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	print_header_path Xext.h X11/extensions > /dev/null || install_native_libXext || return
+	fetch libXi || return
+	unpack libXi || return
+	[ -f ${libXi_bld_dir}/Makefile ] ||
+		(cd ${libXi_bld_dir}
+		${libXi_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXi_bld_dir} -j ${jobs} || return
+	make -C ${libXi_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
