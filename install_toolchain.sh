@@ -3414,7 +3414,7 @@ install_native_libXext()
 
 install_native_inputproto()
 {
-	[ -d ${prefix}/include/X11/extensions/XI.h -a "${force_install}" != yes ] && return
+	[ -f ${prefix}/include/X11/extensions/XI.h -a "${force_install}" != yes ] && return
 	fetch inputproto || return
 	unpack inputproto || return
 	[ -f ${inputproto_bld_dir}/Makefile ] ||
@@ -3427,7 +3427,7 @@ install_native_inputproto()
 
 install_native_kbproto()
 {
-	[ -f ${prefix}/include/X11/XKBproto.h -a "${force_install}" != yes ] && return
+	[ -f ${prefix}/include/X11/extensions/XKBproto.h -a "${force_install}" != yes ] && return
 	fetch kbproto || return
 	unpack kbproto || return
 	[ -f ${kbproto_bld_dir}/Makefile ] ||
