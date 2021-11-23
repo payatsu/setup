@@ -250,6 +250,8 @@
 : ${kbproto_ver:=1.0.7}
 : ${libX11_ver:=1.7.2}
 : ${libXt_ver:=1.2.1}
+: ${libXmu_ver:=1.1.3}
+: ${libXaw_ver:=1.0.14}
 : ${libXfixes_ver:=5.0.2}
 : ${libXdamage_ver:=1.1.4}
 : ${fixesproto_ver:=5.0}
@@ -877,7 +879,7 @@ fetch()
 		xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto|presentproto|glproto|dri2proto|dri3proto)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.gz || return;;
-		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libXext|libX11|libXt|libXfixes|libXdamage|libxshmfence|libpciaccess|libXpm)
+		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libXext|libX11|libXt|libXpm|libXmu|libXaw|libXfixes|libXdamage|libxshmfence|libpciaccess)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.gz || return;;
 		libdrm)
@@ -3397,21 +3399,6 @@ install_native_xextproto()
 	update_path || return
 }
 
-install_native_libXext()
-{
-	[ -f ${prefix}/include/X11/extensions/Xext.h -a "${force_install}" != yes ] && return
-	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
-	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
-	fetch libXext || return
-	unpack libXext || return
-	[ -f ${libXext_bld_dir}/Makefile ] ||
-		(cd ${libXext_bld_dir}
-		${libXext_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${libXext_bld_dir} -j ${jobs} || return
-	make -C ${libXext_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_path || return
-}
-
 install_native_inputproto()
 {
 	[ -f ${prefix}/include/X11/extensions/XI.h -a "${force_install}" != yes ] && return
@@ -3457,6 +3444,22 @@ install_native_libX11()
 	update_path || return
 }
 
+install_native_libXext()
+{
+	[ -f ${prefix}/include/X11/extensions/Xext.h -a "${force_install}" != yes ] && return
+	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
+	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	fetch libXext || return
+	unpack libXext || return
+	[ -f ${libXext_bld_dir}/Makefile ] ||
+		(cd ${libXext_bld_dir}
+		${libXext_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXext_bld_dir} -j ${jobs} || return
+	make -C ${libXext_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
 install_native_libXt()
 {
 	[ -f ${prefix}/include/X11/Core.h -a "${force_install}" != yes ] && return
@@ -3472,6 +3475,43 @@ install_native_libXt()
 		${libXt_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libXt_bld_dir} -j ${jobs} || return
 	make -C ${libXt_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libXmu()
+{
+	[ -f ${prefix}/include/X11/Xmu/Xmu.h -a "${force_install}" != yes ] && return
+	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	print_header_path Xext.h X11/extensions > /dev/null || install_native_libXext || return
+	print_header_path Core.h X11 > /dev/null || install_native_libXt || return
+	fetch libXmu || return
+	unpack libXmu || return
+	[ -f ${libXmu_bld_dir}/Makefile ] ||
+		(cd ${libXmu_bld_dir}
+		${libXmu_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXmu_bld_dir} -j ${jobs} || return
+	make -C ${libXmu_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libXaw()
+{
+	[ -f ${prefix}/include/X11/Xaw/XawInit.h -a "${force_install}" != yes ] && return
+	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
+	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	print_header_path Xext.h X11/extensions > /dev/null || install_native_libXext || return
+	print_header_path Core.h X11 > /dev/null || install_native_libXt || return
+	print_header_path Xmu.h X11/Xmu > /dev/null || install_native_libXmu || return
+	print_header_path xpm.h X11 > /dev/null || install_native_libXpm || return
+	fetch libXaw || return
+	unpack libXaw || return
+	[ -f ${libXaw_bld_dir}/Makefile ] ||
+		(cd ${libXaw_bld_dir}
+		${libXaw_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXaw_bld_dir} -j ${jobs} || return
+	make -C ${libXaw_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
