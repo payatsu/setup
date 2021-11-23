@@ -245,10 +245,10 @@
 : ${xcb_proto_ver:=1.14.1}
 : ${libxcb_ver:=1.14}
 : ${xextproto_ver:=7.3.0}
-: ${libXext_ver:=1.3.4}
 : ${inputproto_ver:=2.3.2}
 : ${kbproto_ver:=1.0.7}
 : ${libX11_ver:=1.7.2}
+: ${libXext_ver:=1.3.4}
 : ${libXt_ver:=1.2.1}
 : ${libXmu_ver:=1.1.3}
 : ${libXaw_ver:=1.0.14}
@@ -262,6 +262,8 @@
 : ${randrproto_ver:=1.5.0}
 : ${libXrandr_ver:=1.5.2}
 : ${libXcursor_ver:=1.2.0}
+: ${xineramaproto_ver:=1.2.1}
+: ${libXinerama_ver:=1.1.4}
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
 : ${dri3proto_ver:=1.0}
@@ -883,11 +885,11 @@ fetch()
 			wget -O ${pkg_config_src_dir}.tar.gz \
 				https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
 		xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto|renderproto|\
-		randrproto|presentproto|glproto|dri2proto|dri3proto)
+		randrproto|xineramaproto|presentproto|glproto|dri2proto|dri3proto)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.gz || return;;
 		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXpm|libXmu|libXaw|\
-		libXi|libXfixes|libXdamage|libXrender|libXrandr|libXcursor|libxshmfence|libpciaccess)
+		libXi|libXfixes|libXdamage|libXrender|libXrandr|libXcursor|libXinerama|libxshmfence|libpciaccess)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.gz || return;;
 		libdrm)
@@ -3676,6 +3678,36 @@ install_native_libXcursor()
 		${libXcursor_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libXcursor_bld_dir} -j ${jobs} || return
 	make -C ${libXcursor_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_xineramaproto()
+{
+	[ -f ${prefix}/include/X11/extensions/panoramiXproto.h -a "${force_install}" != yes ] && return
+	fetch xineramaproto || return
+	unpack xineramaproto || return
+	[ -f ${xineramaproto_bld_dir}/Makefile ] ||
+		(cd ${xineramaproto_bld_dir}
+		${xineramaproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${xineramaproto_bld_dir} -j ${jobs} || return
+	make -C ${xineramaproto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libXinerama()
+{
+	[ -f ${prefix}/include/X11/extensions/Xinerama.h -a "${force_install}" != yes ] && return
+	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	print_header_path Xext.h X11/extensions > /dev/null || install_native_libXext || return
+	print_header_path panoramiXproto.h X11/extensions > /dev/null || install_native_xineramaproto || return
+	fetch libXinerama || return
+	unpack libXinerama || return
+	[ -f ${libXinerama_bld_dir}/Makefile ] ||
+		(cd ${libXinerama_bld_dir}
+		${libXinerama_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXinerama_bld_dir} -j ${jobs} || return
+	make -C ${libXinerama_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
