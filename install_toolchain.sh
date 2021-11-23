@@ -253,10 +253,14 @@
 : ${libXmu_ver:=1.1.3}
 : ${libXaw_ver:=1.0.14}
 : ${libXi_ver:=1.7}
-: ${libXfixes_ver:=5.0.2}
-: ${libXdamage_ver:=1.1.4}
 : ${fixesproto_ver:=5.0}
+: ${libXfixes_ver:=5.0.3}
 : ${damageproto_ver:=1.2.1}
+: ${libXdamage_ver:=1.1.5}
+: ${renderproto_ver:=0.11.1}
+: ${libXrender_ver:=0.9.10}
+: ${randrproto_ver:=1.5.0}
+: ${libXrandr_ver:=1.5.2}
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
 : ${dri3proto_ver:=1.0}
@@ -877,10 +881,12 @@ fetch()
 		pkg-config)
 			wget -O ${pkg_config_src_dir}.tar.gz \
 				https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
-		xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto|presentproto|glproto|dri2proto|dri3proto)
+		xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto|renderproto|\
+		randrproto|presentproto|glproto|dri2proto|dri3proto)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.gz || return;;
-		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXpm|libXmu|libXaw|libXi|libXfixes|libXdamage|libxshmfence|libpciaccess)
+		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXpm|libXmu|libXaw|\
+		libXi|libXfixes|libXdamage|libXrender|libXrandr|libxshmfence|libpciaccess)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.gz || return;;
 		libdrm)
@@ -3534,61 +3540,127 @@ install_native_libXi()
 	update_path || return
 }
 
-#install_native_fixesproto()
-#{
-#	[ -f ${prefix}/include/X11/extensions/xfixesproto.h -a "${force_install}" != yes ] && return
-#	fetch fixesproto || return
-#	unpack fixesproto || return
-#	[ -f ${fixesproto_src_dir}/Makefile ] ||
-#		(cd ${fixesproto_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${fixesproto_src_dir} -j ${jobs} || return
-#	make -C ${fixesproto_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
-#install_native_libXfixes()
-#{
-#	[ -f ${prefix}/include/X11/extensions/Xfixes.h -a "${force_install}" != yes ] && return
-#	print_header_path xfixesproto.h X11/extensions > /dev/null || install_native_fixesproto || return
-#	fetch libXfixes || return
-#	unpack libXfixes || return
-#	[ -f ${libXfixes_src_dir}/Makefile ] ||
-#		(cd ${libXfixes_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${libXfixes_src_dir} -j ${jobs} || return
-#	make -C ${libXfixes_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
-#install_native_damageproto()
-#{
-#	[ -f ${prefix}/include/X11/extensions/damageproto.h -a "${force_install}" != yes ] && return
-#	fetch damageproto || return
-#	unpack damageproto || return
-#	[ -f ${damageproto_src_dir}/Makefile ] ||
-#		(cd ${damageproto_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${damageproto_src_dir} -j ${jobs} || return
-#	make -C ${damageproto_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
-#install_native_libXdamage()
-#{
-#	[ -f ${prefix}/include/X11/extensions/Xdamage.h -a "${force_install}" != yes ] && return
-#	print_header_path damageproto.h X11/extensions > /dev/null || install_native_damageproto || return
-#	print_header_path Xfixes.h X11/extensions > /dev/null || install_native_libXfixes || return
-#	fetch libXdamage || return
-#	unpack libXdamage || return
-#	[ -f ${libXdamage_src_dir}/Makefile ] ||
-#		(cd ${libXdamage_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${libXdamage_src_dir} -j ${jobs} || return
-#	make -C ${libXdamage_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
+install_native_fixesproto()
+{
+	[ -f ${prefix}/include/X11/extensions/xfixesproto.h -a "${force_install}" != yes ] && return
+	fetch fixesproto || return
+	unpack fixesproto || return
+	[ -f ${fixesproto_bld_dir}/Makefile ] ||
+		(cd ${fixesproto_bld_dir}
+		${fixesproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${fixesproto_bld_dir} -j ${jobs} || return
+	make -C ${fixesproto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libXfixes()
+{
+	[ -f ${prefix}/include/X11/extensions/Xfixes.h -a "${force_install}" != yes ] && return
+	print_header_path xfixesproto.h X11/extensions > /dev/null || install_native_fixesproto || return
+	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
+	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	fetch libXfixes || return
+	unpack libXfixes || return
+	[ -f ${libXfixes_bld_dir}/Makefile ] ||
+		(cd ${libXfixes_bld_dir}
+		${libXfixes_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXfixes_bld_dir} -j ${jobs} || return
+	make -C ${libXfixes_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_damageproto()
+{
+	[ -f ${prefix}/include/X11/extensions/damageproto.h -a "${force_install}" != yes ] && return
+	fetch damageproto || return
+	unpack damageproto || return
+	[ -f ${damageproto_bld_dir}/Makefile ] ||
+		(cd ${damageproto_bld_dir}
+		${damageproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${damageproto_bld_dir} -j ${jobs} || return
+	make -C ${damageproto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libXdamage()
+{
+	[ -f ${prefix}/include/X11/extensions/Xdamage.h -a "${force_install}" != yes ] && return
+	print_header_path damageproto.h X11/extensions > /dev/null || install_native_damageproto || return
+	print_header_path xfixesproto.h X11/extensions > /dev/null || install_native_fixesproto || return
+	print_header_path Xfixes.h X11/extensions > /dev/null || install_native_libXfixes || return
+	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	fetch libXdamage || return
+	unpack libXdamage || return
+	[ -f ${libXdamage_bld_dir}/Makefile ] ||
+		(cd ${libXdamage_bld_dir}
+		${libXdamage_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXdamage_bld_dir} -j ${jobs} || return
+	make -C ${libXdamage_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_renderproto()
+{
+	[ -f ${prefix}/include/X11/extensions/renderproto.h -a "${force_install}" != yes ] && return
+	fetch renderproto || return
+	unpack renderproto || return
+	[ -f ${renderproto_bld_dir}/Makefile ] ||
+		(cd ${renderproto_bld_dir}
+		${renderproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${renderproto_bld_dir} -j ${jobs} || return
+	make -C ${renderproto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libXrender()
+{
+	[ -f ${prefix}/include/X11/extensions/Xrender.h -a "${force_install}" != yes ] && return
+	print_header_path renderproto.h X11/extensions > /dev/null || install_native_renderproto || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	fetch libXrender || return
+	unpack libXrender || return
+	[ -f ${libXrender_bld_dir}/Makefile ] ||
+		(cd ${libXrender_bld_dir}
+		${libXrender_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXrender_bld_dir} -j ${jobs} || return
+	make -C ${libXrender_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_randrproto()
+{
+	[ -f ${prefix}/include/X11/extensions/randrproto.h -a "${force_install}" != yes ] && return
+	fetch randrproto || return
+	unpack randrproto || return
+	[ -f ${randrproto_bld_dir}/Makefile ] ||
+		(cd ${randrproto_bld_dir}
+		${randrproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${randrproto_bld_dir} -j ${jobs} || return
+	make -C ${randrproto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libXrandr()
+{
+	[ -f ${prefix}/include/X11/extensions/Xrandr.h -a "${force_install}" != yes ] && return
+	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	print_header_path Xext.h X11/extensions > /dev/null || install_native_libXext || return
+	print_header_path renderproto.h X11/extensions > /dev/null || install_native_renderproto || return
+	print_header_path Xrender.h X11/extensions || install_native_libXrender || return
+	print_header_path randrproto.h X11/extensions || install_native_randrproto || return
+	fetch libXrandr || return
+	unpack libXrandr || return
+	[ -f ${libXrandr_bld_dir}/Makefile ] ||
+		(cd ${libXrandr_bld_dir}
+		${libXrandr_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXrandr_bld_dir} -j ${jobs} || return
+	make -C ${libXrandr_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
 #install_native_glproto()
 #{
 #	[ -f ${prefix}/include/GL/glxproto.h -a "${force_install}" != yes ] && return
