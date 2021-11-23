@@ -261,6 +261,7 @@
 : ${libXrender_ver:=0.9.10}
 : ${randrproto_ver:=1.5.0}
 : ${libXrandr_ver:=1.5.2}
+: ${libXcursor_ver:=1.2.0}
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
 : ${dri3proto_ver:=1.0}
@@ -886,7 +887,7 @@ fetch()
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.gz || return;;
 		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXpm|libXmu|libXaw|\
-		libXi|libXfixes|libXdamage|libXrender|libXrandr|libxshmfence|libpciaccess)
+		libXi|libXfixes|libXdamage|libXrender|libXrandr|libXcursor|libxshmfence|libpciaccess)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.gz || return;;
 		libdrm)
@@ -3649,8 +3650,8 @@ install_native_libXrandr()
 	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
 	print_header_path Xext.h X11/extensions > /dev/null || install_native_libXext || return
 	print_header_path renderproto.h X11/extensions > /dev/null || install_native_renderproto || return
-	print_header_path Xrender.h X11/extensions || install_native_libXrender || return
-	print_header_path randrproto.h X11/extensions || install_native_randrproto || return
+	print_header_path Xrender.h X11/extensions > /dev/null || install_native_libXrender || return
+	print_header_path randrproto.h X11/extensions > /dev/null || install_native_randrproto || return
 	fetch libXrandr || return
 	unpack libXrandr || return
 	[ -f ${libXrandr_bld_dir}/Makefile ] ||
@@ -3658,6 +3659,23 @@ install_native_libXrandr()
 		${libXrandr_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libXrandr_bld_dir} -j ${jobs} || return
 	make -C ${libXrandr_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libXcursor()
+{
+	[ -f ${prefix}/include/X11/Xcursor/Xcursor.h -a "${force_install}" != yes ] && return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	print_header_path xfixesproto.h X11/extensions > /dev/null || install_native_fixesproto || return
+	print_header_path Xfixes.h X11/extensions > /dev/null || install_native_libXfixes || return
+	print_header_path Xrender.h X11/extensions > /dev/null || install_native_libXrender || return
+	fetch libXcursor || return
+	unpack libXcursor || return
+	[ -f ${libXcursor_bld_dir}/Makefile ] ||
+		(cd ${libXcursor_bld_dir}
+		${libXcursor_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXcursor_bld_dir} -j ${jobs} || return
+	make -C ${libXcursor_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
