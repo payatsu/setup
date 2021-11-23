@@ -272,12 +272,12 @@
 : ${mesa_ver:=19.0.5}
 : ${libepoxy_ver:=1.5.9}
 : ${glib_ver:=2.70.1}
+: ${gobject_introspection_ver:=1.70.0}
 : ${pixman_ver:=0.40.0}
 : ${cairo_ver:=1.16.0}
 : ${fribidi_ver:=1.0.11}
 : ${harfbuzz_ver:=3.1.1}
 : ${pango_ver:=1.49.3}
-: ${gobject_introspection_ver:=1.70.0}
 : ${pygobject_ver:=3.42.0}
 : ${itstool_ver:=2.0.7}
 : ${shared_mime_info_ver:=2.1}
@@ -920,7 +920,7 @@ fetch()
 		graphene)
 			wget -O ${graphene_src_dir}.tar.xz \
 				https://github.com/ebassi/graphene/releases/download/${graphene_ver}/${graphene_name}.tar.xz || return;;
-		glib|pango|gdk-pixbuf|atk|gobject-introspection|pygobject|gtk)
+		glib|gobject-introspection|pango|gdk-pixbuf|atk|pygobject|gtk)
 			eval wget -O \${${_p}_src_dir}.tar.xz \
 				https://ftp.gnome.org/pub/gnome/sources/${p:-glib}/\`print_version ${p:-glib}\`/\${${_p:-glib}_name}.tar.xz || return;;
 		webkitgtk)
@@ -3131,6 +3131,19 @@ install_native_glib()
 	done
 }
 
+install_native_gobject_introspection()
+{
+	[ -f ${prefix}/include/gobject-introspection-1.0/giversion.h -a "${force_install}" != yes ] && return
+	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
+	which meson > /dev/null || install_native_meson || return
+	fetch gobject-introspection || return
+	unpack gobject-introspection || return
+	meson --prefix ${prefix} ${gobject_introspection_src_dir} ${gobject_introspection_bld_dir} || return
+	ninja -v -C ${gobject_introspection_bld_dir} || return
+	ninja -v -C ${gobject_introspection_bld_dir} install || return
+	update_path || return
+}
+
 install_native_pixman()
 {
 	[ -f ${prefix}/include/pixman-1/pixman.h -a "${force_install}" != yes ] && return
@@ -3202,19 +3215,6 @@ install_native_pango()
 	meson --prefix ${prefix} ${pango_src_dir} ${pango_bld_dir} || return
 	ninja -v -C ${pango_bld_dir} || return
 	ninja -v -C ${pango_bld_dir} install || return
-	update_path || return
-}
-
-install_native_gobject_introspection()
-{
-	[ -f ${prefix}/include/gobject-introspection-1.0/giversion.h -a "${force_install}" != yes ] && return
-	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
-	which meson > /dev/null || install_native_meson || return
-	fetch gobject-introspection || return
-	unpack gobject-introspection || return
-	meson --prefix ${prefix} ${gobject_introspection_src_dir} ${gobject_introspection_bld_dir} || return
-	ninja -v -C ${gobject_introspection_bld_dir} || return
-	ninja -v -C ${gobject_introspection_bld_dir} install || return
 	update_path || return
 }
 
