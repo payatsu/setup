@@ -3801,8 +3801,8 @@ install_native_vim()
 	which gettext > /dev/null || install_native_gettext || return
 	print_header_path lua.h > /dev/null || install_native_lua || return
 	print_library_path libperl.so > /dev/null || install_native_perl || return
-	print_header_path Python.h python`python --version 2>&1 | grep -oe '[[:digit:]]\.[[:digit:]]'` > /dev/null || (install_native_Python2) || return
-	print_header_path Python.h python`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'` > /dev/null || install_native_Python || return
+	print_header_path Python.h python`python --version 2>&1 | grep -oe '[[:digit:]]\.[[:digit:]]\{1,2\}'` > /dev/null || (install_native_Python2) || return
+	print_header_path Python.h python`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]\{1,2\}'` > /dev/null || install_native_Python || return
 	print_library_path tclConfig.sh > /dev/null || install_native_tcl || return
 	print_header_path ruby.h > /dev/null || install_native_ruby || return
 	fetch vim || return
@@ -3846,7 +3846,7 @@ EOF
 		/^PERL_LIBS\>/s/[[:graph:]]\+CORE//g
 		' ${vim_bld_dir}/src/auto/config.mk || return
 	make -C ${vim_bld_dir} -j ${jobs} || return
-	for l in ex rview rvim view vimdiff; do
+	for l in eview evim ex gview gvim gvimdiff rgview rgvim rview rvim view vimdiff; do
 		[ ! -h ${DESTDIR}${prefix}/bin/${l} ] || rm -fv ${DESTDIR}${prefix}/bin/${l} || return
 	done
 	make -C ${vim_bld_dir} -j ${jobs} install || return

@@ -2427,7 +2427,7 @@ EOF
 			/^PERL_LIBS\>/s/[[:graph:]]\+CORE//g
 			' ${vim_bld_dir}/src/auto/config.mk || return
 		make -C ${vim_bld_dir} -j ${jobs} || return
-		for l in ex rview rvim view vimdiff; do
+		for l in eview evim ex gview gvim gvimdiff rgview rgvim rview rvim view vimdiff; do
 			[ ! -h ${DESTDIR}${prefix}/bin/${l} ] || rm -fv ${DESTDIR}${prefix}/bin/${l} || return
 		done
 		make -C ${vim_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
