@@ -12,6 +12,8 @@ ARG pkgs="zlib m4 gmp mpfr mpc isl zstd gcc perl autoconf autoconf-archive \
 automake pigz bzip2 xz ncurses readline openssl expat libffi gdbm sqlite \
 Python2 Python nghttp2 libunistring libidn2 libpsl curl cmake ninja meson \
 pcre libiconv glib pkg-config gettext pcre2 libxml2 libxslt asciidoc \
+xproto xextproto xcb-proto libXau libxcb xtrans inputproto kbproto libX11 \
+libXext libICE libSM libXt libXmu libXpm libXaw \
 tcl tk git elfutils binutils bison flex libtool less texinfo gawk cpio zip \
 unzip lzip lunzip lzo lzop lz4 file groff libpipeline man-db ed bc patch \
 swig Bear ccache llvm lld compiler-rt libunwindnongnu libcxxabi libcxx \
@@ -36,9 +38,7 @@ make gcc g++ \
 texinfo \
 pkg-config dpkg-dev \
 ca-certificates \
-xmlto \
-libxt-dev \
-libxaw7-dev libxpm-dev
+xmlto
 COPY install_toolchain.sh ${prefix}/
 RUN --mount=type=cache,target=/root/.ccache --mount=type=cache,target=${prefix}/src \
 ${prefix}/install_toolchain.sh -p ${prefix} -j ${njobs} "fetch ${pkgs} clang-tools-extra vimdoc-ja opencv_contrib mingw-w64" && \
@@ -66,8 +66,6 @@ apt-get install -y --no-install-recommends tzdata locales && \
 apt-get install -y --no-install-recommends \
 libc6-dev wget \
 ca-certificates \
-libxt6 \
-libxaw7 libxpm4 \
 sudo \
 fonts-ricty-diminished \
 && \
