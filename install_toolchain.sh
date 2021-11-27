@@ -127,8 +127,8 @@
 : ${file_ver:=5.41}
 : ${source_highlight_ver:=3.1.9}
 : ${screen_ver:=4.8.0}
-: ${libevent_ver:=2.1.11-stable}
-: ${tmux_ver:=3.2}
+: ${libevent_ver:=2.1.12-stable}
+: ${tmux_ver:=3.2a}
 : ${expect_ver:=5.45.4}
 : ${dejagnu_ver:=1.6.3}
 : ${zsh_ver:=5.8}

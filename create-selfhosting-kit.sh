@@ -185,8 +185,8 @@ EOF
 : ${v4l_utils_ver:=1.22.1}
 
 : ${screen_ver:=4.8.0}
-: ${libevent_ver:=2.1.11-stable}
-: ${tmux_ver:=3.2}
+: ${libevent_ver:=2.1.12-stable}
+: ${tmux_ver:=3.2a}
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.0}
 : ${tcsh_ver:=TCSH6_22_04}
