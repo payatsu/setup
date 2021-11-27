@@ -1942,8 +1942,8 @@ install_native_bison()
 	unpack bison || return
 	[ -f ${bison_bld_dir}/Makefile ] ||
 		(cd ${bison_bld_dir}
-		${bison_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-			--enable-relocatable) || return
+		${bison_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+			--disable-silent-rules --disable-rpath --enable-relocatable) || return
 	make -C ${bison_bld_dir} -j ${jobs} || return
 	make -C ${bison_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
