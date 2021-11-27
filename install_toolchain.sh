@@ -1901,7 +1901,8 @@ install_native_texinfo()
 	unpack texinfo || return
 	[ -f ${texinfo_bld_dir}/Makefile ] ||
 		(cd ${texinfo_bld_dir}
-		${texinfo_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+		${texinfo_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+			--disable-rpath) || return
 	make -C ${texinfo_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${texinfo_bld_dir} -j ${jobs} -k check || return
