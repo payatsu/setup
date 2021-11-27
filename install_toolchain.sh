@@ -207,7 +207,7 @@
 : ${libav_ver:=11.9}
 : ${opencv_ver:=4.5.4}
 : ${opencv_contrib_ver:=${opencv_ver}}
-: ${v4l_utils_ver:=1.20.0}
+: ${v4l_utils_ver:=1.22.1}
 : ${yavta_ver:=git}
 : ${gstreamer_ver:=1.18.5}
 : ${gst_plugins_base_ver:=${gstreamer_ver}}

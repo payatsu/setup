@@ -182,7 +182,7 @@ EOF
 : ${tar_ver:=1.34}
 : ${cpio_ver:=2.13}
 : ${e2fsprogs_ver:=1.46.2}
-: ${v4l_utils_ver:=1.20.0}
+: ${v4l_utils_ver:=1.22.1}
 
 : ${screen_ver:=4.8.0}
 : ${libevent_ver:=2.1.11-stable}
