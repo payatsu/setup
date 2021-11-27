@@ -203,7 +203,7 @@ EOF
 
 : ${help2man_ver:=1.47.16}
 : ${coreutils_ver:=9.0}
-: ${file_ver:=5.39}
+: ${file_ver:=5.41}
 
 : ${go_ver:=1.16.8}
 : ${cmake_ver:=3.19.4}

@@ -124,7 +124,7 @@
 : ${gdbm_ver:=1.22}
 : ${libpipeline_ver:=1.5.3}
 : ${man_db_ver:=2.9.4}
-: ${file_ver:=5.39}
+: ${file_ver:=5.41}
 : ${source_highlight_ver:=3.1.9}
 : ${screen_ver:=4.8.0}
 : ${libevent_ver:=2.1.11-stable}
