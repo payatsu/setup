@@ -91,7 +91,7 @@
 : ${giflib_ver:=5.2.1}
 : ${libXpm_ver:=3.5.11}
 : ${libwebp_ver:=1.0.0}
-: ${libffi_ver:=3.3}
+: ${libffi_ver:=3.4.2}
 : ${emacs_ver:=27.2}
 : ${libiconv_ver:=1.16}
 : ${vim_ver:=8.2.3455}
@@ -575,7 +575,7 @@ fetch()
 				https://storage.googleapis.com/downloads.webmproject.org/releases/webp/${libwebp_name}.tar.gz || return;;
 		libffi)
 			wget -O ${libffi_src_dir}.tar.gz \
-				https://mirrors.kernel.org/sourceware/libffi/${libffi_name}.tar.gz || return;;
+				https://github.com/libffi/libffi/releases/download/v${libffi_ver}/${libffi_name}.tar.gz || return;;
 		vim)
 			wget -O ${vim_src_dir}.tar.gz \
 				https://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return;;

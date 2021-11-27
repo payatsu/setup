@@ -123,7 +123,7 @@ EOF
 : ${ncurses_ver:=6.3}
 : ${readline_ver:=8.1}
 : ${expat_ver:=2.4.1}
-: ${libffi_ver:=3.3}
+: ${libffi_ver:=3.4.2}
 : ${Python_ver:=3.10.0}
 : ${boost_ver:=1_77_0}
 : ${source_highlight_ver:=3.1.9}
@@ -314,7 +314,7 @@ fetch()
 			https://sourceforge.net/projects/expat/files/expat/${expat_ver}/${expat_name}.tar.bz2/download || return;;
 	libffi)
 		wget -O ${libffi_src_dir}.tar.gz \
-			https://mirrors.kernel.org/sourceware/libffi/${libffi_name}.tar.gz || return;;
+			https://github.com/libffi/libffi/releases/download/v${libffi_ver}/${libffi_name}.tar.gz || return;;
 	openssl)
 		wget -O ${openssl_src_dir}.tar.gz \
 			https://www.openssl.org/source/${openssl_name}.tar.gz ||
