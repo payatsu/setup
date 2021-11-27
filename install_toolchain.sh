@@ -123,7 +123,7 @@
 : ${groff_ver:=1.22.4}
 : ${gdbm_ver:=1.22}
 : ${libpipeline_ver:=1.5.2}
-: ${man_db_ver:=2.9.0}
+: ${man_db_ver:=2.9.4}
 : ${file_ver:=5.39}
 : ${source_highlight_ver:=3.1.9}
 : ${screen_ver:=4.8.0}
@@ -140,7 +140,7 @@
 : ${e2fsprogs_ver:=1.46.2}
 : ${squashfs_ver:=4.4}
 : ${openssl_ver:=1.1.1l}
-: ${openssh_ver:=8.6p1}
+: ${openssh_ver:=8.8p1}
 : ${nghttp2_ver:=1.43.0}
 : ${brotli_ver:=1.0.9}
 : ${curl_ver:=7.75.0}

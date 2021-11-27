@@ -171,7 +171,7 @@ EOF
 : ${gawk_ver:=5.1.0}
 : ${gettext_ver:=0.21}
 : ${git_ver:=2.34.0}
-: ${openssh_ver:=8.6p1}
+: ${openssh_ver:=8.8p1}
 : ${lzip_ver:=1.22}
 : ${ed_ver:=1.17}
 : ${bc_ver:=1.07.1}
