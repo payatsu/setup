@@ -133,7 +133,7 @@
 : ${dejagnu_ver:=1.6.3}
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.0}
-: ${tcsh_ver:=TCSH6_22_04}
+: ${tcsh_ver:=TCSH6_23_00}
 : ${inetutils_ver:=2.2}
 : ${iproute2_ver:=5.9.0}
 : ${util_linux_ver:=2.37.2}
