@@ -194,7 +194,7 @@
 : ${libunistring_ver:=0.9.10}
 : ${libidn2_ver:=2.3.2}
 : ${libpsl_ver:=0.21.1}
-: ${libatomic_ops_ver:=7.6.10}
+: ${libatomic_ops_ver:=7.6.12}
 : ${gc_ver:=7.6.12}
 : ${guile_ver:=3.0.7}
 : ${lua_ver:=5.4.3}
