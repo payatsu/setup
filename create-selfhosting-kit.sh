@@ -2536,7 +2536,8 @@ EOF
 		unpack ${1} || return
 		[ -f ${diffutils_bld_dir}/Makefile ] ||
 			(cd ${diffutils_bld_dir}
-			${diffutils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
+			${diffutils_src_dir}/configure --prefix=${prefix} --host=${host} \
+				--disable-silent-rules --disable-rpath) || return
 		make -C ${diffutils_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${diffutils_bld_dir} -j ${jobs} -k check || return
