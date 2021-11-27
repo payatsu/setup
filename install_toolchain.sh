@@ -82,7 +82,7 @@
 : ${lcov_ver:=1.14}
 : ${strace_ver:=5.12}
 : ${ltrace_ver:=0.7.3}
-: ${valgrind_ver:=3.16.1}
+: ${valgrind_ver:=3.18.1}
 : ${zlib_ver:=1.2.11}
 : ${pigz_ver:=2.6}
 : ${libpng_ver:=1.6.37}
