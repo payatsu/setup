@@ -193,7 +193,7 @@
 : ${tk_ver:=8.6.11}
 : ${libunistring_ver:=0.9.10}
 : ${libidn2_ver:=2.3.2}
-: ${libpsl_ver:=0.21.0}
+: ${libpsl_ver:=0.21.1}
 : ${libatomic_ops_ver:=7.6.10}
 : ${gc_ver:=7.6.12}
 : ${guile_ver:=3.0.7}
@@ -807,7 +807,7 @@ fetch()
 				https://ftp.gnu.org/gnu/libidn/${libidn2_name}.tar.gz || return;;
 		libpsl)
 			wget -O ${libpsl_src_dir}.tar.gz \
-				https://github.com/rockdaboot/libpsl/releases/download/${libpsl_name}/${libpsl_name}.tar.gz || return;;
+				https://github.com/rockdaboot/libpsl/releases/download/${libpsl_ver}/${libpsl_name}.tar.gz || return;;
 		gc)
 			wget -O ${gc_src_dir}.tar.gz \
 				https://github.com/ivmai/bdwgc/releases/download/v${gc_ver}/${gc_name}.tar.gz || return;;
