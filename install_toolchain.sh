@@ -146,7 +146,7 @@
 : ${curl_ver:=7.75.0}
 : ${expat_ver:=2.4.1}
 : ${asciidoc_ver:=8.6.9}
-: ${libxml2_ver:=2.9.10}
+: ${libxml2_ver:=2.9.11}
 : ${libxslt_ver:=1.1.34}
 : ${xmlto_ver:=0.0.28}
 : ${gettext_ver:=0.21}
@@ -166,7 +166,7 @@
 : ${Bear_ver:=2.4.3}
 : ${ccache_ver:=4.3}
 : ${distcc_ver:=3.4}
-: ${libedit_ver:=20191231-3.1}
+: ${libedit_ver:=20210910-3.1}
 : ${swig_ver:=4.0.2}
 : ${llvm_ver:=12.0.1}
 : ${compiler_rt_ver:=${llvm_ver}}

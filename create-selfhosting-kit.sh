@@ -209,8 +209,8 @@ EOF
 : ${cmake_ver:=3.19.4}
 : ${ninja_ver:=1.10.2}
 : ${meson_ver:=0.58.1}
-: ${libxml2_ver:=2.9.10}
-: ${libedit_ver:=20191231-3.1}
+: ${libxml2_ver:=2.9.11}
+: ${libedit_ver:=20210910-3.1}
 : ${swig_ver:=4.0.2}
 : ${llvm_ver:=12.0.1}
 : ${compiler_rt_ver:=${llvm_ver}}
