@@ -109,8 +109,8 @@
 : ${ripgrep_ver:=13.0.0}
 : ${ghostscript_ver:=9.52}
 : ${graphviz_ver:=2.44.1}
-: ${doxygen_ver:=1.9.1}
-: ${freetype_ver:=2.9.1}
+: ${doxygen_ver:=1.9.2}
+: ${freetype_ver:=2.11.0}
 : ${fontconfig_ver:=2.13.1}
 : ${plantuml_ver:=1.2021.1}
 : ${diffutils_ver:=3.8}
@@ -613,8 +613,8 @@ fetch()
 			wget -O ${doxygen_src_dir}.tar.gz \
 				https://github.com/doxygen/doxygen/archive/Release_`echo ${doxygen_ver} | tr . _`.tar.gz || return;;
 		freetype)
-			wget -O ${freetype_src_dir}.tar.bz2 \
-				https://download.savannah.gnu.org/releases/freetype/${freetype_name}.tar.bz2 || return;;
+			wget -O ${freetype_src_dir}.tar.xz \
+				https://download.savannah.gnu.org/releases/freetype/${freetype_name}.tar.xz || return;;
 		fontconfig)
 			wget -O ${fontconfig_src_dir}.tar.bz2 \
 				https://www.freedesktop.org/software/fontconfig/release/${fontconfig_name}.tar.bz2 || return;;
