@@ -125,7 +125,7 @@ EOF
 : ${expat_ver:=2.4.1}
 : ${libffi_ver:=3.3}
 : ${Python_ver:=3.10.0}
-: ${boost_ver:=1_76_0}
+: ${boost_ver:=1_77_0}
 : ${source_highlight_ver:=3.1.9}
 : ${pcre_ver:=8.45}
 : ${pcre2_ver:=10.37}
