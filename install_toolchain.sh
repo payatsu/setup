@@ -122,7 +122,7 @@
 : ${less_ver:=581.2}
 : ${groff_ver:=1.22.4}
 : ${gdbm_ver:=1.22}
-: ${libpipeline_ver:=1.5.2}
+: ${libpipeline_ver:=1.5.3}
 : ${man_db_ver:=2.9.4}
 : ${file_ver:=5.39}
 : ${source_highlight_ver:=3.1.9}
