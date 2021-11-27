@@ -6019,6 +6019,7 @@ install_native_guile()
 	unpack guile || return
 	[ -f ${guile_bld_dir}/Makefile ] ||
 		(cd ${guile_bld_dir}
+		remove_rpath_option guile || return
 		${guile_src_dir}/configure --prefix=${prefix} -build=${build} --host=${host} \
 			--disable-silent-rules --with-libunistring-prefix=`print_prefix unistr.h` \
 			LIBFFI_CFLAGS=`I ffi.h` LIBFFI_LIBS="`l ffi`" \
