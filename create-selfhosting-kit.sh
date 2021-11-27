@@ -283,7 +283,7 @@ fetch()
 	case ${1} in
 	zlib)
 		wget -O ${zlib_src_dir}.tar.xz \
-			http://zlib.net/${zlib_name}.tar.xz || return;;
+			https://zlib.net/${zlib_name}.tar.xz || return;;
 	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|autoconf|automake|\
 	bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|emacs|nano|grep|\
 	diffutils|patch|global|findutils|help2man|coreutils)
@@ -295,7 +295,7 @@ fetch()
 		done || return;;
 	isl)
 		wget -O ${isl_src_dir}.tar.xz \
-			http://isl.gforge.inria.fr/${isl_name}.tar.xz || return;;
+			https://libisl.sourceforge.io/${isl_name}.tar.xz || return;;
 	gcc)
 		for compress_format in xz bz2 gz; do
 			wget -O ${gcc_src_dir}.tar.${compress_format} \
@@ -314,12 +314,12 @@ fetch()
 			https://sourceforge.net/projects/expat/files/expat/${expat_ver}/${expat_name}.tar.bz2/download || return;;
 	libffi)
 		wget -O ${libffi_src_dir}.tar.gz \
-			http://mirrors.kernel.org/sourceware/libffi/${libffi_name}.tar.gz || return;;
+			https://mirrors.kernel.org/sourceware/libffi/${libffi_name}.tar.gz || return;;
 	openssl)
 		wget -O ${openssl_src_dir}.tar.gz \
 			https://www.openssl.org/source/${openssl_name}.tar.gz ||
 				wget -O ${openssl_src_dir}.tar.gz \
-					http://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return;;
+					https://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return;;
 	Python)
 		wget -O ${Python_src_base}/Python-${Python_ver}.tar.xz \
 			https://www.python.org/ftp/python/${Python_ver}/${Python_name}.tar.xz || return;;
@@ -334,7 +334,7 @@ fetch()
 			https://www.sourceware.org/pub/bzip2/${bzip2_name}.tar.gz || return;;
 	xz)
 		wget -O ${xz_src_dir}.tar.bz2 \
-			http://tukaani.org/xz/${xz_name}.tar.bz2 || return;;
+			https://tukaani.org/xz/${xz_name}.tar.bz2 || return;;
 	elfutils)
 		wget -O ${elfutils_src_dir}.tar.bz2 \
 			https://sourceware.org/elfutils/ftp/${elfutils_ver}/${elfutils_name}.tar.bz2 || return;;
@@ -349,7 +349,7 @@ fetch()
 			http://ftp.rpm.org/popt/releases/popt-1.x/${popt_name}.tar.gz || return;;
 	glib)
 		wget -O ${glib_src_dir}.tar.xz \
-			http://ftp.gnome.org/pub/gnome/sources/glib/`print_version glib`/${glib_name}.tar.xz || return;;
+			https://ftp.gnome.org/pub/gnome/sources/glib/`print_version glib`/${glib_name}.tar.xz || return;;
 	babeltrace)
 		wget -O ${babeltrace_src_dir}.tar.gz \
 			https://github.com/efficios/babeltrace/archive/v${babeltrace_ver}.tar.gz || return;;
@@ -376,7 +376,7 @@ fetch()
 			https://github.com/Linaro/OpenCSD/archive/refs/tags/v${OpenCSD_ver}.tar.gz || return;;
 	libunwindnongnu)
 		wget -O ${libunwindnongnu_src_dir}.tar.gz \
-			http://download.savannah.nongnu.org/releases/libunwind/${libunwindnongnu_name}.tar.gz || return;;
+			https://download.savannah.nongnu.org/releases/libunwind/${libunwindnongnu_name}.tar.gz || return;;
 	libpfm)
 		wget -O ${libpfm_src_dir}.tar.gz \
 			https://sourceforge.net/projects/perfmon2/files/libpfm4/${libpfm_name}.tar.gz/download || return;;
@@ -418,7 +418,7 @@ fetch()
 			https://mirrors.edge.kernel.org/pub/software/utils/i2c-tools/${i2c_tools_name}.tar.xz || return;;
 	perl)
 		wget -O ${perl_src_dir}.tar.gz \
-			http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return;;
+			https://www.cpan.org/src/5.0/${perl_name}.tar.gz || return;;
 	flex)
 		wget -O ${flex_src_dir}.tar.gz \
 			https://github.com/westes/flex/releases/download/v${flex_ver}/${flex_name}.tar.gz || return;;
@@ -433,10 +433,10 @@ fetch()
 			https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return;;
 	openssh)
 		wget -O ${openssh_src_dir}.tar.gz \
-			http://ftp.jaist.ac.jp/pub/OpenBSD/OpenSSH/portable/${openssh_name}.tar.gz || return;;
+			https://ftp.jaist.ac.jp/pub/OpenBSD/OpenSSH/portable/${openssh_name}.tar.gz || return;;
 	lzip)
 		wget -O ${lzip_src_dir}.tar.gz \
-			http://download.savannah.gnu.org/releases/lzip/${lzip_name}.tar.gz || return;;
+			https://download.savannah.gnu.org/releases/lzip/${lzip_name}.tar.gz || return;;
 	rsync)
 		wget -O ${rsync_src_dir}.tar.gz \
 			https://download.samba.org/pub/rsync/src/${rsync_name}.tar.gz || return;;
@@ -469,13 +469,13 @@ fetch()
 			https://github.com/tcsh-org/tcsh/archive/refs/tags/${tcsh_ver}.tar.gz || return;;
 	vim)
 		wget -O ${vim_src_dir}.tar.gz \
-			http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return;;
+			https://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return;;
 	vimdoc-ja)
 		wget -O ${vimdoc_ja_src_dir}.tar.gz \
 			https://github.com/vim-jp/vimdoc-ja/archive/master.tar.gz || return;;
 	ctags)
 		git clone --depth 1 \
-			http://github.com/universal-ctags/ctags.git ${ctags_src_dir} || return;;
+			https://github.com/universal-ctags/ctags.git ${ctags_src_dir} || return;;
 	file)
 		wget -O ${file_src_dir}.tar.gz \
 			http://ftp.astron.com/pub/file/${file_name}.tar.gz || return;;
@@ -496,7 +496,7 @@ fetch()
 			http://xmlsoft.org/sources/\${${_1}_name}.tar.gz || return;;
 	libedit)
 		wget -O ${libedit_src_dir}.tar.gz \
-			http://thrysoee.dk/editline/${libedit_name}.tar.gz || return;;
+			https://thrysoee.dk/editline/${libedit_name}.tar.gz || return;;
 	swig)
 		wget --trust-server-names -O ${swig_src_dir}.tar.gz \
 			https://sourceforge.net/projects/swig/files/swig/${swig_name}/${swig_name}.tar.gz/download || return;;
