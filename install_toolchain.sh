@@ -6266,6 +6266,7 @@ install_native_opencv()
 		-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
 		-DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DCMAKE_SKIP_INSTALL_RPATH=TRUE \
 		-DENABLE_PRECOMPILED_HEADERS=OFF \
 		-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_src_dir}/modules || return
 	cmake --build ${opencv_bld_dir} -v -j ${jobs} || return
