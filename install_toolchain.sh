@@ -28,7 +28,7 @@
 : ${help2man_ver:=1.47.16}
 : ${texinfo_ver:=6.8}
 : ${coreutils_ver:=9.0}
-: ${busybox_ver:=1.33.1}
+: ${busybox_ver:=1.34.1}
 : ${bison_ver:=3.8.1}
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.19}
