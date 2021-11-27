@@ -22,7 +22,7 @@
 : ${lzop_ver:=1.04}
 : ${lz4_ver:=1.9.3}
 : ${zstd_ver:=1.5.0}
-: ${libarchive_ver:=3.5.1}
+: ${libarchive_ver:=3.5.2}
 : ${wget_ver:=1.21.2}
 : ${pkg_config_ver:=0.29.2}
 : ${help2man_ver:=1.47.16}
