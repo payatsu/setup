@@ -412,7 +412,7 @@ fetch()
 				https://ftp.gnu.org/gnu/autogen/rel${autogen_ver}/${autogen_name}.tar.xz || return;;
 		xz)
 			wget -O ${xz_src_dir}.tar.bz2 \
-				http://tukaani.org/xz/${xz_name}.tar.bz2 || return;;
+				https://tukaani.org/xz/${xz_name}.tar.bz2 || return;;
 		bzip2)
 			wget -O ${bzip2_src_dir}.tar.gz \
 				https://www.sourceware.org/pub/bzip2/${bzip2_name}.tar.gz || return;;
@@ -424,13 +424,13 @@ fetch()
 				https://sourceforge.net/projects/infozip/files/UnZip%206.x%20%28latest%29/UnZip%206.0/unzip`echo ${unzip_ver} | tr -d .`.tar.gz/download || return;;
 		lzip)
 			wget -O ${lzip_src_dir}.tar.gz \
-				http://download.savannah.gnu.org/releases/lzip/${lzip_name}.tar.gz || return;;
+				https://download.savannah.gnu.org/releases/lzip/${lzip_name}.tar.gz || return;;
 		lunzip)
 			wget -O ${lunzip_src_dir}.tar.gz \
-				http://download.savannah.gnu.org/releases/lzip/lunzip/${lunzip_name}.tar.gz || return;;
+				https://download.savannah.gnu.org/releases/lzip/lunzip/${lunzip_name}.tar.gz || return;;
 		lzo)
 			wget -O ${lzo_src_dir}.tar.gz \
-				http://www.oberhumer.com/opensource/lzo/download/${lzo_name}.tar.gz || return;;
+				https://www.oberhumer.com/opensource/lzo/download/${lzo_name}.tar.gz || return;;
 		lzop)
 			wget -O ${lzop_src_dir}.tar.gz \
 				https://www.lzop.org/download/${lzop_name}.tar.gz || return;;
@@ -442,7 +442,7 @@ fetch()
 				https://github.com/facebook/zstd/releases/download/v${zstd_ver}/${zstd_name}.tar.gz || return;;
 		libarchive)
 			wget -O ${libarchive_src_dir}.tar.xz \
-				http://www.libarchive.org/downloads/${libarchive_name}.tar.xz || return;;
+				https://www.libarchive.org/downloads/${libarchive_name}.tar.xz || return;;
 		busybox)
 			wget -O ${busybox_src_dir}.tar.bz2 \
 				https://www.busybox.net/downloads/${busybox_name}.tar.bz2 || return;;
@@ -478,7 +478,7 @@ fetch()
 				https://github.com/Linaro/OpenCSD/archive/refs/tags/v${OpenCSD_ver}.tar.gz || return;;
 		libunwindnongnu)
 			wget -O ${libunwindnongnu_src_dir}.tar.gz \
-				http://download.savannah.nongnu.org/releases/libunwind/${libunwindnongnu_name}.tar.gz || return;;
+				https://download.savannah.nongnu.org/releases/libunwind/${libunwindnongnu_name}.tar.gz || return;;
 		libpfm)
 			wget -O ${libpfm_src_dir}.tar.gz \
 				https://sourceforge.net/projects/perfmon2/files/libpfm4/${libpfm_name}.tar.gz/download || return;;
@@ -548,13 +548,13 @@ fetch()
 				https://strace.io/files/${strace_ver}/${strace_name}.tar.xz || return;;
 		ltrace)
 			wget -O ${ltrace_src_dir}.tar.bz2 \
-				http://www.ltrace.org/ltrace_${ltrace_ver}.orig.tar.bz2 || return;;
+				https://www.ltrace.org/ltrace_${ltrace_ver}.orig.tar.bz2 || return;;
 		valgrind)
 			wget -O ${valgrind_src_dir}.tar.bz2 \
-				http://sourceware.org/pub/valgrind/${valgrind_name}.tar.bz2 || return;;
+				https://sourceware.org/pub/valgrind/${valgrind_name}.tar.bz2 || return;;
 		zlib)
 			wget -O ${zlib_src_dir}.tar.xz \
-				http://zlib.net/${zlib_name}.tar.xz || return;;
+				https://zlib.net/${zlib_name}.tar.xz || return;;
 		pigz)
 			wget -O ${pigz_src_dir}.tar.gz \
 				https://zlib.net/pigz/${pigz_name}.tar.gz || return;;
@@ -566,7 +566,7 @@ fetch()
 				https://download.osgeo.org/libtiff/${tiff_name}.tar.gz || return;;
 		jpeg)
 			wget -O ${jpeg_src_dir}.tar.gz \
-				http://www.ijg.org/files/${jpeg_name}.tar.gz || return;;
+				https://www.ijg.org/files/${jpeg_name}.tar.gz || return;;
 		giflib)
 			wget --trust-server-names -O ${giflib_src_dir}.tar.gz \
 				https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.gz/download || return;;
@@ -575,16 +575,16 @@ fetch()
 				https://storage.googleapis.com/downloads.webmproject.org/releases/webp/${libwebp_name}.tar.gz || return;;
 		libffi)
 			wget -O ${libffi_src_dir}.tar.gz \
-				http://mirrors.kernel.org/sourceware/libffi/${libffi_name}.tar.gz || return;;
+				https://mirrors.kernel.org/sourceware/libffi/${libffi_name}.tar.gz || return;;
 		vim)
 			wget -O ${vim_src_dir}.tar.gz \
-				http://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return;;
+				https://github.com/vim/vim/archive/v${vim_ver}.tar.gz || return;;
 		vimdoc-ja)
 			wget -O ${vimdoc_ja_src_dir}.tar.gz \
 				https://github.com/vim-jp/vimdoc-ja/archive/master.tar.gz || return;;
 		ctags)
 			git clone --depth 1 \
-				http://github.com/universal-ctags/ctags.git ${ctags_src_dir} || return;;
+				https://github.com/universal-ctags/ctags.git ${ctags_src_dir} || return;;
 		neovim)
 			wget -O ${neovim_src_dir}.tar.gz \
 				https://github.com/neovim/neovim/archive/v${neovim_ver}.tar.gz || return;;
@@ -636,7 +636,7 @@ fetch()
 		libpipeline|man-db)
 			for compress_format in xz gz; do
 				eval wget -O \${${_p}_src_dir}.tar.${compress_format:-xz} \
-					http://download.savannah.nongnu.org/releases/${p:-man-db}/\${${_p:-man_db}_name}.tar.${compress_format:-xz} \
+					https://download.savannah.nongnu.org/releases/${p:-man-db}/\${${_p:-man_db}_name}.tar.${compress_format:-xz} \
 					&& break \
 					|| eval rm -v \${${_p}_src_dir}.tar.${compress_format:-xz}
 			done || return;;
@@ -677,10 +677,10 @@ fetch()
 			wget -O ${openssl_src_dir}.tar.gz \
 				https://www.openssl.org/source/${openssl_name}.tar.gz ||
 					wget -O ${openssl_src_dir}.tar.gz \
-						http://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return;;
+						https://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return;;
 		openssh)
 			wget -O ${openssh_src_dir}.tar.gz \
-				http://ftp.jaist.ac.jp/pub/OpenBSD/OpenSSH/portable/${openssh_name}.tar.gz || return;;
+				https://ftp.jaist.ac.jp/pub/OpenBSD/OpenSSH/portable/${openssh_name}.tar.gz || return;;
 		nghttp2)
 			wget -O ${nghttp2_src_dir}.tar.xz \
 				https://github.com/nghttp2/nghttp2/releases/download/v${nghttp2_ver}/${nghttp2_name}.tar.xz || return;;
@@ -719,13 +719,13 @@ fetch()
 				https://www.sqlite.org/2021/${sqlite_name}.tar.gz || return;;
 		apr|apr-util)
 			eval wget -O \${${_p}_src_dir}.tar.bz2 \
-				http://ftp.tsukuba.wide.ad.jp/software/apache/apr/\${${_p:-apr}_name}.tar.bz2 || return;;
+				https://ftp.tsukuba.wide.ad.jp/software/apache/apr/\${${_p:-apr}_name}.tar.bz2 || return;;
 		utf8proc)
 			wget -O ${utf8proc_src_dir}.tar.gz \
 				https://github.com/JuliaStrings/utf8proc/archive/v${utf8proc_ver}.tar.gz || return;;
 		subversion)
 			wget -O ${subversion_src_dir}.tar.bz2 \
-				http://ftp.tsukuba.wide.ad.jp/software/apache/subversion/${subversion_name}.tar.bz2 || return;;
+				https://ftp.tsukuba.wide.ad.jp/software/apache/subversion/${subversion_name}.tar.bz2 || return;;
 		ninja)
 			wget -O ${ninja_src_dir}.tar.gz \
 				https://github.com/ninja-build/ninja/archive/v${ninja_ver}.tar.gz || return;;
@@ -749,7 +749,7 @@ fetch()
 				https://github.com/distcc/distcc/releases/download/v${distcc_ver}/${distcc_name}.tar.gz || return;;
 		libedit)
 			wget -O ${libedit_src_dir}.tar.gz \
-				http://thrysoee.dk/editline/${libedit_name}.tar.gz || return;;
+				https://thrysoee.dk/editline/${libedit_name}.tar.gz || return;;
 		swig)
 			wget --trust-server-names -O ${swig_src_dir}.tar.gz \
 				https://sourceforge.net/projects/swig/files/swig/${swig_name}/${swig_name}.tar.gz/download || return;;
@@ -792,16 +792,16 @@ fetch()
 				https://github.com/rust-lang/rustup/archive/${rustup_ver}.tar.gz || return;;
 		ruby)
 			wget -O ${ruby_src_dir}.tar.xz \
-				http://cache.ruby-lang.org/pub/ruby/`print_version ruby`/${ruby_name}.tar.xz || return;;
+				https://cache.ruby-lang.org/pub/ruby/`print_version ruby`/${ruby_name}.tar.xz || return;;
 		go)
 			wget -O ${go_src_dir}.tar.gz \
 				https://storage.googleapis.com/golang/go${go_ver}.src.tar.gz || return;;
 		perl)
 			wget -O ${perl_src_dir}.tar.gz \
-				http://www.cpan.org/src/5.0/${perl_name}.tar.gz || return;;
+				https://www.cpan.org/src/5.0/${perl_name}.tar.gz || return;;
 		tcl|tk)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
-				http://prdownloads.sourceforge.net/tcl/\${${_p:-tcl}_name}-src.tar.gz || return;;
+				https://prdownloads.sourceforge.net/tcl/\${${_p:-tcl}_name}-src.tar.gz || return;;
 		libidn2)
 			wget -O ${libidn2_src_dir}.tar.gz \
 				https://ftp.gnu.org/gnu/libidn/${libidn2_name}.tar.gz || return;;
@@ -816,7 +816,7 @@ fetch()
 				https://github.com/ivmai/libatomic_ops/releases/download/v${libatomic_ops_ver}/${libatomic_ops_name}.tar.gz || return;;
 		lua)
 			wget -O ${lua_src_dir}.tar.gz \
-				http://www.lua.org/ftp/${lua_name}.tar.gz || return;;
+				https://www.lua.org/ftp/${lua_name}.tar.gz || return;;
 		node)
 			wget -O ${node_src_dir}.tar.gz \
 				https://nodejs.org/dist/v${node_ver}/node-v${node_ver}.tar.gz || return;;
@@ -829,7 +829,7 @@ fetch()
 				https://www.nasm.us/pub/nasm/releasebuilds/${nasm_ver}/${nasm_name}.tar.xz || return;;
 		yasm)
 			wget -O ${yasm_src_dir}.tar.gz \
-				http://www.tortall.net/projects/yasm/releases/${yasm_name}.tar.gz || return;;
+				https://www.tortall.net/projects/yasm/releases/${yasm_name}.tar.gz || return;;
 		x264)
 			wget -O ${x264_src_dir}.tar.bz2 \
 				https://code.videolan.org/videolan/x264/-/archive/master/${x264_name}.tar.bz2 || return;;
