@@ -137,7 +137,7 @@ EOF
 : ${glib_ver:=2.59.0}
 : ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=11.1}
-: ${crash_ver:=7.3.0}
+: ${crash_ver:=8.0.0}
 : ${strace_ver:=5.14}
 : ${systemtap_ver:=4.6}
 : ${linux_ver:=5.14.9}
@@ -1471,7 +1471,8 @@ EOF
 		grep -qe --host ${crash_bld_dir}/configure.c ||
 			sed -i -e '/^#define /s!GDB_CONF_FLAGS=!&--host='${host}' CFLAGS=\\"'"`I curses.h`"' '"`l curses`"'\\" !' \
 				${crash_bld_dir}/configure.c || return
-		make -C ${crash_bld_dir} -j ${jobs} BUILDCC=cc target=`echo ${target} | cut -d- -f1` || return
+		CXXFLAGS="${CXXFLAGS} `I ncursesw/ncurses.h`" \
+			make -C ${crash_bld_dir} -j ${jobs} BUILDCC=cc target=`echo ${target} | cut -d- -f1` || return
 		make -C ${crash_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/crash || return
