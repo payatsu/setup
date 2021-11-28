@@ -161,7 +161,7 @@
 : ${subversion_ver:=1.14.1}
 : ${ninja_ver:=1.10.2}
 : ${meson_ver:=0.58.1}
-: ${cmake_ver:=3.19.4}
+: ${cmake_ver:=3.22.0}
 : ${bazel_ver:=2.2.0}
 : ${Bear_ver:=2.4.3}
 : ${ccache_ver:=4.3}
