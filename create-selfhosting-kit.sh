@@ -1549,14 +1549,14 @@ EOF
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} \
 			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
 			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
-			LDFLAGS="${LDFLAGS} `l babeltrace popt elf bz2 lzma z curl zstd`" \
+			LDFLAGS="${LDFLAGS} `l babeltrace dw uuid pcre gmodule-2.0 glib-2.0 ffi popt elf bz2 lzma z curl ssl crypto idn2 zstd stdc++`" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 			prefix=${prefix} all || return
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} \
 			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
 			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
-			LDFLAGS="${LDFLAGS} `l babeltrace popt elf bz2 lzma z curl zstd`" \
+			LDFLAGS="${LDFLAGS} `l babeltrace dw uuid pcre gmodule-2.0 glib-2.0 ffi popt elf bz2 lzma z curl ssl crypto idn2 zstd stdc++`" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 			prefix=${prefix} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
