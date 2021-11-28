@@ -6029,7 +6029,8 @@ install_native_guile()
 			LIBFFI_CFLAGS=`I ffi.h` LIBFFI_LIBS="`l ffi`" \
 			BDW_GC_CFLAGS="`I gc/gc.h` -DHAVE_GC_SET_FINALIZER_NOTIFIER -DHAVE_GC_GET_HEAP_USAGE_SAFE -DHAVE_GC_GET_FREE_SPACE_DIVISOR -DHAVE_GC_SET_FINALIZE_ON_DEMAND" \
 			BDW_GC_LIBS="`l gc`") || return
-	make -C ${guile_bld_dir} -j ${jobs} || return
+	LD_LIBRARY_PATH=${guile_bld_dir}/libguile/.libs${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}} \
+		make -C ${guile_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${guile_bld_dir} -j ${jobs} -k check || return
 	make -C ${guile_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
