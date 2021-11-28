@@ -109,8 +109,10 @@ EOF
 : ${xz_ver:=5.2.5}
 : ${zstd_ver:=1.5.0}
 : ${openssl_ver:=1.1.1l}
+: ${libunistring_ver:=0.9.10}
+: ${libidn2_ver:=2.3.2}
 : ${curl_ver:=7.75.0}
-: ${elfutils_ver:=0.183}
+: ${elfutils_ver:=0.186}
 : ${binutils_ver:=2.37}
 : ${gmp_ver:=6.2.1}
 : ${mpfr_ver:=4.1.0}
@@ -284,9 +286,9 @@ fetch()
 	zlib)
 		wget -O ${zlib_src_dir}.tar.xz \
 			https://zlib.net/${zlib_name}.tar.xz || return;;
-	binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|autoconf|automake|\
-	bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|emacs|nano|grep|\
-	diffutils|patch|global|findutils|help2man|coreutils)
+	libunistring|binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|\
+	autoconf|automake|bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|\
+	emacs|nano|grep|diffutils|patch|global|findutils|help2man|coreutils)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
 				https://ftp.gnu.org/gnu/${1}/\${${_1}_name}.tar.${compress_format} \
@@ -428,6 +430,9 @@ fetch()
 	pkg-config)
 		wget -O ${pkg_config_src_dir}.tar.gz \
 			https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
+	libidn2)
+		wget -O ${libidn2_src_dir}.tar.gz \
+			https://ftp.gnu.org/gnu/libidn/${libidn2_name}.tar.gz || return;;
 	curl)
 		wget -O ${curl_src_dir}.tar.xz \
 			https://curl.se/download/${curl_name}.tar.xz || return;;
@@ -804,11 +809,38 @@ build()
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/openssl || return
 		;;
+	libunistring)
+		[ -f ${DESTDIR}${prefix}/include/unistr.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libunistring_bld_dir}/Makefile ] ||
+			(cd ${libunistring_bld_dir}
+			${libunistring_src_dir}/configure --prefix=${prefix} -build=${build} --host=${host} \
+				--disable-rpath --disable-silent-rules) || return
+		make -C ${libunistring_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${libunistring_bld_dir} -j ${jobs} -k check || return
+		make -C ${libunistring_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	libidn2)
+		[ -f ${DESTDIR}${prefix}/include/idn2.h -a "${force_install}" != yes ] && return
+		print_header_path unistr.h > /dev/null || ${0} ${cmdopt} libunistring || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libidn2_bld_dir}/Makefile ] ||
+			(cd ${libidn2_bld_dir}
+			${libidn2_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules --disable-rpath) || return
+		make -C ${libidn2_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${libidn2_bld_dir} -j ${jobs} -k check || return
+		make -C ${libidn2_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
 	curl)
 		[ -x ${DESTDIR}${prefix}/bin/curl -a "${force_install}" != yes ] && return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
 		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
+		print_header_path idn2.h > /dev/null || ${0} ${cmdopt} libidn2 || return
 		fetch ${1} || return
 		unpack ${1} || return
 		(cd ${curl_bld_dir}
@@ -827,8 +859,12 @@ build()
 			--with-zlib=`print_prefix zlib.h` \
 			--with-zstd=`print_prefix zstd.h` \
 			--with-ssl=`print_prefix ssl.h openssl` \
-			LDFLAGS="${LDFLAGS} `L zstd`" \
-			LIBS='-lzstd') || return
+			LDFLAGS="${LDFLAGS} `L zstd idn2`" \
+			LIBS='-lzstd -lidn2' \
+			PKG_CONFIG_PATH= \
+			PKG_CONFIG_LIBDIR= \
+			PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+			) || return
 		make -C ${curl_bld_dir} -j ${jobs} || return
 		make -C ${curl_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
@@ -849,7 +885,7 @@ build()
 				--enable-libdebuginfod --disable-debuginfod \
 				CFLAGS="${CFLAGS} `I zlib.h zstd.h`" \
 				LDFLAGS="${LDFLAGS} `L z bz2 lzma zstd`" \
-				LIBS="${LIBS} `l z bz2 lzma curl zstd ssl crypto`" \
+				LIBS="${LIBS} `l z bz2 lzma curl zstd idn2 ssl crypto`" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_library_dir libcurl.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
@@ -873,7 +909,7 @@ build()
 			[ -f host_configargs ] || cat << EOF | tr '\n' ' ' > host_configargs || return
 --disable-rpath
 --enable-install-libiberty
-LIBS='`l z curl zstd ssl crypto`'
+LIBS='`l z curl zstd idn2 ssl crypto`'
 PKG_CONFIG_PATH= \
 PKG_CONFIG_LIBDIR=`print_library_dir libdebuginfod.pc` \
 PKG_CONFIG_SYSROOT_DIR=${DESTDIR}
@@ -885,7 +921,7 @@ EOF
 				CFLAGS="${CFLAGS} `I zlib.h elfutils/debuginfod.h`" \
 				CXXFLAGS="${CXXFLAGS} `I zlib.h`" \
 				LDFLAGS="${LDFLAGS} `L z debuginfod`" \
-				LIBS="`l z curl zstd ssl crypto`" \
+				LIBS="`l z curl zstd idn2 ssl crypto`" \
 				host_configargs="`cat host_configargs`") || return
 		make -C ${binutils_bld_dir} -j 1 || return
 		[ "${enable_check}" != yes ] ||
@@ -2004,7 +2040,8 @@ EOF
 		[ -f ${pkg_config_bld_dir}/Makefile -a -f ${pkg_config_bld_dir}/glib/Makefile ] ||
 			(cd ${pkg_config_bld_dir}
 			${pkg_config_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				--with-internal-glib \
+				--with-internal-glib --with-libiconv=gnu \
+				CFLAGS="${CFLAGS} -DLIBICONV_PLUG" \
 				glib_cv_stack_grows=no \
 				glib_cv_uscore=no \
 				ac_cv_func_posix_getpwuid_r=yes \
