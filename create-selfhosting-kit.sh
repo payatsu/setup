@@ -1435,7 +1435,7 @@ EOF
 CFLAGS='${CFLAGS} `I zlib.h curses.h Python.h`'
 CPPFLAGS='${CPPFLAGS} `I zlib.h Python.h`'
 LDFLAGS='-L`print_prefix Python.h`/lib `L popt`'
-LIBS='${LIBS} `l popt uuid gmodule-2.0 ffi glib-2.0 pcre dw elf z bz2 lzma curl ssl crypto zstd`'
+LIBS='${LIBS} `l popt uuid gmodule-2.0 ffi glib-2.0 pcre dw elf z bz2 lzma curl ssl crypto zstd idn2`'
 PKG_CONFIG_PATH=
 PKG_CONFIG_LIBDIR=`print_library_dir source-highlight.pc`
 PKG_CONFIG_SYSROOT_DIR=${DESTDIR}
@@ -1445,6 +1445,7 @@ EOF
 				--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${target} \
 				--with-debuginfod --with-system-zlib --with-system-readline \
 				--with-expat=yes --with-libexpat-prefix=`print_prefix expat.h` \
+				--with-gmp=yes --with-libgmp-prefix=`print_prefix gmp.h` \
 				--with-mpfr=yes --with-libmpfr-prefix=`print_prefix mpfr.h` \
 				--with-python=python3 --without-guile \
 				--with-lzma=yes --with-liblzma-prefix=`print_prefix lzma.h` \
@@ -1650,11 +1651,10 @@ EOF
 		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		fetch ${1} || return
 		unpack ${1} || return
-		PKG_CONFIG_PATH= \
-		PKG_CONFIG_LIBDIR=`print_library_dir libelf.pc` \
-		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-		make -C ${libbpf_src_dir}/src -j ${jobs} V=1 OBJDIR=${libbpf_bld_dir} CC="${CC:-${host:+${host}-}gcc}" PREFIX=${prefix} || return
-		make -C ${libbpf_src_dir}/src -j ${jobs} V=1 OBJDIR=${libbpf_bld_dir} CC="${CC:-${host:+${host}-}gcc}" PREFIX=${prefix} DESTDIR=${DESTDIR} install || return
+		make -C ${libbpf_src_dir}/src -j ${jobs} V=1 OBJDIR=${libbpf_bld_dir} \
+			CC="${CC:-${host:+${host}-}gcc}" PREFIX=${prefix} LDFLAGS="${LDFLAGS} `L elf z`" NO_PKG_CONFIG=1 || return
+		make -C ${libbpf_src_dir}/src -j ${jobs} V=1 OBJDIR=${libbpf_bld_dir} \
+			CC="${CC:-${host:+${host}-}gcc}" PREFIX=${prefix} LDFLAGS="${LDFLAGS} `L elf z`" NO_PKG_CONFIG=1 DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		for l in lib/libbpf.a lib/libbpf.so lib64/libbpf.a lib64/libbpf.so; do
 			[ -f ${DESTDIR}${prefix}/${l} ] || continue
