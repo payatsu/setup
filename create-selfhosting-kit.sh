@@ -1352,7 +1352,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${glib_src_dir}/configure ] ||
-			(cd ${glib_src_dir}; NOCONFIGURE=yes ./autogen.sh) || return
+			(cd ${glib_src_dir}; NOCONFIGURE=yes AUTOCONF=autoconf ./autogen.sh) || return
 		[ -f ${glib_bld_dir}/Makefile ] ||
 			(cd ${glib_bld_dir}
 			${glib_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-static \
@@ -3357,7 +3357,8 @@ export autom4te_perllibdir=$(readlink -m $(dirname $(which autoconf))/../share/a
 export AC_MACRODIR=\${autom4te_perllibdir}
 export PERLLIB=$(readlink -m $(dirname ${a})/../share/automake)-${am_ver}
 export AUTOMAKE_UNINSTALLED=1
-exec `which ${f}` --automake-acdir=$(readlink -m $(dirname ${a})/../share/aclocal)-${am_ver} \"\$@\"" || return
+dir=$(readlink -m $(dirname ${a})/../share/aclocal)
+exec `which ${f}` --automake-acdir=\${dir}-${am_ver} --system-acdir=\${dir} \"\$@\"" || return
 		done
 
 		unset am_ver
