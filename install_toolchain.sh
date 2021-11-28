@@ -102,7 +102,7 @@
 : ${grep_ver:=3.7}
 : ${global_ver:=6.6.6}
 : ${pcre_ver:=8.45}
-: ${pcre2_ver:=10.37}
+: ${pcre2_ver:=10.39}
 : ${the_silver_searcher_ver:=2.2.0}
 : ${the_platinum_searcher_ver:=2.2.0}
 : ${highway_ver:=1.1.0}
@@ -588,9 +588,12 @@ fetch()
 		neovim)
 			wget -O ${neovim_src_dir}.tar.gz \
 				https://github.com/neovim/neovim/archive/v${neovim_ver}.tar.gz || return;;
-		pcre|pcre2)
-			eval wget -O \${${_p}_src_dir}.tar.bz2 \
-				https://sourceforge.net/projects/pcre/files/${_p}/\${${_p}_ver}/\${${_p}_name}.tar.bz2/download || return;;
+		pcre)
+			wget -O ${pcre_src_dir}.tar.bz2 \
+				https://sourceforge.net/projects/pcre/files/pcre/${pcre_ver}/${pcre_name}.tar.bz2/download || return;;
+		pcre2)
+			wget -O ${pcre2_src_dir}.tar.bz2 \
+				https://github.com/PhilipHazel/pcre2/releases/download/${pcre2_name}/${pcre2_name}.tar.bz2 || return;;
 		the_silver_searcher)
 			wget -O ${the_silver_searcher_src_dir}.tar.gz \
 				https://github.com/ggreer/the_silver_searcher/archive/${the_silver_searcher_ver}.tar.gz || return;;

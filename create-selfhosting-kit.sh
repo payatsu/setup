@@ -128,7 +128,7 @@ EOF
 : ${boost_ver:=1_77_0}
 : ${source_highlight_ver:=3.1.9}
 : ${pcre_ver:=8.45}
-: ${pcre2_ver:=10.37}
+: ${pcre2_ver:=10.39}
 : ${util_linux_ver:=2.37.2}
 : ${popt_ver:=1.18}
 : ${glib_ver:=2.59.0}
@@ -338,9 +338,12 @@ fetch()
 	elfutils)
 		wget -O ${elfutils_src_dir}.tar.bz2 \
 			https://sourceware.org/elfutils/ftp/${elfutils_ver}/${elfutils_name}.tar.bz2 || return;;
-	pcre|pcre2)
-		eval wget -O \${${_1}_src_dir}.tar.bz2 \
-			https://sourceforge.net/projects/pcre/files/${_1}/\${${_1}_ver}/\${${_1}_name}.tar.bz2/download || return;;
+	pcre)
+		wget -O ${pcre_src_dir}.tar.bz2 \
+			https://sourceforge.net/projects/pcre/files/pcre/${pcre_ver}/${pcre_name}.tar.bz2/download || return;;
+	pcre2)
+		wget -O ${pcre2_src_dir}.tar.bz2 \
+			https://github.com/PhilipHazel/pcre2/releases/download/${pcre2_name}/${pcre2_name}.tar.bz2 || return;;
 	util-linux)
 		wget -O ${util_linux_src_dir}.tar.xz \
 			https://www.kernel.org/pub/linux/utils/util-linux/v`print_version util-linux`/${util_linux_name}.tar.xz || return;;
