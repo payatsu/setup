@@ -126,6 +126,7 @@ EOF
 : ${readline_ver:=8.1}
 : ${expat_ver:=2.4.1}
 : ${libffi_ver:=3.4.2}
+: ${sqlite_ver:=3340100}
 : ${Python_ver:=3.10.0}
 : ${boost_ver:=1_77_0}
 : ${source_highlight_ver:=3.1.9}
@@ -138,7 +139,7 @@ EOF
 : ${gdb_ver:=11.1}
 : ${crash_ver:=7.3.0}
 : ${strace_ver:=5.14}
-: ${systemtap_ver:=4.5}
+: ${systemtap_ver:=4.6}
 : ${linux_ver:=5.14.9}
 : ${perf_ver:=${linux_ver}}
 : ${libcap_ver:=2.49}
@@ -252,6 +253,8 @@ init()
 	esac
 
 	case ${1} in
+	sqlite)
+		eval ${_1}_name=${1}-autoconf-\${${_1}_ver};;
 	boost)
 		eval ${_1}_name=${1}_\${${_1}_ver};;
 	libunwindnongnu)
@@ -322,6 +325,9 @@ fetch()
 			https://www.openssl.org/source/${openssl_name}.tar.gz ||
 				wget -O ${openssl_src_dir}.tar.gz \
 					https://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return;;
+	sqlite)
+		wget -O ${sqlite_src_dir}.tar.gz \
+			https://www.sqlite.org/2021/${sqlite_name}.tar.gz || return;;
 	Python)
 		wget -O ${Python_src_base}/Python-${Python_ver}.tar.xz \
 			https://www.python.org/ftp/python/${Python_ver}/${Python_name}.tar.xz || return;;
@@ -681,7 +687,7 @@ print_build_python_version()
 print_target_python_version()
 {
 	grep -e '\<PY_VERSION\>' `print_header_dir Python.h`/patchlevel.h | \
-		grep -oPe '(?<=")\d\.\d(?=\.\d+")' || return
+		grep -oPe '(?<=")\d\.\d+(?=\.\d+")' || return
 }
 
 print_target_python_abi()
@@ -1177,6 +1183,18 @@ EOF
 			ln -fsv ../lib64/`basename ${f}` ${DESTDIR}${prefix}/lib || return
 		done
 		;;
+	sqlite)
+		[ -f ${DESTDIR}${prefix}/include/sqlite3.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${sqlite_bld_dir}/Makefile ] ||
+			(cd ${sqlite_bld_dir}
+			${sqlite_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+		make -C ${sqlite_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${sqlite_bld_dir} -j ${jobs} -k check || return
+		make -C ${sqlite_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		;;
 	Python)
 		[ -x ${DESTDIR}${prefix}/bin/python3 -a "${force_install}" != yes ] && return
 		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
@@ -1476,16 +1494,17 @@ EOF
 		[ -x ${DESTDIR}${prefix}/bin/stap -a "${force_install}" != yes ] && return
 		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
+		print_header_path sqlite3.h > /dev/null || ${0} ${cmdopt} sqlite || return
 		fetch ${1} || return
 		unpack ${1} || return
 		generate_python_config_dummy ${systemtap_bld_dir} || return
 		[ -f ${systemtap_bld_dir}/Makefile ] ||
 			(cd ${systemtap_bld_dir}
 			${systemtap_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				--without-python2-probes \
-				CPPFLAGS="${CPPFLAGS} `I elfutils/libdw.h Python.h`" \
+				--without-python2-probes --without-python3-probes \
+				CPPFLAGS="${CPPFLAGS} `I elfutils/libdw.h Python.h sqlite3.h`" \
 				LDFLAGS="${LDFLAGS} `L dw` `l python$(print_target_python_version)$(print_target_python_abi)`" \
-				LIBS="${LIBS} `l z bz2 lzma zstd`" \
+				LIBS="${LIBS} `l z bz2 lzma zstd idn2 curl ssl crypto`" \
 				PYTHON_CONFIG=${systemtap_bld_dir}/python-config \
 				) || return
 		sed -i -e '/^\<LDFLAGS\>/{
