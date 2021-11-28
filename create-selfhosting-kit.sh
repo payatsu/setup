@@ -180,7 +180,7 @@ EOF
 : ${rsync_ver:=3.2.3}
 : ${dtc_ver:=1.6.0}
 : ${kmod_ver:=28}
-: ${u_boot_ver:=2020.10}
+: ${u_boot_ver:=2021.01}
 : ${tar_ver:=1.34}
 : ${cpio_ver:=2.13}
 : ${e2fsprogs_ver:=1.46.2}
