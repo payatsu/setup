@@ -191,7 +191,7 @@ EOF
 : ${tmux_ver:=3.2a}
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.0}
-: ${tcsh_ver:=TCSH6_22_04}
+: ${tcsh_ver:=TCSH6_23_00}
 : ${vim_ver:=8.2.3455}
 : ${vimdoc_ja_ver:=master}
 : ${emacs_ver:=27.2}
@@ -2403,7 +2403,8 @@ EOF
 		unpack ${1} || return
 		[ -f ${tcsh_bld_dir}/Makefile ] ||
 			(cd ${tcsh_bld_dir}
-			${tcsh_src_dir}/configure --prefix=${prefix} --host=${host} --disable-rpath) || return
+			${tcsh_src_dir}/configure --prefix=${prefix} --host=${host} --disable-rpath \
+				CFLAGS="${CFLAGS} `l tinfo`") || return
 		make -C ${tcsh_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${tcsh_bld_dir} -j ${jobs} -k check || return
