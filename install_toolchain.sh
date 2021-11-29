@@ -2036,7 +2036,6 @@ install_native_autogen()
 	autoreconf -fiv ${autogen_src_dir} || return
 	[ -f ${autogen_bld_dir}/Makefile ] ||
 		(cd ${autogen_bld_dir}
-		remove_rpath_option autogen || return
 		${autogen_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules \
 			--disable-rpath --disable-dependency-tracking \
 			CFLAGS="${CFLAGS} -Wno-error") || return
