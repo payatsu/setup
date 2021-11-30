@@ -2062,7 +2062,7 @@ EOF
 		[ -f ${pkg_config_bld_dir}/Makefile -a -f ${pkg_config_bld_dir}/glib/Makefile ] ||
 			(cd ${pkg_config_bld_dir}
 			${pkg_config_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				--with-internal-glib --with-libiconv=gnu \
+				--with-internal-glib --without-libiconv \
 				CFLAGS="${CFLAGS} -DLIBICONV_PLUG" \
 				glib_cv_stack_grows=no \
 				glib_cv_uscore=no \
