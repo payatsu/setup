@@ -1877,7 +1877,9 @@ EOF
 		unpack ${1} || return
 		[ -f ${iproute2_bld_dir}/Makefile ] || cp -Tvr ${iproute2_src_dir} ${iproute2_bld_dir} || return
 		sed -i -e 's/^	\$(HOSTCC)/	gcc/' ${iproute2_bld_dir}/netem/Makefile || return
-		sed -i -e 's!^    : \${CC=gcc}$!    CC="'"${CC:-${host:+${host}-}gcc}"'"!' ${iproute2_bld_dir}/configure || return
+		sed -i -e '
+			s!^    : \${CC=gcc}$!    CC="'"${CC:-${host:+${host}-}gcc}"'"!
+			/^check_elf$/aecho "LDLIBS += '"`l z`"'" >> $CONFIG' ${iproute2_bld_dir}/configure || return
 		PKG_CONFIG_PATH= \
 			PKG_CONFIG_LIBDIR=`print_library_dir libelf.pc` \
 			PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
