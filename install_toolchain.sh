@@ -6500,7 +6500,7 @@ install_native_libpcap()
 
 install_native_tcpdump()
 {
-	[ -x ${prefix}/sbin/tcpdump -a "${force_install}" != yes ] && return
+	[ -x ${prefix}/bin/tcpdump -a "${force_install}" != yes ] && return
 	print_header_path pcap.h pcap > /dev/null || install_native_libpcap || return
 	fetch tcpdump || return
 	unpack tcpdump || return

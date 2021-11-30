@@ -1796,7 +1796,7 @@ EOF
 		make -C ${libpcap_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		;;
 	tcpdump)
-		[ -x ${DESTDIR}${prefix}/sbin/tcpdump -a "${force_install}" != yes ] && return
+		[ -x ${DESTDIR}${prefix}/bin/tcpdump -a "${force_install}" != yes ] && return
 		print_header_path pcap.h pcap > /dev/null || ${0} ${cmdopt} libpcap || return
 		fetch ${1} || return
 		unpack ${1} || return
