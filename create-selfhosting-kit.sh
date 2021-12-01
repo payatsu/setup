@@ -120,7 +120,7 @@ EOF
 : ${isl_ver:=0.20}
 : ${gcc_ver:=11.2.0}
 : ${make_ver:=4.3}
-: ${ccache_ver:=4.3}
+: ${ccache_ver:=4.5.1}
 
 : ${ncurses_ver:=6.3}
 : ${readline_ver:=8.1}
@@ -1082,6 +1082,7 @@ EOF
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DZSTD_LIBRARY=`print_library_path libzstd.so` \
 			-DZSTD_INCLUDE_DIR=`print_header_dir zstd.h` \
+			-DREDIS_STORAGE_BACKEND=OFF \
 			|| return
 		cmake --build ${ccache_bld_dir} -v -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||

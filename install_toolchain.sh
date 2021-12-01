@@ -164,7 +164,7 @@
 : ${cmake_ver:=3.22.0}
 : ${bazel_ver:=2.2.0}
 : ${Bear_ver:=2.4.3}
-: ${ccache_ver:=4.3}
+: ${ccache_ver:=4.5.1}
 : ${distcc_ver:=3.4}
 : ${libedit_ver:=20210910-3.1}
 : ${swig_ver:=4.0.2}
@@ -5200,6 +5200,7 @@ install_native_ccache()
 		-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
 		-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+		-DREDIS_STORAGE_BACKEND=OFF \
 		|| return
 	cmake --build ${ccache_bld_dir} -v -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
