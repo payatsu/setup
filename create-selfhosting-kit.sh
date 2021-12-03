@@ -145,7 +145,7 @@ EOF
 : ${libcap_ver:=2.49}
 : ${numactl_ver:=2.0.14}
 : ${OpenCSD_ver:=1.1.0}
-: ${libunwindnongnu_ver:=1.6.0}
+: ${libunwindnongnu_ver:=1.6.2}
 : ${libpfm_ver:=4.11.0}
 : ${libbpf_ver:=0.4.0}
 : ${bcc_ver:=0.20.0}
