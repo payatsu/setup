@@ -1653,9 +1653,11 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		make -C ${libbpf_src_dir}/src -j ${jobs} V=1 OBJDIR=${libbpf_bld_dir} \
-			CC="${CC:-${host:+${host}-}gcc}" PREFIX=${prefix} LDFLAGS="${LDFLAGS} `L elf z`" NO_PKG_CONFIG=1 || return
+			CC="${CC:-${host:+${host}-}gcc}" PREFIX=${prefix} CPPFLAGS="${CPPFLAGS} `I libelf.h`" \
+			LDFLAGS="${LDFLAGS} `L elf z`" NO_PKG_CONFIG=1 || return
 		make -C ${libbpf_src_dir}/src -j ${jobs} V=1 OBJDIR=${libbpf_bld_dir} \
-			CC="${CC:-${host:+${host}-}gcc}" PREFIX=${prefix} LDFLAGS="${LDFLAGS} `L elf z`" NO_PKG_CONFIG=1 DESTDIR=${DESTDIR} install || return
+			CC="${CC:-${host:+${host}-}gcc}" PREFIX=${prefix} CPPFLAGS="${CPPFLAGS} `I libelf.h`" \
+			LDFLAGS="${LDFLAGS} `L elf z`" NO_PKG_CONFIG=1 DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		for l in lib/libbpf.a lib/libbpf.so lib64/libbpf.a lib64/libbpf.so; do
 			[ -f ${DESTDIR}${prefix}/${l} ] || continue
