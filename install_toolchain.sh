@@ -80,7 +80,7 @@
 : ${gdb_ver:=11.1}
 : ${crash_ver:=8.0.0}
 : ${lcov_ver:=1.15}
-: ${strace_ver:=5.14}
+: ${strace_ver:=5.15}
 : ${ltrace_ver:=0.7.3}
 : ${valgrind_ver:=3.18.1}
 : ${zlib_ver:=1.2.11}
