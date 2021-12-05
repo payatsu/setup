@@ -20,12 +20,12 @@ swig Bear ccache llvm lld compiler-rt libunwindnongnu libcxxabi libcxx \
 clang libedit lldb ruby libatomic_ops gc guile boost source-highlight \
 util-linux popt babeltrace gdb make autogen openssh go rustc \
 zsh bash screen libevent tmux lua vim neovim global the_silver_searcher \
-the_platinum_searcher gperf highway ripgrep fzf tiff freetype fontconfig \
-ghostscript graphviz jdk plantuml jq protobuf rsync dtc strace \
+the_platinum_searcher gperf highway ripgrep fzf jq protobuf rsync dtc strace \
 systemtap libbpf bcc bpftrace libcap numactl OpenCSD libpfm perf libpcap \
-tcpdump iproute2 nmap libpng jpeg giflib emacs diffutils poke cython numpy \
+tcpdump iproute2 nmap tiff libpng jpeg giflib emacs diffutils poke cython numpy \
 gstreamer orc gst-plugins-base gst-plugins-good gst-editing-services \
-gst-rtsp-server gst-omx opencv v4l-utils"
+gst-rtsp-server gst-omx opencv v4l-utils \
+freetype fontconfig ghostscript graphviz jdk plantuml"
 
 RUN \
 apt-get update && apt-get upgrade -y && \
