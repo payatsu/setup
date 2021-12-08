@@ -264,6 +264,7 @@
 : ${libXcursor_ver:=1.2.0}
 : ${xineramaproto_ver:=1.2.1}
 : ${libXinerama_ver:=1.1.4}
+: ${libxkbcommon_ver:=1.3.1}
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
 : ${dri3proto_ver:=1.0}
@@ -895,6 +896,9 @@ fetch()
 		libXi|libXfixes|libXdamage|libXrender|libXrandr|libXcursor|libXinerama|libxshmfence|libpciaccess)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.gz || return;;
+		libxkbcommon)
+			wget -O ${libxkbcommon_src_dir}.tar.xz \
+				https://xkbcommon.org/download/${libxkbcommon_name}.tar.xz || return;;
 		libdrm)
 			wget -O ${libdrm_src_dir}.tar.bz2 \
 				https://dri.freedesktop.org/libdrm/${libdrm_name}.tar.bz2 || return;;
@@ -3712,6 +3716,18 @@ install_native_libXinerama()
 		${libXinerama_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libXinerama_bld_dir} -j ${jobs} || return
 	make -C ${libXinerama_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libxkbcommon()
+{
+	[ -f ${prefix}/include/xkbcommon/xkbcommon.h -a "${force_install}" != yes ] && return
+	fetch libxkbcommon || return
+	unpack libxkbcommon || return
+	meson --prefix ${prefix} -Denable-docs=false -Denable-wayland=false \
+		${libxkbcommon_src_dir} ${libxkbcommon_bld_dir} || return
+	ninja -v -C ${libxkbcommon_bld_dir} || return
+	ninja -v -C ${libxkbcommon_bld_dir} install || return
 	update_path || return
 }
 
