@@ -11,10 +11,12 @@ ARG njobs
 ARG pkgs="zlib m4 gmp mpfr mpc isl zstd gcc perl autoconf autoconf-archive \
 automake pigz bzip2 xz ncurses readline openssl expat libffi gdbm sqlite \
 Python2 Python nghttp2 libunistring libidn2 libpsl curl cmake ninja meson \
-pcre libiconv glib pkg-config gettext pcre2 libxml2 libxslt asciidoc \
-xproto xextproto xcb-proto libXau libxcb xtrans inputproto kbproto libX11 \
-libXext libICE libSM libXt libXmu libXpm libXaw \
-tcl tk git elfutils binutils bison flex libtool less texinfo gawk cpio zip \
+elfutils binutils bison flex libtool less texinfo gawk pcre libiconv glib \
+pkg-config gettext pcre2 libxml2 libxslt asciidoc xproto libXau xtrans \
+libICE libSM xcb-proto libxcb xextproto inputproto kbproto libX11 libXext \
+libXt libXmu libXpm libXaw libXi damageproto libXdamage renderproto \
+libXrender randrproto libXrandr libXcursor xineramaproto libXinerama \
+libxkbcommon tcl tk git cpio zip \
 unzip lzip lunzip lzo lzop lz4 file groff libpipeline man-db ed bc patch \
 swig Bear ccache llvm lld compiler-rt libunwindnongnu libcxxabi libcxx \
 clang libedit lldb ruby libatomic_ops gc guile boost source-highlight \
