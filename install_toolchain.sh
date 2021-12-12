@@ -267,11 +267,11 @@
 : ${libxkbcommon_ver:=1.3.1}
 : ${libpciaccess_ver:=0.16}
 : ${libdrm_ver:=2.4.109}
+: ${libxshmfence_ver:=1.3}
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
 : ${dri3proto_ver:=1.0}
 : ${presentproto_ver:=1.0}
-: ${libxshmfence_ver:=1.2}
 : ${mesa_ver:=19.0.5}
 : ${libepoxy_ver:=1.5.9}
 : ${glib_ver:=2.70.1}
@@ -3758,6 +3758,20 @@ install_native_libdrm()
 	update_path || return
 }
 
+install_native_libxshmfence()
+{
+	[ -f ${prefix}/include/X11/xshmfence.h -a "${force_install}" != yes ] && return
+	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
+	fetch libxshmfence || return
+	unpack libxshmfence || return
+	[ -f ${libxshmfence_bld_dir}/Makefile ] ||
+		(cd ${libxshmfence_bld_dir}
+		${libxshmfence_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libxshmfence_bld_dir} -j ${jobs} || return
+	make -C ${libxshmfence_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
 #install_native_glproto()
 #{
 #	[ -f ${prefix}/include/GL/glxproto.h -a "${force_install}" != yes ] && return
@@ -3804,19 +3818,6 @@ install_native_libdrm()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${presentproto_src_dir} -j ${jobs} || return
 #	make -C ${presentproto_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#}
-#
-#install_native_libxshmfence()
-#{
-#	[ -f ${prefix}/include/X11/xshmfence.h -a "${force_install}" != yes ] && return
-#	fetch libxshmfence || return
-#	unpack libxshmfence || return
-#	[ -f ${libxshmfence_src_dir}/Makefile ] ||
-#		(cd ${libxshmfence_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${libxshmfence_src_dir} -j ${jobs} || return
-#	make -C ${libxshmfence_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
 #}
 #
 #install_native_mesa()
