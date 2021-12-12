@@ -3263,6 +3263,7 @@ install_native_shared_mime_info()
 	ninja -v -C ${shared_mime_info_bld_dir} || return
 	ninja -v -C ${shared_mime_info_bld_dir} install || return
 	update_path || return
+	sudo update-mime-database ${DESTDIR}${prefix}/share/mime || return
 }
 
 install_native_gdk_pixbuf()
