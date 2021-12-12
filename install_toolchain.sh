@@ -265,12 +265,12 @@
 : ${xineramaproto_ver:=1.2.1}
 : ${libXinerama_ver:=1.1.4}
 : ${libxkbcommon_ver:=1.3.1}
+: ${libpciaccess_ver:=0.16}
+: ${libdrm_ver:=2.4.109}
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
 : ${dri3proto_ver:=1.0}
 : ${presentproto_ver:=1.0}
-: ${libpciaccess_ver:=0.13.4}
-: ${libdrm_ver:=2.4.70}
 : ${libxshmfence_ver:=1.2}
 : ${mesa_ver:=19.0.5}
 : ${libepoxy_ver:=1.5.9}
@@ -900,8 +900,8 @@ fetch()
 			wget -O ${libxkbcommon_src_dir}.tar.xz \
 				https://xkbcommon.org/download/${libxkbcommon_name}.tar.xz || return;;
 		libdrm)
-			wget -O ${libdrm_src_dir}.tar.bz2 \
-				https://dri.freedesktop.org/libdrm/${libdrm_name}.tar.bz2 || return;;
+			wget -O ${libdrm_src_dir}.tar.xz \
+				https://dri.freedesktop.org/libdrm/${libdrm_name}.tar.xz || return;;
 		libepoxy)
 			wget -O ${libepoxy_src_dir}.tar.bz2 \
 				https://github.com/anholt/libepoxy/releases/download/v${libepoxy_ver}/${libepoxy_name}.tar.bz2 || return;;
@@ -3732,6 +3732,32 @@ install_native_libxkbcommon()
 	update_path || return
 }
 
+install_native_libpciaccess()
+{
+	[ -f ${prefix}/include/pciaccess.h -a "${force_install}" != yes ] && return
+	fetch libpciaccess || return
+	unpack libpciaccess || return
+	[ -f ${libpciaccess_bld_dir}/Makefile ] ||
+		(cd ${libpciaccess_bld_dir}
+		${libpciaccess_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+			--with-zlib) || return
+	make -C ${libpciaccess_bld_dir} -j ${jobs} || return
+	make -C ${libpciaccess_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libdrm()
+{
+	[ -f ${prefix}/include/libdrm/drm.h -a "${force_install}" != yes ] && return
+	print_header_path pciaccess.h > /dev/null || install_native_libpciaccess || return
+	fetch libdrm || return
+	unpack libdrm || return
+	meson --prefix ${prefix} ${libdrm_src_dir} ${libdrm_bld_dir} || return
+	ninja -v -C ${libdrm_bld_dir} || return
+	ninja -v -C ${libdrm_bld_dir} install || return
+	update_path || return
+}
+
 #install_native_glproto()
 #{
 #	[ -f ${prefix}/include/GL/glxproto.h -a "${force_install}" != yes ] && return
@@ -3742,34 +3768,6 @@ install_native_libxkbcommon()
 #		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
 #	make -C ${glproto_src_dir} -j ${jobs} || return
 #	make -C ${glproto_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#}
-#
-#install_native_libpciaccess()
-#{
-#	[ -f ${prefix}/include/pciaccess.h -a "${force_install}" != yes ] && return
-#	fetch libpciaccess || return
-#	unpack libpciaccess || return
-#	[ -f ${libpciaccess_src_dir}/Makefile ] ||
-#		(cd ${libpciaccess_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${libpciaccess_src_dir} -j ${jobs} || return
-#	make -C ${libpciaccess_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
-#install_native_libdrm()
-#{
-#	[ -f ${prefix}/include/xf86drm.h -a "${force_install}" != yes ] && return
-#	print_header_path pciaccess.h > /dev/null || install_native_libpciaccess || return
-#	fetch libdrm || return
-#	unpack libdrm || return
-#	[ -f ${libdrm_src_dir}/Makefile ] ||
-#		(cd ${libdrm_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules \
-#			--enable-static) || return
-#	make -C ${libdrm_src_dir} -j ${jobs} || return
-#	make -C ${libdrm_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
 #}
 #
 #install_native_dri2proto()
