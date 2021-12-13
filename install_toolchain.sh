@@ -268,6 +268,7 @@
 : ${libpciaccess_ver:=0.16}
 : ${libdrm_ver:=2.4.109}
 : ${libxshmfence_ver:=1.3}
+: ${wayland_ver:=1.20.0}
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
 : ${dri3proto_ver:=1.0}
@@ -902,6 +903,9 @@ fetch()
 		libdrm)
 			wget -O ${libdrm_src_dir}.tar.xz \
 				https://dri.freedesktop.org/libdrm/${libdrm_name}.tar.xz || return;;
+		wayland)
+			wget -O ${wayland_src_dir}.tar.xz \
+				https://wayland.freedesktop.org/releases/${wayland_name}.tar.xz || return;;
 		libepoxy)
 			wget -O ${libepoxy_src_dir}.tar.bz2 \
 				https://github.com/anholt/libepoxy/releases/download/v${libepoxy_ver}/${libepoxy_name}.tar.bz2 || return;;
@@ -3769,6 +3773,17 @@ install_native_libxshmfence()
 		${libxshmfence_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libxshmfence_bld_dir} -j ${jobs} || return
 	make -C ${libxshmfence_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_wayland()
+{
+	[ -f ${prefix}/include/wayland-version.h -a "${force_install}" != yes ] && return
+	fetch wayland || return
+	unpack wayland || return
+	meson --prefix ${prefix} -Ddocumentation=false ${wayland_src_dir} ${wayland_bld_dir} || return
+	ninja -v -C ${wayland_bld_dir} || return
+	ninja -v -C ${wayland_bld_dir} install || return
 	update_path || return
 }
 
