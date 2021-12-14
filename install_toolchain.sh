@@ -274,7 +274,7 @@
 : ${dri2proto_ver:=2.8}
 : ${dri3proto_ver:=1.0}
 : ${presentproto_ver:=1.0}
-: ${mesa_ver:=19.0.5}
+: ${mesa_ver:=21.3.1}
 : ${libepoxy_ver:=1.5.9}
 : ${glib_ver:=2.70.1}
 : ${gobject_introspection_ver:=1.70.0}
@@ -3849,30 +3849,29 @@ install_native_dri3proto()
 #	make -C ${presentproto_src_dir} -j ${jobs} install${strip:+-${strip}} || return
 #}
 #
-#install_native_mesa()
-#{
+install_native_mesa()
+{
 #	[ -f ${prefix}/include/GL/gl.h -a "${force_install}" != yes ] && return
-#	print_header_path glxproto.h GL > /dev/null || install_native_glproto || return
-#	print_header_path xf86drm.h > /dev/null || install_native_libdrm || return
-#	print_header_path dri2proto.h X11/extensions > /dev/null || install_native_dri2proto || return
-#	print_header_path dri3proto.h X11/extensions > /dev/null || install_native_dri3proto || return
-#	print_header_path presentproto.h X11/extensions > /dev/null || install_native_presentproto || return
-#	[ -d ${prefix}/share/xcb ] || install_native_xcb_proto || return
-#	print_header_path xcb.h xcb > /dev/null || install_native_libxcb || return
-#	print_header_path xshmfence.h X11 > /dev/null || install_native_libxshmfence || return
-#	print_header_path Xext.h X11/extensions > /dev/null || install_native_libXext || return
-#	print_header_path Xdamage.h X11/extensions > /dev/null || install_native_libXdamage || return
-#	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
-#	fetch mesa || return
-#	unpack mesa || return
-#	[ -f ${mesa_src_dir}/Makefile ] ||
-#		(cd ${mesa_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${mesa_src_dir} -j ${jobs} || return
-#	make -C ${mesa_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
-#
+	pkg-config --exists xcb-proto.pc || install_native_xcb_proto || return
+	print_header_path xcb.h xcb > /dev/null || install_native_libxcb || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	print_header_path Xext.h X11/extensions > /dev/null || install_native_libXext || return
+	print_header_path drm.h libdrm > /dev/null || install_native_libdrm || return
+	print_header_path xshmfence.h X11 > /dev/null || install_native_libxshmfence || return
+	print_header_path wayland-version.h > /dev/null || install_native_wayland || return
+	pkg-config --exists wayland-protocols || install_native_wayland_protocols || return
+	print_header_path glxproto.h GL > /dev/null || install_native_glproto || return
+	print_header_path dri2proto.h X11/extensions > /dev/null || install_native_dri2proto || return
+	print_header_path dri3proto.h X11/extensions > /dev/null || install_native_dri3proto || return
+	pip install mako || return
+	fetch mesa || return
+	unpack mesa || return
+	meson --prefix ${prefix} -Dglx-direct=false ${mesa_src_dir} ${mesa_bld_dir} || return
+	ninja -v -C ${mesa_bld_dir} || return
+	ninja -v -C ${mesa_bld_dir} install || return
+	update_path || return
+}
+
 #install_native_libepoxy()
 #{
 #	[ -f ${prefix}/include/epoxy/egl.h -a "${force_install}" != yes ] && return
