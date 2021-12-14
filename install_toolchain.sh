@@ -3813,30 +3813,30 @@ install_native_glproto()
 	make -C ${glproto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
-#install_native_dri2proto()
-#{
-#	[ -f ${prefix}/include/X11/extensions/dri2proto.h -a "${force_install}" != yes ] && return
-#	fetch dri2proto || return
-#	unpack dri2proto || return
-#	[ -f ${dri2proto_src_dir}/Makefile ] ||
-#		(cd ${dri2proto_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${dri2proto_src_dir} -j ${jobs} || return
-#	make -C ${dri2proto_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#}
-#
-#install_native_dri3proto()
-#{
-#	[ -f ${prefix}/include/X11/extensions/dri3proto.h -a "${force_install}" != yes ] && return
-#	fetch dri3proto || return
-#	unpack dri3proto || return
-#	[ -f ${dri3proto_src_dir}/Makefile ] ||
-#		(cd ${dri3proto_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${dri3proto_src_dir} -j ${jobs} || return
-#	make -C ${dri3proto_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#}
-#
+install_native_dri2proto()
+{
+	[ -f ${prefix}/include/X11/extensions/dri2proto.h -a "${force_install}" != yes ] && return
+	fetch dri2proto || return
+	unpack dri2proto || return
+	[ -f ${dri2proto_bld_dir}/Makefile ] ||
+		(cd ${dri2proto_bld_dir}
+		${dri2proto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${dri2proto_bld_dir} -j ${jobs} || return
+	make -C ${dri2proto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_dri3proto()
+{
+	[ -f ${prefix}/include/X11/extensions/dri3proto.h -a "${force_install}" != yes ] && return
+	fetch dri3proto || return
+	unpack dri3proto || return
+	[ -f ${dri3proto_bld_dir}/Makefile ] ||
+		(cd ${dri3proto_bld_dir}
+		${dri3proto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${dri3proto_bld_dir} -j ${jobs} || return
+	make -C ${dri3proto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
 #install_native_presentproto()
 #{
 #	[ -f ${prefix}/include/X11/extensions/presentproto.h -a "${force_install}" != yes ] && return
