@@ -891,7 +891,7 @@ fetch()
 			wget -O ${pkg_config_src_dir}.tar.gz \
 				https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
 		xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto|renderproto|\
-		randrproto|xineramaproto|presentproto|glproto|dri2proto|dri3proto)
+		randrproto|xineramaproto|glproto|presentproto|dri2proto|dri3proto)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.gz || return;;
 		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXpm|libXmu|libXaw|\
@@ -3801,18 +3801,18 @@ install_native_wayland_protocols()
 	update_path || return
 }
 
-#install_native_glproto()
-#{
-#	[ -f ${prefix}/include/GL/glxproto.h -a "${force_install}" != yes ] && return
-#	fetch glproto || return
-#	unpack glproto || return
-#	[ -f ${glproto_src_dir}/Makefile ] ||
-#		(cd ${glproto_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${glproto_src_dir} -j ${jobs} || return
-#	make -C ${glproto_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#}
-#
+install_native_glproto()
+{
+	[ -f ${prefix}/include/GL/glxproto.h -a "${force_install}" != yes ] && return
+	fetch glproto || return
+	unpack glproto || return
+	[ -f ${glproto_bld_dir}/Makefile ] ||
+		(cd ${glproto_bld_dir}
+		${glproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${glproto_bld_dir} -j ${jobs} || return
+	make -C ${glproto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
 #install_native_dri2proto()
 #{
 #	[ -f ${prefix}/include/X11/extensions/dri2proto.h -a "${force_install}" != yes ] && return
