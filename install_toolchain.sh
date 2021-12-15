@@ -3852,7 +3852,7 @@ install_native_dri3proto()
 install_native_mesa()
 {
 #	[ -f ${prefix}/include/GL/gl.h -a "${force_install}" != yes ] && return
-	pkg-config --exists xcb-proto.pc || install_native_xcb_proto || return
+	pkg-config --exists xcb-proto || install_native_xcb_proto || return
 	print_header_path xcb.h xcb > /dev/null || install_native_libxcb || return
 	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
 	print_header_path Xext.h X11/extensions > /dev/null || install_native_libXext || return
