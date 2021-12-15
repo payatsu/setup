@@ -908,8 +908,8 @@ fetch()
 			eval wget -O \${${_p}_src_dir}.tar.xz \
 				https://wayland.freedesktop.org/releases/\${${_p:-waylant}_name}.tar.xz || return;;
 		libepoxy)
-			wget -O ${libepoxy_src_dir}.tar.bz2 \
-				https://github.com/anholt/libepoxy/releases/download/v${libepoxy_ver}/${libepoxy_name}.tar.bz2 || return;;
+			wget -O ${libepoxy_src_dir}.tar.xz \
+				https://github.com/anholt/libepoxy/releases/download/${libepoxy_ver}/${libepoxy_name}.tar.xz || return;;
 		mesa)
 			wget -O ${mesa_src_dir}.tar.xz \
 				https://mesa.freedesktop.org/archive/${mesa_name}.tar.xz || return;;
