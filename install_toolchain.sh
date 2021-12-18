@@ -273,7 +273,7 @@
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
 : ${dri3proto_ver:=1.0}
-: ${presentproto_ver:=1.0}
+: ${libglvnd_ver:=1.2.0}
 : ${mesa_ver:=21.3.1}
 : ${libepoxy_ver:=1.5.9}
 : ${glib_ver:=2.70.1}
@@ -891,7 +891,7 @@ fetch()
 			wget -O ${pkg_config_src_dir}.tar.gz \
 				https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
 		xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto|renderproto|\
-		randrproto|xineramaproto|glproto|presentproto|dri2proto|dri3proto)
+		randrproto|xineramaproto|glproto|dri2proto|dri3proto)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.gz || return;;
 		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXpm|libXmu|libXaw|\
@@ -907,12 +907,15 @@ fetch()
 		wayland|wayland-protocols)
 			eval wget -O \${${_p}_src_dir}.tar.xz \
 				https://wayland.freedesktop.org/releases/\${${_p:-waylant}_name}.tar.xz || return;;
-		libepoxy)
-			wget -O ${libepoxy_src_dir}.tar.xz \
-				https://github.com/anholt/libepoxy/releases/download/${libepoxy_ver}/${libepoxy_name}.tar.xz || return;;
+		libglvnd)
+			wget -O ${libglvnd_src_dir}.tar.gz \
+				https://github.com/NVIDIA/libglvnd/releases/download/v${libglvnd_ver}/${libglvnd_name}.tar.gz || return;;
 		mesa)
 			wget -O ${mesa_src_dir}.tar.xz \
 				https://mesa.freedesktop.org/archive/${mesa_name}.tar.xz || return;;
+		libepoxy)
+			wget -O ${libepoxy_src_dir}.tar.xz \
+				https://github.com/anholt/libepoxy/releases/download/${libepoxy_ver}/${libepoxy_name}.tar.xz || return;;
 		pixman)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://www.cairographics.org/releases/\${${_p:-pixman}_name}.tar.gz || return;;
@@ -1018,7 +1021,6 @@ full()
 			s/install_native_libdrm//
 			s/install_native_dri2proto//
 			s/install_native_dri3proto//
-			s/install_native_presentproto//
 			s/install_native_libxshmfence//
 			s/install_native_mesa//
 			s/install_native_libepoxy//
@@ -3837,18 +3839,20 @@ install_native_dri3proto()
 	make -C ${dri3proto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
-#install_native_presentproto()
-#{
-#	[ -f ${prefix}/include/X11/extensions/presentproto.h -a "${force_install}" != yes ] && return
-#	fetch presentproto || return
-#	unpack presentproto || return
-#	[ -f ${presentproto_src_dir}/Makefile ] ||
-#		(cd ${presentproto_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${presentproto_src_dir} -j ${jobs} || return
-#	make -C ${presentproto_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#}
-#
+install_native_libglvnd()
+{
+	[ -f ${prefix}/include/glvnd/GLdispatchABI.h -a "${force_install}" != yes ] && return
+	fetch libglvnd || return
+	unpack libglvnd || return
+	[ -f ${libglvnd_bld_dir}/Makefile ] ||
+		(cd ${libglvnd_bld_dir}
+		${libglvnd_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --target=${target} \
+			--disable-silent-rules CPPFLAGS="${CPPFLAGS} -Wno-error=array-parameter") || return
+	make -C ${libglvnd_bld_dir} -j ${jobs} || return
+	make -C ${libglvnd_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
 install_native_mesa()
 {
 	[ -f ${prefix}/include/GL/gl.h -a "${force_install}" != yes ] && return
