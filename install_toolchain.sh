@@ -3864,10 +3864,11 @@ install_native_mesa()
 	print_header_path glxproto.h GL > /dev/null || install_native_glproto || return
 	print_header_path dri2proto.h X11/extensions > /dev/null || install_native_dri2proto || return
 	print_header_path dri3proto.h X11/extensions > /dev/null || install_native_dri3proto || return
+	print_header_path GLdispatchABI.h glvnd > /dev/null || install_native_libglvnd || return
 	pip install mako || return
 	fetch mesa || return
 	unpack mesa || return
-	meson --prefix ${prefix} -Dglx-direct=false ${mesa_src_dir} ${mesa_bld_dir} || return
+	meson --prefix ${prefix} -Dglvnd=true -Dglx-direct=false ${mesa_src_dir} ${mesa_bld_dir} || return
 	ninja -v -C ${mesa_bld_dir} || return
 	ninja -v -C ${mesa_bld_dir} install || return
 	update_path || return
