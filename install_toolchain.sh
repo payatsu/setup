@@ -273,7 +273,7 @@
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
 : ${dri3proto_ver:=1.0}
-: ${libglvnd_ver:=1.2.0}
+: ${libglvnd_ver:=1.4.0}
 : ${mesa_ver:=21.3.1}
 : ${libepoxy_ver:=1.5.9}
 : ${glib_ver:=2.70.1}
@@ -908,8 +908,8 @@ fetch()
 			eval wget -O \${${_p}_src_dir}.tar.xz \
 				https://wayland.freedesktop.org/releases/\${${_p:-waylant}_name}.tar.xz || return;;
 		libglvnd)
-			wget -O ${libglvnd_src_dir}.tar.gz \
-				https://github.com/NVIDIA/libglvnd/releases/download/v${libglvnd_ver}/${libglvnd_name}.tar.gz || return;;
+			wget -O ${libglvnd_src_dir}.tar.bz2 \
+				https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/v${libglvnd_ver}/libglvnd-v${libglvnd_ver}.tar.bz2 || return;;
 		mesa)
 			wget -O ${mesa_src_dir}.tar.xz \
 				https://mesa.freedesktop.org/archive/${mesa_name}.tar.xz || return;;
@@ -1170,7 +1170,7 @@ set_src_directory()
 		eval ${_1}_name=${1}_\${${_1}_ver};;
 	rustc)
 		eval ${_1}_name=${1}-\${${_1}_ver}-src;;
-	procps|node|mingw-w64)
+	procps|node|mingw-w64|libglvnd)
 		eval ${_1}_name=${1}-v\${${_1}_ver};;
 	squashfs|expect|tcl|tk)
 		eval ${_1}_name=${1}\${${_1}_ver};;
@@ -3844,12 +3844,9 @@ install_native_libglvnd()
 	[ -f ${prefix}/include/glvnd/GLdispatchABI.h -a "${force_install}" != yes ] && return
 	fetch libglvnd || return
 	unpack libglvnd || return
-	[ -f ${libglvnd_bld_dir}/Makefile ] ||
-		(cd ${libglvnd_bld_dir}
-		${libglvnd_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --target=${target} \
-			--disable-silent-rules CPPFLAGS="${CPPFLAGS} -Wno-error=array-parameter") || return
-	make -C ${libglvnd_bld_dir} -j ${jobs} || return
-	make -C ${libglvnd_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	meson --prefix ${prefix} ${libglvnd_src_dir} ${libglvnd_bld_dir} || return
+	ninja -v -C ${libglvnd_bld_dir} || return
+	ninja -v -C ${libglvnd_bld_dir} install || return
 	update_path || return
 }
 
