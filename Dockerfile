@@ -18,7 +18,7 @@ libICE libSM xcb-proto libxcb xextproto inputproto kbproto libX11 libXext \
 libXt libXmu libXpm libXaw libXi damageproto libXdamage renderproto \
 libXrender randrproto libXrandr libXcursor xineramaproto libXinerama \
 libxkbcommon libpciaccess libdrm libxshmfence wayland wayland-protocols \
-glproto dri2proto dri3proto mesa tcl tk git cpio zip \
+glproto dri2proto dri3proto libglvnd mesa glu libepoxy tcl tk git cpio zip \
 unzip lzip lunzip lzo lzop lz4 file groff libpipeline man-db ed bc patch \
 Bear ccache ruby libatomic_ops gc guile boost source-highlight \
 util-linux popt babeltrace gdb make autogen openssh go rustc \
