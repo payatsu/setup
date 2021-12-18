@@ -275,6 +275,7 @@
 : ${dri3proto_ver:=1.0}
 : ${libglvnd_ver:=1.4.0}
 : ${mesa_ver:=21.3.1}
+: ${glu_ver:=9.0.2}
 : ${libepoxy_ver:=1.5.9}
 : ${glib_ver:=2.70.1}
 : ${gobject_introspection_ver:=1.70.0}
@@ -913,6 +914,9 @@ fetch()
 		mesa)
 			wget -O ${mesa_src_dir}.tar.xz \
 				https://mesa.freedesktop.org/archive/${mesa_name}.tar.xz || return;;
+		glu)
+			wget -O ${glu_src_dir}.tar.xz \
+				https://archive.mesa3d.org//glu/${glu_name}.tar.xz || return;;
 		libepoxy)
 			wget -O ${libepoxy_src_dir}.tar.xz \
 				https://github.com/anholt/libepoxy/releases/download/${libepoxy_ver}/${libepoxy_name}.tar.xz || return;;
@@ -3874,19 +3878,29 @@ install_native_mesa()
 	update_path || return
 }
 
-#install_native_libepoxy()
-#{
-#	[ -f ${prefix}/include/epoxy/egl.h -a "${force_install}" != yes ] && return
-#	print_header_path Core.h X11 > /dev/null || install_native_libXt || return
-#	fetch libepoxy || return
-#	unpack libepoxy || return
-#	[ -f ${libepoxy_src_dir}/Makefile ] ||
-#		(cd ${libepoxy_src_dir}
-#		./configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
-#	make -C ${libepoxy_src_dir} -j ${jobs} || return
-#	make -C ${libepoxy_src_dir} -j ${jobs} install${strip:+-${strip}} || return
-#	update_path || return
-#}
+install_native_glu()
+{
+	[ -f ${prefix}/include/GL/glu.h -a "${force_install}" != yes ] && return
+	print_header_path gl.h GL > /dev/null || install_native_mesa || return
+	fetch glu || return
+	unpack glu || return
+	meson --prefix ${prefix} ${glu_src_dir} ${glu_bld_dir} || return
+	ninja -v -C ${glu_bld_dir} || return
+	ninja -v -C ${glu_bld_dir} install || return
+	update_path || return
+}
+
+install_native_libepoxy()
+{
+	[ -f ${prefix}/include/epoxy/egl.h -a "${force_install}" != yes ] && return
+	print_header_path Core.h X11 > /dev/null || install_native_libXt || return
+	fetch libepoxy || return
+	unpack libepoxy || return
+	meson --prefix ${prefix} ${libepoxy_src_dir} ${libepoxy_bld_dir} || return
+	ninja -v -C ${libepoxy_bld_dir} || return
+	ninja -v -C ${libepoxy_bld_dir} install || return
+	update_path || return
+}
 
 install_native_graphene()
 {
