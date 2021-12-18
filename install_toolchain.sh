@@ -182,7 +182,7 @@
 : ${boost_ver:=1_77_0}
 : ${Python_ver:=3.10.0}
 : ${Python2_ver:=2.7.18}
-: ${cython_ver:=0.29.24}
+: ${cython_ver:=0.29.26}
 : ${numpy_ver:=1.21.3}
 : ${rustc_ver:=1.57.0}
 : ${rustup_ver:=1.24.3}
