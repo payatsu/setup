@@ -157,7 +157,7 @@
 : ${sqlite_ver:=3340100}
 : ${apr_ver:=1.7.0}
 : ${apr_util_ver:=1.6.1}
-: ${utf8proc_ver:=2.6.1}
+: ${utf8proc_ver:=2.7.0}
 : ${subversion_ver:=1.14.1}
 : ${ninja_ver:=1.10.2}
 : ${meson_ver:=0.58.1}
