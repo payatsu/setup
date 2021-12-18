@@ -6321,6 +6321,7 @@ install_native_opencv()
 	print_header_path png.h > /dev/null || install_native_libpng || return # systemのlibpngだと古くて新規インストール必須かも。
 	print_header_path tiff.h > /dev/null || install_native_tiff || return
 	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return # systemのlibjpegだと古くて新規インストール必須かも。
+	print_header_path ft2build.h freetype2 > /dev/null || install_native_freetype || return
 	fetch opencv || return
 	unpack opencv || return
 	fetch opencv_contrib || return
@@ -6335,7 +6336,9 @@ install_native_opencv()
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_SKIP_INSTALL_RPATH=TRUE \
 		-DENABLE_PRECOMPILED_HEADERS=OFF \
-		-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_src_dir}/modules || return
+		-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_src_dir}/modules \
+		-DOPENCV_GENERATE_PKGCONFIG=ON \
+		-DWITH_FREETYPE=ON || return
 	cmake --build ${opencv_bld_dir} -v -j ${jobs} || return
 	cmake --install ${opencv_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
