@@ -183,7 +183,7 @@
 : ${Python_ver:=3.10.0}
 : ${Python2_ver:=2.7.18}
 : ${cython_ver:=0.29.26}
-: ${numpy_ver:=1.21.3}
+: ${numpy_ver:=1.21.4}
 : ${rustc_ver:=1.57.0}
 : ${rustup_ver:=1.24.3}
 : ${ruby_ver:=3.0.0}
