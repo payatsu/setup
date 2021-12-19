@@ -25,10 +25,12 @@ util-linux popt babeltrace gdb make autogen openssh go rustc \
 zsh bash screen libevent tmux lua vim neovim global the_silver_searcher \
 the_platinum_searcher gperf highway ripgrep fzf jq protobuf rsync dtc strace \
 systemtap libbpf bcc bpftrace libcap numactl OpenCSD libpfm perf libpcap \
-tcpdump iproute2 nmap tiff libpng jpeg giflib emacs diffutils poke cython numpy \
+tcpdump iproute2 nmap diffutils poke cython numpy tiff libpng jpeg giflib \
+gobject-introspection pixman freetype fontconfig cairo fribidi harfbuzz \
+pango itstool shared-mime-info gdk-pixbuf atk graphene gtk \
 gstreamer orc gst-plugins-base gst-plugins-good gst-editing-services \
 gst-rtsp-server gst-omx opencv v4l-utils \
-freetype fontconfig ghostscript graphviz jdk plantuml"
+emacs ghostscript graphviz jdk plantuml"
 
 RUN \
 apt-get update && apt-get upgrade -y && \
