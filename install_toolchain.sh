@@ -206,6 +206,7 @@
 : ${x265_ver:=3.2.1}
 : ${libav_ver:=11.9}
 : ${gflags_ver:=2.2.2}
+: ${glog_ver:=0.5.0}
 : ${opencv_ver:=4.5.4}
 : ${opencv_contrib_ver:=${opencv_ver}}
 : ${v4l_utils_ver:=1.22.1}
@@ -850,6 +851,9 @@ fetch()
 		gflags)
 			wget -O ${gflags_src_dir}.tar.gz \
 				https://github.com/gflags/gflags/archive/refs/tags/v${gflags_ver}.tar.gz || return;;
+		glog)
+			wget -O ${glog_src_dir}.tar.gz \
+				https://github.com/google/glog/archive/refs/tags/v${glog_ver}.tar.gz || return;;
 		opencv|opencv_contrib)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://github.com/opencv/${_p:-opencv}/archive/\${${_p:-opencv}_ver}.tar.gz || return;;
@@ -6324,7 +6328,7 @@ install_native_gflags()
 	unpack gflags || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${gflags_src_dir} -B ${gflags_bld_dir} \
-		-DCMAKE_CXX_COMPILER=${CC:-gcc} \
+		-DCMAKE_CXX_COMPILER=${CC:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 		-DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DBUILD_SHARED_LIBS=ON \
@@ -6334,6 +6338,23 @@ install_native_gflags()
 		|| return
 	cmake --build ${gflags_bld_dir} -v -j ${jobs} || return
 	cmake --install ${gflags_bld_dir} -v ${strip:+--${strip}} || return
+	update_path || return
+}
+
+install_native_glog()
+{
+	[ -f ${prefix}/include/glog/logging.h -a "${force_install}" != yes ] && return
+	print_header_path gflags.h gflags > /dev/null || install_native_gflags || return
+	fetch glog || return
+	unpack glog || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${glog_src_dir} -B ${glog_bld_dir} \
+		-DCMAKE_CXX_COMPILER=${CC:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
+		-DCMAKE_INSTALL_PREFIX=${prefix} \
+		|| return
+	cmake --build ${glog_bld_dir} -v -j ${jobs} || return
+	cmake --install ${glog_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
 
