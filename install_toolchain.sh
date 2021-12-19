@@ -205,6 +205,7 @@
 : ${x264_ver:=master}
 : ${x265_ver:=3.2.1}
 : ${libav_ver:=11.9}
+: ${gflags_ver:=2.2.2}
 : ${opencv_ver:=4.5.4}
 : ${opencv_contrib_ver:=${opencv_ver}}
 : ${v4l_utils_ver:=1.22.1}
@@ -846,6 +847,9 @@ fetch()
 		libav)
 			wget -O ${libav_src_dir}.tar.xz \
 				https://libav.org/releases/${libav_name}.tar.xz || return;;
+		gflags)
+			wget -O ${gflags_src_dir}.tar.gz \
+				https://github.com/gflags/gflags/archive/refs/tags/v${gflags_ver}.tar.gz || return;;
 		opencv|opencv_contrib)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://github.com/opencv/${_p:-opencv}/archive/\${${_p:-opencv}_ver}.tar.gz || return;;
@@ -1231,7 +1235,6 @@ set_variables()
 	set_path_sh=${DESTDIR}${prefix}/set_path.sh
 	echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && exe=.exe || exe=''
 	[ -f /etc/issue ] && os=`head -n 1 /etc/issue | cut -d' ' -f1`
-	[ -z "${strip}" ] || cmake_build_type=Debug
 
 	case ${target} in
 	arm*)        linux_arch=arm;;
@@ -6312,6 +6315,26 @@ install_native_libav()
 	) || return
 	make -C ${libav_bld_dir} -j ${jobs} || return
 	make -C ${libav_bld_dir} -j ${jobs} install || return
+}
+
+install_native_gflags()
+{
+	[ -f ${prefix}/include/gflags/gflags.h -a "${force_install}" != yes ] && return
+	fetch gflags || return
+	unpack gflags || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${gflags_src_dir} -B ${gflags_bld_dir} \
+		-DCMAKE_CXX_COMPILER=${CC:-gcc} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
+		-DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DBUILD_SHARED_LIBS=ON \
+		-DBUILD_STATIC_LIBS=ON \
+		-DBUILD_gflags_LIB=ON \
+		-DBUILD_gflags_nothreads_LIB=ON \
+		|| return
+	cmake --build ${gflags_bld_dir} -v -j ${jobs} || return
+	cmake --install ${gflags_bld_dir} -v ${strip:+--${strip}} || return
+	update_path || return
 }
 
 install_native_opencv()
