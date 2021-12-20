@@ -183,6 +183,7 @@
 : ${Python_ver:=3.10.0}
 : ${Python2_ver:=2.7.18}
 : ${cython_ver:=0.29.26}
+: ${OpenBLAS_ver:=0.3.19}
 : ${numpy_ver:=1.21.4}
 : ${rustc_ver:=1.57.0}
 : ${rustup_ver:=1.24.3}
@@ -791,6 +792,9 @@ fetch()
 		cython)
 			wget -O ${cython_src_dir}.tar.gz \
 				https://github.com/cython/cython/archive/refs/tags/${cython_ver}.tar.gz;;
+		OpenBLAS)
+			wget -O ${OpenBLAS_src_dir}.tar.gz \
+				https://github.com/xianyi/OpenBLAS/releases/download/v${OpenBLAS_ver}/${OpenBLAS_name}.tar.gz || return;;
 		numpy)
 			wget -O ${numpy_src_dir}.tar.gz \
 				https://github.com/numpy/numpy/releases/download/v${numpy_ver}/${numpy_name}.tar.gz;;
@@ -5840,6 +5844,22 @@ install_native_cython()
 	(cd ${cython_src_dir}
 	CC=${CC:-${host:+${host}-}gcc} LDSHARED="${CC:-${host:+${host}-}gcc} --shared" \
 		python3 setup.py build -j ${jobs} install ${DESTDIR:+--root ${DESTDIR}} --prefix ${prefix}) || return
+}
+
+install_native_OpenBLAS()
+{
+	[ -f ${prefix}/include/openblas/openblas_config.h -a "${force_install}" != yes ] && return
+	fetch OpenBLAS || return
+	unpack OpenBLAS || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${OpenBLAS_src_dir} -B ${OpenBLAS_bld_dir} \
+		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DDYNAMIC_ARCH=ON -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=ON \
+		|| return
+	cmake --build ${OpenBLAS_bld_dir} -v -j ${jobs} || return
+	cmake --install ${OpenBLAS_bld_dir} -v ${strip:+--${strip}} || return
+	update_path || return
 }
 
 install_native_numpy()
