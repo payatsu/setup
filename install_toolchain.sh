@@ -207,6 +207,7 @@
 : ${libav_ver:=11.9}
 : ${gflags_ver:=2.2.2}
 : ${glog_ver:=0.5.0}
+: ${eigen_ver:=3.4.0}
 : ${opencv_ver:=4.5.4}
 : ${opencv_contrib_ver:=${opencv_ver}}
 : ${v4l_utils_ver:=1.22.1}
@@ -854,6 +855,9 @@ fetch()
 		glog)
 			wget -O ${glog_src_dir}.tar.gz \
 				https://github.com/google/glog/archive/refs/tags/v${glog_ver}.tar.gz || return;;
+		eigen)
+			wget -O ${eigen_src_dir}.tar.bz2 \
+				https://gitlab.com/libeigen/eigen/-/archive/${eigen_ver}/${eigen_name}.tar.bz2 || return;;
 		opencv|opencv_contrib)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://github.com/opencv/${_p:-opencv}/archive/\${${_p:-opencv}_ver}.tar.gz || return;;
@@ -6355,6 +6359,19 @@ install_native_glog()
 		|| return
 	cmake --build ${glog_bld_dir} -v -j ${jobs} || return
 	cmake --install ${glog_bld_dir} -v ${strip:+--${strip}} || return
+	update_path || return
+}
+
+install_native_eigen()
+{
+	[ -f ${prefix}/include/eigen3/Eigen/Core -a "${force_install}" != yes ] && return
+	fetch eigen || return
+	unpack eigen || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${eigen_src_dir} -B ${eigen_bld_dir} \
+		-DCMAKE_INSTALL_PREFIX=${prefix} \
+		|| return
+	cmake --install ${eigen_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
 
