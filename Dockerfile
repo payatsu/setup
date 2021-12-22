@@ -24,7 +24,7 @@ Bear ccache ruby libatomic_ops gc guile boost source-highlight \
 util-linux popt babeltrace gdb make autogen openssh go rustc \
 zsh bash screen libevent tmux lua vim neovim global the_silver_searcher \
 the_platinum_searcher gperf highway ripgrep fzf jq protobuf rsync dtc strace \
-systemtap libbpf bcc bpftrace libcap numactl OpenCSD libpfm perf libpcap \
+sysstat systemtap libbpf bcc bpftrace libcap numactl OpenCSD libpfm perf libpcap \
 tcpdump iproute2 nmap diffutils poke cython numpy tiff libpng jpeg giflib \
 gobject-introspection pixman freetype fontconfig cairo fribidi harfbuzz \
 pango itstool shared-mime-info gdk-pixbuf atk graphene gtk \
