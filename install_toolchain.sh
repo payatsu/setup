@@ -6474,6 +6474,7 @@ install_native_opencv()
 	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return
 	print_header_path decode.h webp > /dev/null || install_native_libwebp || return
 	print_header_path openjpeg.h > /dev/null || install_native_openjpeg || return
+	print_header_path openexr.h OpenEXR > /dev/null || install_native_openexr || return
 	print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || install_native_gstreamer || return
 	print_header_path video.h gstreamer-1.0/gst/video > /dev/null || install_native_gst_plugins_base || return
 	print_header_path ft2build.h freetype2 > /dev/null || install_native_freetype || return
