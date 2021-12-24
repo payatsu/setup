@@ -210,6 +210,7 @@
 : ${glog_ver:=0.5.0}
 : ${openjpeg_ver:=2.4.0}
 : ${Imath_ver:=3.1.3}
+: ${openexr_ver:=3.1.3}
 : ${eigen_ver:=3.4.0}
 : ${opencv_ver:=4.5.4}
 : ${opencv_contrib_ver:=${opencv_ver}}
@@ -867,6 +868,9 @@ fetch()
 		Imath)
 			wget -O ${Imath_src_dir}.tar.gz \
 				https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/v${Imath_ver}.tar.gz || return;;
+		openexr)
+			wget -O ${openexr_src_dir}.tar.gz \
+				https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v${openexr_ver}.tar.gz || return;;
 		eigen)
 			wget -O ${eigen_src_dir}.tar.bz2 \
 				https://gitlab.com/libeigen/eigen/-/archive/${eigen_ver}/${eigen_name}.tar.bz2 || return;;
@@ -6424,6 +6428,26 @@ install_native_Imath()
 		|| return
 	cmake --build ${Imath_bld_dir} -v -j ${jobs} || return
 	cmake --install ${Imath_bld_dir} -v ${strip:+--${strip}} || return
+	update_path || return
+}
+
+install_native_openexr()
+{
+	[ -f ${prefix}/include/OpenEXR/openexr.h -a "${force_install}" != yes ] && return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path half.h Imath > /dev/null || install_native_Imath || return
+	fetch openexr || return
+	unpack openexr || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${openexr_src_dir} -B ${openexr_bld_dir} \
+		-DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
+		-DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DCMAKE_SKIP_INSTALL_RPATH=TRUE \
+		-DBUILD_SHARED_LIBS=ON \
+		|| return
+	cmake --build ${openexr_bld_dir} -v -j ${jobs} || return
+	cmake --install ${openexr_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
 
