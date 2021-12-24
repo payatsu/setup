@@ -107,7 +107,7 @@ EOF
 : ${zlib_ver:=1.2.11}
 : ${bzip2_ver:=1.0.8}
 : ${xz_ver:=5.2.5}
-: ${zstd_ver:=1.5.0}
+: ${zstd_ver:=1.5.1}
 : ${openssl_ver:=1.1.1l}
 : ${libunistring_ver:=0.9.10}
 : ${libidn2_ver:=2.3.2}
