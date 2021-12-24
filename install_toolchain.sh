@@ -208,6 +208,7 @@
 : ${libav_ver:=11.9}
 : ${gflags_ver:=2.2.2}
 : ${glog_ver:=0.5.0}
+: ${openjpeg_ver:=2.4.0}
 : ${eigen_ver:=3.4.0}
 : ${opencv_ver:=4.5.4}
 : ${opencv_contrib_ver:=${opencv_ver}}
@@ -859,6 +860,9 @@ fetch()
 		glog)
 			wget -O ${glog_src_dir}.tar.gz \
 				https://github.com/google/glog/archive/refs/tags/v${glog_ver}.tar.gz || return;;
+		openjpeg)
+			wget -O ${openjpeg_src_dir}.tar.gz \
+				https://github.com/uclouvain/openjpeg/archive/refs/tags/v${openjpeg_ver}.tar.gz || return;;
 		eigen)
 			wget -O ${eigen_src_dir}.tar.bz2 \
 				https://gitlab.com/libeigen/eigen/-/archive/${eigen_ver}/${eigen_name}.tar.bz2 || return;;
@@ -6383,6 +6387,24 @@ install_native_glog()
 	update_path || return
 }
 
+install_native_openjpeg()
+{
+	[ -f ${prefix}/include/openjpeg-`print_version openjpeg 2`/openjpeg.h -a "${force_install}" != yes ] && return
+	fetch openjpeg || return
+	unpack openjpeg || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${openjpeg_src_dir} -B ${openjpeg_bld_dir} \
+		-DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
+		-DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DBUILD_SHARED_LIBS=ON \
+		-DBUILD_STATIC_LIBS=ON \
+		|| return
+	cmake --build ${openjpeg_bld_dir} -v -j ${jobs} || return
+	cmake --install ${openjpeg_bld_dir} -v ${strip:+--${strip}} || return
+	update_path || return
+}
+
 install_native_eigen()
 {
 	[ -f ${prefix}/include/eigen3/Eigen/Core -a "${force_install}" != yes ] && return
@@ -6405,6 +6427,7 @@ install_native_opencv()
 	print_header_path tiff.h > /dev/null || install_native_tiff || return
 	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return
 	print_header_path decode.h webp > /dev/null || install_native_libwebp || return
+	print_header_path openjpeg.h > /dev/null || install_native_openjpeg || return
 	print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || install_native_gstreamer || return
 	print_header_path video.h gstreamer-1.0/gst/video > /dev/null || install_native_gst_plugins_base || return
 	print_header_path ft2build.h freetype2 > /dev/null || install_native_freetype || return
