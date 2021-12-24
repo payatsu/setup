@@ -29,7 +29,7 @@ tcpdump iproute2 nmap diffutils poke cython OpenBLAS numpy tiff libpng jpeg gifl
 gobject-introspection pixman freetype fontconfig cairo fribidi harfbuzz \
 pango itstool shared-mime-info gdk-pixbuf atk graphene gtk \
 gstreamer orc gst-plugins-base gst-plugins-good gst-editing-services \
-gst-rtsp-server gst-omx libwebp opencv v4l-utils \
+gst-rtsp-server gst-omx libwebp eigen opencv v4l-utils \
 emacs ghostscript graphviz jdk plantuml"
 
 RUN \

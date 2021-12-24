@@ -6405,6 +6405,7 @@ install_native_opencv()
 	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return
 	print_header_path decode.h webp > /dev/null || install_native_libwebp || return
 	print_header_path ft2build.h freetype2 > /dev/null || install_native_freetype || return
+	print_header_path Core eigen3/Eigen > /dev/null || install_native_eigen || return
 	print_header_path message.h google/protobuf > /dev/null || install_native_protobuf || return
 	fetch opencv || return
 	unpack opencv || return
