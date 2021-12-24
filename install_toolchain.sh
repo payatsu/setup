@@ -209,6 +209,7 @@
 : ${gflags_ver:=2.2.2}
 : ${glog_ver:=0.5.0}
 : ${openjpeg_ver:=2.4.0}
+: ${Imath_ver:=3.1.3}
 : ${eigen_ver:=3.4.0}
 : ${opencv_ver:=4.5.4}
 : ${opencv_contrib_ver:=${opencv_ver}}
@@ -863,6 +864,9 @@ fetch()
 		openjpeg)
 			wget -O ${openjpeg_src_dir}.tar.gz \
 				https://github.com/uclouvain/openjpeg/archive/refs/tags/v${openjpeg_ver}.tar.gz || return;;
+		Imath)
+			wget -O ${Imath_src_dir}.tar.gz \
+				https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/v${Imath_ver}.tar.gz || return;;
 		eigen)
 			wget -O ${eigen_src_dir}.tar.bz2 \
 				https://gitlab.com/libeigen/eigen/-/archive/${eigen_ver}/${eigen_name}.tar.bz2 || return;;
@@ -6402,6 +6406,24 @@ install_native_openjpeg()
 		|| return
 	cmake --build ${openjpeg_bld_dir} -v -j ${jobs} || return
 	cmake --install ${openjpeg_bld_dir} -v ${strip:+--${strip}} || return
+	update_path || return
+}
+
+install_native_Imath()
+{
+	[ -f ${prefix}/include/Imath/half.h -a "${force_install}" != yes ] && return
+	fetch Imath || return
+	unpack Imath || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${Imath_src_dir} -B ${Imath_bld_dir} \
+		-DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
+		-DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DCMAKE_SKIP_INSTALL_RPATH=TRUE \
+		-DBUILD_SHARED_LIBS=ON \
+		|| return
+	cmake --build ${Imath_bld_dir} -v -j ${jobs} || return
+	cmake --install ${Imath_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
 
