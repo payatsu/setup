@@ -1043,7 +1043,7 @@ EOF
 			which doxygen > /dev/null && make -C ${gcc_bld_dir}/${target}/libstdc++-v3 -j ${jobs} DESTDIR=${DESTDIR} install-man
 		[ ${host} != ${target} ] || ln -fsv gcc ${DESTDIR}${prefix}/bin/cc || return
 		[ ! -f ${DESTDIR}${prefix}/bin/${target}-gcc-tmp ] || rm -v ${DESTDIR}${prefix}/bin/${target}-gcc-tmp || return
-		for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool go gofmt; do
+		for b in c++ cpp g++ gcc gcc-ar gcc-nm gcc-ranlib gccgo gcov gcov-dump gcov-tool gfortran go gofmt; do
 			[ -f ${DESTDIR}${prefix}/bin/${target}-${b}-${gcc_base_ver} ] || continue
 			[ ${host} != ${target} ] || ln -fsv ${b}-${gcc_base_ver} ${DESTDIR}${prefix}/bin/${b} || return
 			ln -fsv `[ ${host} = ${target} ] && echo ${b} || echo ${target}-${b}-${gcc_base_ver}` \
