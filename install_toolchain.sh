@@ -6404,7 +6404,10 @@ install_native_opencv()
 	print_header_path tiff.h > /dev/null || install_native_tiff || return
 	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return
 	print_header_path decode.h webp > /dev/null || install_native_libwebp || return
+	print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || install_native_gstreamer || return
+	print_header_path video.h gstreamer-1.0/gst/video > /dev/null || install_native_gst_plugins_base || return
 	print_header_path ft2build.h freetype2 > /dev/null || install_native_freetype || return
+	print_header_path openblas_config.h openblas > /dev/null || install_native_OpenBLAS || return
 	print_header_path Core eigen3/Eigen > /dev/null || install_native_eigen || return
 	print_header_path message.h google/protobuf > /dev/null || install_native_protobuf || return
 	fetch opencv || return
