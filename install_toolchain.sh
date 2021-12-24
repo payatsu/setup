@@ -6353,7 +6353,7 @@ install_native_gflags()
 	unpack gflags || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${gflags_src_dir} -B ${gflags_bld_dir} \
-		-DCMAKE_CXX_COMPILER=${CC:-g++} \
+		-DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 		-DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DBUILD_SHARED_LIBS=ON \
@@ -6374,7 +6374,7 @@ install_native_glog()
 	unpack glog || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${glog_src_dir} -B ${glog_bld_dir} \
-		-DCMAKE_CXX_COMPILER=${CC:-g++} \
+		-DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 		-DCMAKE_INSTALL_PREFIX=${prefix} \
 		|| return
@@ -6390,6 +6390,7 @@ install_native_eigen()
 	unpack eigen || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${eigen_src_dir} -B ${eigen_bld_dir} \
+		-DCMAKE_CXX_COMPILER=${CXX:-g++} \
 		-DCMAKE_INSTALL_PREFIX=${prefix} \
 		|| return
 	cmake --install ${eigen_bld_dir} -v ${strip:+--${strip}} || return
