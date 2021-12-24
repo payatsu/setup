@@ -6405,6 +6405,7 @@ install_native_opencv()
 	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return
 	print_header_path decode.h webp > /dev/null || install_native_libwebp || return
 	print_header_path ft2build.h freetype2 > /dev/null || install_native_freetype || return
+	print_header_path message.h google/protobuf > /dev/null || install_native_protobuf || return
 	fetch opencv || return
 	unpack opencv || return
 	fetch opencv_contrib || return
@@ -6421,7 +6422,10 @@ install_native_opencv()
 		-DENABLE_PRECOMPILED_HEADERS=OFF \
 		-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_src_dir}/modules \
 		-DOPENCV_GENERATE_PKGCONFIG=ON \
-		-DWITH_FREETYPE=ON || return
+		-DWITH_FREETYPE=ON \
+		-DBUILD_PROTOBUF=OFF \
+		-DPROTOBUF_UPDATE_FILES=ON \
+		|| return
 	cmake --build ${opencv_bld_dir} -v -j ${jobs} || return
 	cmake --install ${opencv_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
