@@ -970,8 +970,9 @@ fetch()
 			wget -O ${graphene_src_dir}.tar.xz \
 				https://github.com/ebassi/graphene/releases/download/${graphene_ver}/${graphene_name}.tar.xz || return;;
 		glib|gobject-introspection|pango|gdk-pixbuf|atk|pygobject|gtk)
+			plus=`[ ${p} = gtk ] && eval echo \$\{${_p}_ver} | grep -qe '^3\.' && echo +`
 			eval wget -O \${${_p}_src_dir}.tar.xz \
-				https://ftp.gnome.org/pub/gnome/sources/${p:-glib}/\`print_version ${p:-glib}\`/\${${_p:-glib}_name}.tar.xz || return;;
+				https://ftp.gnome.org/pub/gnome/sources/${p:-glib}${plus}/\`print_version ${p:-glib}\`/\${${_p:-glib}_name}.tar.xz || return;;
 		webkitgtk)
 			wget -O ${webkitgtk_src_dir}.tar.xz \
 				https://webkitgtk.org/releases/${webkitgtk_name}.tar.xz || return;;
@@ -1210,6 +1211,9 @@ set_src_directory()
 		eval ${_1}_name=${1}-release-\${${_1}_ver};;
 	grpc)
 		eval ${_1}_name=${1}-\${${_1}_ver}.git;;
+	gtk)
+		plus=`eval echo \$\{${_1}_ver} | grep -qe '^3\.' && echo + || true`
+		eval ${_1}_name=${1}${plus}-\${${_1}_ver};;
 	*)
 		eval ${_1}_name=${1}-\${${_1}_ver};;
 	esac
