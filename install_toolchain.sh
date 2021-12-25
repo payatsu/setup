@@ -225,7 +225,7 @@
 : ${gst_python_ver:=${gstreamer_ver}}
 : ${orc_ver:=0.4.32}
 : ${googletest_ver:=1.10.0}
-: ${fzf_ver:=0.28.0}
+: ${fzf_ver:=0.29.0}
 : ${bat_ver:=0.18.3}
 : ${jq_ver:=1.6}
 : ${libpcap_ver:=1.10.1}
