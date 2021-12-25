@@ -187,7 +187,7 @@
 : ${numpy_ver:=1.21.5}
 : ${rustc_ver:=1.57.0}
 : ${rustup_ver:=1.24.3}
-: ${ruby_ver:=3.0.0}
+: ${ruby_ver:=3.1.0}
 : ${go_ver:=1.16.11}
 : ${perl_ver:=5.32.1}
 : ${tcl_ver:=8.6.11}
