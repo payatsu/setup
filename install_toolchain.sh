@@ -296,6 +296,7 @@
 : ${shared_mime_info_ver:=2.1}
 : ${gdk_pixbuf_ver:=2.42.6}
 : ${atk_ver:=2.36.0}
+: ${dbus_ver:=1.12.20}
 : ${graphene_ver:=1.10.6}
 : ${gtk_ver:=4.4.1}
 : ${webkitgtk_ver:=2.14.0}
@@ -973,6 +974,9 @@ fetch()
 			plus=`[ ${p} = gtk ] && eval echo \$\{${_p}_ver} | grep -qe '^3\.' && echo +`
 			eval wget -O \${${_p}_src_dir}.tar.xz \
 				https://ftp.gnome.org/pub/gnome/sources/${p:-glib}${plus}/\`print_version ${p:-glib}\`/\${${_p:-glib}_name}.tar.xz || return;;
+		dbus)
+			wget -O ${dbus_src_dir}.tar.gz \
+				https://dbus.freedesktop.org/releases/dbus/${dbus_name}.tar.gz || return;;
 		webkitgtk)
 			wget -O ${webkitgtk_src_dir}.tar.xz \
 				https://webkitgtk.org/releases/${webkitgtk_name}.tar.xz || return;;
@@ -3332,6 +3336,19 @@ install_native_atk()
 	meson --prefix ${prefix} ${atk_src_dir} ${atk_bld_dir} || return
 	ninja -v -C ${atk_bld_dir} || return
 	ninja -v -C ${atk_bld_dir} install || return
+	update_path || return
+}
+
+install_native_dbus()
+{
+	[ -f ${prefix}/include/dbus-1.0/dbus/dbus.h -a "${force_install}" != yes ] && return
+	fetch dbus || return
+	unpack dbus || return
+	[ -f ${dbus_bld_dir}/Makefile ] ||
+		(cd ${dbus_bld_dir}
+		${dbus_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${dbus_bld_dir} -j ${jobs} || return
+	make -C ${dbus_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
