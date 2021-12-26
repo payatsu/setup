@@ -298,6 +298,7 @@
 : ${atk_ver:=2.36.0}
 : ${dbus_ver:=1.12.20}
 : ${recordproto_ver:=1.14.2}
+: ${libXtst_ver:=1.2.3}
 : ${graphene_ver:=1.10.6}
 : ${gtk_ver:=4.4.1}
 : ${webkitgtk_ver:=2.14.0}
@@ -926,7 +927,8 @@ fetch()
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.gz || return;;
 		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXpm|libXmu|libXaw|\
-		libXi|libXfixes|libXdamage|libXrender|libXrandr|libXcursor|libXinerama|libxshmfence|libpciaccess)
+		libXi|libXfixes|libXdamage|libXrender|libXrandr|libXcursor|libXinerama|libxshmfence|\
+		libpciaccess|libXtst)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.gz || return;;
 		libxkbcommon)
@@ -3363,6 +3365,24 @@ install_native_recordproto()
 		${recordproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${recordproto_bld_dir} -j ${jobs} || return
 	make -C ${recordproto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libXtst()
+{
+	[ -f ${prefix}/include/X11/extensions/XTest.h -a "${force_install}" != yes ] && return
+	print_header_path lbx.h X11/extensions > /dev/null || install_native_xextproto || return
+	print_header_path recordproto.h X11/extensions > /dev/null || install_native_recordproto || return
+	print_header_path XI.h X11/extensions > /dev/null || install_native_inputproto || return
+	print_header_path XInput.h X11/extensions > /dev/null || install_native_libXi || return
+	print_header_path Xext.h X11/extensions > /dev/null || install_native_libXext || return
+	fetch libXtst || return
+	unpack libXtst || return
+	[ -f ${libXtst_bld_dir}/Makefile ] ||
+		(cd ${libXtst_bld_dir}
+		${libXtst_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXtst_bld_dir} -j ${jobs} || return
+	make -C ${libXtst_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
