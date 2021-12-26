@@ -299,6 +299,8 @@
 : ${dbus_ver:=1.12.20}
 : ${recordproto_ver:=1.14.2}
 : ${libXtst_ver:=1.2.3}
+: ${at_spi2_core_ver:=AT_SPI2_CORE_2_42_0}
+: ${at_spi2_atk_ver:=AT_SPI2_ATK_2_38_0}
 : ${graphene_ver:=1.10.6}
 : ${gtk_ver:=4.4.1}
 : ${webkitgtk_ver:=2.14.0}
@@ -980,6 +982,9 @@ fetch()
 		dbus)
 			wget -O ${dbus_src_dir}.tar.gz \
 				https://dbus.freedesktop.org/releases/dbus/${dbus_name}.tar.gz || return;;
+		at-spi2-core|at-spi2-atk)
+			eval wget -O \${${_p}_src_dir}.tar.bz2 \
+				https://gitlab.gnome.org/GNOME/${p}/-/archive/\${${_p}_ver}/\${${_p}_name}.tar.bz2 || return;;
 		webkitgtk)
 			wget -O ${webkitgtk_src_dir}.tar.xz \
 				https://webkitgtk.org/releases/${webkitgtk_name}.tar.xz || return;;
@@ -1303,6 +1308,8 @@ set_variables()
 			s/wayland_protocols/wayland-protocols/
 			s/shared_mime_info/shared-mime-info/
 			s/gdk_pixbuf/gdk-pixbuf/
+			s/at_spi2_core/at-spi2-core/
+			s/at_spi2_atk/at-spi2-atk/
 			s/gobject_introspection/gobject-introspection/
 			s/v4l_utils/v4l-utils/
 			s/gst_plugins_base/gst-plugins-base/
@@ -3383,6 +3390,22 @@ install_native_libXtst()
 		${libXtst_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libXtst_bld_dir} -j ${jobs} || return
 	make -C ${libXtst_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_at_spi2_core()
+{
+	[ -f ${prefix}/include/at-spi-2.0/atspi/atspi.h -a "${force_install}" != yes ] && return
+	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
+	print_header_path dbus.h dbus-1.0/dbus > /dev/null || install_native_dbus || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	print_header_path XTest.h X11/extensions > /dev/null || install_native_libXtst || return
+	print_header_path XInput.h X11/extensions > /dev/null || install_native_libXi || return
+	fetch at-spi2-core || return
+	unpack at-spi2-core || return
+	meson --prefix ${prefix} ${at_spi2_core_src_dir} ${at_spi2_core_bld_dir} || return
+	ninja -v -C ${at_spi2_core_bld_dir} || return
+	ninja -v -C ${at_spi2_core_bld_dir} install || return
 	update_path || return
 }
 
