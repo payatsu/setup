@@ -6560,6 +6560,7 @@ install_native_opencv()
 		-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_src_dir}/modules \
 		-DOPENCV_GENERATE_PKGCONFIG=ON \
 		-DWITH_FREETYPE=ON \
+		-DWITH_OPENMP=ON \
 		-DBUILD_PROTOBUF=OFF \
 		-DPROTOBUF_UPDATE_FILES=ON \
 		|| return
