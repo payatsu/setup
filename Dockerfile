@@ -25,11 +25,12 @@ util-linux popt babeltrace gdb make autogen openssh go rustc \
 zsh bash screen libevent tmux lua vim neovim global the_silver_searcher \
 the_platinum_searcher gperf highway ripgrep fzf jq protobuf rsync dtc strace \
 sysstat systemtap libbpf bcc bpftrace libcap numactl OpenCSD libpfm perf libpcap \
-tcpdump iproute2 nmap diffutils poke cython OpenBLAS numpy tiff libpng jpeg giflib \
-gobject-introspection pixman freetype fontconfig cairo fribidi harfbuzz \
-pango itstool shared-mime-info gdk-pixbuf atk graphene gtk \
-gstreamer orc gst-plugins-base gst-plugins-good gst-editing-services \
-gst-rtsp-server gst-omx libwebp openjpeg Imath openexr eigen opencv v4l-utils \
+tcpdump iproute2 nmap diffutils poke cython OpenBLAS numpy tiff libpng \
+jpeg giflib gobject-introspection pixman freetype fontconfig cairo fribidi \
+harfbuzz pango itstool shared-mime-info gdk-pixbuf atk dbus recordproto \
+libXtst at-spi2-core at-spi2-atk graphene gtk gstreamer orc gst-plugins-base \
+gst-plugins-good gst-editing-services gst-rtsp-server gst-omx \
+libwebp openjpeg Imath openexr eigen opencv v4l-utils \
 emacs ghostscript graphviz jdk plantuml"
 
 RUN \
