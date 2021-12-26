@@ -3409,6 +3409,18 @@ install_native_at_spi2_core()
 	update_path || return
 }
 
+install_native_at_spi2_atk()
+{
+	[ -f ${prefix}/include/at-spi2-atk/2.0/atk-bridge.h -a "${force_install}" != yes ] && return
+	print_header_path atspi.h  at-spi-2.0/atspi > /dev/null || install_native_at_spi2_core || return
+	fetch at-spi2-atk || return
+	unpack at-spi2-atk || return
+	meson --prefix ${prefix} ${at_spi2_atk_src_dir} ${at_spi2_atk_bld_dir} || return
+	ninja -v -C ${at_spi2_atk_bld_dir} || return
+	ninja -v -C ${at_spi2_atk_bld_dir} install || return
+	update_path || return
+}
+
 install_native_xproto()
 {
 	[ -f ${prefix}/include/X11/Xproto.h -a "${force_install}" != yes ] && return
