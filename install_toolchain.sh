@@ -297,6 +297,7 @@
 : ${gdk_pixbuf_ver:=2.42.6}
 : ${atk_ver:=2.36.0}
 : ${dbus_ver:=1.12.20}
+: ${recordproto_ver:=1.14.2}
 : ${graphene_ver:=1.10.6}
 : ${gtk_ver:=4.4.1}
 : ${webkitgtk_ver:=2.14.0}
@@ -921,7 +922,7 @@ fetch()
 			wget -O ${pkg_config_src_dir}.tar.gz \
 				https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
 		xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto|renderproto|\
-		randrproto|xineramaproto|glproto|dri2proto|dri3proto)
+		randrproto|xineramaproto|glproto|dri2proto|dri3proto|recordproto)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://xorg.freedesktop.org/archive/individual/proto/\${${_p:-xproto}_name}.tar.gz || return;;
 		libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXpm|libXmu|libXaw|\
@@ -3349,6 +3350,19 @@ install_native_dbus()
 		${dbus_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${dbus_bld_dir} -j ${jobs} || return
 	make -C ${dbus_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_recordproto()
+{
+	[ -f ${prefix}/include/X11/extensions/recordproto.h -a "${force_install}" != yes ] && return
+	fetch recordproto || return
+	unpack recordproto || return
+	[ -f ${recordproto_bld_dir}/Makefile ] ||
+		(cd ${recordproto_bld_dir}
+		${recordproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${recordproto_bld_dir} -j ${jobs} || return
+	make -C ${recordproto_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
