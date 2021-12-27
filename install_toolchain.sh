@@ -4012,6 +4012,7 @@ install_native_gtk()
 	print_header_path giversionmacros.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return
 	print_header_path graphene.h graphene-1.0 > /dev/null || install_native_graphene || return
 	print_header_path egl.h epoxy > /dev/null || install_native_libepoxy || return
+	print_header_path atk-bridge.h at-spi2-atk/2.0 > /dev/null || install_native_at_spi2_atk || return # for GTK3 only.
 	fetch gtk || return
 	unpack gtk || return
 	LDFLAGS="${LDFLAGS} `L stdc++`" meson --prefix ${prefix} -Dwayland-backend=false -Dmedia-gstreamer=disabled ${gtk_src_dir} ${gtk_bld_dir} || return
