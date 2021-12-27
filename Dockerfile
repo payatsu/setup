@@ -39,7 +39,7 @@ echo Asia/Tokyo > /etc/timezone && \
 DEBIAN_FRONTEND=noninteractive \
 apt-get install -y --no-install-recommends tzdata && \
 apt-get install -y --no-install-recommends \
-wget xz-utils ccache \
+wget xz-utils \
 make gcc g++ \
 texinfo \
 pkg-config dpkg-dev \
