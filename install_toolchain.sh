@@ -3234,6 +3234,7 @@ install_native_harfbuzz()
 	[ -f ${prefix}/include/harfbuzz/hb.h -a "${force_install}" != yes ] && return
 	print_header_path cairo.h cairo > /dev/null || install_native_cairo || return
 	print_header_path giversion.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return
+	which meson > /dev/null || install_native_meson || return
 	fetch harfbuzz || return
 	unpack harfbuzz || return
 	meson --prefix ${prefix} ${harfbuzz_src_dir} ${harfbuzz_bld_dir} || return
@@ -3286,6 +3287,7 @@ install_native_shared_mime_info()
 {
 	[ -x ${prefix}/bin/update-mime-database -a "${force_install}" != yes ] && return
 	which itstool > /dev/null || install_native_itstool || return
+	which meson > /dev/null || install_native_meson || return
 	fetch shared-mime-info || return
 	unpack shared-mime-info || return
 	meson --prefix ${prefix} ${shared_mime_info_src_dir} ${shared_mime_info_bld_dir} || return
@@ -3300,6 +3302,7 @@ install_native_gdk_pixbuf()
 	[ -f ${prefix}/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h -a "${force_install}" != yes ] && return
 	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
 	which update-mime-database > /dev/null || install_native_shared_mime_info || return
+	which meson > /dev/null || install_native_meson || return
 	fetch gdk-pixbuf || return
 	unpack gdk-pixbuf || return
 	meson --prefix ${prefix} ${gdk_pixbuf_src_dir} ${gdk_pixbuf_bld_dir} || return
@@ -3313,6 +3316,7 @@ install_native_atk()
 	[ -f ${prefix}/include/atk-1.0/atk/atk.h -a "${force_install}" != yes ] && return
 	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
 	print_header_path giversion.h gobject-introspection-1.0 > /dev/null || install_native_gobject_introspection || return
+	which meson > /dev/null || install_native_meson || return
 	fetch atk || return
 	unpack atk || return
 	meson --prefix ${prefix} ${atk_src_dir} ${atk_bld_dir} || return
@@ -3373,6 +3377,7 @@ install_native_at_spi2_core()
 	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
 	print_header_path XTest.h X11/extensions > /dev/null || install_native_libXtst || return
 	print_header_path XInput.h X11/extensions > /dev/null || install_native_libXi || return
+	which meson > /dev/null || install_native_meson || return
 	fetch at-spi2-core || return
 	unpack at-spi2-core || return
 	meson --prefix ${prefix} ${at_spi2_core_src_dir} ${at_spi2_core_bld_dir} || return
@@ -3385,6 +3390,7 @@ install_native_at_spi2_atk()
 {
 	[ -f ${prefix}/include/at-spi2-atk/2.0/atk-bridge.h -a "${force_install}" != yes ] && return
 	print_header_path atspi.h at-spi-2.0/atspi > /dev/null || install_native_at_spi2_core || return
+	which meson > /dev/null || install_native_meson || return
 	fetch at-spi2-atk || return
 	unpack at-spi2-atk || return
 	meson --prefix ${prefix} ${at_spi2_atk_src_dir} ${at_spi2_atk_bld_dir} || return
@@ -3824,6 +3830,7 @@ install_native_libXinerama()
 install_native_libxkbcommon()
 {
 	[ -f ${prefix}/include/xkbcommon/xkbcommon.h -a "${force_install}" != yes ] && return
+	which meson > /dev/null || install_native_meson || return
 	fetch libxkbcommon || return
 	unpack libxkbcommon || return
 	meson --prefix ${prefix} -Denable-docs=false -Denable-wayland=false \
@@ -3851,6 +3858,7 @@ install_native_libdrm()
 {
 	[ -f ${prefix}/include/libdrm/drm.h -a "${force_install}" != yes ] && return
 	print_header_path pciaccess.h > /dev/null || install_native_libpciaccess || return
+	which meson > /dev/null || install_native_meson || return
 	fetch libdrm || return
 	unpack libdrm || return
 	meson --prefix ${prefix} ${libdrm_src_dir} ${libdrm_bld_dir} || return
@@ -3876,6 +3884,7 @@ install_native_libxshmfence()
 install_native_wayland()
 {
 	[ -f ${prefix}/include/wayland-version.h -a "${force_install}" != yes ] && return
+	which meson > /dev/null || install_native_meson || return
 	fetch wayland || return
 	unpack wayland || return
 	meson --prefix ${prefix} -Ddocumentation=false ${wayland_src_dir} ${wayland_bld_dir} || return
@@ -3888,6 +3897,7 @@ install_native_wayland_protocols()
 {
 	[ -f ${prefix}/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml -a "${force_install}" != yes ] && return
 	which wayland-scanner > /dev/null || install_native_wayland || return
+	which meson > /dev/null || install_native_meson || return
 	fetch wayland-protocols || return
 	unpack wayland-protocols || return
 	meson --prefix ${prefix} ${wayland_protocols_src_dir} ${wayland_protocols_bld_dir} || return
@@ -3935,6 +3945,7 @@ install_native_dri3proto()
 install_native_libglvnd()
 {
 	[ -f ${prefix}/include/glvnd/GLdispatchABI.h -a "${force_install}" != yes ] && return
+	which meson > /dev/null || install_native_meson || return
 	fetch libglvnd || return
 	unpack libglvnd || return
 	meson --prefix ${prefix} ${libglvnd_src_dir} ${libglvnd_bld_dir} || return
@@ -3958,6 +3969,7 @@ install_native_mesa()
 	print_header_path dri2proto.h X11/extensions > /dev/null || install_native_dri2proto || return
 	print_header_path dri3proto.h X11/extensions > /dev/null || install_native_dri3proto || return
 	print_header_path GLdispatchABI.h glvnd > /dev/null || install_native_libglvnd || return
+	which meson > /dev/null || install_native_meson || return
 	pip install mako || return
 	fetch mesa || return
 	unpack mesa || return
@@ -3971,6 +3983,7 @@ install_native_glu()
 {
 	[ -f ${prefix}/include/GL/glu.h -a "${force_install}" != yes ] && return
 	print_header_path gl.h GL > /dev/null || install_native_mesa || return
+	which meson > /dev/null || install_native_meson || return
 	fetch glu || return
 	unpack glu || return
 	meson --prefix ${prefix} ${glu_src_dir} ${glu_bld_dir} || return
@@ -3983,6 +3996,7 @@ install_native_libepoxy()
 {
 	[ -f ${prefix}/include/epoxy/egl.h -a "${force_install}" != yes ] && return
 	print_header_path Core.h X11 > /dev/null || install_native_libXt || return
+	which meson > /dev/null || install_native_meson || return
 	fetch libepoxy || return
 	unpack libepoxy || return
 	meson --prefix ${prefix} ${libepoxy_src_dir} ${libepoxy_bld_dir} || return
@@ -3994,6 +4008,7 @@ install_native_libepoxy()
 install_native_graphene()
 {
 	[ -f ${prefix}/include/graphene-1.0/graphene.h -a "${force_install}" != yes ] && return
+	which meson > /dev/null || install_native_meson || return
 	fetch graphene || return
 	unpack graphene || return
 	meson --prefix ${prefix} ${graphene_src_dir} ${graphene_bld_dir} || return
@@ -4013,6 +4028,7 @@ install_native_gtk()
 	print_header_path graphene.h graphene-1.0 > /dev/null || install_native_graphene || return
 	print_header_path egl.h epoxy > /dev/null || install_native_libepoxy || return
 	print_header_path atk-bridge.h at-spi2-atk/2.0 > /dev/null || install_native_at_spi2_atk || return # for GTK3 only.
+	which meson > /dev/null || install_native_meson || return
 	fetch gtk || return
 	unpack gtk || return
 	LDFLAGS="${LDFLAGS} `L stdc++`" meson --prefix ${prefix} -Dwayland-backend=false -Dmedia-gstreamer=disabled ${gtk_src_dir} ${gtk_bld_dir} || return
