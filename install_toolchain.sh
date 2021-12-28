@@ -212,7 +212,7 @@
 : ${Imath_ver:=3.1.3}
 : ${openexr_ver:=3.1.3}
 : ${eigen_ver:=3.4.0}
-: ${opencv_ver:=4.5.4}
+: ${opencv_ver:=4.5.5}
 : ${opencv_contrib_ver:=${opencv_ver}}
 : ${v4l_utils_ver:=1.22.1}
 : ${yavta_ver:=git}
