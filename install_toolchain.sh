@@ -6611,10 +6611,12 @@ install_native_opencv()
 	print_header_path openexr.h OpenEXR > /dev/null || install_native_openexr || return
 	print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || install_native_gstreamer || return
 	print_header_path video.h gstreamer-1.0/gst/video > /dev/null || install_native_gst_plugins_base || return
-	print_header_path ft2build.h freetype2 > /dev/null || install_native_freetype || return
 	print_header_path openblas_config.h openblas > /dev/null || install_native_OpenBLAS || return
 	print_header_path Core eigen3/Eigen > /dev/null || install_native_eigen || return
 	print_header_path message.h google/protobuf > /dev/null || install_native_protobuf || return
+	print_header_path ft2build.h freetype2 > /dev/null || install_native_freetype || return
+	print_header_path gflags.h gflags > /dev/null || install_native_gflags || return
+	print_header_path logging.h glog > /dev/null || install_native_glog || return
 	fetch opencv || return
 	unpack opencv || return
 	fetch opencv_contrib || return
