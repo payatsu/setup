@@ -304,6 +304,7 @@
 : ${graphene_ver:=1.10.6}
 : ${gtk_ver:=4.4.1}
 : ${webkitgtk_ver:=2.14.0}
+: ${qt_ver:=6.2.2}
 
 : ${prefix:=/toolchain}
 : ${jobs:=`grep -e processor /proc/cpuinfo | wc -l`}
@@ -988,6 +989,9 @@ fetch()
 		webkitgtk)
 			wget -O ${webkitgtk_src_dir}.tar.xz \
 				https://webkitgtk.org/releases/${webkitgtk_name}.tar.xz || return;;
+		qt)
+			wget -O ${qt_src_dir}.tar.xz \
+				https://download.qt.io/official_releases/qt/`print_version qt`/${qt_ver}/single/${qt_name}.tar.xz || return;;
 		*)
 			echo fetch: no match: ${p} >&2; return 1;;
 		esac
@@ -1198,6 +1202,8 @@ set_src_directory()
 	gtk)
 		plus=`eval echo \$\{${_1}_ver} | grep -qe '^3\.' && echo + || true`
 		eval ${_1}_name=${1}${plus}-\${${_1}_ver};;
+	qt)
+		eval ${_1}_name=${1}-everywhere-src-\${${_1}_ver};;
 	*)
 		eval ${_1}_name=${1}-\${${_1}_ver};;
 	esac
@@ -4062,6 +4068,55 @@ install_native_gtk()
 #	make -C ${webkitgtk_bld_dir} -j ${jobs} || return
 #	make -C ${webkitgtk_bld_dir} -j ${jobs} install${strip:+/${strip}} || return
 #}
+
+install_native_qt()
+{
+	[ -f ${prefix}/include/QtCore/QtCoreVersion -a "${force_install}" != yes ] && return
+	print_header_path Xrender.h X11/extensions > /dev/null || install_native_libXrender || return
+	print_header_path xcb.h xcb > /dev/null || install_native_libxcb || return
+	print_header_path xkbcommon.h xkbcommon > /dev/null || install_native_libxkbcommon || return
+	print_header_path fontconfig.h fontconfig > /dev/null || install_native_fontconfig || return
+	print_header_path ft2build.h freetype2 > /dev/null || install_native_freetype || return
+	print_header_path Xext.h X11/extensions > /dev/null || install_native_libXext || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	print_header_path SM.h X11/SM > /dev/null || install_native_libSM || return
+	print_header_path ICE.h X11/ICE > /dev/null || install_native_libICE || return
+	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
+	print_header_path atspi.h at-spi-2.0/atspi > /dev/null || install_native_at_spi2_core || return
+	print_header_path gl.h GL > /dev/null || install_native_mesa || return
+	print_header_path pcre2.h > /dev/null || install_native_pcre2 || return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path hb.h harfbuzz > /dev/null || install_native_harfbuzz || return
+	print_header_path png.h > /dev/null || install_native_libpng || return
+	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return
+#	print_header_path sqlite3.h > /dev/null || install_native_sqlite || return
+	print_header_path tiff.h > /dev/null || install_native_tiff || return
+	print_header_path decode.h webp > /dev/null || install_native_libwebp || return
+	which ninja > /dev/null || install_native_ninja || return
+	fetch qt || return
+	unpack qt || return
+	[ -f ${qt_bld_dir}/build.ninja ] ||
+		(cd ${qt_bld_dir}
+		${qt_src_dir}/configure -prefix ${prefix} \
+			-shared \
+			-static \
+			-platform linux-g++ \
+			-ccache \
+			-DLIBICONV_PLUG \
+			-system-pcre \
+			-system-zlib \
+			-system-freetype \
+			-system-harfbuzz \
+			-system-libpng \
+			-system-libjpeg \
+			-qt-sqlite \
+			-system-tiff \
+			-system-webp \
+			) || return
+	ninja -v -C ${qt_bld_dir} || return
+	ninja -v -C ${qt_bld_dir} install || return
+	update_path || return
+}
 
 install_native_emacs()
 {
