@@ -6603,10 +6603,10 @@ install_native_opencv()
 {
 	[ -f ${prefix}/include/opencv`print_version opencv 1`/opencv2/opencv.hpp -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
-	print_header_path png.h > /dev/null || install_native_libpng || return
-	print_header_path tiff.h > /dev/null || install_native_tiff || return
 	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return
 	print_header_path decode.h webp > /dev/null || install_native_libwebp || return
+	print_header_path png.h > /dev/null || install_native_libpng || return
+	print_header_path tiff.h > /dev/null || install_native_tiff || return
 	print_header_path openjpeg.h > /dev/null || install_native_openjpeg || return
 	print_header_path openexr.h OpenEXR > /dev/null || install_native_openexr || return
 	print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || install_native_gstreamer || return
