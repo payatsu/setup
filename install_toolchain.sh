@@ -6621,6 +6621,7 @@ install_native_opencv()
 {
 	[ -f ${prefix}/include/opencv`print_version opencv 1`/opencv2/opencv.hpp -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
+	print_header_path QtCoreVersion QtCore > /dev/null || install_native_qt || return
 	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return
 	print_header_path decode.h webp > /dev/null || install_native_libwebp || return
 	print_header_path png.h > /dev/null || install_native_libpng || return
@@ -6653,7 +6654,9 @@ install_native_opencv()
 		-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_src_dir}/modules \
 		-DOPENCV_GENERATE_PKGCONFIG=ON \
 		-DWITH_FREETYPE=ON \
+		-DWITH_OPENGL=ON \
 		-DWITH_OPENMP=ON \
+		-DWITH_QT=ON \
 		-DBUILD_PROTOBUF=OFF \
 		-DPROTOBUF_UPDATE_FILES=ON \
 		|| return
