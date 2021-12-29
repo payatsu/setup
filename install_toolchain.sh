@@ -4095,13 +4095,17 @@ install_native_qt()
 	which ninja > /dev/null || install_native_ninja || return
 	fetch qt || return
 	unpack qt || return
-	[ `print_version qt 1` -gt 5 ] || sed -i -e '
-		/^#ifdef __cplusplus$/{
-			a#\ \ include <limits>
-			: loop
-			n
-			b loop
-		}' ${qt_src_dir}/qtbase/src/corelib/global/qglobal.h || return
+	[ `print_version qt 1` -gt 5 ] || {
+		sed -i -e '
+			/^#ifdef __cplusplus$/{
+				a#\ \ include <limits>
+				: loop
+				n
+				b loop
+			}' ${qt_src_dir}/qtbase/src/corelib/global/qglobal.h || return
+		sed -i -e '1i#include <cstdint>' \
+			${qt_src_dir}/qtlocation/src/3rdparty/mapbox-gl-native/src/mbgl/util/convert.cpp || return
+	} || return
 	[ -f ${qt_bld_dir}/Makefile -o -f ${qt_bld_dir}/build.ninja ] ||
 		(cd ${qt_bld_dir}
 		${qt_src_dir}/configure -prefix ${prefix} \
