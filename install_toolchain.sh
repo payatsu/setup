@@ -6639,7 +6639,7 @@ install_native_opencv()
 	unpack opencv || return
 	fetch opencv_contrib || return
 	unpack opencv_contrib || return
-	libdirs="`L png tiff jpeg`"
+	libdirs="`L png tiff jpeg` `l harfbuzz pcre2-16`"
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${opencv_src_dir} -B ${opencv_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
