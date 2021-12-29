@@ -4095,14 +4095,23 @@ install_native_qt()
 	which ninja > /dev/null || install_native_ninja || return
 	fetch qt || return
 	unpack qt || return
-	[ -f ${qt_bld_dir}/build.ninja ] ||
+	[ `print_version qt 1` -gt 5 ] || sed -i -e '
+		/^#ifdef __cplusplus$/{
+			a#\ \ include <limits>
+			: loop
+			n
+			b loop
+		}' ${qt_src_dir}/qtbase/src/corelib/global/qglobal.h || return
+	[ -f ${qt_bld_dir}/Makefile -o -f ${qt_bld_dir}/build.ninja ] ||
 		(cd ${qt_bld_dir}
 		${qt_src_dir}/configure -prefix ${prefix} \
+			`[ $(print_version qt 1) -le 5 ] && echo -opensource -confirm-license` \
 			-shared \
 			-static \
 			-platform linux-g++ \
 			-ccache \
 			-DLIBICONV_PLUG \
+			-nomake examples \
 			-system-pcre \
 			-system-zlib \
 			-system-freetype \
@@ -4113,8 +4122,13 @@ install_native_qt()
 			-system-tiff \
 			-system-webp \
 			) || return
-	ninja -v -C ${qt_bld_dir} || return
-	ninja -v -C ${qt_bld_dir} install || return
+	if [ -f ${qt_bld_dir}/Makefile ]; then
+		make -C ${qt_bld_dir} -j ${jobs} || return
+		make -C ${qt_bld_dir} -j ${jobs} install || return
+	else
+		ninja -v -C ${qt_bld_dir} || return
+		ninja -v -C ${qt_bld_dir} install || return
+	fi
 	update_path || return
 }
 
