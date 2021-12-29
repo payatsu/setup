@@ -212,6 +212,7 @@
 : ${Imath_ver:=3.1.3}
 : ${openexr_ver:=3.1.3}
 : ${eigen_ver:=3.4.0}
+: ${hdf5_ver:=1.12.1}
 : ${opencv_ver:=4.5.5}
 : ${opencv_contrib_ver:=${opencv_ver}}
 : ${v4l_utils_ver:=1.22.1}
@@ -880,6 +881,9 @@ fetch()
 		eigen)
 			wget -O ${eigen_src_dir}.tar.bz2 \
 				https://gitlab.com/libeigen/eigen/-/archive/${eigen_ver}/${eigen_name}.tar.bz2 || return;;
+		hdf5)
+			wget -O ${hdf5_src_dir}.tar.bz2 \
+				https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-`print_version hdf5`/${hdf5_name}/src/${hdf5_name}.tar.bz2 || return;;
 		opencv|opencv_contrib)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://github.com/opencv/${_p:-opencv}/archive/\${${_p:-opencv}_ver}.tar.gz || return;;
@@ -6614,6 +6618,22 @@ install_native_eigen()
 		-DCMAKE_INSTALL_PREFIX=${prefix} \
 		|| return
 	cmake --install ${eigen_bld_dir} -v ${strip:+--${strip}} || return
+	update_path || return
+}
+
+install_native_hdf5()
+{
+	[ -f ${prefix}/include/hdf5.h -a "${force_install}" != yes ] && return
+	fetch hdf5 || return
+	unpack hdf5 || return
+	[ -f ${hdf5_bld_dir}/src/Makefile ] ||
+		(cd ${hdf5_bld_dir}
+		${hdf5_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+			--enable-cxx --disable-sharedlib-rpath) || return
+	make -C ${hdf5_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${hdf5_bld_dir} -j ${jobs} -k check || return
+	make -C ${hdf5_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
