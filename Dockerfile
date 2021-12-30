@@ -30,7 +30,7 @@ jpeg giflib gobject-introspection pixman freetype fontconfig cairo fribidi \
 harfbuzz pango itstool shared-mime-info gdk-pixbuf atk dbus recordproto \
 libXtst at-spi2-core at-spi2-atk graphene gtk gstreamer orc gst-plugins-base \
 gst-plugins-good gst-editing-services gst-rtsp-server gst-omx \
-libwebp openjpeg Imath openexr eigen gflags glog qt opencv v4l-utils \
+libwebp openjpeg Imath openexr eigen gflags glog qt hdf5 opencv v4l-utils \
 emacs ghostscript graphviz jdk plantuml"
 
 RUN \

@@ -6656,6 +6656,7 @@ install_native_opencv()
 	print_header_path ft2build.h freetype2 > /dev/null || install_native_freetype || return
 	print_header_path gflags.h gflags > /dev/null || install_native_gflags || return
 	print_header_path logging.h glog > /dev/null || install_native_glog || return
+	print_header_path hdf5.h > /dev/null || install_native_hdf5 || return
 	fetch opencv || return
 	unpack opencv || return
 	fetch opencv_contrib || return
