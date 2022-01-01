@@ -3275,7 +3275,7 @@ install_native_pygobject()
 	which meson > /dev/null || install_native_meson || return
 	fetch pygobject || return
 	unpack pygobject || return
-	meson --prefix ${prefix} ${pygobject_src_dir} ${pygobject_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} ${pygobject_src_dir} ${pygobject_bld_dir} || return
 	ninja -v -C ${pygobject_bld_dir} || return
 	ninja -v -C ${pygobject_bld_dir} install || return
 }
@@ -6812,7 +6812,7 @@ install_native_gst_python()
 	which meson > /dev/null || install_native_meson || return
 	fetch gst-python || return
 	unpack gst-python || return
-	meson --prefix ${prefix} ${gst_python_src_dir} ${gst_python_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} ${gst_python_src_dir} ${gst_python_bld_dir} || return
 	ninja -v -C ${gst_python_bld_dir} || return
 	ninja -v -C ${gst_python_bld_dir} install || return
 	update_path || return
