@@ -6599,16 +6599,18 @@ install_native_openexr()
 	print_header_path half.h Imath > /dev/null || install_native_Imath || return
 	fetch openexr || return
 	unpack openexr || return
-	cmake `which ninja > /dev/null && echo -G Ninja` \
-		-S ${openexr_src_dir} -B ${openexr_bld_dir} \
-		-DCMAKE_CXX_COMPILER=${CXX:-g++} \
-		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
-		-DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DCMAKE_SKIP_INSTALL_RPATH=TRUE \
-		-DBUILD_SHARED_LIBS=ON \
-		|| return
-	cmake --build ${openexr_bld_dir} -v -j ${jobs} || return
-	cmake --install ${openexr_bld_dir} -v ${strip:+--${strip}} || return
+	for build_shared_libs in ON OFF; do
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${openexr_src_dir} -B ${openexr_bld_dir} \
+			-DCMAKE_CXX_COMPILER=${CXX:-g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} \
+			-DCMAKE_INSTALL_PREFIX=${prefix} \
+			-DCMAKE_SKIP_INSTALL_RPATH=TRUE \
+			-DBUILD_SHARED_LIBS=${build_shared_libs} \
+			|| return
+		cmake --build ${openexr_bld_dir} -v -j ${jobs} || return
+		cmake --install ${openexr_bld_dir} -v ${strip:+--${strip}} || return
+	done
 	update_path || return
 }
 
