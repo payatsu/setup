@@ -6815,7 +6815,7 @@ install_native_gst_python()
 	which meson > /dev/null || install_native_meson || return
 	fetch gst-python || return
 	unpack gst-python || return
-	meson --prefix ${prefix} ${strip:+--${strip}} ${gst_python_src_dir} ${gst_python_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${gst_python_src_dir} ${gst_python_bld_dir} || return
 	ninja -v -C ${gst_python_bld_dir} || return
 	ninja -v -C ${gst_python_bld_dir} install || return
 	update_path || return
@@ -6827,7 +6827,7 @@ install_native_orc()
 	which meson > /dev/null || install_native_meson || return
 	fetch orc || return
 	unpack orc || return
-	meson --prefix ${prefix} ${strip:+--${strip}} ${orc_src_dir} ${orc_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${orc_src_dir} ${orc_bld_dir} || return
 	ninja -v -C ${orc_bld_dir} || return
 	ninja -v -C ${orc_bld_dir} install || return
 	update_path || return
