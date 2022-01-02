@@ -4041,7 +4041,8 @@ install_native_gtk()
 	which meson > /dev/null || install_native_meson || return
 	fetch gtk || return
 	unpack gtk || return
-	LDFLAGS="${LDFLAGS} `L stdc++`" meson --prefix ${prefix} -Dwayland-backend=false -Dmedia-gstreamer=disabled ${gtk_src_dir} ${gtk_bld_dir} || return
+	meson --prefix ${prefix} -Dc_link_flags="${LDFLAGS} `L stdc++`" \
+		-Dwayland-backend=false -Dmedia-gstreamer=disabled ${gtk_src_dir} ${gtk_bld_dir} || return
 	ninja -v -C ${gtk_bld_dir} || return
 	ninja -v -C ${gtk_bld_dir} install || return
 	update_path || return
