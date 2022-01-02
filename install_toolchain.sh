@@ -3169,7 +3169,8 @@ install_native_glib()
 	which meson > /dev/null || install_native_meson || return
 	fetch glib || return
 	unpack glib || return
-	meson --prefix ${prefix} -Diconv=auto -Dc_args="${CFLAGS} -DLIBICONV_PLUG" ${glib_src_dir} ${glib_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both \
+		-Diconv=auto -Dc_args="${CFLAGS} -DLIBICONV_PLUG" ${glib_src_dir} ${glib_bld_dir} || return
 	ninja -v -C ${glib_bld_dir} || return
 	ninja -v -C ${glib_bld_dir} install || return
 	update_path || return
@@ -3187,7 +3188,7 @@ install_native_gobject_introspection()
 	which meson > /dev/null || install_native_meson || return
 	fetch gobject-introspection || return
 	unpack gobject-introspection || return
-	meson --prefix ${prefix} ${gobject_introspection_src_dir} ${gobject_introspection_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${gobject_introspection_src_dir} ${gobject_introspection_bld_dir} || return
 	ninja -v -C ${gobject_introspection_bld_dir} || return
 	ninja -v -C ${gobject_introspection_bld_dir} install || return
 	update_path || return
@@ -3247,7 +3248,7 @@ install_native_harfbuzz()
 	which meson > /dev/null || install_native_meson || return
 	fetch harfbuzz || return
 	unpack harfbuzz || return
-	meson --prefix ${prefix} ${harfbuzz_src_dir} ${harfbuzz_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${harfbuzz_src_dir} ${harfbuzz_bld_dir} || return
 	ninja -v -C ${harfbuzz_bld_dir} || return
 	ninja -v -C ${harfbuzz_bld_dir} install || return
 	update_path || return
@@ -3262,7 +3263,7 @@ install_native_pango()
 	which meson > /dev/null || install_native_meson || return
 	fetch pango || return
 	unpack pango || return
-	meson --prefix ${prefix} ${pango_src_dir} ${pango_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${pango_src_dir} ${pango_bld_dir} || return
 	ninja -v -C ${pango_bld_dir} || return
 	ninja -v -C ${pango_bld_dir} install || return
 	update_path || return
@@ -3275,7 +3276,7 @@ install_native_pygobject()
 	which meson > /dev/null || install_native_meson || return
 	fetch pygobject || return
 	unpack pygobject || return
-	meson --prefix ${prefix} ${strip:+--${strip}} ${pygobject_src_dir} ${pygobject_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${pygobject_src_dir} ${pygobject_bld_dir} || return
 	ninja -v -C ${pygobject_bld_dir} || return
 	ninja -v -C ${pygobject_bld_dir} install || return
 }
@@ -3300,7 +3301,7 @@ install_native_shared_mime_info()
 	which meson > /dev/null || install_native_meson || return
 	fetch shared-mime-info || return
 	unpack shared-mime-info || return
-	meson --prefix ${prefix} ${shared_mime_info_src_dir} ${shared_mime_info_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${shared_mime_info_src_dir} ${shared_mime_info_bld_dir} || return
 	ninja -v -C ${shared_mime_info_bld_dir} || return
 	ninja -v -C ${shared_mime_info_bld_dir} install || return
 	update_path || return
