@@ -28,9 +28,9 @@ sysstat systemtap libbpf bcc bpftrace libcap numactl OpenCSD libpfm perf libpcap
 tcpdump iproute2 nmap diffutils poke cython OpenBLAS numpy tiff libpng \
 jpeg giflib gobject-introspection pixman freetype fontconfig cairo fribidi \
 harfbuzz pango itstool shared-mime-info gdk-pixbuf atk dbus recordproto \
-libXtst at-spi2-core at-spi2-atk graphene gtk gstreamer orc gst-plugins-base \
-gst-plugins-good gst-editing-services gst-rtsp-server gst-omx \
-libwebp openjpeg Imath openexr eigen gflags glog qt hdf5 opencv v4l-utils \
+libXtst at-spi2-core at-spi2-atk graphene gtk v4l-utils gstreamer orc \
+gst-plugins-base gst-plugins-good gst-editing-services gst-rtsp-server gst-omx \
+libwebp openjpeg Imath openexr eigen gflags glog qt hdf5 opencv \
 emacs ghostscript graphviz jdk plantuml"
 
 RUN \
