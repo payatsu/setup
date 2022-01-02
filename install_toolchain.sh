@@ -3169,7 +3169,7 @@ install_native_glib()
 	which meson > /dev/null || install_native_meson || return
 	fetch glib || return
 	unpack glib || return
-	CFLAGS="${CFLAGS} -DLIBICONV_PLUG" meson --prefix ${prefix} -Diconv=auto ${glib_src_dir} ${glib_bld_dir} || return
+	meson --prefix ${prefix} -Diconv=auto -Dc_args="${CFLAGS} -DLIBICONV_PLUG" ${glib_src_dir} ${glib_bld_dir} || return
 	ninja -v -C ${glib_bld_dir} || return
 	ninja -v -C ${glib_bld_dir} install || return
 	update_path || return
