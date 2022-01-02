@@ -6729,7 +6729,7 @@ install_native_gstreamer()
 	which meson > /dev/null || install_native_meson || return
 	fetch gstreamer || return
 	unpack gstreamer || return
-	meson --prefix ${prefix} ${strip:+--${strip}} ${gstreamer_src_dir} ${gstreamer_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${gstreamer_src_dir} ${gstreamer_bld_dir} || return
 	ninja -v -C ${gstreamer_bld_dir} || return
 	ninja -v -C ${gstreamer_bld_dir} install || return
 	update_path || return
@@ -6741,9 +6741,11 @@ install_native_gst_plugins_base()
 	which meson > /dev/null || install_native_meson || return
 	print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || install_native_gstreamer || return
 	which orcc > /dev/null || install_native_orc || return
+	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return
+	print_header_path png.h > /dev/null || install_native_libpng || return
 	fetch gst-plugins-base || return
 	unpack gst-plugins-base || return
-	meson --prefix ${prefix} ${strip:+--${strip}} ${gst_plugins_base_src_dir} ${gst_plugins_base_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${gst_plugins_base_src_dir} ${gst_plugins_base_bld_dir} || return
 	ninja -v -C ${gst_plugins_base_bld_dir} || return
 	ninja -v -C ${gst_plugins_base_bld_dir} install || return
 	update_path || return
