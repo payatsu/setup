@@ -3984,7 +3984,8 @@ install_native_mesa()
 	pip install mako || return
 	fetch mesa || return
 	unpack mesa || return
-	meson --prefix ${prefix} -Dglvnd=true -Dglx-direct=false ${mesa_src_dir} ${mesa_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both \
+		-Dglvnd=true -Dglx-direct=false ${mesa_src_dir} ${mesa_bld_dir} || return
 	ninja -v -C ${mesa_bld_dir} || return
 	ninja -v -C ${mesa_bld_dir} install || return
 	update_path || return
@@ -3997,7 +3998,7 @@ install_native_glu()
 	which meson > /dev/null || install_native_meson || return
 	fetch glu || return
 	unpack glu || return
-	meson --prefix ${prefix} ${glu_src_dir} ${glu_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${glu_src_dir} ${glu_bld_dir} || return
 	ninja -v -C ${glu_bld_dir} || return
 	ninja -v -C ${glu_bld_dir} install || return
 	update_path || return
@@ -4010,7 +4011,7 @@ install_native_libepoxy()
 	which meson > /dev/null || install_native_meson || return
 	fetch libepoxy || return
 	unpack libepoxy || return
-	meson --prefix ${prefix} ${libepoxy_src_dir} ${libepoxy_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${libepoxy_src_dir} ${libepoxy_bld_dir} || return
 	ninja -v -C ${libepoxy_bld_dir} || return
 	ninja -v -C ${libepoxy_bld_dir} install || return
 	update_path || return
@@ -4022,7 +4023,7 @@ install_native_graphene()
 	which meson > /dev/null || install_native_meson || return
 	fetch graphene || return
 	unpack graphene || return
-	meson --prefix ${prefix} ${graphene_src_dir} ${graphene_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${graphene_src_dir} ${graphene_bld_dir} || return
 	ninja -v -C ${graphene_bld_dir} || return
 	ninja -v -C ${graphene_bld_dir} install || return
 	update_path || return
@@ -4042,8 +4043,9 @@ install_native_gtk()
 	which meson > /dev/null || install_native_meson || return
 	fetch gtk || return
 	unpack gtk || return
-	meson --prefix ${prefix} -Dc_link_flags="${LDFLAGS} `L stdc++`" \
-		-Dwayland-backend=false -Dmedia-gstreamer=disabled ${gtk_src_dir} ${gtk_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both \
+		-Dc_link_flags="${LDFLAGS} `L stdc++`" -Dwayland-backend=false \
+		-Dmedia-gstreamer=disabled ${gtk_src_dir} ${gtk_bld_dir} || return
 	ninja -v -C ${gtk_bld_dir} || return
 	ninja -v -C ${gtk_bld_dir} install || return
 	update_path || return
