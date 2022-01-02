@@ -3316,7 +3316,7 @@ install_native_gdk_pixbuf()
 	which meson > /dev/null || install_native_meson || return
 	fetch gdk-pixbuf || return
 	unpack gdk-pixbuf || return
-	meson --prefix ${prefix} ${gdk_pixbuf_src_dir} ${gdk_pixbuf_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${gdk_pixbuf_src_dir} ${gdk_pixbuf_bld_dir} || return
 	ninja -v -C ${gdk_pixbuf_bld_dir} || return
 	ninja -v -C ${gdk_pixbuf_bld_dir} install || return
 	update_path || return
@@ -3330,7 +3330,7 @@ install_native_atk()
 	which meson > /dev/null || install_native_meson || return
 	fetch atk || return
 	unpack atk || return
-	meson --prefix ${prefix} ${atk_src_dir} ${atk_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${atk_src_dir} ${atk_bld_dir} || return
 	ninja -v -C ${atk_bld_dir} || return
 	ninja -v -C ${atk_bld_dir} install || return
 	update_path || return
@@ -3391,7 +3391,7 @@ install_native_at_spi2_core()
 	which meson > /dev/null || install_native_meson || return
 	fetch at-spi2-core || return
 	unpack at-spi2-core || return
-	meson --prefix ${prefix} ${at_spi2_core_src_dir} ${at_spi2_core_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${at_spi2_core_src_dir} ${at_spi2_core_bld_dir} || return
 	ninja -v -C ${at_spi2_core_bld_dir} || return
 	ninja -v -C ${at_spi2_core_bld_dir} install || return
 	update_path || return
@@ -3404,7 +3404,7 @@ install_native_at_spi2_atk()
 	which meson > /dev/null || install_native_meson || return
 	fetch at-spi2-atk || return
 	unpack at-spi2-atk || return
-	meson --prefix ${prefix} ${at_spi2_atk_src_dir} ${at_spi2_atk_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${at_spi2_atk_src_dir} ${at_spi2_atk_bld_dir} || return
 	ninja -v -C ${at_spi2_atk_bld_dir} || return
 	ninja -v -C ${at_spi2_atk_bld_dir} install || return
 	update_path || return
@@ -3844,8 +3844,8 @@ install_native_libxkbcommon()
 	which meson > /dev/null || install_native_meson || return
 	fetch libxkbcommon || return
 	unpack libxkbcommon || return
-	meson --prefix ${prefix} -Denable-docs=false -Denable-wayland=false \
-		${libxkbcommon_src_dir} ${libxkbcommon_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both \
+		-Denable-docs=false -Denable-wayland=false ${libxkbcommon_src_dir} ${libxkbcommon_bld_dir} || return
 	ninja -v -C ${libxkbcommon_bld_dir} || return
 	ninja -v -C ${libxkbcommon_bld_dir} install || return
 	update_path || return
@@ -3872,7 +3872,7 @@ install_native_libdrm()
 	which meson > /dev/null || install_native_meson || return
 	fetch libdrm || return
 	unpack libdrm || return
-	meson --prefix ${prefix} ${libdrm_src_dir} ${libdrm_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${libdrm_src_dir} ${libdrm_bld_dir} || return
 	ninja -v -C ${libdrm_bld_dir} || return
 	ninja -v -C ${libdrm_bld_dir} install || return
 	update_path || return
