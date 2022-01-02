@@ -6771,7 +6771,7 @@ install_native_gst_editing_services()
 	print_header_path video.h gstreamer-1.0/gst/video > /dev/null || install_native_gst_plugins_base || return
 	fetch gst-editing-services || return
 	unpack gst-editing-services || return
-	meson --prefix ${prefix} ${strip:+--${strip}} -D tests=disabled ${gst_editing_services_src_dir} ${gst_editing_services_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} -Dtests=disabled ${gst_editing_services_src_dir} ${gst_editing_services_bld_dir} || return
 	ninja -v -C ${gst_editing_services_bld_dir} || return
 	ninja -v -C ${gst_editing_services_bld_dir} install || return
 	update_path || return
@@ -6785,7 +6785,7 @@ install_native_gst_rtsp_server()
 	print_header_path video.h gstreamer-1.0/gst/video > /dev/null || install_native_gst_plugins_base || return
 	fetch gst-rtsp-server || return
 	unpack gst-rtsp-server || return
-	meson --prefix ${prefix} ${strip:+--${strip}} -D tests=disabled ${gst_rtsp_server_src_dir} ${gst_rtsp_server_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} -Dtests=disabled ${gst_rtsp_server_src_dir} ${gst_rtsp_server_bld_dir} || return
 	ninja -v -C ${gst_rtsp_server_bld_dir} || return
 	ninja -v -C ${gst_rtsp_server_bld_dir} install || return
 	update_path || return
@@ -6799,7 +6799,7 @@ install_native_gst_omx()
 	print_header_path video.h gstreamer-1.0/gst/video > /dev/null || install_native_gst_plugins_base || return
 	fetch gst-omx || return
 	unpack gst-omx || return
-	meson --prefix ${prefix} ${strip:+--${strip}} -D target=generic ${gst_omx_src_dir} ${gst_omx_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} -Dtarget=generic ${gst_omx_src_dir} ${gst_omx_bld_dir} || return
 	ninja -v -C ${gst_omx_bld_dir} || return
 	ninja -v -C ${gst_omx_bld_dir} install || return
 	update_path || return
