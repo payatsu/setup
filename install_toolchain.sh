@@ -3898,7 +3898,7 @@ install_native_wayland()
 	which meson > /dev/null || install_native_meson || return
 	fetch wayland || return
 	unpack wayland || return
-	meson --prefix ${prefix} -Ddocumentation=false ${wayland_src_dir} ${wayland_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both -Ddocumentation=false ${wayland_src_dir} ${wayland_bld_dir} || return
 	ninja -v -C ${wayland_bld_dir} || return
 	ninja -v -C ${wayland_bld_dir} install || return
 	update_path || return
@@ -3911,7 +3911,7 @@ install_native_wayland_protocols()
 	which meson > /dev/null || install_native_meson || return
 	fetch wayland-protocols || return
 	unpack wayland-protocols || return
-	meson --prefix ${prefix} ${wayland_protocols_src_dir} ${wayland_protocols_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${wayland_protocols_src_dir} ${wayland_protocols_bld_dir} || return
 	ninja -v -C ${wayland_protocols_bld_dir} || return
 	ninja -v -C ${wayland_protocols_bld_dir} install || return
 	update_path || return
@@ -3959,7 +3959,7 @@ install_native_libglvnd()
 	which meson > /dev/null || install_native_meson || return
 	fetch libglvnd || return
 	unpack libglvnd || return
-	meson --prefix ${prefix} ${libglvnd_src_dir} ${libglvnd_bld_dir} || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${libglvnd_src_dir} ${libglvnd_bld_dir} || return
 	ninja -v -C ${libglvnd_bld_dir} || return
 	ninja -v -C ${libglvnd_bld_dir} install || return
 	update_path || return
