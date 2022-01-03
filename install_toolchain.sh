@@ -1539,7 +1539,7 @@ filter_shortest_hierarchy()
 
 squash_options()
 {
-	uniq | tr '\n' ' ' | sed -e 's/ $//' || return
+	sort | uniq | tr '\n' ' ' | sed -e 's/ $//' || return
 }
 
 print_library_path()
