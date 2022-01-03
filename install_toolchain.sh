@@ -6268,6 +6268,7 @@ install_native_gc()
 	[ -f ${gc_bld_dir}/Makefile ] ||
 		(cd ${gc_bld_dir}
 		${gc_src_dir}/configure --prefix=${prefix} -build=${build} --host=${host} --disable-silent-rules \
+			--enable-static \
 			ATOMIC_OPS_CFLAGS=`I atomic_ops.h` \
 			ATOMIC_OPS_LIBS=`L atomic_ops`) || return
 	make -C ${gc_bld_dir} -j ${jobs} || return
