@@ -94,7 +94,7 @@
 : ${libffi_ver:=3.4.2}
 : ${emacs_ver:=27.2}
 : ${libiconv_ver:=1.16}
-: ${vim_ver:=8.2.3455}
+: ${vim_ver:=8.2.3993}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.5.1}
@@ -187,7 +187,7 @@
 : ${numpy_ver:=1.21.5}
 : ${rustc_ver:=1.57.0}
 : ${rustup_ver:=1.24.3}
-: ${ruby_ver:=3.0.0}
+: ${ruby_ver:=3.1.0}
 : ${go_ver:=1.16.11}
 : ${perl_ver:=5.32.1}
 : ${tcl_ver:=8.6.11}
