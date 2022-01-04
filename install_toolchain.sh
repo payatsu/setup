@@ -4119,7 +4119,6 @@ install_native_qt()
 		${qt_src_dir}/configure -prefix ${prefix} \
 			`[ $(print_version qt 1) -le 5 ] && echo -opensource -confirm-license` \
 			-shared \
-			-static \
 			-platform linux-g++ \
 			-ccache \
 			-DLIBICONV_PLUG \
