@@ -244,7 +244,6 @@
 : ${libbacktrace_ver:=git}
 : ${poke_ver:=1.4}
 
-# TODO X11周りのインストールは未着手。
 : ${xproto_ver:=7.0.31}
 : ${libXau_ver:=1.0.9}
 : ${libXdmcp_ver:=1.1.3}
