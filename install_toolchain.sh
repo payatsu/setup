@@ -2456,8 +2456,8 @@ install_native_bcc()
 	[ -f ${bcc_src_dir}/src/cc/libbpf/README.md ] || cp -Tvr ${libbpf_src_dir} ${bcc_src_dir}/src/cc/libbpf || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${bcc_src_dir} -B ${bcc_bld_dir} \
-		-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
-		-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 		-DCMAKE_C_FLAGS="${CFLAGS} `L elf z`" \
 		-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I FlexLexer.h` `l elf z tinfo`" \
@@ -2484,8 +2484,8 @@ install_native_bpftrace()
 	sed -i -e 's/\(set(CMAKE_REQUIRED_LIBRARIES bcc\)\()\)/\1 tinfo\2/' ${bpftrace_src_dir}/CMakeLists.txt || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${bpftrace_src_dir} -B ${bpftrace_bld_dir} \
-		-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
-		-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 		-DCMAKE_C_FLAGS="${CFLAGS} `l elf z`" \
 		-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bcc/compat/linux/bpf.h`/bcc/compat `I libelf.h bfd.h` `l elf z`" \
@@ -4496,7 +4496,8 @@ install_native_doxygen()
 		mv -v ${src}/doxygen/doxygen-Release_`echo ${doxygen_ver} | tr . _` ${doxygen_src_dir} || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${doxygen_src_dir} -B ${doxygen_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_C_FLAGS="${CFLAGS} -DLIBICONV_PLUG" \
 		-DCMAKE_CXX_FLAGS="${CXXFLAGS} -DLIBICONV_PLUG" \
@@ -5049,8 +5050,8 @@ install_native_brotli()
 	unpack brotli || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${brotli_src_dir} -B ${brotli_bld_dir} \
-		-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
-		-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 		|| return
 	cmake --build ${brotli_bld_dir} -v -j ${jobs} || return
@@ -5356,7 +5357,8 @@ install_native_ninja()
 	unpack ninja || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${ninja_src_dir} -B ${ninja_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 		-DCMAKE_INSTALL_PREFIX=${prefix} || return
 	cmake --build ${ninja_bld_dir} -v -j ${jobs} || return
@@ -5433,7 +5435,8 @@ install_native_Bear()
 	unpack Bear || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${Bear_src_dir} -B ${Bear_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_BUILD_TYPE=${cmake_build_type} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 		-DCMAKE_INSTALL_PREFIX=${prefix} || return
 	cmake --build ${Bear_bld_dir} -v -j ${jobs} || return
 	cmake --install ${Bear_bld_dir} -v ${strip:+--${strip}} || return
@@ -5448,8 +5451,8 @@ install_native_ccache()
 	unpack ccache || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${ccache_src_dir} -B ${ccache_bld_dir} \
-		-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
-		-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 		-DREDIS_STORAGE_BACKEND=OFF \
 		|| return
@@ -5521,7 +5524,8 @@ install_native_llvm()
 	unpack llvm || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${llvm_src_dir} -B ${llvm_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON -DLLVM_ENABLE_RTTI=ON || return
 	cmake --build ${llvm_bld_dir} -v -j ${jobs} || return
@@ -5540,7 +5544,8 @@ install_native_compiler_rt()
 	unpack compiler-rt || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${compiler_rt_src_dir} -B ${compiler_rt_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_INSTALL_RPATH=';' -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ \
 		-DCMAKE_CXX_COMPILER_ID=Clang || return
@@ -5564,7 +5569,8 @@ install_native_libunwind()
 	ln -Tfsv ${libcxx_src_dir} ${libunwind_src_dir}/../libcxx || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${libunwind_src_dir} -B ${libunwind_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_INSTALL_RPATH=';' -DLIBUNWIND_USE_COMPILER_RT=ON \
 		-DLLVM_PATH=${llvm_src_dir} || return
@@ -5590,7 +5596,8 @@ install_native_libcxxabi()
 	ln -Tfsv ${libcxx_src_dir} ${libcxxabi_src_dir}/../libcxx || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${libcxxabi_src_dir} -B ${libcxxabi_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_INSTALL_RPATH=';' \
 		-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
@@ -5615,7 +5622,8 @@ install_native_libcxx()
 	ln -Tfsv ${libcxxabi_src_dir} ${libcxx_src_dir}/../libcxxabi || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${libcxx_src_dir} -B ${libcxx_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_INSTALL_RPATH=';' -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${libcxx_src_dir}/../libcxxabi/include \
 		-DLIBCXXABI_USE_LLVM_UNWINDER=ON || return
@@ -5657,7 +5665,8 @@ install_native_clang()
 EOF
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${clang_src_dir} -B ${clang_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_INSTALL_RPATH=';' -DENABLE_LINKER_BUILD_ID=ON \
 		-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
@@ -5683,7 +5692,8 @@ install_native_lld()
 	ln -Tfsv ${libunwind_src_dir} ${llvm_src_dir}/../libunwind || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${lld_src_dir} -B ${lld_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON || return
 	cmake --build ${lld_bld_dir} -v -j ${jobs} || return
@@ -5702,7 +5712,8 @@ install_native_lldb()
 	unpack lldb || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${lldb_src_dir} -B ${lldb_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON \
 		-DCMAKE_C_FLAGS="${CFLAGS} `I clang/Basic/Version.h`" \
@@ -5723,7 +5734,8 @@ install_native_cling()
 	unpack cling || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${cling_src_dir} -B ${cling_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix}/cling \
 		-DENABLE_LINKER_BUILD_ID=ON || return
 	cmake --build ${cling_bld_dir} -v -j ${jobs} || return
@@ -6029,7 +6041,8 @@ install_native_OpenBLAS()
 	unpack OpenBLAS || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${OpenBLAS_src_dir} -B ${OpenBLAS_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DDYNAMIC_ARCH=ON -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=ON \
 		|| return
@@ -6464,7 +6477,8 @@ install_native_x265()
 	unpack x265 || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${x265_src_dir}/source -B ${x265_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 		-DNATIVE_BUILD=ON || return
@@ -6530,7 +6544,7 @@ install_native_gflags()
 	unpack gflags || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${gflags_src_dir} -B ${gflags_bld_dir} \
-		-DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 		-DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DBUILD_SHARED_LIBS=ON \
@@ -6552,7 +6566,7 @@ install_native_glog()
 	for build_shared_libs in ON OFF; do
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${glog_src_dir} -B ${glog_bld_dir} \
-			-DCMAKE_CXX_COMPILER=${CXX:-g++} \
+			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 			-DCMAKE_INSTALL_PREFIX=${prefix} \
 			-DBUILD_SHARED_LIBS=${build_shared_libs} \
@@ -6570,7 +6584,7 @@ install_native_openjpeg()
 	unpack openjpeg || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${openjpeg_src_dir} -B ${openjpeg_bld_dir} \
-		-DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 		-DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DBUILD_SHARED_LIBS=ON \
@@ -6589,7 +6603,7 @@ install_native_Imath()
 	for build_shared_libs in ON OFF; do
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${Imath_src_dir} -B ${Imath_bld_dir} \
-			-DCMAKE_CXX_COMPILER=${CXX:-g++} \
+			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 			-DCMAKE_INSTALL_PREFIX=${prefix} \
 			-DCMAKE_SKIP_INSTALL_RPATH=TRUE \
@@ -6611,7 +6625,7 @@ install_native_openexr()
 	for build_shared_libs in ON OFF; do
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${openexr_src_dir} -B ${openexr_bld_dir} \
-			-DCMAKE_CXX_COMPILER=${CXX:-g++} \
+			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 			-DCMAKE_INSTALL_PREFIX=${prefix} \
 			-DCMAKE_SKIP_INSTALL_RPATH=TRUE \
@@ -6630,7 +6644,7 @@ install_native_eigen()
 	unpack eigen || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${eigen_src_dir} -B ${eigen_bld_dir} \
-		-DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_INSTALL_PREFIX=${prefix} \
 		|| return
 	cmake --install ${eigen_bld_dir} -v ${strip:+--${strip}} || return
@@ -6663,8 +6677,8 @@ install_native_VTK()
 	unpack VTK || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${VTK_src_dir} -B ${VTK_bld_dir} \
-		-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
-		-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 		-DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DVTK_WRAP_PYTHON=ON \
@@ -6701,7 +6715,8 @@ install_native_opencv()
 	libdirs="`L png tiff jpeg` `l harfbuzz pcre2-16`"
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${opencv_src_dir} -B ${opencv_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_CXX_STANDARD=17 \
 		-DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
 		-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
@@ -6870,7 +6885,8 @@ install_native_googletest()
 	unpack googletest || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${googletest_src_dir}/googletest -B ${googletest_bld_dir} \
-		-DCMAKE_C_COMPILER=${CC:-gcc} -DCMAKE_CXX_COMPILER=${CXX:-g++} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DBUILD_SHARED_LIBS=ON || return
 	cmake --build ${googletest_bld_dir} -v -j ${jobs} || return
@@ -7109,8 +7125,8 @@ install_native_grpc()
 	unpack grpc || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${grpc_src_dir} -B ${grpc_bld_dir} \
-		-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
-		-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 		-DBUILD_SHARED_LIBS=ON \
 		|| return
