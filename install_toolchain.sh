@@ -213,6 +213,7 @@
 : ${openexr_ver:=3.1.3}
 : ${eigen_ver:=3.4.0}
 : ${hdf5_ver:=1.12.1}
+: ${VTK_ver:=9.1.0}
 : ${opencv_ver:=4.5.5}
 : ${opencv_contrib_ver:=${opencv_ver}}
 : ${v4l_utils_ver:=1.22.1}
@@ -884,6 +885,9 @@ fetch()
 		hdf5)
 			wget -O ${hdf5_src_dir}.tar.bz2 \
 				https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-`print_version hdf5`/${hdf5_name}/src/${hdf5_name}.tar.bz2 || return;;
+		VTK)
+			wget -O ${VTK_src_dir}.tar.gz \
+				https://www.vtk.org/files/release/`print_version VTK`/${VTK_name}.tar.gz || return;;
 		opencv|opencv_contrib)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://github.com/opencv/${_p:-opencv}/archive/\${${_p:-opencv}_ver}.tar.gz || return;;
@@ -6646,6 +6650,27 @@ install_native_hdf5()
 	[ "${enable_check}" != yes ] ||
 		make -C ${hdf5_bld_dir} -j ${jobs} -k check || return
 	make -C ${hdf5_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_VTK()
+{
+	[ -f ${prefix}/include/vtk-`print_version VTK`/vtkVersion.h -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	which python3 > /dev/null || install_native_Python || return
+	print_header_path gl.h GL > /dev/null || install_native_mesa || return
+	fetch VTK || return
+	unpack VTK || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${VTK_src_dir} -B ${VTK_bld_dir} \
+		-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+		-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
+		-DCMAKE_INSTALL_PREFIX=${prefix} \
+		-DVTK_WRAP_PYTHON=ON \
+		|| return
+	cmake --build ${VTK_bld_dir} -v -j ${jobs} || return
+	cmake --install ${VTK_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
 
