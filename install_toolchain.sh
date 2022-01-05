@@ -89,7 +89,6 @@
 : ${tiff_ver:=4.2.0}
 : ${jpeg_ver:=v9d}
 : ${giflib_ver:=5.2.1}
-: ${libXpm_ver:=3.5.11}
 : ${libwebp_ver:=1.2.1}
 : ${libffi_ver:=3.4.2}
 : ${emacs_ver:=27.2}
@@ -259,6 +258,7 @@
 : ${libXext_ver:=1.3.4}
 : ${libXt_ver:=1.2.1}
 : ${libXmu_ver:=1.1.3}
+: ${libXpm_ver:=3.5.11}
 : ${libXaw_ver:=1.0.14}
 : ${libXi_ver:=1.7}
 : ${fixesproto_ver:=5.0}
@@ -3105,23 +3105,6 @@ install_native_giflib()
 	done
 }
 
-install_native_libXpm()
-{
-	[ -f ${prefix}/include/X11/xpm.h -a "${force_install}" != yes ] && return
-	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
-	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
-	fetch libXpm || return
-	unpack libXpm || return
-	[ -f ${libXpm_bld_dir}/Makefile ] ||
-		(cd ${libXpm_bld_dir}
-		${libXpm_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
-	make -C ${libXpm_bld_dir} -j ${jobs} || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${libXpm_bld_dir} -j ${jobs} -k check || return
-	make -C ${libXpm_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_path || return
-}
-
 install_native_libwebp()
 {
 	[ -f ${prefix}/include/webp/decode.h -a "${force_install}" != yes ] && return
@@ -3632,6 +3615,23 @@ install_native_libXmu()
 		${libXmu_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 	make -C ${libXmu_bld_dir} -j ${jobs} || return
 	make -C ${libXmu_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_libXpm()
+{
+	[ -f ${prefix}/include/X11/xpm.h -a "${force_install}" != yes ] && return
+	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	fetch libXpm || return
+	unpack libXpm || return
+	[ -f ${libXpm_bld_dir}/Makefile ] ||
+		(cd ${libXpm_bld_dir}
+		${libXpm_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libXpm_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libXpm_bld_dir} -j ${jobs} -k check || return
+	make -C ${libXpm_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
