@@ -213,8 +213,6 @@ EOF
 : ${ninja_ver:=1.10.2}
 : ${meson_ver:=0.60.3}
 : ${libxml2_ver:=2.9.11}
-: ${libedit_ver:=20210910-3.1}
-: ${swig_ver:=4.0.2}
 : ${llvm_ver:=12.0.1}
 : ${compiler_rt_ver:=${llvm_ver}}
 : ${libunwind_ver:=${llvm_ver}}
@@ -223,6 +221,8 @@ EOF
 : ${clang_ver:=${llvm_ver}}
 : ${clang_tools_extra_ver:=${llvm_ver}}
 : ${lld_ver:=${llvm_ver}}
+: ${libedit_ver:=20210910-3.1}
+: ${swig_ver:=4.0.2}
 : ${lldb_ver:=${llvm_ver}}
 
 : ${prefix:=${default_prefix}}
@@ -2030,6 +2030,24 @@ EOF
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/libltdl.so || return
 		;;
+	pkg-config)
+		[ -x ${DESTDIR}${prefix}/bin/pkg-config -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${pkg_config_bld_dir}/Makefile -a -f ${pkg_config_bld_dir}/glib/Makefile ] ||
+			(cd ${pkg_config_bld_dir}
+			${pkg_config_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--with-internal-glib --without-libiconv \
+				CFLAGS="${CFLAGS} -DLIBICONV_PLUG" \
+				glib_cv_stack_grows=no \
+				glib_cv_uscore=no \
+				ac_cv_func_posix_getpwuid_r=yes \
+				ac_cv_func_posix_getgrgid_r=yes) || return
+		make -C ${pkg_config_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${pkg_config_bld_dir} -j ${jobs} -k check || return
+		make -C ${pkg_config_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
 	sed)
 		[ -x ${DESTDIR}${prefix}/bin/sed -a "${force_install}" != yes ] && return
 		fetch ${1} || return
@@ -2057,24 +2075,6 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${gawk_bld_dir} -j ${jobs} -k check || return
 		make -C ${gawk_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
-		;;
-	pkg-config)
-		[ -x ${DESTDIR}${prefix}/bin/pkg-config -a "${force_install}" != yes ] && return
-		fetch ${1} || return
-		unpack ${1} || return
-		[ -f ${pkg_config_bld_dir}/Makefile -a -f ${pkg_config_bld_dir}/glib/Makefile ] ||
-			(cd ${pkg_config_bld_dir}
-			${pkg_config_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				--with-internal-glib --without-libiconv \
-				CFLAGS="${CFLAGS} -DLIBICONV_PLUG" \
-				glib_cv_stack_grows=no \
-				glib_cv_uscore=no \
-				ac_cv_func_posix_getpwuid_r=yes \
-				ac_cv_func_posix_getgrgid_r=yes) || return
-		make -C ${pkg_config_bld_dir} -j ${jobs} || return
-		[ "${enable_check}" != yes ] ||
-			make -C ${pkg_config_bld_dir} -j ${jobs} -k check || return
-		make -C ${pkg_config_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	gettext)
 		[ -x ${DESTDIR}${prefix}/bin/gettext -a "${force_install}" != yes ] && return
