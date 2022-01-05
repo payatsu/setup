@@ -24,6 +24,10 @@
 : ${zstd_ver:=1.5.1}
 : ${libarchive_ver:=3.5.2}
 : ${wget_ver:=1.21.2}
+: ${libffi_ver:=3.4.2}
+: ${libiconv_ver:=1.16}
+: ${pcre_ver:=8.45}
+: ${glib_ver:=2.70.1}
 : ${pkg_config_ver:=0.29.2}
 : ${help2man_ver:=1.47.16}
 : ${texinfo_ver:=6.8}
@@ -90,9 +94,7 @@
 : ${jpeg_ver:=v9d}
 : ${giflib_ver:=5.2.1}
 : ${libwebp_ver:=1.2.1}
-: ${libffi_ver:=3.4.2}
 : ${emacs_ver:=27.2}
-: ${libiconv_ver:=1.16}
 : ${vim_ver:=8.2.3993}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
@@ -100,7 +102,6 @@
 : ${nano_ver:=5.9}
 : ${grep_ver:=3.7}
 : ${global_ver:=6.6.6}
-: ${pcre_ver:=8.45}
 : ${pcre2_ver:=10.39}
 : ${the_silver_searcher_ver:=2.2.0}
 : ${the_platinum_searcher_ver:=2.2.0}
@@ -285,7 +286,6 @@
 : ${mesa_ver:=21.3.1}
 : ${glu_ver:=9.0.2}
 : ${libepoxy_ver:=1.5.9}
-: ${glib_ver:=2.70.1}
 : ${gobject_introspection_ver:=1.70.0}
 : ${pixman_ver:=0.40.0}
 : ${cairo_ver:=1.16.0}
@@ -1912,6 +1912,90 @@ install_native_wget()
 	make -C ${wget_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
+install_native_libffi()
+{
+	[ -f ${prefix}/include/ffi.h -a "${force_install}" != yes ] && return
+	fetch libffi || return
+	unpack libffi || return
+	[ -f ${libffi_bld_dir}/Makefile ] ||
+		(cd ${libffi_bld_dir}
+		${libffi_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+	make -C ${libffi_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libffi_bld_dir} -j ${jobs} -k check || return
+	make -C ${libffi_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	[ -d ${DESTDIR}${prefix}/include ] || mkdir -pv ${DESTDIR}${prefix}/include || return
+	for f in `find ${DESTDIR}${prefix}/lib/${libffi_name}/include -type f -name '*.h'`; do
+		ln -fsv ../lib/${libffi_name}/include/`basename ${f}` ${DESTDIR}${prefix}/include/`basename ${f}` || return
+	done
+	for f in `find ${DESTDIR}${prefix}/lib64 -name 'libffi.a' -o -name 'libffi.la' -o -name 'libffi.so' -o -name 'libffi.so.?'`; do
+		ln -fsv ../lib64/`basename ${f}` ${DESTDIR}${prefix}/lib || return
+	done
+	update_path || return
+}
+
+install_native_libiconv()
+{
+	[ -x ${prefix}/bin/iconv -a "${force_install}" != yes ] && return
+	fetch libiconv || return
+	unpack libiconv || return
+	[ -f ${libiconv_bld_dir}/Makefile ] ||
+		(cd ${libiconv_bld_dir}
+		${libiconv_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-static) || return
+	make -C ${libiconv_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libiconv_bld_dir} -j ${jobs} -k check || return
+	make -C ${libiconv_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+	[ -z "${strip}" ] && return
+	for l in libcharset libiconv; do
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
+	done
+}
+
+install_native_pcre()
+{
+	[ -f ${prefix}/include/pcre.h -a "${force_install}" != yes ] && return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path bzlib.h > /dev/null || install_native_bzip2 || return
+	print_header_path readline.h readline > /dev/null || install_native_readline || return
+	fetch pcre || return
+	unpack pcre || return
+	[ -f ${pcre_bld_dir}/Makefile ] ||
+		(cd ${pcre_bld_dir}
+		${pcre_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+			--enable-pcre16 --enable-pcre32 --enable-jit --enable-utf --enable-unicode-properties \
+			--enable-newline-is-any --enable-pcregrep-libz --enable-pcregrep-libbz2 \
+			--enable-pcretest-libreadline CPPFLAGS="${CPPFLAGS} `I zlib.h bzlib.h`" \
+			LDFLAGS="${LDFLAGS} `L z bz2`") || return
+	make -C ${pcre_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${pcre_bld_dir} -j ${jobs} -k check || return
+	make -C ${pcre_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_glib()
+{
+	[ -f ${prefix}/include/glib-2.0/glib.h -a "${force_install}" != yes ] && return
+	print_header_path iconv.h > /dev/null || install_native_libiconv || return
+	print_header_path ffi.h > /dev/null || install_native_libffi || return
+	print_header_path pcre.h > /dev/null || install_native_pcre || return
+	which meson > /dev/null || install_native_meson || return
+	fetch glib || return
+	unpack glib || return
+	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both \
+		-Diconv=auto -Dc_args="${CFLAGS} -DLIBICONV_PLUG" ${glib_src_dir} ${glib_bld_dir} || return
+	ninja -v -C ${glib_bld_dir} || return
+	ninja -v -C ${glib_bld_dir} install || return
+	update_path || return
+	[ -z "${strip}" ] && return
+	for b in gapplication gdbus gio gio-launch-desktop gio-querymodules glib-compile-resources glib-compile-schemas gobject-query gresource gsettings gtester; do
+		[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
+	done
+}
+
 install_native_pkg_config()
 {
 	[ -x ${prefix}/bin/pkg-config -a "${force_install}" != yes ] && return
@@ -3124,49 +3208,6 @@ install_native_libwebp()
 	update_path || return
 }
 
-install_native_libffi()
-{
-	[ -f ${prefix}/include/ffi.h -a "${force_install}" != yes ] && return
-	fetch libffi || return
-	unpack libffi || return
-	[ -f ${libffi_bld_dir}/Makefile ] ||
-		(cd ${libffi_bld_dir}
-		${libffi_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
-	make -C ${libffi_bld_dir} -j ${jobs} || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${libffi_bld_dir} -j ${jobs} -k check || return
-	make -C ${libffi_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
-	[ -d ${DESTDIR}${prefix}/include ] || mkdir -pv ${DESTDIR}${prefix}/include || return
-	for f in `find ${DESTDIR}${prefix}/lib/${libffi_name}/include -type f -name '*.h'`; do
-		ln -fsv ../lib/${libffi_name}/include/`basename ${f}` ${DESTDIR}${prefix}/include/`basename ${f}` || return
-	done
-	for f in `find ${DESTDIR}${prefix}/lib64 -name 'libffi.a' -o -name 'libffi.la' -o -name 'libffi.so' -o -name 'libffi.so.?'`; do
-		ln -fsv ../lib64/`basename ${f}` ${DESTDIR}${prefix}/lib || return
-	done
-	update_path || return
-}
-
-install_native_glib()
-{
-	[ -f ${prefix}/include/glib-2.0/glib.h -a "${force_install}" != yes ] && return
-	print_header_path iconv.h > /dev/null || install_native_libiconv || return
-	print_header_path ffi.h > /dev/null || install_native_libffi || return
-	print_header_path pcre.h > /dev/null || install_native_pcre || return
-	which meson > /dev/null || install_native_meson || return
-	fetch glib || return
-	unpack glib || return
-	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both \
-		-Diconv=auto -Dc_args="${CFLAGS} -DLIBICONV_PLUG" ${glib_src_dir} ${glib_bld_dir} || return
-	ninja -v -C ${glib_bld_dir} || return
-	ninja -v -C ${glib_bld_dir} install || return
-	update_path || return
-	[ -z "${strip}" ] && return
-	for b in gapplication gdbus gio gio-launch-desktop gio-querymodules glib-compile-resources glib-compile-schemas gobject-query gresource gsettings gtester; do
-		[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue
-		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
-	done
-}
-
 install_native_gobject_introspection()
 {
 	[ -f ${prefix}/include/gobject-introspection-1.0/giversion.h -a "${force_install}" != yes ] && return
@@ -4169,25 +4210,6 @@ install_native_emacs()
 	make -C ${emacs_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 }
 
-install_native_libiconv()
-{
-	[ -x ${prefix}/bin/iconv -a "${force_install}" != yes ] && return
-	fetch libiconv || return
-	unpack libiconv || return
-	[ -f ${libiconv_bld_dir}/Makefile ] ||
-		(cd ${libiconv_bld_dir}
-		${libiconv_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-static) || return
-	make -C ${libiconv_bld_dir} -j ${jobs} || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${libiconv_bld_dir} -j ${jobs} -k check || return
-	make -C ${libiconv_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_path || return
-	[ -z "${strip}" ] && return
-	for l in libcharset libiconv; do
-		${host:+${host}-}strip -v ${DESTDIR}${prefix}/lib/${l}.so || return
-	done
-}
-
 install_native_vim()
 {
 	[ -x ${prefix}/bin/vim -a "${force_install}" != yes ] && return
@@ -4339,28 +4361,6 @@ install_native_global()
 	[ "${enable_check}" != yes ] ||
 		make -C ${global_bld_dir} -j ${jobs} -k check || return
 	make -C ${global_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
-}
-
-install_native_pcre()
-{
-	[ -f ${prefix}/include/pcre.h -a "${force_install}" != yes ] && return
-	print_header_path zlib.h > /dev/null || install_native_zlib || return
-	print_header_path bzlib.h > /dev/null || install_native_bzip2 || return
-	print_header_path readline.h readline > /dev/null || install_native_readline || return
-	fetch pcre || return
-	unpack pcre || return
-	[ -f ${pcre_bld_dir}/Makefile ] ||
-		(cd ${pcre_bld_dir}
-		${pcre_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-			--enable-pcre16 --enable-pcre32 --enable-jit --enable-utf --enable-unicode-properties \
-			--enable-newline-is-any --enable-pcregrep-libz --enable-pcregrep-libbz2 \
-			--enable-pcretest-libreadline CPPFLAGS="${CPPFLAGS} `I zlib.h bzlib.h`" \
-			LDFLAGS="${LDFLAGS} `L z bz2`") || return
-	make -C ${pcre_bld_dir} -j ${jobs} || return
-	[ "${enable_check}" != yes ] ||
-		make -C ${pcre_bld_dir} -j ${jobs} -k check || return
-	make -C ${pcre_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
-	update_path || return
 }
 
 install_native_pcre2()
