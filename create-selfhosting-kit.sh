@@ -134,7 +134,7 @@ EOF
 : ${pcre2_ver:=10.39}
 : ${util_linux_ver:=2.37.2}
 : ${popt_ver:=1.18}
-: ${glib_ver:=2.59.0}
+: ${glib_ver:=2.70.1}
 : ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=11.1}
 : ${crash_ver:=8.0.0}
@@ -634,6 +634,24 @@ print_pkg_config_sysroot()
 {
 	[ `print_library_dir ${1}` = ${DESTDIR}${prefix}/lib/pkgconfig ] && echo ${DESTDIR} && return
 	print_sysroot || return
+}
+
+print_pkg_config_libdir()
+{
+	{
+		for d in \
+			${DESTDIR}${prefix}/lib \
+			${DESTDIR}${prefix}/lib64 \
+			${DESTDIR}${prefix}/share; do
+			[ -d ${d} ] || continue
+			find ${d} -maxdepth 3 -type d -name pkgconfig
+		done
+
+		LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
+			sed -e '/^libraries: =/{s/^libraries: =//;p};d' |
+			xargs -d : realpath -eq |
+			xargs -I @ find @ -maxdepth 1 -type d -name pkgconfig
+	} | tr '\n' : | sed -e 's/:$//'
 }
 
 print_prefix()
@@ -1350,33 +1368,17 @@ EOF
 		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		print_header_path pcre.h > /dev/null || ${0} ${cmdopt} pcre || return
 		which gettext > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gettext || return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
 		fetch ${1} || return
 		unpack ${1} || return
-		[ -f ${glib_src_dir}/configure ] ||
-			(cd ${glib_src_dir}; NOCONFIGURE=yes AUTOCONF=autoconf ./autogen.sh) || return
-		[ -f ${glib_bld_dir}/Makefile ] ||
-			(cd ${glib_bld_dir}
-			${glib_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-static \
-				--disable-silent-rules --disable-libmount --disable-dtrace --enable-systemtap \
-				CPPFLAGS="${CPPFLAGS} `I zlib.h`" \
-				LIBFFI_CFLAGS=`I ffi.h` LIBFFI_LIBS="`l ffi`" \
-				PCRE_CFLAGS=`I pcre.h` PCRE_LIBS="`l pcre`" \
-				LIBS="`l ffi pcre z`" \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_library_dir libffi.pc` \
-				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-				glib_cv_stack_grows=no glib_cv_uscore=no) || return
-		make -C ${glib_bld_dir} -j ${jobs} || return
-		make -C ${glib_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			-Diconv=auto -Dc_args="${CFLAGS} -DLIBICONV_PLUG" ${glib_src_dir} ${glib_bld_dir} || return
+		ninja -v -C ${glib_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${glib_bld_dir} install || return
+		[ -z "${strip}" ] && return
 		for b in gapplication gdbus gio gio-launch-desktop gio-querymodules glib-compile-resources glib-compile-schemas gobject-query gresource gsettings gtester; do
-			truncate_path_in_elf ${DESTDIR}${prefix}/bin/${b} ${DESTDIR}${prefix}/lib/../lib64:${DESTDIR} ${prefix}/lib || return
-			truncate_path_in_elf ${DESTDIR}${prefix}/bin/${b} ${DESTDIR} ${prefix}/lib || return
-			[ -z "${strip}" ] && continue
+			[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
-		done
-		for l in libgio-2.0.so libglib-2.0.so libgmodule-2.0.so libgobject-2.0.so libgthread-2.0.so; do
-			truncate_path_in_elf ${DESTDIR}${prefix}/lib/${l} ${DESTDIR}${prefix}/lib/../lib64:${DESTDIR} ${prefix}/lib || return
-			truncate_path_in_elf ${DESTDIR}${prefix}/lib/${l} ${DESTDIR} ${prefix}/lib || return
 		done
 		;;
 	babeltrace)
@@ -3176,6 +3178,37 @@ generate_toolchain_wrapper()
 		} | tr '\n' ' '`" || return
 }
 
+generate_meson_cross_file()
+{
+	cat << EOF > ${1} || return
+[constants]
+
+[binaries]
+c   = ['`echo ${CC:-${host:+${host}-}gcc} | sed -e "s/ \+/', '/g"`']
+cpp = ['`echo ${CXX:-${host:+${host}-}g++} | sed -e "s/ \+/', '/g"`']
+ar    = '${host:+${host}-}ar'
+strip = '${host:+${host}-}strip'
+pkgconfig = 'pkg-config'
+
+[properties]
+sys_root = '${DESTDIR}'
+pkg_config_libdir = [`print_pkg_config_libdir | sed -e "s/^/'/;s/$/'/;s/:/', '/g"`]
+
+[host_machine]
+system     = 'linux'
+cpu_family = '`echo ${host} | cut -d - -f 1`'
+cpu        = '`echo ${host} | cut -d - -f 1`'
+endian     = 'little'
+
+[target_machine]
+system     = 'linux'
+cpu_family = '`echo ${target} | cut -d - -f 1`'
+cpu        = '`echo ${target} | cut -d - -f 1`'
+endian     = 'little'
+EOF
+	cross_file=${1}
+}
+
 generate_llvm_config_dummy()
 {
 	generate_command_wrapper ${1} llvm-config \
@@ -3383,6 +3416,8 @@ exec `which autom4te` -B $(readlink -m $(dirname $(which autoconf))/../share/aut
 				s/^./:&/
 			"` \
 		|| PATH=${d}${PATH:+:${PATH}}
+
+	generate_meson_cross_file ${d}/${host} || return
 
 	unset a
 	unset d
