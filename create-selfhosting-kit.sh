@@ -888,9 +888,11 @@ build()
 			PKG_CONFIG_PATH= \
 			PKG_CONFIG_LIBDIR= \
 			PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-			) || return
+		) || return
 		make -C ${curl_bld_dir} -j ${jobs} || return
 		make -C ${curl_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		truncate_path_in_elf ${DESTDIR}${prefix}/bin/curl ${DESTDIR} ${prefix}/lib || return
+		truncate_path_in_elf ${DESTDIR}${prefix}/lib/libcurl.so ${DESTDIR} ${prefix}/lib || return
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/curl || return
 		;;
