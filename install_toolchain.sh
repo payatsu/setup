@@ -6003,7 +6003,7 @@ install_native_Python()
 		${Python_src_dir}/configure --prefix=${prefix} --build=${build} --enable-universalsdk \
 			--enable-shared --enable-optimizations --enable-ipv6 \
 			--with-lto --with-system-expat --with-system-ffi \
-			--with-doc-strings --with-pymalloc --with-ensurepip LDFLAGS="${LDFLAGS} `L ssl`") || return
+			--with-doc-strings --with-pymalloc --with-ensurepip=upgrade LDFLAGS="${LDFLAGS} `L ssl`") || return
 	make -C ${Python_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${Python_bld_dir} -j ${jobs} -k test || return

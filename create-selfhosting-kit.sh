@@ -1236,7 +1236,7 @@ EOF
 			${Python_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-universalsdk \
 				--enable-shared --enable-optimizations --enable-ipv6 \
 				--with-lto --with-system-expat --with-system-ffi \
-				--with-doc-strings --with-pymalloc --with-ensurepip \
+				--with-doc-strings --with-pymalloc --with-ensurepip=upgrade \
 				--with-openssl=`print_prefix ssl.h openssl` \
 				LDSHARED= \
 				CFLAGS="${CFLAGS} -I`{ print_header_dir curses.h ncursesw | sed -e 's/include$/&\/ncursesw/'; print_header_dir curses.h;} | head -n 1` `I expat.h`" \
