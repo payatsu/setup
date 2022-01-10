@@ -1236,7 +1236,7 @@ EOF
 			${Python_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-universalsdk \
 				--enable-shared --enable-optimizations --enable-ipv6 \
 				--with-lto --with-system-expat --with-system-ffi \
-				--with-doc-strings --with-pymalloc --with-ensurepip=upgrade \
+				--with-doc-strings --with-pymalloc \
 				--with-openssl=`print_prefix ssl.h openssl` \
 				LDSHARED= \
 				CFLAGS="${CFLAGS} -I`{ print_header_dir curses.h ncursesw | sed -e 's/include$/&\/ncursesw/'; print_header_dir curses.h;} | head -n 1` `I expat.h`" \
@@ -1252,6 +1252,9 @@ EOF
 		generate_command_wrapper ${Python_bld_dir} lsb_release \
 			'PYTHONPATH=/usr/share/pyshared:${PYTHONPATH} python3 '`which lsb_release`' "$@"' || return
 		PATH=${Python_bld_dir}:${PATH} make -C ${Python_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		python3 -m ensurepip -U --root `dirname ${0}` || return
+		[ ! -d `dirname ${0}``dirname $(which python3)` ] || cp -Tfvr `dirname ${0}``dirname $(which python3)`/../ ${DESTDIR}${prefix} || return
+		sed -i -e "1s%^.\+\$%#!${prefix}/bin/python3%" ${DESTDIR}${prefix}/bin/pip3 ${DESTDIR}${prefix}/bin/pip`print_version Python` || return
 		[ -z "${strip}" ] && return
 		for v in `print_version Python` `print_version Python`m; do
 			[ ! -f ${DESTDIR}${prefix}/bin/python${v} ] || ${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/python${v} || return
