@@ -2779,7 +2779,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		(cd ${meson_src_dir}
-		python3 ${meson_src_dir}/setup.py install --prefix ${DESTDIR}${prefix}) || return
+		python3 ${meson_src_dir}/setup.py install --root ${DESTDIR} --prefix ${prefix}) || return
 		sed -i -e '1s%^.\+$%\#!'${prefix}/bin/python3'%' ${DESTDIR}${prefix}/bin/meson || return
 		;;
 	libxml2)
