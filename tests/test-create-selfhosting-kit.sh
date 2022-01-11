@@ -10,8 +10,8 @@ pkgs="`${target_script} --help | sed -e '/\[PACKAGES\]/,$p;d' | sed -e 1d`"
 } >> test-result.log
 
 for p in ${pkgs}; do
-	if ! ${target_script} --strip --cleanup $@ ${p}; then
-		echo ERROR: build of \'$p\' failed. >> test-result.log
+	if ! ${target_script} --strip --cleanup --prepare $@ ${p}; then
+		echo ERROR: build of \'${p}\' failed. >> test-result.log
 	fi
 done
 
