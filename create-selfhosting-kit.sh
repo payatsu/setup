@@ -235,6 +235,7 @@ EOF
 : ${xcb_proto_ver:=1.14.1}
 : ${libxcb_ver:=1.14}
 : ${xextproto_ver:=7.3.0}
+: ${inputproto_ver:=2.3.2}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -531,7 +532,7 @@ fetch()
 	util-macros)
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
-	xproto|xcb-proto|xextproto)
+	xproto|xcb-proto|xextproto|inputproto)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/proto/\${${_1:-xproto}_name}.tar.gz || return;;
 	libXau|libXdmcp|xtrans|libICE|libSM|libxcb)
@@ -3241,6 +3242,16 @@ EOF
 			${xextproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 		make -C ${xextproto_bld_dir} -j ${jobs} || return
 		make -C ${xextproto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	inputproto)
+		[ -f ${DESTDIR}${prefix}/include/X11/extensions/XI.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${inputproto_bld_dir}/Makefile ] ||
+			(cd ${inputproto_bld_dir}
+			${inputproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${inputproto_bld_dir} -j ${jobs} || return
+		make -C ${inputproto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
