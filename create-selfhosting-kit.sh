@@ -234,6 +234,7 @@ EOF
 : ${libSM_ver:=1.2.3}
 : ${xcb_proto_ver:=1.14.1}
 : ${libxcb_ver:=1.14}
+: ${xextproto_ver:=7.3.0}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -530,7 +531,7 @@ fetch()
 	util-macros)
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
-	xproto|xcb-proto)
+	xproto|xcb-proto|xextproto)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/proto/\${${_1:-xproto}_name}.tar.gz || return;;
 	libXau|libXdmcp|xtrans|libICE|libSM|libxcb)
@@ -3228,6 +3229,18 @@ EOF
 				) || return
 		make -C ${libxcb_bld_dir} -j ${jobs} || return
 		make -C ${libxcb_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	xextproto)
+		[ -f ${DESTDIR}${prefix}/include/X11/extensions/lbx.h -a "${force_install}" != yes ] && return
+		${0} ${cmdopt} util-macros || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${xextproto_bld_dir}/Makefile ] ||
+			(cd ${xextproto_bld_dir}
+			autoreconf -fiv -I ${DESTDIR}${prefix}/share/aclocal ${xextproto_src_dir} || return
+			${xextproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${xextproto_bld_dir} -j ${jobs} || return
+		make -C ${xextproto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
