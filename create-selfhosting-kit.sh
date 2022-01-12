@@ -233,6 +233,7 @@ EOF
 : ${libICE_ver:=1.0.10}
 : ${libSM_ver:=1.2.3}
 : ${xcb_proto_ver:=1.14.1}
+: ${libxcb_ver:=1.14}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -532,7 +533,7 @@ fetch()
 	xproto|xcb-proto)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/proto/\${${_1:-xproto}_name}.tar.gz || return;;
-	libXau|libXdmcp|xtrans|libICE|libSM)
+	libXau|libXdmcp|xtrans|libICE|libSM|libxcb)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://www.x.org/releases/individual/lib/\${${_1:-libX11}_name}.tar.gz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
@@ -3210,6 +3211,23 @@ EOF
 			${xcb_proto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 		make -C ${xcb_proto_bld_dir} -j ${jobs} || return
 		make -C ${xcb_proto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	libxcb)
+		[ -f ${DESTDIR}${prefix}/include/xcb/xcb.h -a "${force_install}" != yes ] && return
+		print_library_path xcb-proto.pc > /dev/null || ${0} ${cmdopt} xcb-proto || return
+		print_header_path Xauth.h X11 > /dev/null || ${0} ${cmdopt} libXau || return
+		print_header_path Xdmcp.h X11 > /dev/null || ${0} ${cmdopt} libXdmcp || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libxcb_bld_dir}/Makefile ] ||
+			(cd ${libxcb_bld_dir}
+			${libxcb_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				PKG_CONFIG_PATH= \
+				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
+		make -C ${libxcb_bld_dir} -j ${jobs} || return
+		make -C ${libxcb_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
