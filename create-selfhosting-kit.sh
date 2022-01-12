@@ -231,6 +231,7 @@ EOF
 : ${libXdmcp_ver:=1.1.3}
 : ${xtrans_ver:=1.4.0}
 : ${libICE_ver:=1.0.10}
+: ${libSM_ver:=1.2.3}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -530,7 +531,7 @@ fetch()
 	xproto)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/proto/\${${_1:-xproto}_name}.tar.gz || return;;
-	libXau|libXdmcp|xtrans|libICE)
+	libXau|libXdmcp|xtrans|libICE|libSM)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://www.x.org/releases/individual/lib/\${${_1:-libX11}_name}.tar.gz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
@@ -3180,6 +3181,23 @@ EOF
 			${libICE_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 		make -C ${libICE_bld_dir} -j ${jobs} || return
 		make -C ${libICE_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	libSM)
+		[ -f ${DESTDIR}${prefix}/include/X11/SM/SM.h -a "${force_install}" != yes ] && return
+		print_header_path Xproto.h X11 > /dev/null || ${0} ${cmdopt} xproto || return
+		print_header_path Xtrans.h X11/Xtrans > /dev/null || ${0} ${cmdopt} xtrans || return
+		print_header_path ICE.h X11/ICE > /dev/null || ${0} ${cmdopt} libICE || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libSM_bld_dir}/Makefile ] ||
+			(cd ${libSM_bld_dir}
+			${libSM_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				PKG_CONFIG_PATH= \
+				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
+		make -C ${libSM_bld_dir} -j ${jobs} || return
+		make -C ${libSM_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
