@@ -226,6 +226,7 @@ EOF
 : ${lldb_ver:=${llvm_ver}}
 
 : ${util_macros_ver:=1.19.3}
+: ${xproto_ver:=7.0.31}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -522,6 +523,9 @@ fetch()
 	util-macros)
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
+	xproto)
+		eval wget -O \${${_1}_src_dir}.tar.gz \
+			https://xorg.freedesktop.org/archive/individual/proto/\${${_1:-xproto}_name}.tar.gz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -3113,6 +3117,18 @@ EOF
 			${util_macros_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 		make -C ${util_macros_bld_dir} -j ${jobs} || return
 		make -C ${util_macros_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	xproto)
+		[ -f ${DESTDIR}${prefix}/include/X11/Xproto.h -a "${force_install}" != yes ] && return
+		${0} ${cmdopt} util-macros || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${xproto_bld_dir}/Makefile ] ||
+			(cd ${xproto_bld_dir}
+			autoreconf -fiv -I ${DESTDIR}${prefix}/share/aclocal ${xproto_src_dir} || return
+			${xproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${xproto_bld_dir} -j ${jobs} || return
+		make -C ${xproto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
