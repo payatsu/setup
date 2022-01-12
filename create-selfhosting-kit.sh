@@ -225,6 +225,8 @@ EOF
 : ${swig_ver:=4.0.2}
 : ${lldb_ver:=${llvm_ver}}
 
+: ${util_macros_ver:=1.19.3}
+
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
 : ${jobs:=${default_jobs}}
@@ -517,6 +519,9 @@ fetch()
 	llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://github.com/llvm/llvm-project/releases/download/llvmorg-\${${_1}_ver}/\${${_1}_name}.tar.xz || return;;
+	util-macros)
+		wget -O ${util_macros_src_dir}.tar.gz \
+			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -689,6 +694,7 @@ print_packages()
 		s/v4l_utils/v4l-utils/
 		s/compiler_rt/compiler-rt/
 		s/clang_tools_extra/clang-tools-extra/
+		s/util_macros/util-macros/
 	' || return
 }
 
@@ -3097,6 +3103,16 @@ EOF
 		cmake --install ${lldb_bld_dir} -v ${strip:+--${strip}} || return
 		[ ! -f ${lldb_bld_dir}/bin/lldb-tblgen ] && return
 		install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${lldb_bld_dir}/bin/lldb-tblgen || return
+		;;
+	util-macros)
+		[ -f ${DESTDIR}${prefix}/share/pkgconfig/xorg-macros.pc -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${util_macros_bld_dir}/Makefile ] ||
+			(cd ${util_macros_bld_dir}
+			${util_macros_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${util_macros_bld_dir} -j ${jobs} || return
+		make -C ${util_macros_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
