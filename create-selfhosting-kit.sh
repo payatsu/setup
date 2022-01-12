@@ -3085,9 +3085,9 @@ EOF
 			-DCURSES_INCLUDE_DIRS=`print_header_dir curses.h` \
 			-DCURSES_LIBRARIES=`print_library_path libcurses.so` \
 			-DPANEL_LIBRARIES=`print_library_path libpanel.so` \
-			-DPYTHON_INCLUDE_DIRS=`print_header_dir Python.h` \
-			-DPYTHON_LIBRARIES=`print_library_path libpython$(print_target_python_version).so` \
-			-DPYTHON_EXECUTABLE=`which python3` \
+			-DPython3_INCLUDE_DIR=`print_header_dir Python.h` \
+			-DPython3_LIBRARY=`print_library_path libpython$(print_target_python_version).so` \
+			-DPython3_EXECUTABLE=`which python3` \
 			-DSWIG_EXECUTABLE=`which swig` \
 			-DLIBXML2_INCLUDE_DIR=`print_header_dir xmlversion.h libxml2/libxml`/libxml2 \
 			-DLIBXML2_LIBRARIES="`print_library_path libxml2.so`;`print_library_path libz.so`" \
