@@ -232,6 +232,7 @@ EOF
 : ${xtrans_ver:=1.4.0}
 : ${libICE_ver:=1.0.10}
 : ${libSM_ver:=1.2.3}
+: ${xcb_proto_ver:=1.14.1}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -528,7 +529,7 @@ fetch()
 	util-macros)
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
-	xproto)
+	xproto|xcb-proto)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/proto/\${${_1:-xproto}_name}.tar.gz || return;;
 	libXau|libXdmcp|xtrans|libICE|libSM)
@@ -707,6 +708,7 @@ print_packages()
 		s/compiler_rt/compiler-rt/
 		s/clang_tools_extra/clang-tools-extra/
 		s/util_macros/util-macros/
+		s/xcb_proto/xcb-proto/
 	' || return
 }
 
@@ -3198,6 +3200,16 @@ EOF
 				) || return
 		make -C ${libSM_bld_dir} -j ${jobs} || return
 		make -C ${libSM_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	xcb-proto)
+		[ -f ${DESTDIR}${prefix}/lib/pkgconfig/xcb-proto.pc -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${xcb_proto_bld_dir}/Makefile ] ||
+			(cd ${xcb_proto_bld_dir}
+			${xcb_proto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${xcb_proto_bld_dir} -j ${jobs} || return
+		make -C ${xcb_proto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
