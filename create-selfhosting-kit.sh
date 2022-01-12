@@ -3080,6 +3080,7 @@ EOF
 			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I curses.h histedit.h` `l edit python$(print_target_python_version)$(print_target_python_abi) ncurses panel xml2 lzma z`" \
 			`[ ${build} != ${host} ] && { echo -n -DLLVM_TABLEGEN=; which llvm-tblgen;}` \
 			`[ ${build} != ${host} ] && { echo -n -DLLDB_TABLEGEN_EXE=; which lldb-tblgen;}` \
+			-DLLDB_ENABLE_LUA=OFF \
 			-DLibEdit_INCLUDE_DIRS=`print_header_dir histedit.h` \
 			-DLibEdit_LIBRARIES=`print_library_path libedit.so` \
 			-DCURSES_INCLUDE_DIRS=`print_header_dir curses.h` \
