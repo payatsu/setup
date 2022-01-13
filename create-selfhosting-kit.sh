@@ -249,6 +249,7 @@ EOF
 : ${damageproto_ver:=1.2.1}
 : ${libXdamage_ver:=1.1.5}
 : ${renderproto_ver:=0.11.1}
+: ${libXrender_ver:=0.9.10}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -549,7 +550,7 @@ fetch()
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/proto/\${${_1:-xproto}_name}.tar.gz || return;;
 	libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXmu|libXpm|libXaw|\
-	libXi|libXfixes|libXdamage)
+	libXi|libXfixes|libXdamage|libXrender)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://www.x.org/releases/individual/lib/\${${_1:-libX11}_name}.tar.gz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
@@ -3487,6 +3488,23 @@ EOF
 			${renderproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 		make -C ${renderproto_bld_dir} -j ${jobs} || return
 		make -C ${renderproto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	libXrender)
+		[ -f ${DESTDIR}${prefix}/include/X11/extensions/Xrender.h -a "${force_install}" != yes ] && return
+		print_header_path renderproto.h X11/extensions > /dev/null || ${0} ${cmdopt} renderproto || return
+		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libXrender_bld_dir}/Makefile ] ||
+			(cd ${libXrender_bld_dir}
+			${libXrender_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				--enable-malloc0returnsnull \
+				PKG_CONFIG_PATH= \
+				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
+		make -C ${libXrender_bld_dir} -j ${jobs} || return
+		make -C ${libXrender_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
