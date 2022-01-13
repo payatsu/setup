@@ -250,6 +250,7 @@ EOF
 : ${libXdamage_ver:=1.1.5}
 : ${renderproto_ver:=0.11.1}
 : ${libXrender_ver:=0.9.10}
+: ${randrproto_ver:=1.5.0}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -546,7 +547,8 @@ fetch()
 	util-macros)
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
-	xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto|renderproto)
+	xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto|renderproto|\
+	randrproto)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/proto/\${${_1:-xproto}_name}.tar.gz || return;;
 	libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXmu|libXpm|libXaw|\
@@ -3505,6 +3507,16 @@ EOF
 				) || return
 		make -C ${libXrender_bld_dir} -j ${jobs} || return
 		make -C ${libXrender_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	randrproto)
+		[ -f ${DESTDIR}${prefix}/include/X11/extensions/randrproto.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${randrproto_bld_dir}/Makefile ] ||
+			(cd ${randrproto_bld_dir}
+			${randrproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${randrproto_bld_dir} -j ${jobs} || return
+		make -C ${randrproto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
