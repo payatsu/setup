@@ -247,6 +247,7 @@ EOF
 : ${fixesproto_ver:=5.0}
 : ${libXfixes_ver:=5.0.3}
 : ${damageproto_ver:=1.2.1}
+: ${libXdamage_ver:=1.1.5}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -547,7 +548,7 @@ fetch()
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/proto/\${${_1:-xproto}_name}.tar.gz || return;;
 	libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXmu|libXpm|libXaw|\
-	libXi|libXfixes)
+	libXi|libXfixes|libXdamage)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://www.x.org/releases/individual/lib/\${${_1:-libX11}_name}.tar.gz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
@@ -3454,6 +3455,25 @@ EOF
 			${damageproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 		make -C ${damageproto_bld_dir} -j ${jobs} || return
 		make -C ${damageproto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	libXdamage)
+		[ -f ${DESTDIR}${prefix}/include/X11/extensions/Xdamage.h -a "${force_install}" != yes ] && return
+		print_header_path damageproto.h X11/extensions > /dev/null || ${0} ${cmdopt} damageproto || return
+		print_header_path xfixesproto.h X11/extensions > /dev/null || ${0} ${cmdopt} fixesproto || return
+		print_header_path Xfixes.h X11/extensions > /dev/null || ${0} ${cmdopt} libXfixes || return
+		print_header_path lbx.h X11/extensions > /dev/null || ${0} ${cmdopt} xextproto || return
+		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libXdamage_bld_dir}/Makefile ] ||
+			(cd ${libXdamage_bld_dir}
+			${libXdamage_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				PKG_CONFIG_PATH= \
+				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
+		make -C ${libXdamage_bld_dir} -j ${jobs} || return
+		make -C ${libXdamage_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
