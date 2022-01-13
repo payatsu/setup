@@ -241,6 +241,7 @@ EOF
 : ${libXext_ver:=1.3.4}
 : ${libXt_ver:=1.2.1}
 : ${libXmu_ver:=1.1.3}
+: ${libXpm_ver:=3.5.11}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -540,7 +541,7 @@ fetch()
 	xproto|xcb-proto|xextproto|inputproto|kbproto)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/proto/\${${_1:-xproto}_name}.tar.gz || return;;
-	libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXmu)
+	libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXmu|libXpm)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://www.x.org/releases/individual/lib/\${${_1:-libX11}_name}.tar.gz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
@@ -3344,6 +3345,27 @@ EOF
 				) || return
 		make -C ${libXmu_bld_dir} -j ${jobs} || return
 		make -C ${libXmu_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	libXpm)
+		[ -f ${DESTDIR}${prefix}/include/X11/xpm.h -a "${force_install}" != yes ] && return
+		print_header_path Xproto.h X11 > /dev/null || ${0} ${cmdopt} xproto || return
+		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
+		print_header_path Xext.h X11/extensions > /dev/null || ${0} ${cmdopt} libXext || return
+		print_header_path Core.h X11 > /dev/null || ${0} ${cmdopt} libXt || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libXpm_bld_dir}/Makefile ] ||
+			(cd ${libXpm_bld_dir}
+			${libXpm_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				LIBS="`l SM ICE xcb Xau Xdmcp`" \
+				PKG_CONFIG_PATH= \
+				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
+		make -C ${libXpm_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${libXpm_bld_dir} -j ${jobs} -k check || return
+		make -C ${libXpm_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
