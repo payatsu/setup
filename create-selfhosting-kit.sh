@@ -248,6 +248,7 @@ EOF
 : ${libXfixes_ver:=5.0.3}
 : ${damageproto_ver:=1.2.1}
 : ${libXdamage_ver:=1.1.5}
+: ${renderproto_ver:=0.11.1}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -544,7 +545,7 @@ fetch()
 	util-macros)
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
-	xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto)
+	xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto|renderproto)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/proto/\${${_1:-xproto}_name}.tar.gz || return;;
 	libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXmu|libXpm|libXaw|\
@@ -3474,6 +3475,18 @@ EOF
 				) || return
 		make -C ${libXdamage_bld_dir} -j ${jobs} || return
 		make -C ${libXdamage_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	renderproto)
+		[ -f ${DESTDIR}${prefix}/include/X11/extensions/renderproto.h -a "${force_install}" != yes ] && return
+		${0} ${cmdopt} util-macros || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${renderproto_bld_dir}/Makefile ] ||
+			(cd ${renderproto_bld_dir}
+			autoreconf -fiv -I ${DESTDIR}${prefix}/share/aclocal ${renderproto_src_dir} || return
+			${renderproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${renderproto_bld_dir} -j ${jobs} || return
+		make -C ${renderproto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
