@@ -262,6 +262,7 @@ EOF
 : ${dri3proto_ver:=1.0}
 : ${wayland_ver:=1.20.0}
 : ${wayland_protocols_ver:=1.24}
+: ${libglvnd_ver:=1.4.0}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -297,7 +298,7 @@ init()
 		eval ${_1}_name=${1}_\${${_1}_ver};;
 	libunwindnongnu)
 		eval ${_1}_name=libunwind-\${${_1}_ver};;
-	procps)
+	procps|libglvnd)
 		eval ${_1}_name=${1}-v\${${_1}_ver};;
 	*)
 		eval ${_1}_name=${1}-\${${_1}_ver};;
@@ -570,6 +571,9 @@ fetch()
 	wayland|wayland-protocols)
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://wayland.freedesktop.org/releases/\${${_1:-wayland}_name}.tar.xz || return;;
+	libglvnd)
+		wget -O ${libglvnd_src_dir}.tar.bz2 \
+			https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/v${libglvnd_ver}/libglvnd-v${libglvnd_ver}.tar.bz2 || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -3687,6 +3691,18 @@ EOF
 			${dri3proto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 		make -C ${dri3proto_bld_dir} -j ${jobs} || return
 		make -C ${dri3proto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	libglvnd)
+		[ -f ${DESTDIR}${prefix}/include/glvnd/GLdispatchABI.h -a "${force_install}" != yes ] && return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
+		print_header_path glxproto.h GL > /dev/null || ${0} ${cmdopt} glproto || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			${libglvnd_src_dir} ${libglvnd_bld_dir} || return
+		ninja -v -C ${libglvnd_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${libglvnd_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
