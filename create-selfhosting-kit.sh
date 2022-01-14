@@ -259,6 +259,7 @@ EOF
 : ${libxshmfence_ver:=1.3}
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
+: ${dri3proto_ver:=1.0}
 : ${wayland_ver:=1.20.0}
 : ${wayland_protocols_ver:=1.24}
 
@@ -558,7 +559,7 @@ fetch()
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
 	xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto|renderproto|\
-	randrproto|xineramaproto|glproto|dri2proto)
+	randrproto|xineramaproto|glproto|dri2proto|dri3proto)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/proto/\${${_1:-xproto}_name}.tar.gz || return;;
 	libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXmu|libXpm|libXaw|\
@@ -3676,6 +3677,16 @@ EOF
 			${dri2proto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 		make -C ${dri2proto_bld_dir} -j ${jobs} || return
 		make -C ${dri2proto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	dri3proto)
+		[ -f ${DESTDIR}${prefix}/include/X11/extensions/dri3proto.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${dri3proto_bld_dir}/Makefile ] ||
+			(cd ${dri3proto_bld_dir}
+			${dri3proto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${dri3proto_bld_dir} -j ${jobs} || return
+		make -C ${dri3proto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
