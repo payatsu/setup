@@ -257,6 +257,7 @@ EOF
 : ${libXinerama_ver:=1.1.4}
 : ${libpciaccess_ver:=0.16}
 : ${libxshmfence_ver:=1.3}
+: ${wayland_ver:=1.20.0}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -562,6 +563,9 @@ fetch()
 	libxshmfence)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://www.x.org/releases/individual/lib/\${${_1:-libX11}_name}.tar.gz || return;;
+	wayland)
+		eval wget -O \${${_1}_src_dir}.tar.xz \
+			https://wayland.freedesktop.org/releases/\${${_1:-wayland}_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -3617,6 +3621,21 @@ EOF
 			${libxshmfence_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 		make -C ${libxshmfence_bld_dir} -j ${jobs} || return
 		make -C ${libxshmfence_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	wayland)
+		[ -f ${DESTDIR}${prefix}/include/wayland-version.h -a "${force_install}" != yes ] && return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		which wayland-scanner > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
+		print_header_path ffi.h > /dev/null || ${0} ${cmdopt} libffi || return
+		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
+		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			--build.pkg-config-path $(dirname $(find $(dirname $(which wayland-scanner))/../lib -name wayland-scanner.pc)) \
+			-Ddocumentation=false ${wayland_src_dir} ${wayland_bld_dir} || return
+		ninja -v -C ${wayland_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${wayland_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac

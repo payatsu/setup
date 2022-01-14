@@ -949,7 +949,7 @@ fetch()
 				https://dri.freedesktop.org/libdrm/${libdrm_name}.tar.xz || return;;
 		wayland|wayland-protocols)
 			eval wget -O \${${_p}_src_dir}.tar.xz \
-				https://wayland.freedesktop.org/releases/\${${_p:-waylant}_name}.tar.xz || return;;
+				https://wayland.freedesktop.org/releases/\${${_p:-wayland}_name}.tar.xz || return;;
 		libglvnd)
 			wget -O ${libglvnd_src_dir}.tar.bz2 \
 				https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/v${libglvnd_ver}/libglvnd-v${libglvnd_ver}.tar.bz2 || return;;
