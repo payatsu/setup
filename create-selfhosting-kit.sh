@@ -256,6 +256,7 @@ EOF
 : ${xineramaproto_ver:=1.2.1}
 : ${libXinerama_ver:=1.1.4}
 : ${libpciaccess_ver:=0.16}
+: ${libxshmfence_ver:=1.3}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -557,7 +558,8 @@ fetch()
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/proto/\${${_1:-xproto}_name}.tar.gz || return;;
 	libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXmu|libXpm|libXaw|\
-	libXi|libXfixes|libXdamage|libXrender|libXrandr|libXcursor|libXinerama|libpciaccess)
+	libXi|libXfixes|libXdamage|libXrender|libXrandr|libXcursor|libXinerama|libpciaccess|\
+	libxshmfence)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://www.x.org/releases/individual/lib/\${${_1:-libX11}_name}.tar.gz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
@@ -3604,6 +3606,17 @@ EOF
 				--with-zlib CPPFLAGS="${CPPFLAGS} `I zlib.h`" LDFLAGS="${LDFLAGS} `L z`") || return
 		make -C ${libpciaccess_bld_dir} -j ${jobs} || return
 		make -C ${libpciaccess_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	libxshmfence)
+		[ -f ${DESTDIR}${prefix}/include/X11/xshmfence.h -a "${force_install}" != yes ] && return
+		print_header_path Xproto.h X11 > /dev/null || ${0} ${cmdopt} xproto || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libxshmfence_bld_dir}/Makefile ] ||
+			(cd ${libxshmfence_bld_dir}
+			${libxshmfence_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${libxshmfence_bld_dir} -j ${jobs} || return
+		make -C ${libxshmfence_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
