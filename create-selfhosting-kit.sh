@@ -263,6 +263,7 @@ EOF
 : ${wayland_ver:=1.20.0}
 : ${wayland_protocols_ver:=1.24}
 : ${libglvnd_ver:=1.4.0}
+: ${libdrm_ver:=2.4.109}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -574,6 +575,9 @@ fetch()
 	libglvnd)
 		wget -O ${libglvnd_src_dir}.tar.bz2 \
 			https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/v${libglvnd_ver}/libglvnd-v${libglvnd_ver}.tar.bz2 || return;;
+	libdrm)
+		wget -O ${libdrm_src_dir}.tar.xz \
+			https://dri.freedesktop.org/libdrm/${libdrm_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -3703,6 +3707,17 @@ EOF
 			${libglvnd_src_dir} ${libglvnd_bld_dir} || return
 		ninja -v -C ${libglvnd_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${libglvnd_bld_dir} install || return
+		;;
+	libdrm)
+		[ -f ${DESTDIR}${prefix}/include/libdrm/drm.h -a "${force_install}" != yes ] && return
+		print_header_path pciaccess.h > /dev/null || ${0} ${cmdopt} libpciaccess || return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			${libdrm_src_dir} ${libdrm_bld_dir} || return
+		ninja -v -C ${libdrm_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${libdrm_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
