@@ -258,6 +258,7 @@ EOF
 : ${libpciaccess_ver:=0.16}
 : ${libxshmfence_ver:=1.3}
 : ${wayland_ver:=1.20.0}
+: ${wayland_protocols_ver:=1.24}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -563,7 +564,7 @@ fetch()
 	libxshmfence)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://www.x.org/releases/individual/lib/\${${_1:-libX11}_name}.tar.gz || return;;
-	wayland)
+	wayland|wayland-protocols)
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://wayland.freedesktop.org/releases/\${${_1:-wayland}_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
@@ -740,6 +741,7 @@ print_packages()
 		s/clang_tools_extra/clang-tools-extra/
 		s/util_macros/util-macros/
 		s/xcb_proto/xcb-proto/
+		s/wayland_protocols/wayland-protocols/
 	' || return
 }
 
@@ -3632,10 +3634,24 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
-			--build.pkg-config-path $(dirname $(find $(dirname $(which wayland-scanner))/../lib -name wayland-scanner.pc)) \
+			--build.pkg-config-path `host=${build} print_library_dir wayland-scanner.pc` \
 			-Ddocumentation=false ${wayland_src_dir} ${wayland_bld_dir} || return
 		ninja -v -C ${wayland_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${wayland_bld_dir} install || return
+		;;
+	wayland-protocols)
+		[ -f ${DESTDIR}${prefix}/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml -a "${force_install}" != yes ] && return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		which wayland-scanner > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} wayland || return
+		print_header_path wayland-version.h > /dev/null || ${0} ${cmdopt} wayland || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file}  \
+			--build.pkg-config-path `host=${build} print_library_dir wayland-scanner.pc` \
+			--pkg-config-path `print_library_dir wayland-client.pc` \
+			${wayland_protocols_src_dir} ${wayland_protocols_bld_dir} || return
+		ninja -v -C ${wayland_protocols_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${wayland_protocols_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
