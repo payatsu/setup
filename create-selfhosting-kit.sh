@@ -257,6 +257,7 @@ EOF
 : ${libXinerama_ver:=1.1.4}
 : ${libpciaccess_ver:=0.16}
 : ${libxshmfence_ver:=1.3}
+: ${glproto_ver:=1.4.17}
 : ${wayland_ver:=1.20.0}
 : ${wayland_protocols_ver:=1.24}
 
@@ -556,7 +557,7 @@ fetch()
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
 	xproto|xcb-proto|xextproto|inputproto|kbproto|fixesproto|damageproto|renderproto|\
-	randrproto|xineramaproto)
+	randrproto|xineramaproto|glproto)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/proto/\${${_1:-xproto}_name}.tar.gz || return;;
 	libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXmu|libXpm|libXaw|\
@@ -3652,6 +3653,16 @@ EOF
 			${wayland_protocols_src_dir} ${wayland_protocols_bld_dir} || return
 		ninja -v -C ${wayland_protocols_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${wayland_protocols_bld_dir} install || return
+		;;
+	glproto)
+		[ -f ${DESTDIR}${prefix}/include/GL/glxproto.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${glproto_bld_dir}/Makefile ] ||
+			(cd ${glproto_bld_dir}
+			${glproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${glproto_bld_dir} -j ${jobs} || return
+		make -C ${glproto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
