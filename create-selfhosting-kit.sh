@@ -615,6 +615,7 @@ squash_options()
 print_library_path()
 {
 	for d in ${DESTDIR}${prefix}/lib64 ${DESTDIR}${prefix}/lib \
+		`echo ${1} | grep -qe '\.pc$' && echo ${DESTDIR}${prefix}/share` \
 		`[ ${build} = ${host} ] && echo /usr/local/lib64 /usr/local/lib` \
 		`LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
 			sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs realpath -eq`; do

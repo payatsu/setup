@@ -1547,8 +1547,10 @@ squash_options()
 
 print_library_path()
 {
-	for dir in ${DESTDIR}${prefix}/lib64 ${DESTDIR}${prefix}/lib `LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
-		sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs realpath -eq`; do
+	for dir in ${DESTDIR}${prefix}/lib64 ${DESTDIR}${prefix}/lib \
+		`echo ${1} | grep -qe '\.pc$' && echo ${DESTDIR}${prefix}/share` \
+		`LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
+			sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs realpath -eq`; do
 		[ -d ${dir}${2:+/${2}} ] || continue
 		candidates=`find ${dir}${2:+/${2}} \( -type f -o -type l \) -name ${1} | filter_shortest_hierarchy`
 		[ -n "${candidates}" ] && echo "${candidates}" && return
