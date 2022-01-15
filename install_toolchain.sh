@@ -184,7 +184,7 @@
 : ${Python2_ver:=2.7.18}
 : ${cython_ver:=0.29.26}
 : ${OpenBLAS_ver:=0.3.19}
-: ${numpy_ver:=1.22.0}
+: ${numpy_ver:=1.22.1}
 : ${rustc_ver:=1.58.0}
 : ${rustup_ver:=1.24.3}
 : ${ruby_ver:=3.1.0}
