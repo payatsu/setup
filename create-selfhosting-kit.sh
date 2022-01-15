@@ -3769,6 +3769,7 @@ generate_gcc_wrapper()
 {
 	generate_command_wrapper ${1} ${host:+${host}-}gcc \
 		"`{
+			echo exec
 			which ${host:+${host}-}gcc
 			echo ${CC:-${host:+${host}-}gcc} | grep -oPe '(?<= ).+'
 			echo \\"\\$@\\"
@@ -3779,6 +3780,7 @@ generate_gxx_wrapper()
 {
 	generate_command_wrapper ${1} ${host:+${host}-}g++ \
 		"`{
+			echo exec
 			which ${host:+${host}-}g++
 			echo ${CXX:-${host:+${host}-}g++} | grep -oPe '(?<= ).+'
 			echo \\"\\$@\\"
@@ -3797,6 +3799,7 @@ generate_toolchain_wrapper()
 	fi
 	generate_command_wrapper ${1} ${host:+${host}-}${2} \
 		"`{
+			echo exec
 			which ${host:+${host}-}${2}
 			eval echo \\\${$(echo ${2} | tr a-z A-Z):-\\\${host:+\\\${host}-}${2}} | grep -oPe '(?<= ).+'
 			echo \\"\\$@\\"
