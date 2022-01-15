@@ -3812,7 +3812,8 @@ c   = ['`echo ${CC:-${host:+${host}-}gcc} | sed -e "s/ \+/', '/g"`']
 cpp = ['`echo ${CXX:-${host:+${host}-}g++} | sed -e "s/ \+/', '/g"`']
 ar    = '${host:+${host}-}ar'
 strip = '${host:+${host}-}strip'
-pkgconfig = 'pkg-config'
+pkgconfig   = 'pkg-config'
+llvm-config = 'llvm-config'
 
 [properties]
 sys_root = '${DESTDIR}'
@@ -3846,6 +3847,7 @@ while [ \$# -gt 0 ]; do
 	--obj-root)    echo `print_library_dir libLLVM.so`;;
 	--src-root)    echo ${llvm_src_dir};;
 	--system-libs) ;;
+	--version)     echo ${llvm_ver};;
 	esac
 	shift
 done
