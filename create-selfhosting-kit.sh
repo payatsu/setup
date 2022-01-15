@@ -1569,7 +1569,7 @@ EOF
 		print_header_path sqlite3.h > /dev/null || ${0} ${cmdopt} sqlite || return
 		fetch ${1} || return
 		unpack ${1} || return
-		generate_python_config_dummy ${systemtap_bld_dir} || return
+		generate_python_config_dummy `dirname ${0}` || return
 		[ -f ${systemtap_bld_dir}/Makefile ] ||
 			(cd ${systemtap_bld_dir}
 			${systemtap_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
@@ -1577,7 +1577,6 @@ EOF
 				CPPFLAGS="${CPPFLAGS} `I elfutils/libdw.h Python.h sqlite3.h`" \
 				LDFLAGS="${LDFLAGS} `L dw` `l python$(print_target_python_version)$(print_target_python_abi)`" \
 				LIBS="${LIBS} `l z bz2 lzma zstd idn2 curl ssl crypto`" \
-				PYTHON_CONFIG=${systemtap_bld_dir}/python-config \
 				) || return
 		sed -i -e '/^\<LDFLAGS\>/{
 			s/\( -lc\)\?$/ -lc/
@@ -3070,7 +3069,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		ln -Tfsv ${libunwind_src_dir} ${llvm_src_dir}/../libunwind || return
-		generate_llvm_config_dummy ${lld_bld_dir} || return
+		generate_llvm_config_dummy `dirname ${0}` || return
 		generate_gcc_wrapper ${lld_bld_dir} || return
 		generate_gxx_wrapper ${lld_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -3078,7 +3077,6 @@ EOF
 			-DCMAKE_C_COMPILER=${lld_bld_dir}/${host:+${host}-}gcc \
 			-DCMAKE_CXX_COMPILER=${lld_bld_dir}/${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-			-DLLVM_CONFIG_PATH=${lld_bld_dir}/llvm-config \
 			-DLLVM_TABLEGEN_EXE=`which llvm-tblgen` \
 			-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON || return
 		cmake --build ${lld_bld_dir} -v -j ${jobs} || return
