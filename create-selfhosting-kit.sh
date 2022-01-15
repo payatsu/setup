@@ -1314,9 +1314,8 @@ EOF
 		make -C ${Python_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${Python_bld_dir} -j ${jobs} -k test || return
-		generate_command_wrapper ${Python_bld_dir} lsb_release \
-			'PYTHONPATH=/usr/share/pyshared:${PYTHONPATH} python3 '`which lsb_release`' "$@"' || return
-		PATH=${Python_bld_dir}:${PATH} make -C ${Python_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		generate_lsb_release_dummy `dirname ${0}` || return
+		make -C ${Python_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		for v in `print_version Python` `print_version Python`m; do
 			[ ! -f ${DESTDIR}${prefix}/bin/python${v} ] || ${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/python${v} || return
@@ -3835,6 +3834,20 @@ cpu        = '`echo ${target} | cut -d - -f 1`'
 endian     = 'little'
 EOF
 	cross_file=${1}
+}
+
+generate_lsb_release_dummy()
+{
+	generate_command_wrapper ${1} lsb_release \
+		"\
+cat << EOF
+No LSB modules are available.
+Distributor ID: `grep -oPe '(?<=NAME=\").+(?=\"\$)' /etc/os-release`
+Description:    `grep -oPe '(?<=PRETTY_NAME=\").+(?=\"\$)' /etc/os-release`
+Release:        `grep -oPe '(?<=VERSION_ID=\").+(?=\"\$)' /etc/os-release`
+Codename:       `grep -oPe '(?<=VERSION_CODENAME=).+\$' /etc/os-release`
+EOF
+" || return
 }
 
 generate_llvm_config_dummy()
