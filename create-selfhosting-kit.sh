@@ -3816,6 +3816,7 @@ c   = ['`echo ${CC:-${host:+${host}-}gcc} | sed -e "s/ \+/', '/g"`']
 cpp = ['`echo ${CXX:-${host:+${host}-}g++} | sed -e "s/ \+/', '/g"`']
 ar    = '${host:+${host}-}ar'
 strip = '${host:+${host}-}strip'
+cmake = 'cmake'
 pkgconfig   = 'pkg-config'
 llvm-config = 'llvm-config'
 
@@ -3849,6 +3850,7 @@ while [ \$# -gt 0 ]; do
 	--libdir)      echo `print_library_dir libLLVM.so`;;
 	--libs)        echo -lLLVM-`print_version llvm 1`;;
 	--obj-root)    echo `print_library_dir libLLVM.so`;;
+	--shared-mode) echo shared;;
 	--src-root)    echo ${llvm_src_dir};;
 	--system-libs) ;;
 	--version)     echo ${llvm_ver};;
