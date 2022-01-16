@@ -264,6 +264,7 @@ EOF
 : ${wayland_protocols_ver:=1.24}
 : ${libglvnd_ver:=1.4.0}
 : ${libdrm_ver:=2.4.109}
+: ${mesa_ver:=21.3.1}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -578,6 +579,9 @@ fetch()
 	libdrm)
 		wget -O ${libdrm_src_dir}.tar.xz \
 			https://dri.freedesktop.org/libdrm/${libdrm_name}.tar.xz || return;;
+	mesa)
+		wget -O ${mesa_src_dir}.tar.xz \
+			https://mesa.freedesktop.org/archive/${mesa_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -3687,6 +3691,32 @@ EOF
 			${libdrm_src_dir} ${libdrm_bld_dir} || return
 		ninja -v -C ${libdrm_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${libdrm_bld_dir} install || return
+		;;
+	mesa)
+		[ -f ${DESTDIR}${prefix}/include/EGL/eglmesaext.h -a "${force_install}" != yes ] && return
+		print_library_path xcb-proto.pc > /dev/null || ${0} ${cmdopt} xcb-proto || return
+		print_header_path xcb.h xcb > /dev/null || ${0} ${cmdopt} libxcb || return
+		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
+		print_header_path Xext.h X11/extensions > /dev/null || ${0} ${cmdopt} libXext || return
+		print_header_path drm.h libdrm > /dev/null || ${0} ${cmdopt} libdrm || return
+		print_header_path xshmfence.h X11 > /dev/null || ${0} ${cmdopt} libxshmfence || return
+		which wayland-scanner > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} wayland || return
+		print_header_path wayland-version.h > /dev/null || ${0} ${cmdopt} wayland || return
+		print_library_path wayland-protocols.pc > /dev/null || ${0} ${cmdopt} wayland-protocols || return
+		print_header_path glxproto.h GL > /dev/null || ${0} ${cmdopt} glproto || return
+		print_header_path dri2proto.h X11/extensions > /dev/null || ${0} ${cmdopt} dri2proto || return
+		print_header_path dri3proto.h X11/extensions > /dev/null || ${0} ${cmdopt} dri3proto || return
+		print_header_path GLdispatchABI.h glvnd > /dev/null || ${0} ${cmdopt} libglvnd || return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		pip3 install --root ${DESTDIR} --prefix ${prefix} mako || return
+		fetch ${1} || return
+		unpack ${1} || return
+		generate_llvm_config_dummy `dirname ${0}` || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			--build.pkg-config-path `host=${build} print_library_dir wayland-scanner.pc` \
+			-Dglvnd=true -Dshared-llvm=disabled -Dglx-direct=false ${mesa_src_dir} ${mesa_bld_dir} || return
+		ninja -v -C ${mesa_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${mesa_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
