@@ -1189,16 +1189,22 @@ EOF
 					s!\( --strip-program=[[:graph:]]\+\)\?\$! --strip-program=${host:+${host}-}strip!
 				}" ${ncurses_src_dir}/progs/Makefile.in || return
 			${ncurses_src_dir}/configure --prefix=${prefix} --host=${host} \
-				--enable-pc-files --with-shared --with-cxx-shared --with-termlib \
-				--with-versioned-syms --enable-termcap --enable-colors) || return
+				--with-pkg-config-libdir=/no-such-dir --enable-pc-files \
+				--with-shared --with-cxx-shared --with-termlib \
+				--with-versioned-syms --enable-termcap --enable-colors \
+				PKG_CONFIG_LIBDIR=${prefix}/lib/${host}/pkgconfig \
+				) || return
 		make -C ${ncurses_bld_dir} -j 1 DESTDIR=${DESTDIR} || return # XXX work around for parallel make
 		make -C ${ncurses_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		make -C ${ncurses_bld_dir} -j ${jobs} distclean || return
 		[ -f ${ncurses_bld_dir}/Makefile ] ||
 			(cd ${ncurses_bld_dir}
 			${ncurses_src_dir}/configure --prefix=${prefix} --host=${host} \
-				--enable-pc-files --with-shared --with-cxx-shared --with-termlib \
-				--with-versioned-syms --enable-termcap --enable-widec --enable-colors) || return
+				--with-pkg-config-libdir=/no-such-dir --enable-pc-files \
+				--with-shared --with-cxx-shared --with-termlib \
+				--with-versioned-syms --enable-termcap --enable-widec --enable-colors \
+				PKG_CONFIG_LIBDIR=${prefix}/lib/${host}/pkgconfig \
+				) || return
 		make -C ${ncurses_bld_dir} -j 1 DESTDIR=${DESTDIR} || return # XXX work around for parallel make
 		make -C ${ncurses_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		for h in `find ${DESTDIR}${prefix}/include/ncurses \( -type f -o -type l \) -name '*.h'`; do

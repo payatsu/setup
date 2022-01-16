@@ -2920,16 +2920,22 @@ EOF
 	[ -f ${ncurses_bld_dir}/Makefile ] ||
 		(cd ${ncurses_bld_dir}
 		${ncurses_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-			--enable-pc-files --with-shared --with-cxx-shared --with-termlib \
-			--with-versioned-syms --enable-termcap --enable-colors) || return
+			--with-pkg-config-libdir=/no-such-dir --enable-pc-files \
+			--with-shared --with-cxx-shared --with-termlib \
+			--with-versioned-syms --enable-termcap --enable-colors \
+			PKG_CONFIG_LIBDIR=${prefix}/lib/${host}/pkgconfig \
+			) || return
 	make -C ${ncurses_bld_dir} -j 1 || return # XXX work around for parallel make
 	make -C ${ncurses_bld_dir} -j ${jobs} install || return
 	make -C ${ncurses_bld_dir} -j ${jobs} distclean || return
 	[ -f ${ncurses_bld_dir}/Makefile ] ||
 		(cd ${ncurses_bld_dir}
 		${ncurses_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-			--enable-pc-files --with-shared --with-cxx-shared --with-termlib \
-			--with-versioned-syms --enable-termcap --enable-widec --enable-colors --with-pthread --enable-reentrant) || return
+			--with-pkg-config-libdir=/no-such-dir --enable-pc-files \
+			--with-shared --with-cxx-shared --with-termlib \
+			--with-versioned-syms --enable-termcap --enable-widec --enable-colors --with-pthread --enable-reentrant \
+			PKG_CONFIG_LIBDIR=${prefix}/lib/${host}/pkgconfig \
+			) || return
 	make -C ${ncurses_bld_dir} -j 1 || return # XXX work around for parallel make
 	make -C ${ncurses_bld_dir} -j ${jobs} install || return
 	update_path || return
