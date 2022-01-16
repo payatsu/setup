@@ -1318,6 +1318,7 @@ EOF
 			make -C ${Python_bld_dir} -j ${jobs} -k test || return
 		generate_lsb_release_dummy `dirname ${0}` || return
 		make -C ${Python_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		[ ${build} != ${host} ] || ${DESTDIR}${prefix}/bin/python3 -m ensurepip -U || return
 		[ -z "${strip}" ] && return
 		for v in `print_version Python` `print_version Python`m; do
 			[ ! -f ${DESTDIR}${prefix}/bin/python${v} ] || ${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/python${v} || return
