@@ -4096,7 +4096,7 @@ install_native_gtk()
 	fetch gtk || return
 	unpack gtk || return
 	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both \
-		-Dc_link_flags="${LDFLAGS} `L stdc++`" -Dwayland-backend=false \
+		-Dc_link_args="${LDFLAGS} `L stdc++`" -Dwayland-backend=false \
 		-Dmedia-gstreamer=disabled ${gtk_src_dir} ${gtk_bld_dir} || return
 	ninja -v -C ${gtk_bld_dir} || return
 	ninja -v -C ${gtk_bld_dir} install || return
