@@ -3828,6 +3828,7 @@ exec `which autom4te` -B $(readlink -m $(dirname $(which autoconf))/../share/aut
 
 generate_meson_cross_file()
 {
+	cross_file=${1}
 	[ -f ${1} ] && return
 	cat << EOF > ${1} || return
 [constants]
@@ -3857,7 +3858,6 @@ cpu_family = '`echo ${target} | cut -d - -f 1`'
 cpu        = '`echo ${target} | cut -d - -f 1`'
 endian     = 'little'
 EOF
-	cross_file=${1}
 }
 
 generate_lsb_release_dummy()
