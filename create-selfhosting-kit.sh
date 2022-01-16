@@ -1189,7 +1189,7 @@ EOF
 					s!\( --strip-program=[[:graph:]]\+\)\?\$! --strip-program=${host:+${host}-}strip!
 				}" ${ncurses_src_dir}/progs/Makefile.in || return
 			${ncurses_src_dir}/configure --prefix=${prefix} --host=${host} \
-				--with-shared --with-cxx-shared --with-termlib \
+				--enable-pc-files --with-shared --with-cxx-shared --with-termlib \
 				--with-versioned-syms --enable-termcap --enable-colors) || return
 		make -C ${ncurses_bld_dir} -j 1 DESTDIR=${DESTDIR} || return # XXX work around for parallel make
 		make -C ${ncurses_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
@@ -1197,7 +1197,7 @@ EOF
 		[ -f ${ncurses_bld_dir}/Makefile ] ||
 			(cd ${ncurses_bld_dir}
 			${ncurses_src_dir}/configure --prefix=${prefix} --host=${host} \
-				--with-shared --with-cxx-shared --with-termlib \
+				--enable-pc-files --with-shared --with-cxx-shared --with-termlib \
 				--with-versioned-syms --enable-termcap --enable-widec --enable-colors) || return
 		make -C ${ncurses_bld_dir} -j 1 DESTDIR=${DESTDIR} || return # XXX work around for parallel make
 		make -C ${ncurses_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return

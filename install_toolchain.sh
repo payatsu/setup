@@ -2920,7 +2920,7 @@ EOF
 	[ -f ${ncurses_bld_dir}/Makefile ] ||
 		(cd ${ncurses_bld_dir}
 		${ncurses_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-			--with-shared --with-cxx-shared --with-termlib \
+			--enable-pc-files --with-shared --with-cxx-shared --with-termlib \
 			--with-versioned-syms --enable-termcap --enable-colors) || return
 	make -C ${ncurses_bld_dir} -j 1 || return # XXX work around for parallel make
 	make -C ${ncurses_bld_dir} -j ${jobs} install || return
@@ -2928,7 +2928,7 @@ EOF
 	[ -f ${ncurses_bld_dir}/Makefile ] ||
 		(cd ${ncurses_bld_dir}
 		${ncurses_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-			--with-shared --with-cxx-shared --with-termlib \
+			--enable-pc-files --with-shared --with-cxx-shared --with-termlib \
 			--with-versioned-syms --enable-termcap --enable-widec --enable-colors --with-pthread --enable-reentrant) || return
 	make -C ${ncurses_bld_dir} -j 1 || return # XXX work around for parallel make
 	make -C ${ncurses_bld_dir} -j ${jobs} install || return
