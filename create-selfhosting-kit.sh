@@ -3708,6 +3708,8 @@ EOF
 		print_header_path Xext.h X11/extensions > /dev/null || ${0} ${cmdopt} libXext || return
 		print_header_path drm.h libdrm > /dev/null || ${0} ${cmdopt} libdrm || return
 		print_header_path xshmfence.h X11 > /dev/null || ${0} ${cmdopt} libxshmfence || return
+		print_header_path Xfixes.h X11/extensions > /dev/null || ${0} ${cmdopt} libXfixes || return
+		print_header_path Xrandr.h X11/extensions > /dev/null || ${0} ${cmdopt} libXrandr || return
 		which wayland-scanner > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} wayland || return
 		print_header_path wayland-version.h > /dev/null || ${0} ${cmdopt} wayland || return
 		print_library_path wayland-protocols.pc > /dev/null || ${0} ${cmdopt} wayland-protocols || return
@@ -3722,6 +3724,7 @@ EOF
 		generate_llvm_config_dummy `dirname ${0}` || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			--build.pkg-config-path `host=${build} print_library_dir wayland-scanner.pc` \
+			--pkg-config-path `print_library_dir wayland-client.pc` \
 			-Dglvnd=true -Dshared-llvm=disabled -Dglx-direct=false ${mesa_src_dir} ${mesa_bld_dir} || return
 		ninja -v -C ${mesa_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${mesa_bld_dir} install || return
