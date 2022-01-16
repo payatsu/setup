@@ -1158,12 +1158,10 @@ EOF
 		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
 		fetch ${1} || return
 		unpack ${1} || return
-		generate_gcc_wrapper ${ccache_bld_dir} || return
-		generate_gxx_wrapper ${ccache_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${ccache_src_dir} -B ${ccache_bld_dir} \
-			-DCMAKE_C_COMPILER=${ccache_bld_dir}/${host:+${host}-}gcc \
-			-DCMAKE_CXX_COMPILER=${ccache_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DZSTD_LIBRARY=`print_library_path libzstd.so` \
 			-DZSTD_INCLUDE_DIR=`print_header_dir zstd.h` \
@@ -1590,10 +1588,9 @@ EOF
 		[ -f ${DESTDIR}${prefix}/include/linux/version.h -a "${force_install}" != yes ] && return
 		fetch ${1} || return
 		unpack ${1} || return
-		generate_toolchain_wrapper ${linux_bld_dir} || return
 		make -C ${linux_src_dir} -j ${jobs} V=1 O=${linux_bld_dir} mrproper || return
 		make -C ${linux_src_dir} -j ${jobs} V=1 O=${linux_bld_dir} \
-			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${linux_bld_dir}/${host:+${host}-} INSTALL_HDR_PATH=${DESTDIR}${prefix} headers_install || return
+			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${host:+${host}-} INSTALL_HDR_PATH=${DESTDIR}${prefix} headers_install || return
 		;;
 	perf)
 		[ -x ${DESTDIR}${prefix}/bin/perf -a "${force_install}" != yes ] && return
@@ -1609,19 +1606,18 @@ EOF
 		fetch linux || return
 		unpack linux || return
 		mkdir -pv ${perf_bld_dir} || return
-		generate_toolchain_wrapper ${perf_bld_dir} || return
 		PKG_CONFIG_PATH= \
 		PKG_CONFIG_LIBDIR= \
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
-			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} \
+			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${host:+${host}-} \
 			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
 			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
 			LDFLAGS="${LDFLAGS} `l babeltrace dw uuid pcre gmodule-2.0 glib-2.0 ffi popt elf bz2 lzma z curl ssl crypto idn2 zstd stdc++`" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 			prefix=${prefix} all || return
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
-			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${perf_bld_dir}/${host:+${host}-} \
+			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${host:+${host}-} \
 			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
 			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
 			LDFLAGS="${LDFLAGS} `l babeltrace dw uuid pcre gmodule-2.0 glib-2.0 ffi popt elf bz2 lzma z curl ssl crypto idn2 zstd stdc++`" \
@@ -1638,11 +1634,10 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libcap_bld_dir}/Makefile ] || cp -Tvr ${libcap_src_dir} ${libcap_bld_dir} || return
-		generate_toolchain_wrapper ${libcap_bld_dir} || return
-		make -C ${libcap_bld_dir} -j ${jobs} prefix=${prefix} lib=lib CROSS_COMPILE=${libcap_bld_dir}/${host:+${host}-} BUILD_CC=cc GOLANG=no || return
+		make -C ${libcap_bld_dir} -j ${jobs} prefix=${prefix} lib=lib CROSS_COMPILE=${host:+${host}-} BUILD_CC=cc GOLANG=no || return
 		[ "${enable_check}" != yes ] ||
-			make -C ${libcap_bld_dir} -j ${jobs} -k CROSS_COMPILE=${libcap_bld_dir}/${host:+${host}-} test || return
-		make -C ${libcap_bld_dir} -j ${jobs} prefix=${prefix} lib=lib CROSS_COMPILE=${libcap_bld_dir}/${host:+${host}-} BUILD_CC=cc GOLANG=no DESTDIR=${DESTDIR} install || return
+			make -C ${libcap_bld_dir} -j ${jobs} -k CROSS_COMPILE=${host:+${host}-} test || return
+		make -C ${libcap_bld_dir} -j ${jobs} prefix=${prefix} lib=lib CROSS_COMPILE=${host:+${host}-} BUILD_CC=cc GOLANG=no DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		for b in capsh getcap getpcaps setcap; do
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/sbin/${b} || return
@@ -1669,8 +1664,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${OpenCSD_bld_dir}/README.md ] || cp -Tvr ${OpenCSD_src_dir} ${OpenCSD_bld_dir} || return
-		generate_toolchain_wrapper ${OpenCSD_bld_dir} || return
-		make -C ${OpenCSD_bld_dir}/decoder/build/linux -j ${jobs} CROSS_COMPILE=${OpenCSD_bld_dir}/${host:+${host}-} || return
+		make -C ${OpenCSD_bld_dir}/decoder/build/linux -j ${jobs} CROSS_COMPILE=${host:+${host}-} || return
 		make -C ${OpenCSD_bld_dir}/decoder/build/linux -j ${jobs} PREFIX=${prefix} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/trc_pkt_lister || return
@@ -1750,12 +1744,10 @@ EOF
 		fetch libbpf || return
 		unpack libbpf || return
 		[ -f ${bcc_src_dir}/src/cc/libbpf/README.md ] || cp -Tvr ${libbpf_src_dir} ${bcc_src_dir}/src/cc/libbpf || return
-		generate_gcc_wrapper ${bcc_bld_dir} || return
-		generate_gxx_wrapper ${bcc_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${bcc_src_dir} -B ${bcc_bld_dir} \
-			-DCMAKE_C_COMPILER=${bcc_bld_dir}/${host:+${host}-}gcc \
-			-DCMAKE_CXX_COMPILER=${bcc_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_C_FLAGS="${CFLAGS} `L elf z`" \
 			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I FlexLexer.h` `l elf z tinfo`" \
@@ -1779,12 +1771,10 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		sed -i -e 's/\(set(CMAKE_REQUIRED_LIBRARIES bcc\)\()\)/\1 tinfo\2/' ${bpftrace_src_dir}/CMakeLists.txt || return
-		generate_gcc_wrapper ${bpftrace_bld_dir} || return
-		generate_gxx_wrapper ${bpftrace_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${bpftrace_src_dir} -B ${bpftrace_bld_dir} \
-			-DCMAKE_C_COMPILER=${bpftrace_bld_dir}/${host:+${host}-}gcc \
-			-DCMAKE_CXX_COMPILER=${bpftrace_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_C_FLAGS="${CFLAGS} `l elf z`" \
 			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bcc/compat/linux/bpf.h`/bcc/compat `I libelf.h bfd.h` `l elf z tinfo`" \
@@ -2324,12 +2314,11 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${u_boot_bld_dir}/Makefile ] || cp -Tvr ${u_boot_src_dir} ${u_boot_bld_dir} || return
-		generate_gcc_wrapper ${u_boot_bld_dir} || return
 		[ -f ${u_boot_bld_dir}/.config ] ||
 			make -C ${u_boot_bld_dir} -j ${jobs} V=1 sandbox_defconfig || return
 		sed -i -e 's/^	\$(Q)\$(MAKE) \$(build)=\$@$/& HOSTCC=$(MYCC)/' ${u_boot_bld_dir}/Makefile || return
 		sed -i -e '/^\<hostc_flags\>/s! \$(__hostc_flags)$!& '`idirafter openssl/evp.h`'!' ${u_boot_bld_dir}/scripts/Makefile.host || return
-		make -C ${u_boot_bld_dir} -j ${jobs} V=1 NO_SDL=1 MYCC=${u_boot_bld_dir}/${host:+${host}-}gcc HOSTLDFLAGS=`L ssl` tools || return
+		make -C ${u_boot_bld_dir} -j ${jobs} V=1 NO_SDL=1 MYCC=${host:+${host}-}gcc HOSTLDFLAGS=`L ssl` tools || return
 		mkdir -pv ${DESTDIR}${prefix}/bin || return
 		find ${u_boot_bld_dir}/tools -maxdepth 1 -type f -perm /100 -exec install -vt ${DESTDIR}${prefix}/bin {} + || return
 		[ -z "${strip}" ] && return
@@ -2790,14 +2779,12 @@ EOF
 		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
-		generate_gcc_wrapper ${cmake_bld_dir} || return
-		generate_gxx_wrapper ${cmake_bld_dir} || return
 		[ -f ${cmake_bld_dir}/Makefile ] ||
 			(cd ${cmake_bld_dir}
 			CC= CXX= ${cmake_src_dir}/bootstrap --verbose --prefix=${DESTDIR}${prefix} --parallel=${jobs} \
 				--system-curl --system-expat --system-zlib --system-bzip2 --system-liblzma -- \
-				-DCMAKE_C_COMPILER=${cmake_bld_dir}/${host:+${host}-}gcc \
-				-DCMAKE_CXX_COMPILER=${cmake_bld_dir}/${host:+${host}-}g++ \
+				-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+				-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 				-DCMAKE_CXX_FLAGS="${CXXFLAGS} `l ssl crypto zstd idn2`" \
 				-DCURL_INCLUDE_DIR=`print_header_dir curl.h curl` \
 				-DCURL_LIBRARY_RELEASE=`print_library_path libcurl.so` \
@@ -2822,10 +2809,9 @@ EOF
 		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
 		fetch ${1} || return
 		unpack ${1} || return
-		generate_gxx_wrapper ${ninja_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${ninja_src_dir} -B ${ninja_bld_dir} \
-			-DCMAKE_CXX_COMPILER=${ninja_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 			-DCMAKE_INSTALL_PREFIX=${prefix} || return
 		cmake --build ${ninja_bld_dir} -v -j ${jobs} || return
@@ -2873,12 +2859,10 @@ EOF
 		[ ${build} = ${host} ] || which llvm-tblgen > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
-		generate_gcc_wrapper ${llvm_bld_dir} || return
-		generate_gxx_wrapper ${llvm_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${llvm_src_dir} -B ${llvm_bld_dir} \
-			-DCMAKE_C_COMPILER=${llvm_bld_dir}/${host:+${host}-}gcc \
-			-DCMAKE_CXX_COMPILER=${llvm_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_CROSSCOMPILING=True \
 			-DLLVM_ENABLE_RTTI=ON \
@@ -2898,12 +2882,10 @@ EOF
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		fetch ${1} || return
 		unpack ${1} || return
-		generate_gcc_wrapper ${compiler_rt_bld_dir} || return
-		generate_gxx_wrapper ${compiler_rt_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${compiler_rt_src_dir} -B ${compiler_rt_bld_dir} \
-			-DCMAKE_C_COMPILER=${compiler_rt_bld_dir}/${host:+${host}-}gcc \
-			-DCMAKE_CXX_COMPILER=${compiler_rt_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_INSTALL_RPATH=';' -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ \
 			-DCMAKE_CXX_COMPILER_ID=Clang || return
@@ -2925,12 +2907,10 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		ln -Tfsv ${libcxx_src_dir} ${libunwind_src_dir}/../libcxx || return
-		generate_gcc_wrapper ${libunwind_bld_dir} || return
-		generate_gxx_wrapper ${libunwind_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${libunwind_src_dir} -B ${libunwind_bld_dir} \
-			-DCMAKE_C_COMPILER=${libunwind_bld_dir}/${host:+${host}-}gcc \
-			-DCMAKE_CXX_COMPILER=${libunwind_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_INSTALL_RPATH=';' -DLIBUNWIND_USE_COMPILER_RT=ON \
 			-DLLVM_PATH=${llvm_src_dir} || return
@@ -2953,12 +2933,10 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		ln -Tfsv ${libcxx_src_dir} ${libcxxabi_src_dir}/../libcxx || return
-		generate_gcc_wrapper ${libcxxabi_bld_dir} || return
-		generate_gxx_wrapper ${libcxxabi_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${libcxxabi_src_dir} -B ${libcxxabi_bld_dir} \
-			-DCMAKE_C_COMPILER=${libcxxabi_bld_dir}/${host:+${host}-}gcc \
-			-DCMAKE_CXX_COMPILER=${libcxxabi_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_CXX_FLAGS=`L unwind` \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_INSTALL_RPATH=';' \
@@ -2981,12 +2959,10 @@ EOF
 		unpack ${1} || return
 		ln -Tfsv ${llvm_src_dir} ${libcxx_src_dir}/../llvm || return
 		ln -Tfsv ${libcxxabi_src_dir} ${libcxx_src_dir}/../libcxxabi || return
-		generate_gcc_wrapper ${libcxx_bld_dir} || return
-		generate_gxx_wrapper ${libcxx_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${libcxx_src_dir} -B ${libcxx_bld_dir} \
-			-DCMAKE_C_COMPILER=${libcxx_bld_dir}/${host:+${host}-}gcc \
-			-DCMAKE_CXX_COMPILER=${libcxx_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_CXX_FLAGS=`L unwind` \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_INSTALL_RPATH=';' -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${libcxx_src_dir}/../libcxxabi/include \
@@ -3029,12 +3005,10 @@ EOF
    } IncludeIndicator;
  
 EOF
-		generate_gcc_wrapper ${clang_bld_dir} || return
-		generate_gxx_wrapper ${clang_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${clang_src_dir} -B ${clang_bld_dir} \
-			-DCMAKE_C_COMPILER=${clang_bld_dir}/${host:+${host}-}gcc \
-			-DCMAKE_CXX_COMPILER=${clang_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_CXX_FLAGS="`I llvm/Config/llvm-config.h` `L LLVM`" \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_CROSSCOMPILING=True \
@@ -3069,12 +3043,10 @@ EOF
 		unpack ${1} || return
 		ln -Tfsv ${libunwind_src_dir} ${llvm_src_dir}/../libunwind || return
 		generate_llvm_config_dummy `dirname ${0}` || return
-		generate_gcc_wrapper ${lld_bld_dir} || return
-		generate_gxx_wrapper ${lld_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${lld_src_dir} -B ${lld_bld_dir} \
-			-DCMAKE_C_COMPILER=${lld_bld_dir}/${host:+${host}-}gcc \
-			-DCMAKE_CXX_COMPILER=${lld_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DLLVM_TABLEGEN_EXE=`which llvm-tblgen` \
 			-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON || return
@@ -3128,12 +3100,10 @@ EOF
 		[ ${build} = ${host} ] || which lldb-tblgen > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
-		generate_gcc_wrapper ${lldb_bld_dir} || return
-		generate_gxx_wrapper ${lldb_bld_dir} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${lldb_src_dir} -B ${lldb_bld_dir} \
-			-DCMAKE_C_COMPILER=${lldb_bld_dir}/${host:+${host}-}gcc \
-			-DCMAKE_CXX_COMPILER=${lldb_bld_dir}/${host:+${host}-}g++ \
+			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_CROSSCOMPILING=True \
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
@@ -3755,6 +3725,7 @@ update_ccache_wrapper()
 
 generate_command_wrapper()
 {
+	[ -f ${1}/${2} ] && return
 	cat << EOF > ${1}/${2} || return
 #!/bin/sh
 ${3}
@@ -3762,12 +3733,21 @@ EOF
 	chmod a+x ${1}/${2} || return
 }
 
+which_real()
+{
+	for p in `which -a ${1}`; do
+		readlink ${p} | grep -qe '/ccache$' && continue
+		echo ${p}
+		break
+	done
+}
+
 generate_gcc_wrapper()
 {
 	generate_command_wrapper ${1} ${host:+${host}-}gcc \
 		"`{
 			echo exec
-			which ${host:+${host}-}gcc
+			which_real ${host:+${host}-}gcc
 			echo ${CC:-${host:+${host}-}gcc} | grep -oPe '(?<= ).+'
 			echo \\"\\$@\\"
 		} | tr '\n' ' '`" || return
@@ -3778,7 +3758,7 @@ generate_gxx_wrapper()
 	generate_command_wrapper ${1} ${host:+${host}-}g++ \
 		"`{
 			echo exec
-			which ${host:+${host}-}g++
+			which_real ${host:+${host}-}g++
 			echo ${CXX:-${host:+${host}-}g++} | grep -oPe '(?<= ).+'
 			echo \\"\\$@\\"
 		} | tr '\n' ' '`" || return
@@ -3803,14 +3783,57 @@ generate_toolchain_wrapper()
 		} | tr '\n' ' '`" || return
 }
 
+generate_autoconf_wrapper()
+{
+	! which autoconf > /dev/null && return
+
+	for f in autoconf autoheader; do
+		generate_command_wrapper ${1} ${f} "\
+export AUTOM4TE=`which autom4te`
+export autom4te_perllibdir=$(readlink -m $(dirname $(which autoconf))/../share/autoconf)
+export AC_MACRODIR=\${autom4te_perllibdir}
+export trailer_m4=\${AC_MACRODIR}/autoconf/trailer.m4
+exec `which ${f}` -I \${AC_MACRODIR} \"\$@\"" || return
+	done
+}
+
+generate_automake_wrapper()
+{
+	! which automake > /dev/null && return
+
+	am_ver=$(grep -m 1 -oPe "(?<=automake-)[\d.]+(?='\)$)" ${2})
+	[ -z "${am_ver}" ] && return
+
+	for f in automake automake-${am_ver}; do
+		generate_command_wrapper ${1} ${f} "\
+export PERLLIB=$(readlink -m $(dirname ${2})/../share/automake)-${am_ver}
+exec `which ${f}` --libdir \${PERLLIB} \"\$@\"" || return
+	done
+
+	for f in aclocal aclocal-${am_ver}; do
+		generate_command_wrapper ${1} ${f} "\
+export autom4te_perllibdir=$(readlink -m $(dirname $(which autoconf))/../share/autoconf)
+export AC_MACRODIR=\${autom4te_perllibdir}
+export PERLLIB=$(readlink -m $(dirname ${2})/../share/automake)-${am_ver}
+export AUTOMAKE_UNINSTALLED=1
+dir=$(readlink -m $(dirname ${2})/../share/aclocal)
+exec `which ${f}` --automake-acdir=\${dir}-${am_ver} --system-acdir=\${dir} \"\$@\"" || return
+	done
+
+	unset am_ver
+	generate_command_wrapper ${1} autom4te "\
+exec `which autom4te` -B $(readlink -m $(dirname $(which autoconf))/../share/autoconf) \"\$@\"" || return
+}
+
 generate_meson_cross_file()
 {
+	[ -f ${1} ] && return
 	cat << EOF > ${1} || return
 [constants]
 
 [binaries]
-c   = ['`echo ${CC:-${host:+${host}-}gcc} | sed -e "s/ \+/', '/g"`']
-cpp = ['`echo ${CXX:-${host:+${host}-}g++} | sed -e "s/ \+/', '/g"`']
+c   = '${host:+${host}-}gcc'
+cpp = '${host:+${host}-}g++'
 ar    = '${host:+${host}-}ar'
 strip = '${host:+${host}-}strip'
 cmake = 'cmake'
@@ -4000,74 +4023,6 @@ func_place_holder
 EOF
 }
 
-setup_pathconfig_for_build()
-{
-	orig_host=${host}
-	orig_DESTDIR=${DESTDIR}
-
-	host=${build}
-	DESTDIR=`readlink -m ${build}`
-	generate_pathconfig ${DESTDIR}${prefix}/pathconfig.sh || return
-	. ${DESTDIR}${prefix}/pathconfig.sh || return
-
-	host=${orig_host}
-	DESTDIR=${orig_DESTDIR}
-	unset orig_host orig_DESTDIR
-
-	d=`dirname ${0}`
-	! which autoconf > /dev/null || [ ${d}/autoconf = `which autoconf` ] ||
-		for f in autoconf autoheader; do
-			generate_command_wrapper ${d} ${f} "\
-export AUTOM4TE=`which autom4te`
-export autom4te_perllibdir=$(readlink -m $(dirname $(which autoconf))/../share/autoconf)
-export AC_MACRODIR=\${autom4te_perllibdir}
-export trailer_m4=\${AC_MACRODIR}/autoconf/trailer.m4
-exec `which ${f}` -I \${AC_MACRODIR} \"\$@\"" || return
-		done
-
-	a=`which automake`
-	! which automake > /dev/null || [ ${d}/automake = ${a} ] || {
-		am_ver=$(grep -m 1 -oPe "(?<=automake-)[\d.]+(?='\)$)" ${a})
-
-		for f in automake automake-${am_ver}; do
-			generate_command_wrapper ${d} ${f} "\
-export PERLLIB=$(readlink -m $(dirname ${a})/../share/automake)-${am_ver}
-exec `which ${f}` --libdir \${PERLLIB} \"\$@\"" || return
-		done
-
-		for f in aclocal aclocal-${am_ver}; do
-			generate_command_wrapper ${d} ${f} "\
-export autom4te_perllibdir=$(readlink -m $(dirname $(which autoconf))/../share/autoconf)
-export AC_MACRODIR=\${autom4te_perllibdir}
-export PERLLIB=$(readlink -m $(dirname ${a})/../share/automake)-${am_ver}
-export AUTOMAKE_UNINSTALLED=1
-dir=$(readlink -m $(dirname ${a})/../share/aclocal)
-exec `which ${f}` --automake-acdir=\${dir}-${am_ver} --system-acdir=\${dir} \"\$@\"" || return
-		done
-
-		unset am_ver
-		generate_command_wrapper ${d} autom4te "\
-exec `which autom4te` -B $(readlink -m $(dirname $(which autoconf))/../share/autoconf) \"\$@\"" || return
-	}
-
-	echo ${PATH} | tr : '\n' | grep -qe ^${d}\$ \
-		&& PATH=${d}`echo ${PATH} | sed -e "
-				s%\(^\|:\)${d}\(\$\|:\)%\1\2%g
-				s/::/:/g
-				s/^://
-				s/:\$//
-				s/^./:&/
-			"` \
-		|| PATH=${d}${PATH:+:${PATH}}
-
-	generate_meson_cross_file ${d}/${host} || return
-
-	unset a
-	unset d
-
-	set_compiler_as_env_vars || return
-}
-
 set_compiler_as_env_vars()
 {
 	unset AR AS GDB NM OBJCOPY OBJDUMP RANLIB STRIP
@@ -4083,6 +4038,53 @@ set_compiler_as_env_vars()
 	export CPP="${host:+${host}-}gcc -E${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
 	export LD="${host:+${host}-}ld${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
 	export LDSHARED="${host:+${host}-}ld${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
+}
+
+setup_pathconfig_for_build()
+{
+	orig_host=${host}
+	orig_DESTDIR=${DESTDIR}
+
+	host=${build}
+	DESTDIR=`readlink -m ${build}`
+	generate_pathconfig ${DESTDIR}${prefix}/pathconfig.sh || return
+	. ${DESTDIR}${prefix}/pathconfig.sh || return
+
+	dir=`dirname ${0}`
+	a=`which automake`
+	# the following functions assume that ${dir} is not in ${PATH} yet.
+	generate_autoconf_wrapper ${dir} || return
+	generate_automake_wrapper ${dir} ${a} || return
+
+	# ccache must have the highest priority in the PATH.
+	# In other words, when you invoke a compiler(when you run '${host}-gcc' command),
+	# the '${host}-gcc' first found in the PATH must be a symbolic link to the ccache.
+	# And, the found(and invoked) ccache then searches the real(effective)
+	# '${host}-gcc' compiler in the PATH.
+	for d in ${dir} ${DESTDIR}${prefix}/lib/ccache; do
+		echo ${PATH} | tr : '\n' | grep -qe ^${d}\$ \
+			&& PATH=${d}`echo ${PATH} | sed -e "
+					s%\(^\|:\)${d}\(\$\|:\)%\1\2%g
+					s/::/:/g
+					s/^://
+					s/:\$//
+					s/^./:&/
+				"` \
+			|| PATH=${d}${PATH:+:${PATH}}
+	done
+
+	host=${orig_host}
+	DESTDIR=${orig_DESTDIR}
+	unset orig_host orig_DESTDIR
+
+	# the following functions uses 'host' and 'DESTDIR',
+	# so these functions must not be called before
+	# 'host' and 'DESTDIR' are recovered.
+	generate_toolchain_wrapper ${dir} || return
+	generate_meson_cross_file ${dir}/${host} || return
+	set_compiler_as_env_vars || return
+
+	unset dir a d
 }
 
 manipulate_libc()
