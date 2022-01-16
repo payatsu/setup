@@ -3620,6 +3620,7 @@ EOF
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			--build.pkg-config-path `host=${build} print_library_dir wayland-scanner.pc` \
+			--pkg-config-path `print_library_dir libffi.pc` \
 			-Ddocumentation=false ${wayland_src_dir} ${wayland_bld_dir} || return
 		ninja -v -C ${wayland_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${wayland_bld_dir} install || return
