@@ -3201,6 +3201,7 @@ EOF
 		print_header_path Xproto.h X11 > /dev/null || ${0} ${cmdopt} xproto || return
 		print_header_path Xtrans.h X11/Xtrans > /dev/null || ${0} ${cmdopt} xtrans || return
 		print_header_path ICE.h X11/ICE > /dev/null || ${0} ${cmdopt} libICE || return
+		print_header_path uuid.h uuid > /dev/null || ${0} ${cmdopt} util-linux || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libSM_bld_dir}/Makefile ] ||
@@ -3360,7 +3361,7 @@ EOF
 		[ -f ${libXpm_bld_dir}/Makefile ] ||
 			(cd ${libXpm_bld_dir}
 			${libXpm_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-				LIBS="`l SM ICE xcb Xau Xdmcp`" \
+				LIBS="`l SM ICE uuid xcb Xau Xdmcp`" \
 				PKG_CONFIG_PATH= \
 				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
