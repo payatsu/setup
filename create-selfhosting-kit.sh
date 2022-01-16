@@ -3717,6 +3717,9 @@ EOF
 		print_header_path dri2proto.h X11/extensions > /dev/null || ${0} ${cmdopt} dri2proto || return
 		print_header_path dri3proto.h X11/extensions > /dev/null || ${0} ${cmdopt} dri3proto || return
 		print_header_path GLdispatchABI.h glvnd > /dev/null || ${0} ${cmdopt} libglvnd || return
+		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
+		print_header_path libunwind.h > /dev/null || ${0} ${cmdopt} libunwindnongnu || return
+		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
 		pip3 install --root ${DESTDIR} --prefix ${prefix} mako || return
 		fetch ${1} || return
