@@ -4013,7 +4013,7 @@ install_native_libglvnd()
 
 install_native_mesa()
 {
-	[ -f ${prefix}/include/GL/gl.h -a "${force_install}" != yes ] && return
+	[ -f ${prefix}/include/EGL/eglmesaext.h -a "${force_install}" != yes ] && return
 	pkg-config --exists xcb-proto || install_native_xcb_proto || return
 	print_header_path xcb.h xcb > /dev/null || install_native_libxcb || return
 	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
@@ -4040,7 +4040,7 @@ install_native_mesa()
 install_native_glu()
 {
 	[ -f ${prefix}/include/GL/glu.h -a "${force_install}" != yes ] && return
-	print_header_path gl.h GL > /dev/null || install_native_mesa || return
+	print_header_path eglmesaext.h EGL > /dev/null || install_native_mesa || return
 	which meson > /dev/null || install_native_meson || return
 	fetch glu || return
 	unpack glu || return
@@ -4137,7 +4137,7 @@ install_native_qt()
 	print_header_path ICE.h X11/ICE > /dev/null || install_native_libICE || return
 	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
 	print_header_path atspi.h at-spi-2.0/atspi > /dev/null || install_native_at_spi2_core || return
-	print_header_path gl.h GL > /dev/null || install_native_mesa || return
+	print_header_path eglmesaext.h EGL > /dev/null || install_native_mesa || return
 	print_header_path pcre2.h > /dev/null || install_native_pcre2 || return
 	print_header_path zlib.h > /dev/null || install_native_zlib || return
 	print_header_path hb.h harfbuzz > /dev/null || install_native_harfbuzz || return
@@ -6672,7 +6672,7 @@ install_native_VTK()
 	[ -f ${prefix}/include/vtk-`print_version VTK`/vtkVersion.h -a "${force_install}" != yes ] && return
 	which cmake > /dev/null || install_native_cmake || return
 	which python3 > /dev/null || install_native_Python || return
-	print_header_path gl.h GL > /dev/null || install_native_mesa || return
+	print_header_path eglmesaext.h EGL > /dev/null || install_native_mesa || return
 	fetch VTK || return
 	unpack VTK || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
