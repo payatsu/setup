@@ -234,6 +234,8 @@ EOF
 : ${Imath_ver:=3.1.3}
 : ${openexr_ver:=3.1.3}
 
+: ${cython_ver:=0.29.26}
+
 : ${util_macros_ver:=1.19.3}
 : ${xproto_ver:=7.0.31}
 : ${libXau_ver:=1.0.9}
@@ -602,6 +604,9 @@ fetch()
 	openexr)
 		wget -O ${openexr_src_dir}.tar.gz \
 			https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v${openexr_ver}.tar.gz || return;;
+	cython)
+		wget -O ${cython_src_dir}.tar.gz \
+			https://github.com/cython/cython/archive/refs/tags/${cython_ver}.tar.gz;;
 	util-macros)
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
@@ -3316,6 +3321,15 @@ EOF
 			cmake --build ${openexr_bld_dir} -v -j ${jobs} || return
 			cmake --install ${openexr_bld_dir} -v ${strip:+--${strip}} || return
 		done
+		;;
+	cython)
+		[ -x ${DESTDIR}${prefix}/bin/cython -a "${force_install}" != yes ] && return
+		print_binary_path python3 > /dev/null || ${0} ${cmdopt} Python || return
+		fetch ${1} || return
+		unpack ${1} || return
+		(cd ${cython_src_dir}
+		CC=${CC:-${host:+${host}-}gcc} LDSHARED="${CC:-${host:+${host}-}gcc} --shared" \
+			python3 setup.py build -j ${jobs} install ${DESTDIR:+--root ${DESTDIR}} --prefix ${prefix}) || return
 		;;
 	util-macros)
 		[ -f ${DESTDIR}${prefix}/share/pkgconfig/xorg-macros.pc -a "${force_install}" != yes ] && return
