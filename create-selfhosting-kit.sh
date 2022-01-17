@@ -228,6 +228,7 @@ EOF
 : ${libpng_ver:=1.6.37}
 : ${tiff_ver:=4.2.0}
 : ${jpeg_ver:=v9d}
+: ${giflib_ver:=5.2.1}
 
 : ${util_macros_ver:=1.19.3}
 : ${xproto_ver:=7.0.31}
@@ -582,6 +583,9 @@ fetch()
 	jpeg)
 		wget -O ${jpeg_src_dir}.tar.gz \
 			https://www.ijg.org/files/${jpeg_name}.tar.gz || return;;
+	giflib)
+		wget --trust-server-names -O ${giflib_src_dir}.tar.gz \
+			https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.gz/download || return;;
 	util-macros)
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
@@ -3209,6 +3213,20 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${jpeg_bld_dir} -j ${jobs} -k check || return
 		make -C ${jpeg_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	giflib)
+		[ -f ${DESTDIR}${prefix}/include/gif_lib.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${giflib_bld_dir}/Makefile ] || cp -Tvr ${giflib_src_dir} ${giflib_bld_dir} || return
+		make -C ${giflib_bld_dir} -j ${jobs} CC=${CC:-${host:+${host}-}gcc} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${giflib_bld_dir} -j ${jobs} -k check || return
+		make -C ${giflib_bld_dir} -j ${jobs} install DESTDIR=${DESTDIR} PREFIX=${prefix} || return
+		[ -z "${strip}" ] && return
+		for b in gif2rgb  gifbuild  gifclrmp  giffix  giftext  giftool; do
+			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
+		done
 		;;
 	util-macros)
 		[ -f ${DESTDIR}${prefix}/share/pkgconfig/xorg-macros.pc -a "${force_install}" != yes ] && return
