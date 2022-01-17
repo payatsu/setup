@@ -230,6 +230,7 @@ EOF
 : ${jpeg_ver:=v9d}
 : ${giflib_ver:=5.2.1}
 : ${libwebp_ver:=1.2.1}
+: ${openjpeg_ver:=2.4.0}
 
 : ${util_macros_ver:=1.19.3}
 : ${xproto_ver:=7.0.31}
@@ -590,6 +591,9 @@ fetch()
 	libwebp)
 		wget -O ${libwebp_src_dir}.tar.gz \
 			https://storage.googleapis.com/downloads.webmproject.org/releases/webp/${libwebp_name}.tar.gz || return;;
+	openjpeg)
+		wget -O ${openjpeg_src_dir}.tar.gz \
+			https://github.com/uclouvain/openjpeg/archive/refs/tags/v${openjpeg_ver}.tar.gz || return;;
 	util-macros)
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
@@ -3193,6 +3197,7 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${libpng_bld_dir} -j ${jobs} -k check || return
 		make -C ${libpng_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		ln -fsv libpng`print_version libpng 2 | tr -d .` ${DESTDIR}${prefix}/include/libpng || return
 		;;
 	tiff)
 		[ -f ${DESTDIR}${prefix}/include/tiffio.h -a "${force_install}" != yes ] && return
@@ -3247,6 +3252,24 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${libwebp_bld_dir} -j ${jobs} -k check || return
 		make -C ${libwebp_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	openjpeg)
+		[ -f ${DESTDIR}${prefix}/include/openjpeg-`print_version openjpeg 2`/openjpeg.h -a "${force_install}" != yes ] && return
+		print_header_path png.h > /dev/null || ${0} ${cmdopt} libpng || return
+		print_header_path tiff.h > /dev/null || ${0} ${cmdopt} tiff || return
+		fetch ${1} || return
+		unpack ${1} || return
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${openjpeg_src_dir} -B ${openjpeg_bld_dir} \
+			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} \
+			-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DCMAKE_PREFIX_PATH=`print_prefix png.h` \
+			-DBUILD_SHARED_LIBS=ON \
+			-DBUILD_STATIC_LIBS=ON \
+			|| return
+		cmake --build ${openjpeg_bld_dir} -v -j ${jobs} || return
+		cmake --install ${openjpeg_bld_dir} -v ${strip:+--${strip}} || return
 		;;
 	util-macros)
 		[ -f ${DESTDIR}${prefix}/share/pkgconfig/xorg-macros.pc -a "${force_install}" != yes ] && return
