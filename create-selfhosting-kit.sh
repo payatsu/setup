@@ -1501,6 +1501,7 @@ EOF
 		print_header_path ffi.h > /dev/null || ${0} ${cmdopt} libffi || return
 		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		print_header_path pcre.h > /dev/null || ${0} ${cmdopt} pcre || return
+		print_header_path libmount.h libmount > /dev/null || ${0} ${cmdopt} util-linux || return
 		which gettext > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gettext || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
 		fetch ${1} || return
