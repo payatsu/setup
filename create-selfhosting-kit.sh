@@ -279,6 +279,7 @@ EOF
 : ${mesa_ver:=21.3.1}
 : ${glu_ver:=9.0.2}
 : ${libepoxy_ver:=1.5.9}
+: ${gobject_introspection_ver:=1.70.0}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -422,9 +423,10 @@ fetch()
 	popt)
 		wget -O ${popt_src_dir}.tar.gz \
 			http://ftp.rpm.org/popt/releases/popt-1.x/${popt_name}.tar.gz || return;;
-	glib)
-		wget -O ${glib_src_dir}.tar.xz \
-			https://ftp.gnome.org/pub/gnome/sources/glib/`print_version glib`/${glib_name}.tar.xz || return;;
+	glib|gobject-introspection)
+		plus=`[ ${1} = gtk ] && eval echo \$\{${_1}_ver} | grep -qe '^3\.' && echo +`
+		eval wget -O \${${_1}_src_dir}.tar.xz \
+			https://ftp.gnome.org/pub/gnome/sources/${1:-glib}${plus}/\`print_version ${1:-glib}\`/\${${_1:-glib}_name}.tar.xz || return;;
 	babeltrace)
 		wget -O ${babeltrace_src_dir}.tar.gz \
 			https://github.com/efficios/babeltrace/archive/v${babeltrace_ver}.tar.gz || return;;
@@ -817,6 +819,7 @@ print_packages()
 		s/util_macros/util-macros/
 		s/xcb_proto/xcb-proto/
 		s/wayland_protocols/wayland-protocols/
+		s/gobject_introspection/gobject-introspection/
 	' || return
 }
 
@@ -3967,6 +3970,18 @@ EOF
 			${libepoxy_src_dir} ${libepoxy_bld_dir} || return
 		ninja -v -C ${libepoxy_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${libepoxy_bld_dir} install || return
+		;;
+	gobject-introspection)
+		[ -f ${DESTDIR}${prefix}/include/gobject-introspection-1.0/giversion.h -a "${force_install}" != yes ] && return
+		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
+		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			${gobject_introspection_src_dir} ${gobject_introspection_bld_dir} || return
+		ninja -v -C ${gobject_introspection_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${gobject_introspection_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
