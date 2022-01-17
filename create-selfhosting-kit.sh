@@ -231,6 +231,7 @@ EOF
 : ${giflib_ver:=5.2.1}
 : ${libwebp_ver:=1.2.1}
 : ${openjpeg_ver:=2.4.0}
+: ${Imath_ver:=3.1.3}
 
 : ${util_macros_ver:=1.19.3}
 : ${xproto_ver:=7.0.31}
@@ -594,6 +595,9 @@ fetch()
 	openjpeg)
 		wget -O ${openjpeg_src_dir}.tar.gz \
 			https://github.com/uclouvain/openjpeg/archive/refs/tags/v${openjpeg_ver}.tar.gz || return;;
+	Imath)
+		wget -O ${Imath_src_dir}.tar.gz \
+			https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/v${Imath_ver}.tar.gz || return;;
 	util-macros)
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
@@ -3270,6 +3274,23 @@ EOF
 			|| return
 		cmake --build ${openjpeg_bld_dir} -v -j ${jobs} || return
 		cmake --install ${openjpeg_bld_dir} -v ${strip:+--${strip}} || return
+		;;
+	Imath)
+		[ -f ${DESTDIR}${prefix}/include/Imath/half.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		for build_shared_libs in ON OFF; do
+			cmake `which ninja > /dev/null && echo -G Ninja` \
+				-S ${Imath_src_dir} -B ${Imath_bld_dir} \
+				-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+				-DCMAKE_BUILD_TYPE=${cmake_build_type} \
+				-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+				-DCMAKE_SKIP_INSTALL_RPATH=TRUE \
+				-DBUILD_SHARED_LIBS=${build_shared_libs} \
+				|| return
+			cmake --build ${Imath_bld_dir} -v -j ${jobs} || return
+			cmake --install ${Imath_bld_dir} -v ${strip:+--${strip}} || return
+		done
 		;;
 	util-macros)
 		[ -f ${DESTDIR}${prefix}/share/pkgconfig/xorg-macros.pc -a "${force_install}" != yes ] && return
