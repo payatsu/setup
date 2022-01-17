@@ -229,6 +229,7 @@ EOF
 : ${tiff_ver:=4.2.0}
 : ${jpeg_ver:=v9d}
 : ${giflib_ver:=5.2.1}
+: ${libwebp_ver:=1.2.1}
 
 : ${util_macros_ver:=1.19.3}
 : ${xproto_ver:=7.0.31}
@@ -586,6 +587,9 @@ fetch()
 	giflib)
 		wget --trust-server-names -O ${giflib_src_dir}.tar.gz \
 			https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.gz/download || return;;
+	libwebp)
+		wget -O ${libwebp_src_dir}.tar.gz \
+			https://storage.googleapis.com/downloads.webmproject.org/releases/webp/${libwebp_name}.tar.gz || return;;
 	util-macros)
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
@@ -3227,6 +3231,22 @@ EOF
 		for b in gif2rgb  gifbuild  gifclrmp  giffix  giftext  giftool; do
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
+		;;
+	libwebp)
+		[ -f ${DESTDIR}${prefix}/include/webp/decode.h -a "${force_install}" != yes ] && return
+		print_header_path png.h > /dev/null || ${0} ${cmdopt} libpng || return
+		print_header_path tiff.h > /dev/null || ${0} ${cmdopt} tiff || return
+		print_header_path jpeglib.h > /dev/null || ${0} ${cmdopt} jpeg || return
+		print_header_path gif_lib.h > /dev/null || ${0} ${cmdopt} giflib || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libwebp_bld_dir}/Makefile ] ||
+			(cd ${libwebp_bld_dir}
+			${libwebp_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${libwebp_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${libwebp_bld_dir} -j ${jobs} -k check || return
+		make -C ${libwebp_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	util-macros)
 		[ -f ${DESTDIR}${prefix}/share/pkgconfig/xorg-macros.pc -a "${force_install}" != yes ] && return
