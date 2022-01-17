@@ -235,6 +235,7 @@ EOF
 : ${openexr_ver:=3.1.3}
 
 : ${cython_ver:=0.29.26}
+: ${OpenBLAS_ver:=0.3.19}
 
 : ${util_macros_ver:=1.19.3}
 : ${xproto_ver:=7.0.31}
@@ -607,6 +608,9 @@ fetch()
 	cython)
 		wget -O ${cython_src_dir}.tar.gz \
 			https://github.com/cython/cython/archive/refs/tags/${cython_ver}.tar.gz;;
+	OpenBLAS)
+		wget -O ${OpenBLAS_src_dir}.tar.gz \
+			https://github.com/xianyi/OpenBLAS/releases/download/v${OpenBLAS_ver}/${OpenBLAS_name}.tar.gz || return;;
 	util-macros)
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
@@ -3330,6 +3334,22 @@ EOF
 		(cd ${cython_src_dir}
 		CC=${CC:-${host:+${host}-}gcc} LDSHARED="${CC:-${host:+${host}-}gcc} --shared" \
 			python3 setup.py build -j ${jobs} install ${DESTDIR:+--root ${DESTDIR}} --prefix ${prefix}) || return
+		;;
+	OpenBLAS)
+		[ -f ${DESTDIR}${prefix}/include/openblas/openblas_config.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${OpenBLAS_src_dir} -B ${OpenBLAS_bld_dir} \
+			-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DCMAKE_SYSTEM_NAME=Linux \
+			-DCMAKE_SYSTEM_PROCESSOR=`echo ${host} | cut -d - -f 1` \
+			-DDYNAMIC_ARCH=ON -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=ON \
+			|| return
+		cmake --build ${OpenBLAS_bld_dir} -v -j ${jobs} || return
+		cmake --install ${OpenBLAS_bld_dir} -v ${strip:+--${strip}} || return
 		;;
 	util-macros)
 		[ -f ${DESTDIR}${prefix}/share/pkgconfig/xorg-macros.pc -a "${force_install}" != yes ] && return
