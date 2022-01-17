@@ -226,6 +226,7 @@ EOF
 : ${lldb_ver:=${llvm_ver}}
 
 : ${libpng_ver:=1.6.37}
+: ${tiff_ver:=4.2.0}
 
 : ${util_macros_ver:=1.19.3}
 : ${xproto_ver:=7.0.31}
@@ -565,6 +566,9 @@ fetch()
 	libpng)
 		wget --trust-server-names -O ${libpng_src_dir}.tar.xz \
 			https://download.sourceforge.net/libpng/${libpng_name}.tar.xz || return;;
+	tiff)
+		wget -O ${tiff_src_dir}.tar.gz \
+			https://download.osgeo.org/libtiff/${tiff_name}.tar.gz || return;;
 	util-macros)
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
@@ -3168,6 +3172,18 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${libpng_bld_dir} -j ${jobs} -k check || return
 		make -C ${libpng_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	tiff)
+		[ -f ${DESTDIR}${prefix}/include/tiffio.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${tiff_bld_dir}/Makefile ] ||
+			(cd ${tiff_bld_dir}
+			${tiff_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+		make -C ${tiff_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${tiff_bld_dir} -j ${jobs} -k check || return
+		make -C ${tiff_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	util-macros)
 		[ -f ${DESTDIR}${prefix}/share/pkgconfig/xorg-macros.pc -a "${force_install}" != yes ] && return
