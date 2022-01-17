@@ -182,6 +182,7 @@ EOF
 : ${dtc_ver:=1.6.0}
 : ${kmod_ver:=28}
 : ${u_boot_ver:=2021.01}
+: ${pixman_ver:=0.40.0}
 : ${tar_ver:=1.34}
 : ${cpio_ver:=2.13}
 : ${e2fsprogs_ver:=1.46.2}
@@ -529,6 +530,9 @@ fetch()
 	u-boot)
 		wget -O ${u_boot_src_dir}.tar.bz2 \
 			ftp://ftp.denx.de/pub/u-boot/${u_boot_name}.tar.bz2 || return;;
+	pixman)
+		eval wget -O \${${_1}_src_dir}.tar.gz \
+			https://www.cairographics.org/releases/\${${_1:-pixman}_name}.tar.gz || return;;
 	e2fsprogs)
 		wget -O ${e2fsprogs_src_dir}.tar.gz \
 			https://sourceforge.net/projects/e2fsprogs/files/e2fsprogs/v${e2fsprogs_ver}/${e2fsprogs_name}.tar.gz/download || return;;
@@ -2400,6 +2404,21 @@ EOF
 			mkenvimage mkimage ncb proftool spl_size_limit; do
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
+		;;
+	pixman)
+		[ -f ${DESTDIR}${prefix}/include/pixman-1/pixman.h -a "${force_install}" != yes ] && return
+		print_header_path png.h > /dev/null || ${0} ${cmdopt} libpng || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${pixman_bld_dir}/Makefile ] ||
+			(cd ${pixman_bld_dir}
+			${pixman_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				PKG_CONFIG_PATH= \
+				PKG_CONFIG_LIBDIR=`print_library_dir libpng.pc` \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
+		make -C ${pixman_bld_dir} -j ${jobs} || return
+		make -C ${pixman_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	tar)
 		[ -x ${DESTDIR}${prefix}/bin/tar -a "${force_install}" != yes ] && return
