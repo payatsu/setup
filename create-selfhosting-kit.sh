@@ -266,6 +266,7 @@ EOF
 : ${libdrm_ver:=2.4.109}
 : ${mesa_ver:=21.3.1}
 : ${glu_ver:=9.0.2}
+: ${libepoxy_ver:=1.5.9}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -586,6 +587,9 @@ fetch()
 	glu)
 		wget -O ${glu_src_dir}.tar.xz \
 			https://archive.mesa3d.org//glu/${glu_name}.tar.xz || return;;
+	libepoxy)
+		wget -O ${libepoxy_src_dir}.tar.xz \
+			https://github.com/anholt/libepoxy/releases/download/${libepoxy_ver}/${libepoxy_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -3746,6 +3750,20 @@ EOF
 			${glu_src_dir} ${glu_bld_dir} || return
 		ninja -v -C ${glu_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${glu_bld_dir} install || return
+		;;
+	libepoxy)
+		[ -f ${DESTDIR}${prefix}/include/epoxy/egl.h -a "${force_install}" != yes ] && return
+		print_header_path Core.h X11 > /dev/null || ${0} ${cmdopt} libXt || return
+		print_header_path eglmesaext.h EGL > /dev/null || ${0} ${cmdopt} mesa || return
+		print_header_path glu.h GL > /dev/null || ${0} ${cmdopt} glu || return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			-Dc_args="${CFLAGS} `I X11/Xlib.h`" \
+			${libepoxy_src_dir} ${libepoxy_bld_dir} || return
+		ninja -v -C ${libepoxy_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${libepoxy_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
