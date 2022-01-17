@@ -225,6 +225,8 @@ EOF
 : ${swig_ver:=4.0.2}
 : ${lldb_ver:=${llvm_ver}}
 
+: ${libpng_ver:=1.6.37}
+
 : ${util_macros_ver:=1.19.3}
 : ${xproto_ver:=7.0.31}
 : ${libXau_ver:=1.0.9}
@@ -560,6 +562,9 @@ fetch()
 	llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://github.com/llvm/llvm-project/releases/download/llvmorg-\${${_1}_ver}/\${${_1}_name}.tar.xz || return;;
+	libpng)
+		wget --trust-server-names -O ${libpng_src_dir}.tar.xz \
+			https://download.sourceforge.net/libpng/${libpng_name}.tar.xz || return;;
 	util-macros)
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
@@ -3148,6 +3153,21 @@ EOF
 		cmake --install ${lldb_bld_dir} -v ${strip:+--${strip}} || return
 		[ ! -f ${lldb_bld_dir}/bin/lldb-tblgen ] && return
 		install -D ${strip:+-s} -v -t ${DESTDIR}${prefix}/bin ${lldb_bld_dir}/bin/lldb-tblgen || return
+		;;
+	libpng)
+		[ -f ${DESTDIR}${prefix}/include/png.h -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libpng_bld_dir}/Makefile ] ||
+			(cd ${libpng_bld_dir}
+			${libpng_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+				CPPFLAGS="${CPPFLAGS} `I zlib.h`" \
+				LDFLAGS="${LDFLAGS} `L z`") || return
+		make -C ${libpng_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${libpng_bld_dir} -j ${jobs} -k check || return
+		make -C ${libpng_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	util-macros)
 		[ -f ${DESTDIR}${prefix}/share/pkgconfig/xorg-macros.pc -a "${force_install}" != yes ] && return
