@@ -183,6 +183,7 @@ EOF
 : ${kmod_ver:=28}
 : ${u_boot_ver:=2021.01}
 : ${pixman_ver:=0.40.0}
+: ${qemu_ver:=6.1.0}
 : ${tar_ver:=1.34}
 : ${cpio_ver:=2.13}
 : ${e2fsprogs_ver:=1.46.2}
@@ -533,6 +534,9 @@ fetch()
 	pixman)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://www.cairographics.org/releases/\${${_1:-pixman}_name}.tar.gz || return;;
+	qemu)
+		wget -O ${qemu_src_dir}.tar.xz \
+			https://download.qemu.org/${qemu_name}.tar.xz || return;;
 	e2fsprogs)
 		wget -O ${e2fsprogs_src_dir}.tar.gz \
 			https://sourceforge.net/projects/e2fsprogs/files/e2fsprogs/v${e2fsprogs_ver}/${e2fsprogs_name}.tar.gz/download || return;;
@@ -2419,6 +2423,27 @@ EOF
 				) || return
 		make -C ${pixman_bld_dir} -j ${jobs} || return
 		make -C ${pixman_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	qemu)
+		[ -x ${DESTDIR}${prefix}/bin/qemu-img -a "${force_install}" != yes ] && return
+		which pkg-config > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} pkg-config || return
+		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
+		print_header_path pixman.h pixman-1.0 > /dev/null || ${0} ${cmdopt} pixman || return
+		fetch ${1} || return
+		unpack ${1} || return
+		(cd ${qemu_bld_dir}
+		PKG_CONFIG_PATH= \
+		PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
+		PKG_CONFIG_SYSROOT_DIR=`print_pkg_config_sysroot glib-2.0.pc` \
+		${qemu_src_dir}/configure --prefix=${prefix} \
+			--cc=${CC:-${host:+${host}-}gcc} --host-cc=${build:+${build}-}gcc \
+			--cxx=${CXX:-${host:+${host}-}g++} \
+			--extra-cflags=`I zlib.h` --extra-ldflags=`L z` \
+			) || return
+		make -C ${qemu_bld_dir} -j ${jobs} V=1 || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${qemu_bld_dir} -j ${jobs} -k test || return
+		make -C ${qemu_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		;;
 	tar)
 		[ -x ${DESTDIR}${prefix}/bin/tar -a "${force_install}" != yes ] && return
