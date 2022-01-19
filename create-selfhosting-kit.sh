@@ -3391,6 +3391,7 @@ EOF
 			-S ${OpenBLAS_src_dir} -B ${OpenBLAS_bld_dir} \
 			-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
 			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_Fortran_COMPILER=${FC:-${host:+${host}-}gfortran} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_SYSTEM_NAME=Linux \
 			-DCMAKE_SYSTEM_PROCESSOR=`echo ${host} | cut -d - -f 1` \
