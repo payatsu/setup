@@ -4417,9 +4417,8 @@ set_compiler_as_env_vars()
 	unset CC CXX CPP LD LDSHARED
 	unset CFLAGS CXXFLAGS LDFLAGS
 	unset CROSS_COMPILE CONFIGURE_FLAGS
-	[ ${build} = ${host} ] && unset PKG_CONFIG_PATH
 
-	[ ${build} = ${host} ] && return
+	[ ${build} = ${host} ] && { unset PKG_CONFIG_PATH; return;}
 
 	export CC="${host:+${host}-}gcc${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
 	export CXX="${host:+${host}-}g++${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
