@@ -1032,8 +1032,6 @@ build()
 			--with-ssl=`print_prefix ssl.h openssl` \
 			LDFLAGS="${LDFLAGS} `L zstd idn2`" \
 			LIBS='-lzstd -lidn2' \
-			PKG_CONFIG_PATH= \
-			PKG_CONFIG_LIBDIR= \
 			PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		) || return
 		make -C ${curl_bld_dir} -j ${jobs} || return
@@ -1059,8 +1057,6 @@ build()
 				CFLAGS="${CFLAGS} `I zlib.h zstd.h`" \
 				LDFLAGS="${LDFLAGS} `L z bz2 lzma zstd`" \
 				LIBS="${LIBS} `l z bz2 lzma curl zstd idn2 ssl crypto`" \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_library_dir libcurl.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${elfutils_bld_dir} -j ${jobs} || return
@@ -4425,6 +4421,22 @@ set_compiler_as_env_vars()
 	export CPP="${host:+${host}-}gcc -E${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
 	export LD="${host:+${host}-}ld${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
 	export LDSHARED="${host:+${host}-}ld${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
+
+	for d in \
+		${DESTDIR}${prefix}/lib \
+		${DESTDIR}${prefix}/lib64 \
+		${DESTDIR}${prefix}/share; do
+		echo ${PKG_CONFIG_PATH} | tr : '\n' | grep -qe ^${d}\$ \
+			&& PKG_CONFIG_PATH=${d}`echo ${PKG_CONFIG_PATH} | sed -e "
+					s%\(^\|:\)${d}\(\$\|:\)%\1\2%g
+					s/::/:/g
+					s/^://
+					s/:\$//
+					s/^./:&/
+				"` \
+			|| PKG_CONFIG_PATH=${d}${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
+	done
+	export PKG_CONFIG_PATH
 }
 
 setup_pathconfig_for_build()
