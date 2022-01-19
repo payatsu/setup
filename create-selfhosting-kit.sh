@@ -283,6 +283,7 @@ EOF
 : ${libepoxy_ver:=1.5.9}
 : ${gobject_introspection_ver:=1.70.0}
 : ${freetype_ver:=2.11.0}
+: ${fontconfig_ver:=2.13.1}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -655,6 +656,9 @@ fetch()
 	freetype)
 		wget -O ${freetype_src_dir}.tar.xz \
 			https://download.savannah.gnu.org/releases/freetype/${freetype_name}.tar.xz || return;;
+	fontconfig)
+		wget -O ${fontconfig_src_dir}.tar.bz2 \
+			https://www.freedesktop.org/software/fontconfig/release/${fontconfig_name}.tar.bz2 || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -4048,6 +4052,28 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${freetype_bld_dir} -j ${jobs} -k check || return
 		make -C ${freetype_bld_dir} -j ${jobs} RC= DESTDIR=${DESTDIR} install || return
+		;;
+	fontconfig)
+		[ -f ${DESTDIR}${prefix}/include/fontconfig/fontconfig.h -a "${force_install}" != yes ] && return
+		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
+		print_header_path uuid.h uuid > /dev/null || ${0} ${cmdopt} util-linux || return
+		print_header_path ft2build.h freetype2 > /dev/null || ${0} ${cmdopt} freetype || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${fontconfig_bld_dir}/Makefile ] ||
+			(cd ${fontconfig_bld_dir}
+			${fontconfig_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				--enable-static --disable-rpath \
+				CPPFLAGS="${CPPFLAGS} `I uuid/uuid.h`" \
+				LIBS="${LIBS} `l png z`" \
+				PKG_CONFIG_PATH= \
+				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
+				PKG_CONFIG_SYSROOT_DIR=`print_pkg_config_sysroot expat.pc` \
+				) || return
+		make -C ${fontconfig_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${fontconfig_bld_dir} -j ${jobs} -k check || return
+		make -C ${fontconfig_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
