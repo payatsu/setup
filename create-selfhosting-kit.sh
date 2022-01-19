@@ -1079,8 +1079,6 @@ build()
 --disable-rpath
 --enable-install-libiberty
 LIBS='`l z curl zstd idn2 ssl crypto`'
-PKG_CONFIG_PATH= \
-PKG_CONFIG_LIBDIR=`print_library_dir libdebuginfod.pc` \
 PKG_CONFIG_SYSROOT_DIR=${DESTDIR}
 EOF
 			${binutils_src_dir}/configure --prefix=${prefix} --host=${host} --target=${target} \
