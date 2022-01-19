@@ -282,6 +282,7 @@ EOF
 : ${glu_ver:=9.0.2}
 : ${libepoxy_ver:=1.5.9}
 : ${gobject_introspection_ver:=1.70.0}
+: ${freetype_ver:=2.11.0}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -651,6 +652,9 @@ fetch()
 	libepoxy)
 		wget -O ${libepoxy_src_dir}.tar.xz \
 			https://github.com/anholt/libepoxy/releases/download/${libepoxy_ver}/${libepoxy_name}.tar.xz || return;;
+	freetype)
+		wget -O ${freetype_src_dir}.tar.xz \
+			https://download.savannah.gnu.org/releases/freetype/${freetype_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -4027,6 +4031,23 @@ EOF
 			${gobject_introspection_src_dir} ${gobject_introspection_bld_dir} || return
 		ninja -v -C ${gobject_introspection_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${gobject_introspection_bld_dir} install || return
+		;;
+	freetype)
+		[ -f ${DESTDIR}${prefix}/include/freetype2/ft2build.h -a "${force_install}" != yes ] && return
+		print_header_path png.h > /dev/null || ${0} ${cmdopt} libpng || return
+		fetch ${1} || return
+		unpack ${1} || return
+		(cd ${freetype_bld_dir}
+		${freetype_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+			--enable-freetype-config \
+			PKG_CONFIG_PATH= \
+			PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
+			PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+			) || return
+		make -C ${freetype_bld_dir} -j ${jobs} RC= || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${freetype_bld_dir} -j ${jobs} -k check || return
+		make -C ${freetype_bld_dir} -j ${jobs} RC= DESTDIR=${DESTDIR} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
