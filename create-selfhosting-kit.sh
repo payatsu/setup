@@ -1386,8 +1386,6 @@ EOF
 				LDSHARED= \
 				CFLAGS="${CFLAGS} -I`{ print_header_dir curses.h ncursesw | sed -e 's/include$/&\/ncursesw/'; print_header_dir curses.h;} | head -n 1` `I expat.h`" \
 				LDFLAGS="${LDFLAGS} `L expat`" \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_library_dir libffi.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				CONFIG_SITE=config.site || return
 			) || return
@@ -2378,8 +2376,6 @@ EOF
 			(cd ${kmod_bld_dir}
 			${kmod_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--with-xz --with-zlib --with-openssl \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_library_dir liblzma.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${kmod_bld_dir} -j ${jobs} || return
@@ -2419,8 +2415,6 @@ EOF
 		[ -f ${pixman_bld_dir}/Makefile ] ||
 			(cd ${pixman_bld_dir}
 			${pixman_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_library_dir libpng.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${pixman_bld_dir} -j ${jobs} || return
