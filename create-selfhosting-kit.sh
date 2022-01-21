@@ -2022,9 +2022,7 @@ EOF
 		sed -i -e '
 			s!^    : \${CC=gcc}$!    CC="'"${CC:-${host:+${host}-}gcc}"'"!
 			/^check_elf$/aecho "LDLIBS += '"`l z`"'" >> $CONFIG' ${iproute2_bld_dir}/configure || return
-		PKG_CONFIG_PATH= \
-			PKG_CONFIG_LIBDIR=`print_library_dir libelf.pc` \
-			PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 			make -C ${iproute2_bld_dir} -j ${jobs} V=1 \
 				PREFIX=${prefix} \
 				CONFDIR=${prefix}/etc/iproute2 \
@@ -2707,8 +2705,6 @@ EOF
 			CPPFLAGS="${CPPFLAGS} `I ncurses.h`" LDFLAGS="${LDFLAGS} `L ncurses` `l z lzma`" \
 				${emacs_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--without-sound --with-dumping=none --without-dbus --without-gnutls --with-modules --without-x \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_library_dir libxml-2.0.pc` \
 				PKG_CONFIG_SYSROOT_DIR=`print_pkg_config_sysroot libxml-2.0.pc` \
 				) || return
 		make -C ${emacs_bld_dir} -j ${jobs} || return
@@ -2954,8 +2950,6 @@ EOF
 				--without-python --disable-silent-rules \
 				CFLAGS="${CFLAGS} `I zlib.h`" \
 				LDFLAGS="${LDFLAGS} `L z`" \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_library_dir zlib.pc` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libxml2_bld_dir} -j ${jobs} || return
@@ -3473,8 +3467,6 @@ EOF
 		[ -f ${libSM_bld_dir}/Makefile ] ||
 			(cd ${libSM_bld_dir}
 			${libSM_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libSM_bld_dir} -j ${jobs} || return
@@ -3500,8 +3492,6 @@ EOF
 		[ -f ${libxcb_bld_dir}/Makefile ] ||
 			(cd ${libxcb_bld_dir}
 			${libxcb_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libxcb_bld_dir} -j ${jobs} || return
@@ -3553,8 +3543,6 @@ EOF
 			(cd ${libX11_bld_dir}
 			${libX11_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--enable-malloc0returnsnull \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libX11_bld_dir} -j ${jobs} || return
@@ -3571,8 +3559,6 @@ EOF
 			(cd ${libXext_bld_dir}
 			${libXext_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--enable-malloc0returnsnull \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libXext_bld_dir} -j ${jobs} || return
@@ -3591,8 +3577,6 @@ EOF
 			(cd ${libXt_bld_dir}
 			${libXt_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--enable-malloc0returnsnull \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libXt_bld_dir} -j ${jobs} || return
@@ -3609,8 +3593,6 @@ EOF
 		[ -f ${libXmu_bld_dir}/Makefile ] ||
 			(cd ${libXmu_bld_dir}
 			${libXmu_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libXmu_bld_dir} -j ${jobs} || return
@@ -3628,8 +3610,6 @@ EOF
 			(cd ${libXpm_bld_dir}
 			${libXpm_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				LIBS="`l SM ICE uuid xcb Xau Xdmcp`" \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libXpm_bld_dir} -j ${jobs} || return
@@ -3651,8 +3631,6 @@ EOF
 		[ -f ${libXaw_bld_dir}/Makefile ] ||
 			(cd ${libXaw_bld_dir}
 			${libXaw_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libXaw_bld_dir} -j ${jobs} || return
@@ -3670,8 +3648,6 @@ EOF
 		[ -f ${libXi_bld_dir}/Makefile ] ||
 			(cd ${libXi_bld_dir}
 			${libXi_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libXi_bld_dir} -j ${jobs} || return
@@ -3700,8 +3676,6 @@ EOF
 		[ -f ${libXfixes_bld_dir}/Makefile ] ||
 			(cd ${libXfixes_bld_dir}
 			${libXfixes_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libXfixes_bld_dir} -j ${jobs} || return
@@ -3731,8 +3705,6 @@ EOF
 		[ -f ${libXdamage_bld_dir}/Makefile ] ||
 			(cd ${libXdamage_bld_dir}
 			${libXdamage_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libXdamage_bld_dir} -j ${jobs} || return
@@ -3760,8 +3732,6 @@ EOF
 			(cd ${libXrender_bld_dir}
 			${libXrender_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--enable-malloc0returnsnull \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libXrender_bld_dir} -j ${jobs} || return
@@ -3791,8 +3761,6 @@ EOF
 			(cd ${libXrandr_bld_dir}
 			${libXrandr_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--enable-malloc0returnsnull \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libXrandr_bld_dir} -j ${jobs} || return
@@ -3809,8 +3777,6 @@ EOF
 		[ -f ${libXcursor_bld_dir}/Makefile ] ||
 			(cd ${libXcursor_bld_dir}
 			${libXcursor_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libXcursor_bld_dir} -j ${jobs} || return
@@ -3840,8 +3806,6 @@ EOF
 			(cd ${libXinerama_bld_dir}
 			${libXinerama_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--enable-malloc0returnsnull \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libXinerama_bld_dir} -j ${jobs} || return
@@ -4032,8 +3996,6 @@ EOF
 		(cd ${freetype_bld_dir}
 		${freetype_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 			--enable-freetype-config \
-			PKG_CONFIG_PATH= \
-			PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 			PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 			) || return
 		make -C ${freetype_bld_dir} -j ${jobs} RC= || return
@@ -4054,8 +4016,6 @@ EOF
 				--enable-static --disable-rpath \
 				CPPFLAGS="${CPPFLAGS} `I uuid/uuid.h`" \
 				LIBS="${LIBS} `l png z`" \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 				PKG_CONFIG_SYSROOT_DIR=`print_pkg_config_sysroot expat.pc` \
 				) || return
 		make -C ${fontconfig_bld_dir} -j ${jobs} || return
@@ -4406,13 +4366,7 @@ set_compiler_as_env_vars()
 	unset CFLAGS CXXFLAGS LDFLAGS
 	unset CROSS_COMPILE CONFIGURE_FLAGS
 
-	[ ${build} = ${host} ] && { unset PKG_CONFIG_PATH; return;}
-
-	export CC="${host:+${host}-}gcc${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
-	export CXX="${host:+${host}-}g++${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
-	export CPP="${host:+${host}-}gcc -E${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
-	export LD="${host:+${host}-}ld${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
-	export LDSHARED="${host:+${host}-}ld${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
+	[ ${build} = ${host} ] && unset PKG_CONFIG_PATH PKG_CONFIG_LIBDIR
 
 	for d in \
 		${DESTDIR}${prefix}/lib \
@@ -4429,6 +4383,16 @@ set_compiler_as_env_vars()
 			|| PKG_CONFIG_PATH=${d}${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 	done
 	export PKG_CONFIG_PATH
+
+	[ ${build} = ${host} ] && return
+
+	PKG_CONFIG_LIBDIR=`print_pkg_config_libdir`
+
+	export CC="${host:+${host}-}gcc${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
+	export CXX="${host:+${host}-}g++${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
+	export CPP="${host:+${host}-}gcc -E${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
+	export LD="${host:+${host}-}ld${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
+	export LDSHARED="${host:+${host}-}ld${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
 }
 
 setup_pathconfig_for_build()
