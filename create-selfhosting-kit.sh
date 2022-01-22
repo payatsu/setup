@@ -711,7 +711,7 @@ print_library_path()
 		`echo ${1} | grep -qe '\.pc$' && echo ${DESTDIR}${prefix}/share` \
 		`[ ${build} = ${host} ] && echo /usr/local/lib64 /usr/local/lib` \
 		`LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
-			sed -e '/^libraries: =/{s/^libraries: =//;p};d' | tr : '\n' | xargs realpath -eq`; do
+			sed -e '/^libraries: =/{s/^libraries: =//;p};d' | xargs -d : realpath -eq`; do
 		[ -d ${d}${2:+/${2}} ] || continue
 		candidates=`find ${d}${2:+/${2}} \( -type f -o -type l \) -name ${1} | filter_shortest_hierarchy`
 		[ -n "${candidates}" ] && echo "${candidates}" && return
@@ -799,7 +799,7 @@ print_pkg_config_libdir()
 			${DESTDIR}${prefix}/lib64 \
 			${DESTDIR}${prefix}/share; do
 			[ -d ${d} ] || continue
-			find ${d} -maxdepth 3 -type d -name pkgconfig
+			find ${d} -maxdepth 2 -type d -name pkgconfig
 		done
 
 		LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
@@ -2423,6 +2423,7 @@ EOF
 		[ -x ${DESTDIR}${prefix}/bin/qemu-img -a "${force_install}" != yes ] && return
 		which pkg-config > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} pkg-config || return
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
+		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
 		print_header_path pixman.h pixman-1.0 > /dev/null || ${0} ${cmdopt} pixman || return
 		fetch ${1} || return
 		unpack ${1} || return
@@ -4415,10 +4416,16 @@ set_compiler_as_env_vars()
 	[ ${build} = ${host} ] && unset PKG_CONFIG_PATH PKG_CONFIG_LIBDIR
 
 	for d in \
+		`{ LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
+			sed -e '/^libraries: =/{s/^libraries: =//;p};d' |
+			xargs -d : realpath -eq
+		[ ${build} = ${host} ] && echo /usr/local/lib64 /usr/local/lib | tr ' ' '\n'
+		} | xargs -I @ find @ -maxdepth 2 -type d -name pkgconfig` \
 		${DESTDIR}${prefix}/lib/pkgconfig \
 		${DESTDIR}${prefix}/lib/${host:+${host}/}pkgconfig \
 		${DESTDIR}${prefix}/lib64/pkgconfig \
 		${DESTDIR}${prefix}/share/pkgconfig; do
+		[ -d ${d} ] || continue
 		echo ${PKG_CONFIG_PATH} | tr : '\n' | grep -qe ^${d}\$ \
 			&& PKG_CONFIG_PATH=${d}`echo ${PKG_CONFIG_PATH} | sed -e "
 					s%\(^\|:\)${d}\(\$\|:\)%\1\2%g
