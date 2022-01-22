@@ -2525,8 +2525,7 @@ EOF
 		[ -f ${libevent_bld_dir}/Makefile ] ||
 			(cd ${libevent_bld_dir}
 			${libevent_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=`print_library_dir openssl.pc` \
+				LDFLAGS="${LDFLAGS} `L ssl crypto`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libevent_bld_dir} -j ${jobs} || return
