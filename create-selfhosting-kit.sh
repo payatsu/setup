@@ -3990,6 +3990,7 @@ EOF
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dgi_cross_use_prebuilt_gi=true \
+			-Dbuild_introspection_data=false \
 			-Dgi_cross_pkgconfig_sysroot_path=${DESTDIR} \
 			${gobject_introspection_src_dir} ${gobject_introspection_bld_dir} || return
 		ninja -v -C ${gobject_introspection_bld_dir} || return
