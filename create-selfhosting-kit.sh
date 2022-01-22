@@ -4387,7 +4387,7 @@ set_compiler_as_env_vars()
 
 	[ ${build} = ${host} ] && return
 
-	PKG_CONFIG_LIBDIR=`print_pkg_config_libdir`
+	export PKG_CONFIG_LIBDIR=`print_pkg_config_libdir`
 
 	export CC="${host:+${host}-}gcc${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
 	export CXX="${host:+${host}-}g++${SDKTARGETSYSROOT:+ --sysroot=${SDKTARGETSYSROOT}}"
