@@ -2415,13 +2415,13 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		(cd ${qemu_bld_dir}
-		PKG_CONFIG_PATH= \
-		PKG_CONFIG_LIBDIR=`print_pkg_config_libdir` \
 		PKG_CONFIG_SYSROOT_DIR=`print_pkg_config_sysroot glib-2.0.pc` \
-		${qemu_src_dir}/configure --prefix=${prefix} \
+		PKG_CONFIG=pkg-config ${qemu_src_dir}/configure --prefix=${prefix} \
+			${host:+--cross-prefix=${host}-} \
 			--cc=${CC:-${host:+${host}-}gcc} --host-cc=${build:+${build}-}gcc \
 			--cxx=${CXX:-${host:+${host}-}g++} \
-			--extra-cflags=`I zlib.h` --extra-ldflags=`L z` \
+			--extra-cflags=`I zlib.h` \
+			--extra-ldflags="`l pcre z`" \
 			) || return
 		make -C ${qemu_bld_dir} -j ${jobs} V=1 || return
 		[ "${enable_check}" != yes ] ||
