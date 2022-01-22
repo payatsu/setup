@@ -285,6 +285,7 @@ EOF
 : ${freetype_ver:=2.11.0}
 : ${fontconfig_ver:=2.13.1}
 : ${cairo_ver:=1.16.0}
+: ${fribidi_ver:=1.0.11}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -663,6 +664,9 @@ fetch()
 	cairo)
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://www.cairographics.org/releases/\${${_p:-cairo}_name}.tar.xz || return;;
+	fribidi)
+		wget -O ${fribidi_src_dir}.tar.xz \
+			https://github.com/fribidi/fribidi/releases/download/v${fribidi_ver}/${fribidi_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -4035,6 +4039,19 @@ EOF
 				) || return
 		make -C ${cairo_bld_dir} -j ${jobs} || return
 		make -C ${cairo_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	fribidi)
+		[ -f ${DESTDIR}${prefix}/include/fribidi/fribidi.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${fribidi_src_dir}/configure ] ||
+			NOCONFIGURE=1 ${fribidi_src_dir}/autogen.sh || return
+		[ -f ${fribidi_bld_dir}/Makefile ] ||
+			(cd ${fribidi_bld_dir}
+			${fribidi_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+				--disable-silent-rules --enable-static) || return
+		make -C ${fribidi_bld_dir} -j ${jobs} || return
+		make -C ${fribidi_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
