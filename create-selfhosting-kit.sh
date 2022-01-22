@@ -1893,8 +1893,6 @@ EOF
 		unpack ${1} || return
 		sed -i -e 's/,-rpath=\$\$ORIGIN//' ${libtracefs_src_dir}/scripts/utils.mk || return
 		(export \
-			PKG_CONFIG_PATH= \
-			PKG_CONFIG_LIBDIR=`print_library_dir libtraceevent.pc` \
 			PKG_CONFIG_SYSROOT_DIR=${DESTDIR}
 		make -C ${libtracefs_src_dir} -j ${jobs} V=1 O=${libtracefs_bld_dir} \
 			CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
@@ -1913,8 +1911,6 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		sed -i -e 's/ -Wl,-rpath=\$(libdir)//' ${trace_cmd_src_dir}/scripts/utils.mk || return
-		PKG_CONFIG_PATH= \
-		PKG_CONFIG_LIBDIR=`print_library_dir libtracefs.pc` \
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		make -C ${trace_cmd_src_dir} -j ${jobs} V=1 O=${trace_cmd_bld_dir} \
 			CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
