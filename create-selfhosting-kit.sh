@@ -2493,8 +2493,9 @@ EOF
 			(cd ${v4l_utils_bld_dir}
 			${v4l_utils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--disable-rpath --with-udevdir=${prefix}/lib/udev \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR= \
+				CPPFLAGS="${CPPFLAGS} `I X11/Xlib.h`" \
+				LIBS="${LIBS} `l xcb Xau jpeg z GLX X11 GLdispatch stdc++`" \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${v4l_utils_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
