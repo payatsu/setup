@@ -4369,9 +4369,10 @@ set_compiler_as_env_vars()
 	[ ${build} = ${host} ] && unset PKG_CONFIG_PATH PKG_CONFIG_LIBDIR
 
 	for d in \
-		${DESTDIR}${prefix}/lib \
-		${DESTDIR}${prefix}/lib64 \
-		${DESTDIR}${prefix}/share; do
+		${DESTDIR}${prefix}/lib/pkgconfig \
+		${DESTDIR}${prefix}/lib/${host:+${host}/}pkgconfig \
+		${DESTDIR}${prefix}/lib64/pkgconfig \
+		${DESTDIR}${prefix}/share/pkgconfig; do
 		echo ${PKG_CONFIG_PATH} | tr : '\n' | grep -qe ^${d}\$ \
 			&& PKG_CONFIG_PATH=${d}`echo ${PKG_CONFIG_PATH} | sed -e "
 					s%\(^\|:\)${d}\(\$\|:\)%\1\2%g
