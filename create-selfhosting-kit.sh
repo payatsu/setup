@@ -286,6 +286,7 @@ EOF
 : ${fontconfig_ver:=2.13.1}
 : ${cairo_ver:=1.16.0}
 : ${fribidi_ver:=1.0.11}
+: ${harfbuzz_ver:=3.2.0}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -667,6 +668,9 @@ fetch()
 	fribidi)
 		wget -O ${fribidi_src_dir}.tar.xz \
 			https://github.com/fribidi/fribidi/releases/download/v${fribidi_ver}/${fribidi_name}.tar.xz || return;;
+	harfbuzz)
+		wget -O ${harfbuzz_src_dir}.tar.xz \
+			https://github.com/harfbuzz/harfbuzz/releases/download/${harfbuzz_ver}/${harfbuzz_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -4052,6 +4056,18 @@ EOF
 				--disable-silent-rules --enable-static) || return
 		make -C ${fribidi_bld_dir} -j ${jobs} || return
 		make -C ${fribidi_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	harfbuzz)
+		[ -f ${DESTDIR}${prefix}/include/harfbuzz/hb.h -a "${force_install}" != yes ] && return
+		print_header_path cairo.h cairo > /dev/null || ${0} ${cmdopt} cairo || return
+		print_header_path giversion.h gobject-introspection-1.0 > /dev/null || ${0} ${cmdopt} gobject-introspection || return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			${harfbuzz_src_dir} ${harfbuzz_bld_dir} || return
+		ninja -v -C ${harfbuzz_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${harfbuzz_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
