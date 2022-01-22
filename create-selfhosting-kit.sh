@@ -695,6 +695,14 @@ print_sysroot()
 	${CC:-${host:+${host}-}gcc} -print-sysroot || return
 }
 
+print_libdir()
+{
+	{
+		find `print_sysroot` -maxdepth 2 -type d \( -name lib -o -name lib64 \) || return
+		find ${DESTDIR}${prefix} -maxdepth 2 -type d \( -name lib -o -name lib64 \) || return
+	} | tr '\n' : | sed -e 's/:$//'
+}
+
 filter_shortest_hierarchy()
 {
 	awk '{print split($0, a, /\//), $0}' | sort -n | cut -d ' ' -f 2 | head -n 1
@@ -4228,7 +4236,7 @@ strip = '${host:+${host}-}strip'
 cmake = 'cmake'
 pkgconfig   = 'pkg-config'
 llvm-config = 'llvm-config'
-exe_wrapper = ['qemu-`echo ${host} | cut -d - -f 1`', '-L', '`print_sysroot`']
+exe_wrapper = ['qemu-`echo ${host} | cut -d - -f 1`', '-L', '`print_sysroot`', '-E', 'LD_LIBRARY_PATH=`print_libdir`']
 
 [properties]
 sys_root = '${DESTDIR}'
