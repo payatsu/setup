@@ -2746,8 +2746,9 @@ EOF
 			(cd ${ctags_bld_dir}
 			./configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--disable-dependency-tracking \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=) || return
+				LIBS="${LIBS} `l lzma z`" \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
 		make -C ${ctags_bld_dir} -j ${jobs} || return
 		make -C ${ctags_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
