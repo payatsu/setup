@@ -3984,6 +3984,7 @@ EOF
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		which qemu-`echo ${host} | cut -d - -f 1` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4223,6 +4224,7 @@ strip = '${host:+${host}-}strip'
 cmake = 'cmake'
 pkgconfig   = 'pkg-config'
 llvm-config = 'llvm-config'
+exe_wrapper = ['qemu-`echo ${host} | cut -d - -f 1`', '-L', '`print_sysroot`']
 
 [properties]
 sys_root = '${DESTDIR}'
