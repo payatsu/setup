@@ -3984,10 +3984,13 @@ EOF
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
-		which qemu-`echo ${host} | cut -d - -f 1` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
+		[ ${build} = ${host} ] || which qemu-`echo ${host} | cut -d - -f 1` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
+		[ ${build} = ${host} ] || which g-ir-scanner > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			-Dgi_cross_use_prebuilt_gi=true \
+			-Dgi_cross_pkgconfig_sysroot_path=${DESTDIR} \
 			${gobject_introspection_src_dir} ${gobject_introspection_bld_dir} || return
 		ninja -v -C ${gobject_introspection_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${gobject_introspection_bld_dir} install || return
