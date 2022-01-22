@@ -1484,8 +1484,7 @@ EOF
 				--enable-write --disable-use-tty-group --with-bashcompletiondir=${prefix}/share/bash-completion \
 				CFLAGS="${CFLAGS} `I zlib.h Python.h`" \
 				LDFLAGS="`L tinfo`" \
-				PKG_CONFIG_PATH= \
-				PKG_CONFIG_LIBDIR=) || return
+				) || return
 		make -C ${util_linux_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${util_linux_bld_dir} -j ${jobs} -k check || return
@@ -1546,8 +1545,6 @@ EOF
 				CPPFLAGS="${CPPFLAGS} `I popt.h`" \
 				LDFLAGS="${LDFLAGS} `L popt`" \
 				LIBS="${LIBS} `l pcre z bz2 lzma zstd`" \
-				PKG_CONFIG_PATH=`print_library_dir glib-2.0.pc`:`print_library_dir libpcre.pc`  \
-				PKG_CONFIG_LIBDIR= \
 				PKG_CONFIG_SYSROOT_DIR=`print_pkg_config_sysroot glib-2.0.pc` \
 				ac_cv_func_malloc_0_nonnull=yes \
 				ac_cv_func_realloc_0_nonnull=yes \
@@ -1585,8 +1582,6 @@ CFLAGS='${CFLAGS} `I zlib.h curses.h Python.h`'
 CPPFLAGS='${CPPFLAGS} `I zlib.h Python.h`'
 LDFLAGS='-L`print_prefix Python.h`/lib `L popt`'
 LIBS='${LIBS} `l popt uuid gmodule-2.0 ffi glib-2.0 pcre dw elf z bz2 lzma curl ssl crypto zstd idn2`'
-PKG_CONFIG_PATH=
-PKG_CONFIG_LIBDIR=`print_library_dir source-highlight.pc`
 PKG_CONFIG_SYSROOT_DIR=${DESTDIR}
 EOF
 			${gdb_src_dir}/configure --prefix=${prefix} --host=${host} --target=${target} \
@@ -1688,8 +1683,6 @@ EOF
 		fetch linux || return
 		unpack linux || return
 		mkdir -pv ${perf_bld_dir} || return
-		PKG_CONFIG_PATH= \
-		PKG_CONFIG_LIBDIR= \
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${host:+${host}-} \
