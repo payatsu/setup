@@ -284,6 +284,7 @@ EOF
 : ${gobject_introspection_ver:=1.70.0}
 : ${freetype_ver:=2.11.0}
 : ${fontconfig_ver:=2.13.1}
+: ${cairo_ver:=1.16.0}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -659,6 +660,9 @@ fetch()
 	fontconfig)
 		wget -O ${fontconfig_src_dir}.tar.bz2 \
 			https://www.freedesktop.org/software/fontconfig/release/${fontconfig_name}.tar.bz2 || return;;
+	cairo)
+		eval wget -O \${${_1}_src_dir}.tar.xz \
+			https://www.cairographics.org/releases/\${${_p:-cairo}_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -4012,6 +4016,25 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${fontconfig_bld_dir} -j ${jobs} -k check || return
 		make -C ${fontconfig_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	cairo)
+		[ -f ${DESTDIR}${prefix}/include/cairo/cairo.h -a "${force_install}" != yes ] && return
+		print_header_path ft2build.h freetype2 > /dev/null || ${0} ${cmdopt} freetype || return
+		print_header_path fontconfig.h fontconfig > /dev/null || ${0} ${cmdopt} fontconfig || return
+		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
+		print_header_path pixman.h pixman-1.0 > /dev/null || ${0} ${cmdopt} pixman || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${cairo_src_dir}/Makefile ] ||
+			(cd ${cairo_bld_dir}
+			${cairo_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				--without-x \
+				CPPFLAGS="${CPPFLAGS} `I zlib.h`" \
+				LIBS="${LIBS} `l expat uuid z`" \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
+		make -C ${cairo_bld_dir} -j ${jobs} || return
+		make -C ${cairo_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
