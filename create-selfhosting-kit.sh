@@ -812,7 +812,6 @@ print_pkg_config_libdir()
 			${DESTDIR}${prefix}/lib \
 			${DESTDIR}${prefix}/lib64 \
 			${DESTDIR}${prefix}/share; do
-			[ -d ${d} ] || continue
 			find ${d} -maxdepth 2 -type d -name pkgconfig
 		done
 
@@ -1543,7 +1542,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
-			-Diconv=auto -Dc_args="${CFLAGS} -DLIBICONV_PLUG" ${glib_src_dir} ${glib_bld_dir} || return
+			-Diconv=auto -Dtests=false -Dc_args="${CFLAGS} -DLIBICONV_PLUG" ${glib_src_dir} ${glib_bld_dir} || return
 		ninja -v -C ${glib_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${glib_bld_dir} install || return
 		[ -z "${strip}" ] && return
@@ -4468,7 +4467,6 @@ set_compiler_as_env_vars()
 		${DESTDIR}${prefix}/lib/${host:+${host}/}pkgconfig \
 		${DESTDIR}${prefix}/lib64/pkgconfig \
 		${DESTDIR}${prefix}/share/pkgconfig; do
-		[ -d ${d} ] || continue
 		echo ${PKG_CONFIG_PATH} | tr : '\n' | grep -qe ^${d}\$ \
 			&& PKG_CONFIG_PATH=${d}`echo ${PKG_CONFIG_PATH} | sed -e "
 					s%\(^\|:\)${d}\(\$\|:\)%\1\2%g
