@@ -4531,6 +4531,7 @@ EOF
 		print_header_path video.h gstreamer-1.0/gst/video > /dev/null || ${0} ${cmdopt} gst-plugins-base || return
 #		print_header_path openblas_config.h openblas > /dev/null || ${0} ${cmdopt} OpenBLAS || return
 		print_header_path Core eigen3/Eigen > /dev/null || ${0} ${cmdopt} eigen || return
+		print_header_path message.h google/protobuf > /dev/null || ${0} ${cmdopt} protobuf || return
 		print_header_path ft2build.h freetype2 > /dev/null || ${0} ${cmdopt} freetype || return
 		print_header_path gflags.h gflags > /dev/null || ${0} ${cmdopt} gflags || return
 		print_header_path logging.h glog > /dev/null || ${0} ${cmdopt} glog || return
