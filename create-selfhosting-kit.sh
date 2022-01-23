@@ -235,6 +235,7 @@ EOF
 : ${openjpeg_ver:=2.4.0}
 : ${Imath_ver:=3.1.3}
 : ${openexr_ver:=3.1.3}
+: ${eigen_ver:=3.4.0}
 
 : ${cython_ver:=0.29.26}
 : ${OpenBLAS_ver:=0.3.19}
@@ -646,6 +647,9 @@ fetch()
 	openexr)
 		wget -O ${openexr_src_dir}.tar.gz \
 			https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v${openexr_ver}.tar.gz || return;;
+	eigen)
+		wget -O ${eigen_src_dir}.tar.bz2 \
+			https://gitlab.com/libeigen/eigen/-/archive/${eigen_ver}/${eigen_name}.tar.bz2 || return;;
 	cython)
 		wget -O ${cython_src_dir}.tar.gz \
 			https://github.com/cython/cython/archive/refs/tags/${cython_ver}.tar.gz;;
@@ -3431,6 +3435,17 @@ EOF
 			cmake --build ${openexr_bld_dir} -v -j ${jobs} || return
 			cmake --install ${openexr_bld_dir} -v ${strip:+--${strip}} || return
 		done
+		;;
+	eigen)
+		[ -f ${DESTDIR}${prefix}/include/eigen3/Eigen/Core -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${eigen_src_dir} -B ${eigen_bld_dir} \
+			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			|| return
+		cmake --install ${eigen_bld_dir} -v ${strip:+--${strip}} || return
 		;;
 	cython)
 		[ -x ${DESTDIR}${prefix}/bin/cython -a "${force_install}" != yes ] && return
