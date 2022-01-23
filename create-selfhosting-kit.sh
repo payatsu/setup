@@ -291,6 +291,7 @@ EOF
 : ${itstool_ver:=2.0.7}
 : ${shared_mime_info_ver:=2.1}
 : ${gdk_pixbuf_ver:=2.42.6}
+: ${atk_ver:=2.36.0}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -434,7 +435,7 @@ fetch()
 	popt)
 		wget -O ${popt_src_dir}.tar.gz \
 			http://ftp.rpm.org/popt/releases/popt-1.x/${popt_name}.tar.gz || return;;
-	glib|gobject-introspection|pango|gdk-pixbuf)
+	glib|gobject-introspection|pango|gdk-pixbuf|atk)
 		plus=`[ ${1} = gtk ] && eval echo \$\{${_1}_ver} | grep -qe '^3\.' && echo +`
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://ftp.gnome.org/pub/gnome/sources/${1:-glib}${plus}/\`print_version ${1:-glib}\`/\${${_1:-glib}_name}.tar.xz || return;;
@@ -4145,6 +4146,19 @@ EOF
 			${gdk_pixbuf_src_dir} ${gdk_pixbuf_bld_dir} || return
 		ninja -v -C ${gdk_pixbuf_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${gdk_pixbuf_bld_dir} install || return
+		;;
+	atk)
+		[ -f ${DESTDIR}${prefix}/include/atk-1.0/atk/atk.h -a "${force_install}" != yes ] && return
+		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
+		print_header_path giversion.h gobject-introspection-1.0 > /dev/null || ${0} ${cmdopt} gobject-introspection || return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			-Dintrospection=false \
+			${atk_src_dir} ${atk_bld_dir} || return
+		ninja -v -C ${atk_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${atk_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
