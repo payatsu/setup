@@ -297,6 +297,7 @@ EOF
 : ${libXtst_ver:=1.2.3}
 : ${at_spi2_core_ver:=AT_SPI2_CORE_2_42_0}
 : ${at_spi2_atk_ver:=AT_SPI2_ATK_2_38_0}
+: ${graphene_ver:=1.10.6}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -693,6 +694,9 @@ fetch()
 	at-spi2-core|at-spi2-atk)
 		eval wget -O \${${_1}_src_dir}.tar.bz2 \
 			https://gitlab.gnome.org/GNOME/${1}/-/archive/\${${_1}_ver}/\${${_1}_name}.tar.bz2 || return;;
+	graphene)
+		wget -O ${graphene_src_dir}.tar.xz \
+			https://github.com/ebassi/graphene/releases/download/${graphene_ver}/${graphene_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -4244,6 +4248,17 @@ EOF
 			${at_spi2_atk_src_dir} ${at_spi2_atk_bld_dir} || return
 		ninja -v -C ${at_spi2_atk_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${at_spi2_atk_bld_dir} install || return
+		;;
+	graphene)
+		[ -f ${DESTDIR}${prefix}/include/graphene-1.0/graphene.h -a "${force_install}" != yes ] && return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			-Dc_link_args="${LIBS} `l ffi pcre`" \
+			${graphene_src_dir} ${graphene_bld_dir} || return
+		ninja -v -C ${graphene_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${graphene_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
