@@ -301,6 +301,8 @@ EOF
 : ${libxkbcommon_ver:=1.3.1}
 : ${gtk_ver:=3.24.31}
 
+: ${gstreamer_ver:=1.18.5}
+
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
 : ${jobs:=${default_jobs}}
@@ -705,6 +707,9 @@ fetch()
 	libxkbcommon)
 		wget -O ${libxkbcommon_src_dir}.tar.xz \
 			https://xkbcommon.org/download/${libxkbcommon_name}.tar.xz || return;;
+	gstreamer)
+		eval wget -O \${${_1}_src_dir}.tar.xz \
+			https://gstreamer.freedesktop.org/src/${1:-gstreamer}/\${${_1:-gstreamer}_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -4300,6 +4305,17 @@ EOF
 			${gtk_src_dir} ${gtk_bld_dir} || return
 		ninja -v -C ${gtk_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${gtk_bld_dir} install || return
+		;;
+	gstreamer)
+		[ -x ${DESTDIR}${prefix}/bin/gst-launch-1.0 -a "${force_install}" != yes ] && return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			-Dc_link_args="${LDFLAGS} `l gmodule-2.0 glib-2.0 mount blkid ffi pcre`" \
+			${gstreamer_src_dir} ${gstreamer_bld_dir} || return
+		ninja -v -C ${gstreamer_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${gstreamer_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
