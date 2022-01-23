@@ -698,7 +698,8 @@ print_sysroot()
 print_libdir()
 {
 	{
-		find `print_sysroot` -maxdepth 2 -type d \( -name lib -o -name lib64 \) || return
+		LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
+			sed -e '/^libraries: =/{s/^libraries: =//;p};d' | xargs -d : realpath -eq || return
 		find ${DESTDIR}${prefix} -maxdepth 2 -type d \( -name lib -o -name lib64 \) || return
 	} | tr '\n' : | sed -e 's/:$//'
 }
@@ -4503,9 +4504,9 @@ setup_pathconfig_for_build()
 	# the following functions uses 'host' and 'DESTDIR',
 	# so these functions must not be called before
 	# 'host' and 'DESTDIR' are recovered.
+	set_compiler_as_env_vars || return
 	generate_toolchain_wrapper ${dir} || return
 	generate_meson_cross_file ${dir}/${host} || return
-	set_compiler_as_env_vars || return
 
 	unset dir a d
 }
