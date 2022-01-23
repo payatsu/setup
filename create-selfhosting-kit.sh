@@ -299,6 +299,7 @@ EOF
 : ${at_spi2_atk_ver:=AT_SPI2_ATK_2_38_0}
 : ${graphene_ver:=1.10.6}
 : ${libxkbcommon_ver:=1.3.1}
+: ${gtk_ver:=3.24.31}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -338,6 +339,9 @@ init()
 		eval ${_1}_name=${1}-v\${${_1}_ver};;
 	jpeg)
 		eval ${_1}_name=${1}src.\${${_1}_ver};;
+	gtk)
+		plus=`eval echo \$\{${_1}_ver} | grep -qe '^3\.' && echo + || true`
+		eval ${_1}_name=${1}${plus}-\${${_1}_ver};;
 	*)
 		eval ${_1}_name=${1}-\${${_1}_ver};;
 	esac
@@ -442,7 +446,7 @@ fetch()
 	popt)
 		wget -O ${popt_src_dir}.tar.gz \
 			http://ftp.rpm.org/popt/releases/popt-1.x/${popt_name}.tar.gz || return;;
-	glib|gobject-introspection|pango|gdk-pixbuf|atk)
+	glib|gobject-introspection|pango|gdk-pixbuf|atk|gtk)
 		plus=`[ ${1} = gtk ] && eval echo \$\{${_1}_ver} | grep -qe '^3\.' && echo +`
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://ftp.gnome.org/pub/gnome/sources/${1:-glib}${plus}/\`print_version ${1:-glib}\`/\${${_1:-glib}_name}.tar.xz || return;;
@@ -4275,6 +4279,27 @@ EOF
 			${libxkbcommon_src_dir} ${libxkbcommon_bld_dir} || return
 		ninja -v -C ${libxkbcommon_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${libxkbcommon_bld_dir} install || return
+		;;
+	gtk)
+		[ -f ${DESTDIR}${prefix}/include/gtk-`print_version gtk 1`.0/gtk/gtk.h -a "${force_install}" != yes ] && return
+		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
+		print_header_path pango.h pango-1.0/pango > /dev/null || ${0} ${cmdopt} pango || return
+		print_header_path gdk-pixbuf.h gdk-pixbuf-2.0/gdk-pixbuf > /dev/null || ${0} ${cmdopt} gdk-pixbuf || return
+		print_header_path atk.h atk-1.0/atk > /dev/null || ${0} ${cmdopt} atk || return
+		print_header_path giversionmacros.h gobject-introspection-1.0 > /dev/null || ${0} ${cmdopt} gobject-introspection || return
+		print_header_path graphene.h graphene-1.0 > /dev/null || ${0} ${cmdopt} graphene || return
+		print_header_path egl.h epoxy > /dev/null || ${0} ${cmdopt} libepoxy || return
+		print_header_path atk-bridge.h at-spi2-atk/2.0 > /dev/null || ${0} ${cmdopt} at-spi2-atk || return # for GTK3 only.
+		print_header_path xkbcommon.h xkbcommon > /dev/null || ${0} ${cmdopt} libxkbcommon || return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			-Dc_link_args="${LDFLAGS} `l Xext X11 xcb Xau Xdmcp stdc++`" \
+			-Dwayland-backend=false -Dintrospection=false -Dmedia-gstreamer=disabled \
+			${gtk_src_dir} ${gtk_bld_dir} || return
+		ninja -v -C ${gtk_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${gtk_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
