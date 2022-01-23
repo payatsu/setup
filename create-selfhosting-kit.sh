@@ -205,6 +205,7 @@ EOF
 : ${patch_ver:=2.7.6}
 : ${global_ver:=6.6.6}
 : ${findutils_ver:=4.8.0}
+: ${libatomic_ops_ver:=7.6.12}
 
 : ${help2man_ver:=1.47.16}
 : ${coreutils_ver:=9.0}
@@ -602,6 +603,9 @@ fetch()
 	ctags)
 		git clone --depth 1 \
 			https://github.com/universal-ctags/ctags.git ${ctags_src_dir} || return;;
+	libatomic_ops)
+		wget -O ${libatomic_ops_src_dir}.tar.gz \
+			https://github.com/ivmai/libatomic_ops/releases/download/v${libatomic_ops_ver}/${libatomic_ops_name}.tar.gz || return;;
 	file)
 		wget -O ${file_src_dir}.tar.gz \
 			http://ftp.astron.com/pub/file/${file_name}.tar.gz || return;;
@@ -2906,6 +2910,19 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${findutils_bld_dir} -j ${jobs} -k check || return
 		make -C ${findutils_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	libatomic_ops)
+		[ -f ${DESTDIR}${prefix}/include/atomic_ops.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libatomic_ops_bld_dir}/Makefile ] ||
+			(cd ${libatomic_ops_bld_dir}
+			${libatomic_ops_src_dir}/configure --prefix=${prefix} -build=${build} --host=${host} --disable-silent-rules \
+				--enable-shared) || return
+		make -C ${libatomic_ops_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${libatomic_ops_bld_dir} -j ${jobs} -k check || return
+		make -C ${libatomic_ops_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	help2man)
 		[ -x ${DESTDIR}${prefix}/bin/help2man -a "${force_install}" != yes ] && return
