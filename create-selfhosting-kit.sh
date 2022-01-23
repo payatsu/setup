@@ -288,6 +288,7 @@ EOF
 : ${fribidi_ver:=1.0.11}
 : ${harfbuzz_ver:=3.2.0}
 : ${pango_ver:=1.49.3}
+: ${itstool_ver:=2.0.7}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -672,6 +673,9 @@ fetch()
 	harfbuzz)
 		wget -O ${harfbuzz_src_dir}.tar.xz \
 			https://github.com/harfbuzz/harfbuzz/releases/download/${harfbuzz_ver}/${harfbuzz_name}.tar.xz || return;;
+	itstool)
+		wget -O ${itstool_src_dir}.tar.bz2 \
+			http://files.itstool.org/itstool/${itstool_name}.tar.bz2 || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -4097,6 +4101,16 @@ EOF
 			${pango_src_dir} ${pango_bld_dir} || return
 		ninja -v -C ${pango_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${pango_bld_dir} install || return
+		;;
+	itstool)
+		[ -x ${DESTDIR}${prefix}/bin/itstool -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${itstool_bld_dir}/Makefile ] ||
+			(cd ${itstool_bld_dir}
+			${itstool_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${itstool_bld_dir} -j ${jobs} || return
+		make -C ${itstool_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
