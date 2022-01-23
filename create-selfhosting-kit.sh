@@ -238,6 +238,7 @@ EOF
 : ${eigen_ver:=3.4.0}
 : ${gflags_ver:=2.2.2}
 : ${glog_ver:=0.5.0}
+: ${protobuf_ver:=3.19.1}
 
 : ${cython_ver:=0.29.26}
 : ${OpenBLAS_ver:=0.3.19}
@@ -661,6 +662,9 @@ fetch()
 	glog)
 		wget -O ${glog_src_dir}.tar.gz \
 			https://github.com/google/glog/archive/refs/tags/v${glog_ver}.tar.gz || return;;
+	protobuf)
+		wget -O ${protobuf_src_dir}.tar.gz \
+			https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_ver}/protobuf-all-${protobuf_ver}.tar.gz || return;;
 	cython)
 		wget -O ${cython_src_dir}.tar.gz \
 			https://github.com/cython/cython/archive/refs/tags/${cython_ver}.tar.gz;;
@@ -3496,6 +3500,22 @@ EOF
 			cmake --build ${glog_bld_dir} -v -j ${jobs} || return
 			cmake --install ${glog_bld_dir} -v ${strip:+--${strip}} || return
 		done
+		;;
+	protobuf)
+		[ -x ${DESTDIR}${prefix}/bin/protoc -a "${force_install}" != yes ] && return
+		which autoconf > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} autoconf || return
+		which automake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} automake || return
+		which libtoolize > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} libtool || return
+		which make > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} make || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${protobuf_bld_dir}/Makefile ] ||
+			(cd ${protobuf_bld_dir}
+			${protobuf_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
+		make -C ${protobuf_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${protobuf_bld_dir} -j ${jobs} -k check || return
+		make -C ${protobuf_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	cython)
 		[ -x ${DESTDIR}${prefix}/bin/cython -a "${force_install}" != yes ] && return
