@@ -287,6 +287,7 @@ EOF
 : ${cairo_ver:=1.16.0}
 : ${fribidi_ver:=1.0.11}
 : ${harfbuzz_ver:=3.2.0}
+: ${pango_ver:=1.49.3}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -430,7 +431,7 @@ fetch()
 	popt)
 		wget -O ${popt_src_dir}.tar.gz \
 			http://ftp.rpm.org/popt/releases/popt-1.x/${popt_name}.tar.gz || return;;
-	glib|gobject-introspection)
+	glib|gobject-introspection|pango)
 		plus=`[ ${1} = gtk ] && eval echo \$\{${_1}_ver} | grep -qe '^3\.' && echo +`
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://ftp.gnome.org/pub/gnome/sources/${1:-glib}${plus}/\`print_version ${1:-glib}\`/\${${_1:-glib}_name}.tar.xz || return;;
@@ -4083,6 +4084,19 @@ EOF
 			${harfbuzz_src_dir} ${harfbuzz_bld_dir} || return
 		ninja -v -C ${harfbuzz_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${harfbuzz_bld_dir} install || return
+		;;
+	pango)
+		[ -f ${DESTDIR}${prefix}/include/pango-1.0/pango/pango.h -a "${force_install}" != yes ] && return
+		print_header_path cairo.h cairo > /dev/null || ${0} ${cmdopt} cairo || return
+		print_header_path fribidi.h fribidi > /dev/null || ${0} ${cmdopt} fribidi || return
+		print_header_path hb.h harfbuzz > /dev/null || ${0} ${cmdopt} harfbuzz || return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			${pango_src_dir} ${pango_bld_dir} || return
+		ninja -v -C ${pango_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${pango_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
