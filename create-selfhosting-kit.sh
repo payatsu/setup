@@ -292,6 +292,7 @@ EOF
 : ${shared_mime_info_ver:=2.1}
 : ${gdk_pixbuf_ver:=2.42.6}
 : ${atk_ver:=2.36.0}
+: ${dbus_ver:=1.12.20}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -682,6 +683,9 @@ fetch()
 	shared-mime-info)
 		wget -O ${shared_mime_info_src_dir}.tar.bz2 \
 			https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/${shared_mime_info_ver}/${shared_mime_info_name}.tar.bz2 || return;;
+	dbus)
+		wget -O ${dbus_src_dir}.tar.gz \
+			https://dbus.freedesktop.org/releases/dbus/${dbus_name}.tar.gz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -4159,6 +4163,22 @@ EOF
 			${atk_src_dir} ${atk_bld_dir} || return
 		ninja -v -C ${atk_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${atk_bld_dir} install || return
+		;;
+	dbus)
+		[ -f ${DESTDIR}${prefix}/include/dbus-1.0/dbus/dbus.h -a "${force_install}" != yes ] && return
+		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
+		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${dbus_bld_dir}/Makefile ] ||
+			(cd ${dbus_bld_dir}
+			${dbus_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				--x-includes=`print_header_dir Xlib.h X11` --x-libraries=`print_library_dir libX11.so` \
+				LIBS="${LIBS} `l xcb Xau Xdmcp gmodule-2.0 glib-2.0 mount blkid ffi pcre`" \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
+		make -C ${dbus_bld_dir} -j ${jobs} || return
+		make -C ${dbus_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
