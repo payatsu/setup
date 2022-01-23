@@ -306,6 +306,7 @@ EOF
 : ${gst_plugins_good_ver:=${gstreamer_ver}}
 : ${gst_editing_services_ver:=${gstreamer_ver}}
 : ${gst_rtsp_server_ver:=${gstreamer_ver}}
+: ${gst_omx_ver:=${gstreamer_ver}}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -711,7 +712,7 @@ fetch()
 	libxkbcommon)
 		wget -O ${libxkbcommon_src_dir}.tar.xz \
 			https://xkbcommon.org/download/${libxkbcommon_name}.tar.xz || return;;
-	gstreamer|gst-plugins-base|gst-plugins-good|gst-editing-services|gst-rtsp-server)
+	gstreamer|gst-plugins-base|gst-plugins-good|gst-editing-services|gst-rtsp-server|gst-omx)
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://gstreamer.freedesktop.org/src/${1:-gstreamer}/\${${_1:-gstreamer}_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
@@ -907,6 +908,7 @@ print_packages()
 		s/gst_plugins_good/gst-plugins-good/
 		s/gst_editing_services/gst-editing-services/
 		s/gst_rtsp_server/gst-rtsp-server/
+		s/gst_omx/gst-omx/
 	' || return
 }
 
@@ -4381,6 +4383,18 @@ EOF
 			-Dtests=disabled ${gst_rtsp_server_src_dir} ${gst_rtsp_server_bld_dir} || return
 		ninja -v -C ${gst_rtsp_server_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${gst_rtsp_server_bld_dir} install || return
+		;;
+	gst-omx)
+		[ -e ${DESTDIR}${prefix}/lib64/gstreamer-1.0/libgstomx.so -a "${force_install}" != yes ] && return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || ${0} ${cmdopt} gstreamer || return
+		print_header_path video.h gstreamer-1.0/gst/video > /dev/null || ${0} ${cmdopt} gst-plugins-base || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			-Dtarget=generic ${gst_omx_src_dir} ${gst_omx_bld_dir} || return
+		ninja -v -C ${gst_omx_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${gst_omx_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
