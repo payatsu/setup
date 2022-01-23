@@ -206,6 +206,7 @@ EOF
 : ${global_ver:=6.6.6}
 : ${findutils_ver:=4.8.0}
 : ${libatomic_ops_ver:=7.6.12}
+: ${gc_ver:=8.0.6}
 
 : ${help2man_ver:=1.47.16}
 : ${coreutils_ver:=9.0}
@@ -606,6 +607,9 @@ fetch()
 	libatomic_ops)
 		wget -O ${libatomic_ops_src_dir}.tar.gz \
 			https://github.com/ivmai/libatomic_ops/releases/download/v${libatomic_ops_ver}/${libatomic_ops_name}.tar.gz || return;;
+	gc)
+		wget -O ${gc_src_dir}.tar.gz \
+			https://github.com/ivmai/bdwgc/releases/download/v${gc_ver}/${gc_name}.tar.gz || return;;
 	file)
 		wget -O ${file_src_dir}.tar.gz \
 			http://ftp.astron.com/pub/file/${file_name}.tar.gz || return;;
@@ -2923,6 +2927,23 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${libatomic_ops_bld_dir} -j ${jobs} -k check || return
 		make -C ${libatomic_ops_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	gc)
+		[ -f ${DESTDIR}${prefix}/include/gc.h -a "${force_install}" != yes ] && return
+		print_header_path atomic_ops.h > /dev/null || ${0} ${cmdopt} libatomic_ops || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${gc_bld_dir}/Makefile ] ||
+			(cd ${gc_bld_dir}
+			${gc_src_dir}/configure --prefix=${prefix} -build=${build} --host=${host} --disable-silent-rules \
+				--enable-static \
+				CPPFLAGS="${CPPFLAGS} `I atomic_ops.h`" \
+				LDFLAGS="${LDFLAGS} `L atomic_ops`" \
+				) || return
+		make -C ${gc_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${gc_bld_dir} -j ${jobs} check || return
+		make -C ${gc_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	help2man)
 		[ -x ${DESTDIR}${prefix}/bin/help2man -a "${force_install}" != yes ] && return
