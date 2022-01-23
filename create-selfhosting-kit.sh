@@ -308,6 +308,7 @@ EOF
 : ${gst_rtsp_server_ver:=${gstreamer_ver}}
 : ${gst_omx_ver:=${gstreamer_ver}}
 : ${pygobject_ver:=3.42.0}
+: ${gst_python_ver:=${gstreamer_ver}}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -713,7 +714,7 @@ fetch()
 	libxkbcommon)
 		wget -O ${libxkbcommon_src_dir}.tar.xz \
 			https://xkbcommon.org/download/${libxkbcommon_name}.tar.xz || return;;
-	gstreamer|gst-plugins-base|gst-plugins-good|gst-editing-services|gst-rtsp-server|gst-omx)
+	gstreamer|gst-plugins-base|gst-plugins-good|gst-editing-services|gst-rtsp-server|gst-omx|gst-python)
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://gstreamer.freedesktop.org/src/${1:-gstreamer}/\${${_1:-gstreamer}_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
@@ -910,6 +911,7 @@ print_packages()
 		s/gst_editing_services/gst-editing-services/
 		s/gst_rtsp_server/gst-rtsp-server/
 		s/gst_omx/gst-omx/
+		s/gst_python/gst-python/
 	' || return
 }
 
@@ -4408,6 +4410,17 @@ EOF
 			${pygobject_src_dir} ${pygobject_bld_dir} || return
 		ninja -v -C ${pygobject_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${pygobject_bld_dir} install || return
+		;;
+	gst-python)
+		[ -e ${DESTDIR}${prefix}/lib64/gstreamer-1.0/libgstpython.so -a "${force_install}" != yes ] && return
+		print_header_path pygobject.h pygobject-3.0 > /dev/null || ${0} ${cmdopt} pygobject || return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			${gst_python_src_dir} ${gst_python_bld_dir} || return
+		ninja -v -C ${gst_python_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${gst_python_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
