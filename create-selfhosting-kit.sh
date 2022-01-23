@@ -237,6 +237,7 @@ EOF
 : ${openexr_ver:=3.1.3}
 : ${eigen_ver:=3.4.0}
 : ${gflags_ver:=2.2.2}
+: ${glog_ver:=0.5.0}
 
 : ${cython_ver:=0.29.26}
 : ${OpenBLAS_ver:=0.3.19}
@@ -654,6 +655,9 @@ fetch()
 	gflags)
 		wget -O ${gflags_src_dir}.tar.gz \
 			https://github.com/gflags/gflags/archive/refs/tags/v${gflags_ver}.tar.gz || return;;
+	glog)
+		wget -O ${glog_src_dir}.tar.gz \
+			https://github.com/google/glog/archive/refs/tags/v${glog_ver}.tar.gz || return;;
 	cython)
 		wget -O ${cython_src_dir}.tar.gz \
 			https://github.com/cython/cython/archive/refs/tags/${cython_ver}.tar.gz;;
@@ -3467,6 +3471,25 @@ EOF
 			|| return
 		cmake --build ${gflags_bld_dir} -v -j ${jobs} || return
 		cmake --install ${gflags_bld_dir} -v ${strip:+--${strip}} || return
+		;;
+	glog)
+		[ -f ${DESTDIR}${prefix}/include/glog/logging.h -a "${force_install}" != yes ] && return
+		print_header_path gflags.h gflags > /dev/null || ${0} ${cmdopt} gflags || return
+		fetch ${1} || return
+		unpack ${1} || return
+		for build_shared_libs in ON OFF; do
+			cmake `which ninja > /dev/null && echo -G Ninja` \
+				-S ${glog_src_dir} -B ${glog_bld_dir} \
+				-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+				-DCMAKE_BUILD_TYPE=${cmake_build_type} \
+				-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+				-DCMAKE_PREFIX_PATH=`print_prefix gflags.h gflags` \
+				-DBUILD_SHARED_LIBS=${build_shared_libs} \
+				-DWITH_UNWIND=OFF \
+				|| return
+			cmake --build ${glog_bld_dir} -v -j ${jobs} || return
+			cmake --install ${glog_bld_dir} -v ${strip:+--${strip}} || return
+		done
 		;;
 	cython)
 		[ -x ${DESTDIR}${prefix}/bin/cython -a "${force_install}" != yes ] && return
