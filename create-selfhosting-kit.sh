@@ -294,6 +294,7 @@ EOF
 : ${atk_ver:=2.36.0}
 : ${dbus_ver:=1.12.20}
 : ${recordproto_ver:=1.14.2}
+: ${libXtst_ver:=1.2.3}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -642,7 +643,7 @@ fetch()
 			https://xorg.freedesktop.org/archive/individual/proto/\${${_1:-xproto}_name}.tar.gz || return;;
 	libXau|libXdmcp|xtrans|libICE|libSM|libxcb|libX11|libXext|libXt|libXmu|libXpm|libXaw|\
 	libXi|libXfixes|libXdamage|libXrender|libXrandr|libXcursor|libXinerama|libpciaccess|\
-	libxshmfence)
+	libxshmfence|libXtst)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://www.x.org/releases/individual/lib/\${${_1:-libX11}_name}.tar.gz || return;;
 	wayland|wayland-protocols)
@@ -4192,6 +4193,23 @@ EOF
 			${recordproto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 		make -C ${recordproto_bld_dir} -j ${jobs} || return
 		make -C ${recordproto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	libXtst)
+		[ -f ${DESTDIR}${prefix}/include/X11/extensions/XTest.h -a "${force_install}" != yes ] && return
+		print_header_path lbx.h X11/extensions > /dev/null || ${0} ${cmdopt} xextproto || return
+		print_header_path recordproto.h X11/extensions > /dev/null || ${0} ${cmdopt} recordproto || return
+		print_header_path XI.h X11/extensions > /dev/null || ${0} ${cmdopt} inputproto || return
+		print_header_path XInput.h X11/extensions > /dev/null || ${0} ${cmdopt} libXi || return
+		print_header_path Xext.h X11/extensions > /dev/null || ${0} ${cmdopt} libXext || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libXtst_bld_dir}/Makefile ] ||
+			(cd ${libXtst_bld_dir}
+			${libXtst_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+			) || return
+		make -C ${libXtst_bld_dir} -j ${jobs} || return
+		make -C ${libXtst_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
