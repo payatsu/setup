@@ -298,6 +298,7 @@ EOF
 : ${at_spi2_core_ver:=AT_SPI2_CORE_2_42_0}
 : ${at_spi2_atk_ver:=AT_SPI2_ATK_2_38_0}
 : ${graphene_ver:=1.10.6}
+: ${libxkbcommon_ver:=1.3.1}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -697,6 +698,9 @@ fetch()
 	graphene)
 		wget -O ${graphene_src_dir}.tar.xz \
 			https://github.com/ebassi/graphene/releases/download/${graphene_ver}/${graphene_name}.tar.xz || return;;
+	libxkbcommon)
+		wget -O ${libxkbcommon_src_dir}.tar.xz \
+			https://xkbcommon.org/download/${libxkbcommon_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -4259,6 +4263,17 @@ EOF
 			${graphene_src_dir} ${graphene_bld_dir} || return
 		ninja -v -C ${graphene_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${graphene_bld_dir} install || return
+		;;
+	libxkbcommon)
+		[ -f ${DESTDIR}${prefix}/include/xkbcommon/xkbcommon.h -a "${force_install}" != yes ] && return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			-Denable-docs=false -Denable-wayland=false \
+			${libxkbcommon_src_dir} ${libxkbcommon_bld_dir} || return
+		ninja -v -C ${libxkbcommon_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${libxkbcommon_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
