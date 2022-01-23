@@ -295,6 +295,8 @@ EOF
 : ${dbus_ver:=1.12.20}
 : ${recordproto_ver:=1.14.2}
 : ${libXtst_ver:=1.2.3}
+: ${at_spi2_core_ver:=AT_SPI2_CORE_2_42_0}
+: ${at_spi2_atk_ver:=AT_SPI2_ATK_2_38_0}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -672,7 +674,7 @@ fetch()
 			https://www.freedesktop.org/software/fontconfig/release/${fontconfig_name}.tar.bz2 || return;;
 	cairo)
 		eval wget -O \${${_1}_src_dir}.tar.xz \
-			https://www.cairographics.org/releases/\${${_p:-cairo}_name}.tar.xz || return;;
+			https://www.cairographics.org/releases/\${${_1:-cairo}_name}.tar.xz || return;;
 	fribidi)
 		wget -O ${fribidi_src_dir}.tar.xz \
 			https://github.com/fribidi/fribidi/releases/download/v${fribidi_ver}/${fribidi_name}.tar.xz || return;;
@@ -688,6 +690,9 @@ fetch()
 	dbus)
 		wget -O ${dbus_src_dir}.tar.gz \
 			https://dbus.freedesktop.org/releases/dbus/${dbus_name}.tar.gz || return;;
+	at-spi2-core|at-spi2-atk)
+		eval wget -O \${${_1}_src_dir}.tar.bz2 \
+			https://gitlab.gnome.org/GNOME/${1}/-/archive/\${${_1}_ver}/\${${_1}_name}.tar.bz2 || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -875,6 +880,8 @@ print_packages()
 		s/gobject_introspection/gobject-introspection/
 		s/shared_mime_info/shared-mime-info/
 		s/gdk_pixbuf/gdk-pixbuf/
+		s/at_spi2_core/at-spi2-core/
+		s/at_spi2_atk/at-spi2-atk/
 	' || return
 }
 
@@ -4210,6 +4217,33 @@ EOF
 			) || return
 		make -C ${libXtst_bld_dir} -j ${jobs} || return
 		make -C ${libXtst_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	at-spi2-core)
+		[ -f ${DESTDIR}${prefix}/include/at-spi-2.0/atspi/atspi.h -a "${force_install}" != yes ] && return
+		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
+		print_header_path dbus.h dbus-1.0/dbus > /dev/null || ${0} ${cmdopt} dbus || return
+		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
+		print_header_path XTest.h X11/extensions > /dev/null || ${0} ${cmdopt} libXtst || return
+		print_header_path XInput.h X11/extensions > /dev/null || ${0} ${cmdopt} libXi || return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			-Dintrospection=no \
+			${at_spi2_core_src_dir} ${at_spi2_core_bld_dir} || return
+		ninja -v -C ${at_spi2_core_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${at_spi2_core_bld_dir} install || return
+		;;
+	at-spi2-atk)
+		[ -f ${DESTDIR}${prefix}/include/at-spi2-atk/2.0/atk-bridge.h -a "${force_install}" != yes ] && return
+		print_header_path atspi.h at-spi-2.0/atspi > /dev/null || ${0} ${cmdopt} at-spi2-core || return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			${at_spi2_atk_src_dir} ${at_spi2_atk_bld_dir} || return
+		ninja -v -C ${at_spi2_atk_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${at_spi2_atk_bld_dir} install || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
