@@ -314,6 +314,9 @@ EOF
 : ${gst_python_ver:=${gstreamer_ver}}
 : ${orc_ver:=0.4.32}
 
+: ${opencv_ver:=4.5.5}
+: ${opencv_contrib_ver:=${opencv_ver}}
+
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
 : ${jobs:=${default_jobs}}
@@ -730,6 +733,9 @@ fetch()
 	gstreamer|gst-plugins-base|gst-plugins-good|gst-editing-services|gst-rtsp-server|gst-omx|gst-python|orc)
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://gstreamer.freedesktop.org/src/${1:-gstreamer}/\${${_1:-gstreamer}_name}.tar.xz || return;;
+	opencv|opencv_contrib)
+		eval wget -O \${${_1}_src_dir}.tar.gz \
+			https://github.com/opencv/${_1:-opencv}/archive/\${${_1:-opencv}_ver}.tar.gz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -4491,6 +4497,61 @@ EOF
 			${orc_src_dir} ${orc_bld_dir} || return
 		ninja -v -C ${orc_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${orc_bld_dir} install || return
+		;;
+	opencv)
+		[ -f ${DESTDIR}${prefix}/include/opencv`print_version opencv 1`/opencv2/opencv.hpp -a "${force_install}" != yes ] && return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
+		print_header_path jpeglib.h > /dev/null || ${0} ${cmdopt} jpeg || return
+		print_header_path decode.h webp > /dev/null || ${0} ${cmdopt} libwebp || return
+		print_header_path png.h > /dev/null || ${0} ${cmdopt} libpng || return
+		print_header_path tiff.h > /dev/null || ${0} ${cmdopt} tiff || return
+		print_header_path openjpeg.h > /dev/null || ${0} ${cmdopt} openjpeg || return
+		print_header_path openexr.h OpenEXR > /dev/null || ${0} ${cmdopt} openexr || return
+		print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || ${0} ${cmdopt} gstreamer || return
+		print_header_path video.h gstreamer-1.0/gst/video > /dev/null || ${0} ${cmdopt} gst-plugins-base || return
+#		print_header_path openblas_config.h openblas > /dev/null || ${0} ${cmdopt} OpenBLAS || return
+		print_header_path Core eigen3/Eigen > /dev/null || ${0} ${cmdopt} eigen || return
+		print_header_path ft2build.h freetype2 > /dev/null || ${0} ${cmdopt} freetype || return
+		print_header_path gflags.h gflags > /dev/null || ${0} ${cmdopt} gflags || return
+		print_header_path logging.h glog > /dev/null || ${0} ${cmdopt} glog || return
+		fetch ${1} || return
+		unpack ${1} || return
+		init opencv_contrib || return
+		fetch opencv_contrib || return
+		unpack opencv_contrib || return
+		libdirs="`L png tiff jpeg` `l \
+			gtk-3 X11 gdk-3 pangocairo-1.0 cairo-gobject gdk_pixbuf-2.0 \
+			cairo pangoft2-1.0 pango-1.0 harfbuzz fontconfig fribidi epoxy Xi atk-bridge-2.0 \
+			dbus-1 atspi atk-1.0 Xrender Xfixes Xext xkbcommon wayland-client wayland-cursor wayland-egl \
+			Xrandr freetype pixman-1 png16 xcb-shm xcb xcb-render Xau Xdmcp expat uuid mount blkid \
+			gstpbutils-1.0 gstriff-1.0 gsttag-1.0 gstaudio-1.0 gstvideo-1.0 gstapp-1.0 gstbase-1.0 gstreamer-1.0 \
+			gio-2.0 gmodule-2.0 glib-2.0 gobject-2.0 unwind dw elf zstd lzma bz2 z ffi pcre`"
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${opencv_src_dir} -B ${opencv_bld_dir} \
+			`[ ${build} != ${host} ] &&
+				echo -DCMAKE_TOOLCHAIN_FILE=${opencv_src_dir}/platforms/linux/$(echo ${host} | cut -d - -f 1)-gnu.toolchain.cmake` \
+			-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_CXX_STANDARD=17 \
+			-DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
+			-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
+			-DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} \
+			-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DCMAKE_SKIP_INSTALL_RPATH=TRUE \
+			-DENABLE_PRECOMPILED_HEADERS=OFF \
+			-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_src_dir}/modules \
+			-DOPENCV_GENERATE_PKGCONFIG=ON \
+			-DWITH_FREETYPE=ON \
+			-DWITH_OPENGL=ON \
+			-DWITH_OPENMP=ON \
+			-DWITH_QT=ON \
+			-DBUILD_PROTOBUF=OFF \
+			-DPROTOBUF_UPDATE_FILES=ON \
+			|| return
+		cmake --build ${opencv_bld_dir} -v -j ${jobs} || return
+		cmake --install ${opencv_bld_dir} -v ${strip:+--${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
