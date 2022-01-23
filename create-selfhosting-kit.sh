@@ -289,6 +289,7 @@ EOF
 : ${harfbuzz_ver:=3.2.0}
 : ${pango_ver:=1.49.3}
 : ${itstool_ver:=2.0.7}
+: ${shared_mime_info_ver:=2.1}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -676,6 +677,9 @@ fetch()
 	itstool)
 		wget -O ${itstool_src_dir}.tar.bz2 \
 			http://files.itstool.org/itstool/${itstool_name}.tar.bz2 || return;;
+	shared-mime-info)
+		wget -O ${shared_mime_info_src_dir}.tar.bz2 \
+			https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/${shared_mime_info_ver}/${shared_mime_info_name}.tar.bz2 || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -861,6 +865,7 @@ print_packages()
 		s/xcb_proto/xcb-proto/
 		s/wayland_protocols/wayland-protocols/
 		s/gobject_introspection/gobject-introspection/
+		s/shared_mime_info/shared-mime-info/
 	' || return
 }
 
@@ -4110,6 +4115,21 @@ EOF
 			${itstool_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
 		make -C ${itstool_bld_dir} -j ${jobs} || return
 		make -C ${itstool_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	shared-mime-info)
+		[ -x ${DESTDIR}${prefix}/bin/update-mime-database -a "${force_install}" != yes ] && return
+		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
+		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
+		which itstool > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} itstool || return
+		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		which update-mime-database > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
+		fetch ${1} || return
+		unpack ${1} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			${shared_mime_info_src_dir} ${shared_mime_info_bld_dir} || return
+		ninja -v -C ${shared_mime_info_bld_dir} || return
+		DESTDIR=${DESTDIR} ninja -v -C ${shared_mime_info_bld_dir} install || return
+		update-mime-database ${DESTDIR}${prefix}/share/mime || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
