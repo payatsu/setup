@@ -207,6 +207,7 @@ EOF
 : ${findutils_ver:=4.8.0}
 : ${libatomic_ops_ver:=7.6.12}
 : ${gc_ver:=8.0.6}
+: ${poke_ver:=1.4}
 
 : ${help2man_ver:=1.47.16}
 : ${coreutils_ver:=9.0}
@@ -398,7 +399,7 @@ fetch()
 			https://zlib.net/${zlib_name}.tar.xz || return;;
 	libunistring|binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|\
 	autoconf|automake|bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|\
-	emacs|nano|grep|diffutils|patch|global|findutils|help2man|coreutils)
+	emacs|nano|grep|diffutils|patch|global|findutils|poke|help2man|coreutils)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
 				https://ftp.gnu.org/gnu/${1}/\${${_1}_name}.tar.${compress_format} \
@@ -2944,6 +2945,29 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${gc_bld_dir} -j ${jobs} check || return
 		make -C ${gc_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	poke)
+		[ -x ${DESTDIR}${prefix}/bin/poke -a "${force_install}" != yes ] && return
+		print_header_path gc.h > /dev/null || ${0} ${cmdopt} gc || return
+		print_header_path readline.h readline > /dev/null || ${0} ${cmdopt} readline || return
+		which diff > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} diffutils || return
+		which awk > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gawk || return
+		which pkg-config > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} pkg-config || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${poke_bld_dir}/Makefile ] ||
+			(cd ${poke_bld_dir}
+			autoreconf -fiv ${poke_src_dir} || return # copy missing 'build-aux/compile', which is removed at v1.3
+			remove_rpath_option poke || return
+			${poke_src_dir}/configure --prefix=${prefix} --host=${host} --disable-rpath --disable-gui \
+				--with-libreadline-prefix=`print_prefix readline.h readline` \
+				LIBS="${LIBS} `l tinfo`" \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
+		make -C ${poke_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${poke_bld_dir} -j ${jobs} -k check || return
+		make -C ${poke_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	help2man)
 		[ -x ${DESTDIR}${prefix}/bin/help2man -a "${force_install}" != yes ] && return
