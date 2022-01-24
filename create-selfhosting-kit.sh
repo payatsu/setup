@@ -246,6 +246,7 @@ EOF
 
 : ${cython_ver:=0.29.26}
 : ${OpenBLAS_ver:=0.3.19}
+: ${numpy_ver:=1.22.1}
 
 : ${util_macros_ver:=1.19.3}
 : ${xproto_ver:=7.0.31}
@@ -684,6 +685,9 @@ fetch()
 	OpenBLAS)
 		wget -O ${OpenBLAS_src_dir}.tar.gz \
 			https://github.com/xianyi/OpenBLAS/releases/download/v${OpenBLAS_ver}/${OpenBLAS_name}.tar.gz || return;;
+	numpy)
+		wget -O ${numpy_src_dir}.tar.gz \
+			https://github.com/numpy/numpy/releases/download/v${numpy_ver}/${numpy_name}.tar.gz;;
 	util-macros)
 		wget -O ${util_macros_src_dir}.tar.gz \
 			https://xorg.freedesktop.org/archive/individual/util/${util_macros_name}.tar.gz || return;;
@@ -3622,6 +3626,22 @@ EOF
 			|| return
 		cmake --build ${OpenBLAS_bld_dir} -v -j ${jobs} || return
 		cmake --install ${OpenBLAS_bld_dir} -v ${strip:+--${strip}} || return
+		;;
+	numpy)
+		[ -x ${DESTDIR}${prefix}/bin/f2py -a "${force_install}" != yes ] && return
+		print_binary_path python3 > /dev/null || ${0} ${cmdopt} Python || return
+		python3 -c 'import Cython' || ${0} ${cmdopt} --host ${build} --target ${build} cython || return
+#		print_header_path openblas_config.h openblas > /dev/null || ${0} ${cmdopt} OpenBLAS || return
+		fetch ${1} || return
+		unpack ${1} || return
+		(cd ${numpy_src_dir}
+		CC=${CC:-${host:+${host}-}gcc} LDSHARED="${CC:-${host:+${host}-}gcc} --shared" \
+		CFLAGS="${CFLAGS} -I${DESTDIR}${prefix}/include `I Python.h`" \
+		LDFLAGS="${LDFLAGS} -L${DESTDIR}${prefix}/lib" \
+		PYTHONPATH=${DESTDIR}${prefix}/lib/python`print_version Python` \
+		_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_`echo ${host} | cut -d - -f 1`-linux-gnu \
+		NPY_DISABLE_SVML=1 \
+			python3 setup.py build -j ${jobs} install ${DESTDIR:+--root ${DESTDIR}} --prefix ${prefix}) || return
 		;;
 	util-macros)
 		[ -f ${DESTDIR}${prefix}/share/pkgconfig/xorg-macros.pc -a "${force_install}" != yes ] && return
