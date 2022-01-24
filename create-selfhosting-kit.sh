@@ -237,7 +237,7 @@ EOF
 : ${giflib_ver:=5.2.1}
 : ${libwebp_ver:=1.2.1}
 : ${openjpeg_ver:=2.4.0}
-: ${Imath_ver:=3.1.3}
+: ${Imath_ver:=3.1.4}
 : ${openexr_ver:=3.1.3}
 : ${eigen_ver:=3.4.0}
 : ${gflags_ver:=2.2.2}
