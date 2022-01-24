@@ -208,6 +208,7 @@ EOF
 : ${libatomic_ops_ver:=7.6.12}
 : ${gc_ver:=8.0.6}
 : ${poke_ver:=1.4}
+: ${jq_ver:=1.6}
 
 : ${help2man_ver:=1.47.16}
 : ${coreutils_ver:=9.0}
@@ -611,6 +612,9 @@ fetch()
 	gc)
 		wget -O ${gc_src_dir}.tar.gz \
 			https://github.com/ivmai/bdwgc/releases/download/v${gc_ver}/${gc_name}.tar.gz || return;;
+	jq)
+		wget -O ${jq_src_dir}.tar.gz \
+			https://github.com/stedolan/jq/releases/download/${jq_name}/${jq_name}.tar.gz || return;;
 	file)
 		wget -O ${file_src_dir}.tar.gz \
 			http://ftp.astron.com/pub/file/${file_name}.tar.gz || return;;
@@ -2968,6 +2972,20 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${poke_bld_dir} -j ${jobs} -k check || return
 		make -C ${poke_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	jq)
+		[ -x ${DESTDIR}${prefix}/bin/jq -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${jq_src_dir}/Makefile ] ||
+			(cd ${jq_src_dir}
+			autoreconf -fiv || return
+			${jq_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				--disable-maintainer-mode --with-oniguruma=builtin) || return
+		make -C ${jq_src_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${jq_src_dir} -j ${jobs} -k check || return
+		make -C ${jq_src_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	help2man)
 		[ -x ${DESTDIR}${prefix}/bin/help2man -a "${force_install}" != yes ] && return
