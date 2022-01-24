@@ -81,7 +81,7 @@
 : ${ncurses_ver:=6.3}
 : ${popt_ver:=1.18}
 : ${babeltrace_ver:=1.5.8}
-: ${gdb_ver:=11.1}
+: ${gdb_ver:=11.2}
 : ${crash_ver:=8.0.0}
 : ${lcov_ver:=1.15}
 : ${strace_ver:=5.15}
@@ -3004,7 +3004,7 @@ install_native_gdb()
 	print_header_path readline.h readline > /dev/null || install_native_readline || return
 	print_header_path expat.h > /dev/null || install_native_expat || return
 	print_header_path mpfr.h > /dev/null || install_native_mpfr || return
-	print_library_path libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]'`.so > /dev/null || install_native_Python || return
+	print_library_path libpython`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]\+'`.so > /dev/null || install_native_Python || return
 	print_header_path sourcehighlight.h srchilite > /dev/null || install_native_source_highlight || return
 	print_header_path lzma.h > /dev/null || install_native_xz || return
 	print_header_path babeltrace.h babeltrace > /dev/null || install_native_babeltrace || return

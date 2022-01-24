@@ -136,7 +136,7 @@ EOF
 : ${popt_ver:=1.18}
 : ${glib_ver:=2.70.1}
 : ${babeltrace_ver:=1.5.8}
-: ${gdb_ver:=11.1}
+: ${gdb_ver:=11.2}
 : ${crash_ver:=8.0.0}
 : ${strace_ver:=5.15}
 : ${systemtap_ver:=4.6}
