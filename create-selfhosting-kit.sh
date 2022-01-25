@@ -3579,7 +3579,8 @@ EOF
 				-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 				-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 				-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-				-DCMAKE_PREFIX_PATH=`print_prefix gflags.h gflags` \
+				-DCMAKE_INCLUDE_PATH=`print_prefix gflags.h gflags` \
+				-Dgflags_DIR=`print_prefix gflags.h gflags`/lib/cmake/gflags \
 				-DBUILD_SHARED_LIBS=${build_shared_libs} \
 				-DWITH_UNWIND=OFF \
 				|| return
