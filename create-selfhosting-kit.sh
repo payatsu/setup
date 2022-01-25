@@ -2600,7 +2600,7 @@ EOF
 			${v4l_utils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--disable-rpath --with-udevdir=${prefix}/lib/udev \
 				CPPFLAGS="${CPPFLAGS} `I X11/Xlib.h`" \
-				LIBS="${LIBS} `l xcb Xau jpeg z GLX X11 GLdispatch stdc++`" \
+				LIBS="${LIBS} `l xcb Xau Xdmcp jpeg z GLX X11 GLdispatch stdc++`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${v4l_utils_bld_dir} -j ${jobs} || return
