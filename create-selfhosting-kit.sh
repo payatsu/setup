@@ -3490,7 +3490,8 @@ EOF
 		unpack ${1} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${openjpeg_src_dir} -B ${openjpeg_bld_dir} \
-			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 			-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_PREFIX_PATH=`print_prefix png.h` \
@@ -3507,7 +3508,7 @@ EOF
 		for build_shared_libs in ON OFF; do
 			cmake `which ninja > /dev/null && echo -G Ninja` \
 				-S ${Imath_src_dir} -B ${Imath_bld_dir} \
-				-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+				-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 				-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 				-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 				-DCMAKE_SKIP_INSTALL_RPATH=TRUE \
@@ -3526,7 +3527,7 @@ EOF
 		for build_shared_libs in ON OFF; do
 			cmake `which ninja > /dev/null && echo -G Ninja` \
 				-S ${openexr_src_dir} -B ${openexr_bld_dir} \
-				-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+				-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 				-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 				-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 				-DCMAKE_SKIP_INSTALL_RPATH=TRUE \
@@ -3544,7 +3545,7 @@ EOF
 		unpack ${1} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${eigen_src_dir} -B ${eigen_bld_dir} \
-			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			|| return
 		cmake --install ${eigen_bld_dir} -v ${strip:+--${strip}} || return
@@ -3555,7 +3556,7 @@ EOF
 		unpack ${1} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${gflags_src_dir} -B ${gflags_bld_dir} \
-			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 			-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DBUILD_SHARED_LIBS=ON \
@@ -3574,7 +3575,7 @@ EOF
 		for build_shared_libs in ON OFF; do
 			cmake `which ninja > /dev/null && echo -G Ninja` \
 				-S ${glog_src_dir} -B ${glog_bld_dir} \
-				-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+				-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 				-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 				-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 				-DCMAKE_PREFIX_PATH=`print_prefix gflags.h gflags` \
@@ -3616,8 +3617,7 @@ EOF
 		unpack ${1} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${OpenBLAS_src_dir} -B ${OpenBLAS_bld_dir} \
-			-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
-			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
 			-DCMAKE_Fortran_COMPILER=${FC:-${host:+${host}-}gfortran} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_SYSTEM_NAME=Linux \
@@ -4652,8 +4652,8 @@ EOF
 			-S ${opencv_src_dir} -B ${opencv_bld_dir} \
 			`[ ${build} != ${host} ] &&
 				echo -DCMAKE_TOOLCHAIN_FILE=${opencv_src_dir}/platforms/linux/$(echo ${host} | cut -d - -f 1)-gnu.toolchain.cmake` \
-			-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
-			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_CXX_STANDARD=17 \
 			-DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
 			-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
