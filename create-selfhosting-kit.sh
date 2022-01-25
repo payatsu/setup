@@ -3494,7 +3494,8 @@ EOF
 			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 			-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-			-DCMAKE_PREFIX_PATH=`print_prefix png.h` \
+			-DCMAKE_INCLUDE_PATH=`print_prefix png.h` \
+			-DCMAKE_LIBRARY_PATH=`print_library_dir libpng.so` \
 			-DBUILD_SHARED_LIBS=ON \
 			-DBUILD_STATIC_LIBS=ON \
 			|| return
