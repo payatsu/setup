@@ -127,7 +127,7 @@ EOF
 : ${expat_ver:=2.4.1}
 : ${libffi_ver:=3.4.2}
 : ${sqlite_ver:=3340100}
-: ${Python_ver:=3.10.0}
+: ${Python_ver:=3.10.2}
 : ${boost_ver:=1_77_0}
 : ${source_highlight_ver:=3.1.9}
 : ${pcre_ver:=8.45}
