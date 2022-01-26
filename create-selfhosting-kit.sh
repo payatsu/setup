@@ -4290,14 +4290,16 @@ EOF
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		print_header_path pixman.h pixman-1.0 > /dev/null || ${0} ${cmdopt} pixman || return
 		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
+		print_header_path Xext.h X11/extensions > /dev/null || ${0} ${cmdopt} libXext || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${cairo_src_dir}/Makefile ] ||
 			(cd ${cairo_bld_dir}
 			${cairo_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--x-includes=`print_header_dir Xlib.h X11` --x-libraries=`print_library_dir libX11.so` \
+				--enable-xlib-xcb \
 				CPPFLAGS="${CPPFLAGS} `I zlib.h`" \
-				LIBS="${LIBS} `l Xau Xdmcp expat uuid z`" \
+				LIBS="${LIBS} `l Xext X11 xcb Xau Xdmcp expat uuid z`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${cairo_bld_dir} -j ${jobs} || return
