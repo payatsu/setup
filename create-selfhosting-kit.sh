@@ -4645,7 +4645,7 @@ EOF
 		fetch opencv_contrib || return
 		unpack opencv_contrib || return
 		libdirs="`L png tiff jpeg` `l \
-			gtk-3 X11 gdk-3 pangocairo-1.0 cairo-gobject gdk_pixbuf-2.0 \
+			gtk-3 X11 X11-xcb gdk-3 pangocairo-1.0 cairo-gobject gdk_pixbuf-2.0 \
 			cairo pangoft2-1.0 pango-1.0 harfbuzz fontconfig fribidi epoxy Xi atk-bridge-2.0 \
 			dbus-1 atspi atk-1.0 Xrender Xfixes Xext xkbcommon wayland-client wayland-cursor wayland-egl \
 			Xrandr freetype pixman-1 png16 xcb-shm xcb xcb-render Xau Xdmcp expat uuid mount blkid \
