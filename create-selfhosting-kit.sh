@@ -163,7 +163,7 @@ EOF
 : ${i2c_tools_ver:=4.2}
 
 : ${m4_ver:=1.4.19}
-: ${perl_ver:=5.32.1}
+: ${perl_ver:=5.34.0}
 : ${autoconf_ver:=2.71}
 : ${automake_ver:=1.16.5}
 : ${bison_ver:=3.8.1}

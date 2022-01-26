@@ -189,7 +189,7 @@
 : ${rustup_ver:=1.24.3}
 : ${ruby_ver:=3.1.0}
 : ${go_ver:=1.16.11}
-: ${perl_ver:=5.32.1}
+: ${perl_ver:=5.34.0}
 : ${tcl_ver:=8.6.11}
 : ${tk_ver:=8.6.11}
 : ${libunistring_ver:=0.9.10}
