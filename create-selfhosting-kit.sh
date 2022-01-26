@@ -4678,6 +4678,9 @@ EOF
 		cmake --build ${opencv_bld_dir} -v -j ${jobs} || return
 		cmake --install ${opencv_bld_dir} -v ${strip:+--${strip}} || return
 		;;
+	opencv_contrib)
+		echo nothing to do for ${1}.
+		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
 	for d in lib lib64; do
