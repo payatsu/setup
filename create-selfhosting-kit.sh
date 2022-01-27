@@ -2121,6 +2121,7 @@ EOF
 		;;
 	iproute2)
 		[ -d ${DESTDIR}${prefix}/include/iproute2 -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${iproute2_bld_dir}/Makefile ] || cp -Tvr ${iproute2_src_dir} ${iproute2_bld_dir} || return
