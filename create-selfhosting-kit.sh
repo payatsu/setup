@@ -1575,6 +1575,7 @@ EOF
 		;;
 	pcre2)
 		[ -f ${DESTDIR}${prefix}/include/pcre2.h -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
 		fetch ${1} || return
 		unpack ${1} || return
