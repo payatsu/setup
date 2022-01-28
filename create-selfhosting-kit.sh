@@ -2845,6 +2845,8 @@ EOF
 		;;
 	ctags)
 		[ -x ${DESTDIR}${prefix}/bin/ctags -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
 		fetch ${1} || return
 		unpack ${1} || return
 		grep -qe '^packcc_LINK\>' ${ctags_src_dir}/Makefile.am || sed -i -e '
