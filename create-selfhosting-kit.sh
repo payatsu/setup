@@ -2595,6 +2595,13 @@ EOF
 		;;
 	v4l-utils)
 		[ -x ${DESTDIR}${prefix}/bin/v4l2-ctl -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path jpeglib.h > /dev/null || ${0} ${cmdopt} jpeg || return
+		print_header_path Xauth.h X11 > /dev/null || ${0} ${cmdopt} libXau || return
+		print_header_path Xdmcp.h X11 > /dev/null || ${0} ${cmdopt} libXdmcp || return
+		print_header_path xcb.h xcb > /dev/null || ${0} ${cmdopt} libxcb || return
+		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
+		print_header_path eglmesaext.h EGL > /dev/null || ${0} ${cmdopt} mesa || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${v4l_utils_bld_dir}/Makefile ] ||
