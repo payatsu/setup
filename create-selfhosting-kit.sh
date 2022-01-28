@@ -207,7 +207,7 @@ EOF
 : ${findutils_ver:=4.8.0}
 : ${libatomic_ops_ver:=7.6.12}
 : ${gc_ver:=8.0.6}
-: ${poke_ver:=1.4}
+: ${poke_ver:=2.0}
 : ${jq_ver:=1.6}
 
 : ${help2man_ver:=1.47.16}
