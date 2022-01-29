@@ -4212,7 +4212,7 @@ EOF
 		generate_llvm_config_dummy `dirname ${0}` || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			--build.pkg-config-path `host=${build} print_library_dir wayland-scanner.pc` \
-			--pkg-config-path `print_library_dir wayland-client.pc` \
+			--pkg-config-path `print_library_dir wayland-client.pc`:`print_library_dir wayland-protocols.pc` \
 			-Dglvnd=true -Dshared-llvm=disabled -Dglx-direct=false ${mesa_src_dir} ${mesa_bld_dir} || return
 		ninja -v -C ${mesa_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${mesa_bld_dir} install || return
