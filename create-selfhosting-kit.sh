@@ -4383,7 +4383,7 @@ EOF
 		[ -f ${DESTDIR}${prefix}/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h -a "${force_install}" != yes ] && return
 		print_header_path png.h > /dev/null || ${0} ${cmdopt} libpng || return
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
-		which update-mime-database > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} shared-mime-info || return
+		print_binary_path update-mime-database > /dev/null || ${0} ${cmdopt} shared-mime-info || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
 		fetch ${1} || return
 		unpack ${1} || return
