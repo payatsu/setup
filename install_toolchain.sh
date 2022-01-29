@@ -239,7 +239,7 @@
 : ${libksba_ver:=1.6.0}
 : ${libassuan_ver:=2.5.5}
 : ${gnupg_ver:=2.2.29}
-: ${protobuf_ver:=3.19.1}
+: ${protobuf_ver:=3.19.4}
 : ${grpc_ver:=1.43.0}
 : ${libbacktrace_ver:=git}
 : ${poke_ver:=2.0}
