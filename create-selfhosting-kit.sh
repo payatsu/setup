@@ -4409,6 +4409,10 @@ EOF
 		[ -f ${DESTDIR}${prefix}/include/dbus-1.0/dbus/dbus.h -a "${force_install}" != yes ] && return
 		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
 		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
+		print_header_path ffi.h > /dev/null || ${0} ${cmdopt} libffi || return
+		print_header_path pcre.h > /dev/null || ${0} ${cmdopt} pcre || return
+		print_header_path uuid.h uuid > /dev/null || ${0} ${cmdopt} util-linux || return
+		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${dbus_bld_dir}/Makefile ] ||
