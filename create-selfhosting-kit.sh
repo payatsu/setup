@@ -786,6 +786,8 @@ print_libdir()
 	{
 		LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
 			sed -e '/^libraries: =/{s/^libraries: =//;p};d' | xargs -d : realpath -eq || true
+		echo ${DESTDIR}${prefix}/lib
+		echo ${DESTDIR}${prefix}/lib64
 		find ${DESTDIR}${prefix} -maxdepth 2 -type d \( -name lib -o -name lib64 \) || return
 	} | tr '\n' : | sed -e 's/:$//'
 }
