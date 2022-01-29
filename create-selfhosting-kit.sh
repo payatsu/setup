@@ -4499,6 +4499,8 @@ EOF
 		;;
 	libxkbcommon)
 		[ -f ${DESTDIR}${prefix}/include/xkbcommon/xkbcommon.h -a "${force_install}" != yes ] && return
+		print_header_path xcb.h xcb > /dev/null || ${0} ${cmdopt} libxcb || return
+		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
 		fetch ${1} || return
 		unpack ${1} || return
