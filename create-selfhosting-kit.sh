@@ -4473,6 +4473,8 @@ EOF
 	at-spi2-atk)
 		[ -f ${DESTDIR}${prefix}/include/at-spi2-atk/2.0/atk-bridge.h -a "${force_install}" != yes ] && return
 		print_header_path atspi.h at-spi-2.0/atspi > /dev/null || ${0} ${cmdopt} at-spi2-core || return
+		print_header_path atk.h atk-1.0/atk > /dev/null || ${0} ${cmdopt} atk || return
+		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
 		fetch ${1} || return
 		unpack ${1} || return
