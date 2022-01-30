@@ -4533,6 +4533,7 @@ EOF
 		;;
 	gstreamer)
 		[ -x ${DESTDIR}${prefix}/bin/gst-launch-1.0 -a "${force_install}" != yes ] && return
+		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
 		fetch ${1} || return
 		unpack ${1} || return
