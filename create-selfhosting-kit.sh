@@ -1793,6 +1793,7 @@ EOF
 		[ -x ${DESTDIR}${prefix}/bin/perf -a "${force_install}" != yes ] && return
 		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
+		print_header_path bfd.h > /dev/null || ${0} ${cmdopt} binutils || return
 		print_header_path babeltrace.h babeltrace > /dev/null || ${0} ${cmdopt} babeltrace || return
 		print_header_path bpf.h bpf > /dev/null || ${0} ${cmdopt} libbpf || return
 		print_header_path capability.h sys > /dev/null || ${0} ${cmdopt} libcap || return
