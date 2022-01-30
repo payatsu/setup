@@ -4704,6 +4704,8 @@ EOF
 			-DZLIB_LIBRARY=`print_library_path libz.so` \
 			-DJPEG_INCLUDE_DIR=`print_header_dir jpeglib.h` \
 			-DJPEG_LIBRARY=`print_library_path libjpeg.so` \
+			-DWEBP_INCLUDE_DIR=`print_header_dir decode.h webp` \
+			-DWEBP_LIBRARY=`print_library_path libwebp.so` \
 			-DPNG_PNG_INCLUDE_DIR=`print_header_dir png.h` \
 			-DPNG_LIBRARY=`print_library_path libpng.so`  \
 			-DTIFF_INCLUDE_DIR=`print_header_dir tiff.h` \
