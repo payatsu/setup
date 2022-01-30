@@ -4541,6 +4541,7 @@ EOF
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dc_link_args="${LDFLAGS} `l gmodule-2.0 glib-2.0 mount blkid ffi pcre`" \
+			-Dtests=disabled \
 			${gstreamer_src_dir} ${gstreamer_bld_dir} || return
 		ninja -v -C ${gstreamer_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${gstreamer_bld_dir} install || return
