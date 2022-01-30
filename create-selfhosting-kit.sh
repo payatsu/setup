@@ -4712,6 +4712,10 @@ EOF
 			-DTIFF_LIBRARY=`print_library_path libtiff.so` \
 			-DProtobuf_INCLUDE_DIR=`print_header_dir message.h google/protobuf` \
 			-DProtobuf_LIBRARY=`print_library_path libprotobuf.so` \
+			-DCMAKE_INCLUDE_PATH=`print_prefix gflags.h gflags` \
+			-Dgflags_DIR=`print_prefix gflags.h gflags`/lib/cmake/gflags \
+			-DGLOG_INCLUDE_DIR=`print_header_dir logging.h glog` \
+			-DGLOG_LIBRARY=`print_library_path libglog.so` \
 			-DWITH_FREETYPE=ON \
 			-DWITH_OPENGL=ON \
 			-DWITH_OPENMP=ON \
