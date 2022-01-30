@@ -4630,6 +4630,8 @@ EOF
 		;;
 	gst-python)
 		[ -e ${DESTDIR}${prefix}/lib64/gstreamer-1.0/libgstpython.so -a "${force_install}" != yes ] && return
+		print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || ${0} ${cmdopt} gstreamer || return
+		print_header_path video.h gstreamer-1.0/gst/video > /dev/null || ${0} ${cmdopt} gst-plugins-base || return
 		print_header_path pygobject.h pygobject-3.0 > /dev/null || ${0} ${cmdopt} pygobject || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
 		fetch ${1} || return
