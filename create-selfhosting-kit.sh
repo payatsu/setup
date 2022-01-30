@@ -4700,6 +4700,8 @@ EOF
 			-DENABLE_PRECOMPILED_HEADERS=OFF \
 			-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_src_dir}/modules \
 			-DOPENCV_GENERATE_PKGCONFIG=ON \
+			-DZLIB_INCLUDE_DIR=`print_header_dir zlib.h` \
+			-DZLIB_LIBRARY=`print_library_path libz.so` \
 			-DJPEG_INCLUDE_DIR=`print_header_dir jpeglib.h` \
 			-DJPEG_LIBRARY=`print_library_path libjpeg.so` \
 			-DPNG_PNG_INCLUDE_DIR=`print_header_dir png.h` \
