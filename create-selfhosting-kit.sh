@@ -4680,7 +4680,7 @@ EOF
 			gtk-3 X11 X11-xcb gdk-3 pangocairo-1.0 cairo-gobject gdk_pixbuf-2.0 \
 			cairo pangoft2-1.0 pango-1.0 harfbuzz fontconfig fribidi epoxy Xi atk-bridge-2.0 \
 			dbus-1 atspi atk-1.0 Xrender Xfixes Xext xkbcommon wayland-client wayland-cursor wayland-egl \
-			Xrandr freetype pixman-1 png16 xcb-shm xcb xcb-render Xau Xdmcp expat uuid mount blkid \
+			Xrandr freetype pixman-1 jpeg webp png16 tiff protobuf xcb-shm xcb xcb-render Xau Xdmcp expat uuid mount blkid \
 			gstpbutils-1.0 gstriff-1.0 gsttag-1.0 gstaudio-1.0 gstvideo-1.0 gstapp-1.0 gstbase-1.0 gstreamer-1.0 \
 			gio-2.0 gmodule-2.0 glib-2.0 gobject-2.0 unwind dw elf zstd lzma bz2 z ffi pcre`"
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
@@ -4716,7 +4716,7 @@ EOF
 			-Dgflags_DIR=`print_prefix gflags.h gflags`/lib/cmake/gflags \
 			-DGLOG_INCLUDE_DIR=`print_header_dir logging.h glog` \
 			-DGLOG_LIBRARY=`print_library_path libglog.so` \
-			-DEIGEN_INCLUDE_PATH=`print_header_dir Core eigen3/Eigen` \
+			-DEIGEN_INCLUDE_PATH=`print_header_dir Core eigen3/Eigen`/eigen3 \
 			-DWITH_EIGEN=ON \
 			-DWITH_FREETYPE=ON \
 			-DWITH_OPENGL=ON \
