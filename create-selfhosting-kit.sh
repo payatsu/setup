@@ -4565,6 +4565,7 @@ EOF
 		print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || ${0} ${cmdopt} gstreamer || return
 		print_header_path video.h gstreamer-1.0/gst/video > /dev/null || ${0} ${cmdopt} gst-plugins-base || return
 		which orcc > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} orc || return
+		print_header_path gtk.h gtk-`print_version gtk 1`.0/gtk > /dev/null || ${0} ${cmdopt} gtk || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
