@@ -4710,6 +4710,8 @@ EOF
 			-DPNG_LIBRARY=`print_library_path libpng.so`  \
 			-DTIFF_INCLUDE_DIR=`print_header_dir tiff.h` \
 			-DTIFF_LIBRARY=`print_library_path libtiff.so` \
+			-DProtobuf_INCLUDE_DIR=`print_header_dir message.h google/protobuf` \
+			-DProtobuf_LIBRARY=`print_library_path libprotobuf.so` \
 			-DWITH_FREETYPE=ON \
 			-DWITH_OPENGL=ON \
 			-DWITH_OPENMP=ON \
