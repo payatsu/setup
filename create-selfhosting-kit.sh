@@ -4670,6 +4670,7 @@ EOF
 		print_header_path ft2build.h freetype2 > /dev/null || ${0} ${cmdopt} freetype || return
 		print_header_path gflags.h gflags > /dev/null || ${0} ${cmdopt} gflags || return
 		print_header_path logging.h glog > /dev/null || ${0} ${cmdopt} glog || return
+		print_header_path gtk.h gtk-`print_version gtk 1`.0/gtk > /dev/null || ${0} ${cmdopt} gtk || return
 		fetch ${1} || return
 		unpack ${1} || return
 		init opencv_contrib || return
@@ -4699,6 +4700,12 @@ EOF
 			-DENABLE_PRECOMPILED_HEADERS=OFF \
 			-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_src_dir}/modules \
 			-DOPENCV_GENERATE_PKGCONFIG=ON \
+			-DJPEG_INCLUDE_DIR=`print_header_dir jpeglib.h` \
+			-DJPEG_LIBRARY=`print_library_path libjpeg.so` \
+			-DPNG_PNG_INCLUDE_DIR=`print_header_dir png.h` \
+			-DPNG_LIBRARY=`print_library_path libpng.so`  \
+			-DTIFF_INCLUDE_DIR=`print_header_dir tiff.h` \
+			-DTIFF_LIBRARY=`print_library_path libtiff.so` \
 			-DWITH_FREETYPE=ON \
 			-DWITH_OPENGL=ON \
 			-DWITH_OPENMP=ON \
