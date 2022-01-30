@@ -4421,7 +4421,7 @@ EOF
 			(cd ${dbus_bld_dir}
 			${dbus_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--x-includes=`print_header_dir Xlib.h X11` --x-libraries=`print_library_dir libX11.so` \
-				LIBS="${LIBS} `l xcb Xau Xdmcp gmodule-2.0 glib-2.0 mount blkid ffi pcre`" \
+				LIBS="${LIBS} `l xcb Xau Xdmcp gmodule-2.0 glib-2.0 mount uuid blkid ffi pcre`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${dbus_bld_dir} -j ${jobs} || return
