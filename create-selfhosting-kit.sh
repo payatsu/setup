@@ -4716,6 +4716,8 @@ EOF
 			-Dgflags_DIR=`print_prefix gflags.h gflags`/lib/cmake/gflags \
 			-DGLOG_INCLUDE_DIR=`print_header_dir logging.h glog` \
 			-DGLOG_LIBRARY=`print_library_path libglog.so` \
+			-DEIGEN_INCLUDE_PATH=`print_header_dir Core eigen3/Eigen` \
+			-DWITH_EIGEN=ON \
 			-DWITH_FREETYPE=ON \
 			-DWITH_OPENGL=ON \
 			-DWITH_OPENMP=ON \
