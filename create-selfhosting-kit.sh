@@ -4586,7 +4586,9 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
-			-Dtests=disabled ${gst_editing_services_src_dir} ${gst_editing_services_bld_dir} || return
+			-Dtests=disabled \
+			-Dc_link_args="${LDFLAGS} `l mount blkid gmodule-2.0 glib-2.0 unwind dw elf zstd lzma bz2 z ffi pcre`" \
+			${gst_editing_services_src_dir} ${gst_editing_services_bld_dir} || return
 		ninja -v -C ${gst_editing_services_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${gst_editing_services_bld_dir} install || return
 		;;
