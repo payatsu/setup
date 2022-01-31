@@ -4717,6 +4717,9 @@ EOF
 			-DGLOG_INCLUDE_DIR=`print_header_dir logging.h glog` \
 			-DGLOG_LIBRARY=`print_library_path libglog.so` \
 			-DEIGEN_INCLUDE_PATH=`print_header_dir Core eigen3/Eigen`/eigen3 \
+			-DPYTHON3_INCLUDE_PATH=`print_header_dir Python.h` \
+			-DPYTHON3_LIBRARIES=`print_library_path libpython$(print_target_python_version).so` \
+			-DPYTHON3_NUMPY_INCLUDE_DIRS=`find ${DESTDIR}${prefix}/lib -path '*/site-packages/numpy/core/include'` \
 			-DWITH_EIGEN=ON \
 			-DWITH_FREETYPE=ON \
 			-DWITH_OPENGL=ON \
