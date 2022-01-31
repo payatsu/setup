@@ -1501,6 +1501,7 @@ EOF
 				--with-lto --with-system-expat --with-system-ffi \
 				--with-doc-strings --with-pymalloc \
 				--with-openssl=`print_prefix ssl.h openssl` \
+				--without-ensurepip \
 				LDSHARED= \
 				CFLAGS="${CFLAGS} -I`{ print_header_dir curses.h ncursesw | sed -e 's/include$/&\/ncursesw/'; print_header_dir curses.h;} | head -n 1` `I expat.h`" \
 				LDFLAGS="${LDFLAGS} `L expat`" \
