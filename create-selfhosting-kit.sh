@@ -4683,53 +4683,56 @@ EOF
 			Xrandr freetype pixman-1 jpeg webp png16 tiff protobuf glog gflags xcb-shm xcb xcb-render Xau Xdmcp expat uuid mount blkid \
 			gstpbutils-1.0 gstriff-1.0 gsttag-1.0 gstaudio-1.0 gstvideo-1.0 gstapp-1.0 gstbase-1.0 gstreamer-1.0 \
 			gio-2.0 gmodule-2.0 glib-2.0 gobject-2.0 unwind dw elf zstd lzma bz2 z ffi pcre stdc++`"
-		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-		cmake `which ninja > /dev/null && echo -G Ninja` \
-			-S ${opencv_src_dir} -B ${opencv_bld_dir} \
-			`[ ${build} != ${host} ] &&
-				echo -DCMAKE_TOOLCHAIN_FILE=${opencv_src_dir}/platforms/linux/$(echo ${host} | cut -d - -f 1)-gnu.toolchain.cmake` \
-			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
-			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
-			-DCMAKE_CXX_STANDARD=17 \
-			-DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
-			-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
-			-DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
-			-DCMAKE_BUILD_TYPE=${cmake_build_type} \
-			-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-			-DCMAKE_SKIP_INSTALL_RPATH=TRUE \
-			-DENABLE_PRECOMPILED_HEADERS=OFF \
-			-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_src_dir}/modules \
-			-DOPENCV_GENERATE_PKGCONFIG=ON \
-			-DZLIB_INCLUDE_DIR=`print_header_dir zlib.h` \
-			-DZLIB_LIBRARY=`print_library_path libz.so` \
-			-DJPEG_INCLUDE_DIR=`print_header_dir jpeglib.h` \
-			-DJPEG_LIBRARY=`print_library_path libjpeg.so` \
-			-DWEBP_INCLUDE_DIR=`print_header_dir decode.h webp` \
-			-DWEBP_LIBRARY=`print_library_path libwebp.so` \
-			-DPNG_PNG_INCLUDE_DIR=`print_header_dir png.h` \
-			-DPNG_LIBRARY=`print_library_path libpng.so`  \
-			-DTIFF_INCLUDE_DIR=`print_header_dir tiff.h` \
-			-DTIFF_LIBRARY=`print_library_path libtiff.so` \
-			-DProtobuf_INCLUDE_DIR=`print_header_dir message.h google/protobuf` \
-			-DProtobuf_LIBRARY=`print_library_path libprotobuf.so` \
-			-DCMAKE_INCLUDE_PATH=`print_prefix gflags.h gflags` \
-			-Dgflags_DIR=`print_prefix gflags.h gflags`/lib/cmake/gflags \
-			-DGLOG_INCLUDE_DIR=`print_header_dir logging.h glog` \
-			-DGLOG_LIBRARY=`print_library_path libglog.so` \
-			-DEIGEN_INCLUDE_PATH=`print_header_dir Core eigen3/Eigen`/eigen3 \
-			-DPYTHON3_INCLUDE_PATH=`print_header_dir Python.h` \
-			-DPYTHON3_LIBRARIES=`print_library_path libpython$(print_target_python_version).so` \
-			-DPYTHON3_NUMPY_INCLUDE_DIRS=`find ${DESTDIR}${prefix}/lib -path '*/site-packages/numpy/core/include'` \
-			-DWITH_EIGEN=ON \
-			-DWITH_FREETYPE=ON \
-			-DWITH_OPENGL=ON \
-			-DWITH_OPENMP=ON \
-			-DWITH_QT=ON \
-			-DBUILD_PROTOBUF=OFF \
-			-DPROTOBUF_UPDATE_FILES=ON \
-			|| return
-		cmake --build ${opencv_bld_dir} -v -j ${jobs} || return
-		cmake --install ${opencv_bld_dir} -v ${strip:+--${strip}} || return
+		for build_shared_libs in ON OFF; do
+			PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+			cmake `which ninja > /dev/null && echo -G Ninja` \
+				-S ${opencv_src_dir} -B ${opencv_bld_dir} \
+				`[ ${build} != ${host} ] &&
+					echo -DCMAKE_TOOLCHAIN_FILE=${opencv_src_dir}/platforms/linux/$(echo ${host} | cut -d - -f 1)-gnu.toolchain.cmake` \
+				-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+				-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
+				-DCMAKE_CXX_STANDARD=17 \
+				-DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
+				-DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
+				-DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS} ${libdirs}" \
+				-DCMAKE_BUILD_TYPE=${cmake_build_type} \
+				-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+				-DCMAKE_SKIP_INSTALL_RPATH=TRUE \
+				-DENABLE_PRECOMPILED_HEADERS=OFF \
+				-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_src_dir}/modules \
+				-DOPENCV_GENERATE_PKGCONFIG=ON \
+				-DZLIB_INCLUDE_DIR=`print_header_dir zlib.h` \
+				-DZLIB_LIBRARY=`print_library_path libz.so` \
+				-DJPEG_INCLUDE_DIR=`print_header_dir jpeglib.h` \
+				-DJPEG_LIBRARY=`print_library_path libjpeg.so` \
+				-DWEBP_INCLUDE_DIR=`print_header_dir decode.h webp` \
+				-DWEBP_LIBRARY=`print_library_path libwebp.so` \
+				-DPNG_PNG_INCLUDE_DIR=`print_header_dir png.h` \
+				-DPNG_LIBRARY=`print_library_path libpng.so`  \
+				-DTIFF_INCLUDE_DIR=`print_header_dir tiff.h` \
+				-DTIFF_LIBRARY=`print_library_path libtiff.so` \
+				-DProtobuf_INCLUDE_DIR=`print_header_dir message.h google/protobuf` \
+				-DProtobuf_LIBRARY=`print_library_path libprotobuf.so` \
+				-DCMAKE_INCLUDE_PATH=`print_prefix gflags.h gflags` \
+				-Dgflags_DIR=`print_prefix gflags.h gflags`/lib/cmake/gflags \
+				-DGLOG_INCLUDE_DIR=`print_header_dir logging.h glog` \
+				-DGLOG_LIBRARY=`print_library_path libglog.so` \
+				-DEIGEN_INCLUDE_PATH=`print_header_dir Core eigen3/Eigen`/eigen3 \
+				-DPYTHON3_INCLUDE_PATH=`print_header_dir Python.h` \
+				-DPYTHON3_LIBRARIES=`print_library_path libpython$(print_target_python_version).so` \
+				-DPYTHON3_NUMPY_INCLUDE_DIRS=`find ${DESTDIR}${prefix}/lib -path '*/site-packages/numpy/core/include'` \
+				-DWITH_EIGEN=ON \
+				-DWITH_FREETYPE=ON \
+				-DWITH_OPENGL=ON \
+				-DWITH_OPENMP=ON \
+				-DWITH_QT=ON \
+				-DBUILD_SHARED_LIBS=${build_shared_libs} \
+				-DBUILD_PROTOBUF=OFF \
+				-DPROTOBUF_UPDATE_FILES=ON \
+				|| return
+			cmake --build ${opencv_bld_dir} -v -j ${jobs} || return
+			cmake --install ${opencv_bld_dir} -v ${strip:+--${strip}} || return
+		done
 		;;
 	opencv_contrib)
 		echo nothing to do for ${1}.
