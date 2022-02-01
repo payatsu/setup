@@ -200,7 +200,7 @@
 : ${guile_ver:=3.0.7}
 : ${lua_ver:=5.4.3}
 : ${node_ver:=16.13.0}
-: ${jdk_ver:=17.0.1}
+: ${jdk_ver:=17.0.2}
 : ${nasm_ver:=2.15.05}
 : ${yasm_ver:=1.3.0}
 : ${x264_ver:=master}
