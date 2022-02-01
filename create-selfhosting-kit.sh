@@ -1505,6 +1505,7 @@ EOF
 				LDSHARED= \
 				CFLAGS="${CFLAGS} -I`{ print_header_dir curses.h ncursesw | sed -e 's/include$/&\/ncursesw/'; print_header_dir curses.h;} | head -n 1` `I expat.h`" \
 				LDFLAGS="${LDFLAGS} `L expat`" \
+				LIBS="${LIBS} `l ffi`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				CONFIG_SITE=config.site || return
 			) || return
