@@ -179,7 +179,7 @@
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
-: ${boost_ver:=1_77_0}
+: ${boost_ver:=1_78_0}
 : ${Python_ver:=3.10.2}
 : ${Python2_ver:=2.7.18}
 : ${cython_ver:=0.29.27}
