@@ -1641,6 +1641,7 @@ EOF
 		print_library_path libunwind.so > /dev/null || ${0} ${cmdopt} libunwindnongnu || return
 		which gettext > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gettext || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
