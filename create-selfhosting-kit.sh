@@ -921,6 +921,11 @@ print_binary_path()
 	return 1
 }
 
+print_qemu()
+{
+	echo qemu-`echo ${host} | cut -d - -f 1` || return
+}
+
 print_version()
 {
 	_1=`echo ${1} | tr - _`
@@ -4253,7 +4258,7 @@ EOF
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
-		[ ${build} = ${host} ] || which qemu-`echo ${host} | cut -d - -f 1` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		[ ${build} = ${host} ] || which g-ir-scanner > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
@@ -4892,7 +4897,7 @@ strip = '${host:+${host}-}strip'
 cmake = 'cmake'
 pkgconfig   = 'pkg-config'
 llvm-config = 'llvm-config'
-exe_wrapper = ['qemu-`echo ${host} | cut -d - -f 1`', '-L', '`print_sysroot`', '-E', 'LD_LIBRARY_PATH=`print_libdir`']
+exe_wrapper = ['`print_qemu`', '-L', '`print_sysroot`', '-E', 'LD_LIBRARY_PATH=`print_libdir`']
 
 [properties]
 sys_root = '${DESTDIR}'
