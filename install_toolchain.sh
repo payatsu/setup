@@ -132,7 +132,7 @@
 : ${expect_ver:=5.45.4}
 : ${dejagnu_ver:=1.6.3}
 : ${zsh_ver:=5.8}
-: ${bash_ver:=5.0}
+: ${bash_ver:=5.1.16}
 : ${tcsh_ver:=TCSH6_23_00}
 : ${inetutils_ver:=2.2}
 : ${iproute2_ver:=5.9.0}

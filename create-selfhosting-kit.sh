@@ -193,7 +193,7 @@ EOF
 : ${libevent_ver:=2.1.12-stable}
 : ${tmux_ver:=3.2a}
 : ${zsh_ver:=5.8}
-: ${bash_ver:=5.0}
+: ${bash_ver:=5.1.16}
 : ${tcsh_ver:=TCSH6_23_00}
 : ${vim_ver:=8.2.3993}
 : ${vimdoc_ja_ver:=master}
