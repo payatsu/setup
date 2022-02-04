@@ -278,7 +278,7 @@
 : ${libdrm_ver:=2.4.109}
 : ${libxshmfence_ver:=1.3}
 : ${wayland_ver:=1.20.0}
-: ${wayland_protocols_ver:=1.24}
+: ${wayland_protocols_ver:=1.25}
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
 : ${dri3proto_ver:=1.0}
