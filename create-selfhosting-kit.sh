@@ -307,7 +307,7 @@ EOF
 : ${at_spi2_core_ver:=AT_SPI2_CORE_2_42_0}
 : ${at_spi2_atk_ver:=AT_SPI2_ATK_2_38_0}
 : ${graphene_ver:=1.10.6}
-: ${libxkbcommon_ver:=1.3.1}
+: ${libxkbcommon_ver:=1.4.0}
 : ${gtk_ver:=3.24.31}
 
 : ${gstreamer_ver:=1.18.5}
