@@ -4218,7 +4218,7 @@ EOF
 		print_header_path libunwind.h > /dev/null || ${0} ${cmdopt} libunwindnongnu || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
-		pip3 install --root ${DESTDIR} --prefix ${prefix} mako || return
+		pip3 install --root ${build} --prefix ${prefix} mako || return
 		fetch ${1} || return
 		unpack ${1} || return
 		generate_llvm_config_dummy `dirname ${0}` || return
