@@ -109,7 +109,7 @@ EOF
 : ${xz_ver:=5.2.5}
 : ${zstd_ver:=1.5.2}
 : ${openssl_ver:=1.1.1l}
-: ${libunistring_ver:=0.9.10}
+: ${libunistring_ver:=1.0}
 : ${libidn2_ver:=2.3.2}
 : ${curl_ver:=7.75.0}
 : ${elfutils_ver:=0.186}
