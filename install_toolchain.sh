@@ -126,7 +126,7 @@
 : ${man_db_ver:=2.9.4}
 : ${file_ver:=5.41}
 : ${source_highlight_ver:=3.1.9}
-: ${screen_ver:=4.8.0}
+: ${screen_ver:=4.9.0}
 : ${libevent_ver:=2.1.12-stable}
 : ${tmux_ver:=3.2a}
 : ${expect_ver:=5.45.4}
@@ -4776,6 +4776,7 @@ install_native_screen()
 	print_header_path curses.h > /dev/null || install_native_ncurses || return
 	fetch screen || return
 	unpack screen || return
+	[ -f ${screen_src_dir}/configure ] || autoreconf -iv ${screen_src_dir} || return
 	[ -f ${screen_bld_dir}/Makefile ] ||
 		(cd ${screen_bld_dir}
 		${screen_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \

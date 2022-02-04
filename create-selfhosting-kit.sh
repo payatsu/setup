@@ -189,7 +189,7 @@ EOF
 : ${e2fsprogs_ver:=1.46.2}
 : ${v4l_utils_ver:=1.22.1}
 
-: ${screen_ver:=4.8.0}
+: ${screen_ver:=4.9.0}
 : ${libevent_ver:=2.1.12-stable}
 : ${tmux_ver:=3.2a}
 : ${zsh_ver:=5.8}
@@ -2634,6 +2634,7 @@ EOF
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		fetch ${1} || return
 		unpack ${1} || return
+		[ -f ${screen_src_dir}/configure ] || autoreconf -iv ${screen_src_dir} || return
 		[ -f ${screen_bld_dir}/Makefile ] ||
 			(cd ${screen_bld_dir}
 			${screen_src_dir}/configure --prefix=${prefix} --host=${host} \
