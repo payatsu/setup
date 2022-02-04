@@ -204,7 +204,7 @@ EOF
 : ${diffutils_ver:=3.8}
 : ${patch_ver:=2.7.6}
 : ${global_ver:=6.6.6}
-: ${findutils_ver:=4.8.0}
+: ${findutils_ver:=4.9.0}
 : ${libatomic_ops_ver:=7.6.12}
 : ${gc_ver:=8.0.6}
 : ${poke_ver:=2.0}
