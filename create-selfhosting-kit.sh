@@ -310,7 +310,7 @@ EOF
 : ${libxkbcommon_ver:=1.4.0}
 : ${gtk_ver:=3.24.31}
 
-: ${gstreamer_ver:=1.18.5}
+: ${gstreamer_ver:=1.18.6}
 : ${gst_plugins_base_ver:=${gstreamer_ver}}
 : ${gst_plugins_good_ver:=${gstreamer_ver}}
 : ${gst_editing_services_ver:=${gstreamer_ver}}
