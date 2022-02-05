@@ -4116,6 +4116,7 @@ EOF
 	wayland)
 		[ -f ${DESTDIR}${prefix}/include/wayland-version.h -a "${force_install}" != yes ] && return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		which wayland-scanner > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		print_header_path ffi.h > /dev/null || ${0} ${cmdopt} libffi || return
 		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
@@ -4132,6 +4133,7 @@ EOF
 	wayland-protocols)
 		[ -f ${DESTDIR}${prefix}/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml -a "${force_install}" != yes ] && return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		which wayland-scanner > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} wayland || return
 		print_header_path wayland-version.h > /dev/null || ${0} ${cmdopt} wayland || return
 		fetch ${1} || return
@@ -4178,6 +4180,7 @@ EOF
 	libglvnd)
 		[ -f ${DESTDIR}${prefix}/include/glvnd/GLdispatchABI.h -a "${force_install}" != yes ] && return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
 		print_header_path glxproto.h GL > /dev/null || ${0} ${cmdopt} glproto || return
 		fetch ${1} || return
@@ -4191,6 +4194,7 @@ EOF
 		[ -f ${DESTDIR}${prefix}/include/libdrm/drm.h -a "${force_install}" != yes ] && return
 		print_header_path pciaccess.h > /dev/null || ${0} ${cmdopt} libpciaccess || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4219,6 +4223,7 @@ EOF
 		print_header_path libunwind.h > /dev/null || ${0} ${cmdopt} libunwindnongnu || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		pip3 install --root ${build} --prefix ${prefix} mako || return
 		fetch ${1} || return
 		unpack ${1} || return
@@ -4234,6 +4239,7 @@ EOF
 		[ -f ${DESTDIR}${prefix}/include/GL/glu.h -a "${force_install}" != yes ] && return
 		print_header_path eglmesaext.h EGL > /dev/null || ${0} ${cmdopt} mesa || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4247,6 +4253,7 @@ EOF
 		print_header_path eglmesaext.h EGL > /dev/null || ${0} ${cmdopt} mesa || return
 		print_header_path glu.h GL > /dev/null || ${0} ${cmdopt} glu || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4347,6 +4354,7 @@ EOF
 		print_header_path cairo.h cairo > /dev/null || ${0} ${cmdopt} cairo || return
 		print_header_path giversion.h gobject-introspection-1.0 > /dev/null || ${0} ${cmdopt} gobject-introspection || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4360,6 +4368,7 @@ EOF
 		print_header_path fribidi.h fribidi > /dev/null || ${0} ${cmdopt} fribidi || return
 		print_header_path hb.h harfbuzz > /dev/null || ${0} ${cmdopt} harfbuzz || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4383,6 +4392,7 @@ EOF
 		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
 		which itstool > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} itstool || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		which update-mime-database > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
@@ -4398,6 +4408,7 @@ EOF
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		print_binary_path update-mime-database > /dev/null || ${0} ${cmdopt} shared-mime-info || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4410,6 +4421,7 @@ EOF
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		print_header_path giversion.h gobject-introspection-1.0 > /dev/null || ${0} ${cmdopt} gobject-introspection || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4475,6 +4487,7 @@ EOF
 		print_header_path XTest.h X11/extensions > /dev/null || ${0} ${cmdopt} libXtst || return
 		print_header_path XInput.h X11/extensions > /dev/null || ${0} ${cmdopt} libXi || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4489,6 +4502,7 @@ EOF
 		print_header_path atk.h atk-1.0/atk > /dev/null || ${0} ${cmdopt} atk || return
 		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4500,6 +4514,7 @@ EOF
 		[ -f ${DESTDIR}${prefix}/include/graphene-1.0/graphene.h -a "${force_install}" != yes ] && return
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4513,6 +4528,7 @@ EOF
 		print_header_path xcb.h xcb > /dev/null || ${0} ${cmdopt} libxcb || return
 		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4533,6 +4549,7 @@ EOF
 		print_header_path atk-bridge.h at-spi2-atk/2.0 > /dev/null || ${0} ${cmdopt} at-spi2-atk || return # for GTK3 only.
 		print_header_path xkbcommon.h xkbcommon > /dev/null || ${0} ${cmdopt} libxkbcommon || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4546,6 +4563,7 @@ EOF
 		[ -x ${DESTDIR}${prefix}/bin/gst-launch-1.0 -a "${force_install}" != yes ] && return
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4558,6 +4576,7 @@ EOF
 	gst-plugins-base)
 		[ -f ${DESTDIR}${prefix}/include/gstreamer-1.0/gst/video/video.h -a "${force_install}" != yes ] && return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || ${0} ${cmdopt} gstreamer || return
 		which orcc > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} orc || return
 		print_header_path jpeglib.h > /dev/null || ${0} ${cmdopt} jpeg || return
@@ -4573,6 +4592,7 @@ EOF
 	gst-plugins-good)
 		[ -e ${DESTDIR}${prefix}/lib64/gstreamer-1.0/libgstautodetect.so -a "${force_install}" != yes ] && return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || ${0} ${cmdopt} gstreamer || return
 		print_header_path video.h gstreamer-1.0/gst/video > /dev/null || ${0} ${cmdopt} gst-plugins-base || return
 		which orcc > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} orc || return
@@ -4592,6 +4612,7 @@ EOF
 	gst-editing-services)
 		[ -f ${DESTDIR}${prefix}/include/gstreamer-1.0/ges/ges-version.h -a "${force_install}" != yes ] && return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || ${0} ${cmdopt} gstreamer || return
 		print_header_path video.h gstreamer-1.0/gst/video > /dev/null || ${0} ${cmdopt} gst-plugins-base || return
 		fetch ${1} || return
@@ -4606,6 +4627,7 @@ EOF
 	gst-rtsp-server)
 		[ -f ${DESTDIR}${prefix}/include/gstreamer-1.0/gst/rtsp-server/rtsp-server.h -a "${force_install}" != yes ] && return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || ${0} ${cmdopt} gstreamer || return
 		print_header_path video.h gstreamer-1.0/gst/video > /dev/null || ${0} ${cmdopt} gst-plugins-base || return
 		fetch ${1} || return
@@ -4618,6 +4640,7 @@ EOF
 	gst-omx)
 		[ -e ${DESTDIR}${prefix}/lib64/gstreamer-1.0/libgstomx.so -a "${force_install}" != yes ] && return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		print_header_path gstversion.h gstreamer-1.0/gst > /dev/null || ${0} ${cmdopt} gstreamer || return
 		print_header_path video.h gstreamer-1.0/gst/video > /dev/null || ${0} ${cmdopt} gst-plugins-base || return
 		fetch ${1} || return
@@ -4631,6 +4654,7 @@ EOF
 		[ -f ${DESTDIR}${prefix}/include/pygobject-3.0/pygobject.h -a "${force_install}" != yes ] && return
 		print_header_path giversion.h gobject-introspection-1.0 > /dev/null || ${0} ${cmdopt} gobject-introspection || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4645,6 +4669,7 @@ EOF
 		print_header_path video.h gstreamer-1.0/gst/video > /dev/null || ${0} ${cmdopt} gst-plugins-base || return
 		print_header_path pygobject.h pygobject-3.0 > /dev/null || ${0} ${cmdopt} pygobject || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
@@ -4655,6 +4680,7 @@ EOF
 	orc)
 		[ -x ${DESTDIR}${prefix}/bin/orcc -a "${force_install}" != yes ] && return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
