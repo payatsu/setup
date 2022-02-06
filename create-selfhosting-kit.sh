@@ -1607,7 +1607,8 @@ EOF
 		[ -f ${util_linux_bld_dir}/Makefile ] ||
 			(cd ${util_linux_bld_dir}
 			${util_linux_src_dir}/configure --prefix=${prefix} --host=${host} --build=${build} --disable-silent-rules \
-				--enable-write --disable-use-tty-group --with-bashcompletiondir=${prefix}/share/bash-completion \
+				--disable-symvers --disable-use-tty-group --enable-write \
+				--with-bashcompletiondir=${prefix}/share/bash-completion \
 				CFLAGS="${CFLAGS} `I zlib.h Python.h`" \
 				LDFLAGS="`L tinfo`" \
 				) || return
