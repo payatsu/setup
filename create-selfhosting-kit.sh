@@ -2991,7 +2991,7 @@ EOF
 		[ -f ${poke_bld_dir}/Makefile ] ||
 			(cd ${poke_bld_dir}
 			autoreconf -fiv ${poke_src_dir} || return # copy missing 'build-aux/compile', which is removed at v1.3
-			remove_rpath_option poke || return
+			remove_rpath_option ${1} || return
 			${poke_src_dir}/configure --prefix=${prefix} --host=${host} --disable-rpath --disable-gui \
 				--with-libreadline-prefix=`print_prefix readline.h readline` \
 				LIBS="${LIBS} `l tinfo`" \
