@@ -2969,11 +2969,14 @@ EOF
 		unpack ${1} || return
 		[ -f ${gc_bld_dir}/Makefile ] ||
 			(cd ${gc_bld_dir}
+			remove_rpath_option ${1} || return
 			${gc_src_dir}/configure --prefix=${prefix} -build=${build} --host=${host} --disable-silent-rules \
 				--enable-static \
 				CPPFLAGS="${CPPFLAGS} `I atomic_ops.h`" \
 				LDFLAGS="${LDFLAGS} `L atomic_ops`" \
-				) || return
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${gc_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${gc_bld_dir} -j ${jobs} check || return
