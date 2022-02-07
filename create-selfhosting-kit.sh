@@ -4408,6 +4408,9 @@ EOF
 		[ -f ${DESTDIR}${prefix}/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h -a "${force_install}" != yes ] && return
 		print_header_path png.h > /dev/null || ${0} ${cmdopt} libpng || return
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
+		print_header_path Xdamage.h X11/extensions > /dev/null || ${0} ${cmdopt} libXdamage || return
+		print_header_path Xcursor.h X11/extensions > /dev/null || ${0} ${cmdopt} libXcursor || return
+		print_header_path Xinerama.h X11/extensions > /dev/null || ${0} ${cmdopt} libXinerama || return
 		print_binary_path update-mime-database > /dev/null || ${0} ${cmdopt} shared-mime-info || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
@@ -4603,7 +4606,7 @@ EOF
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dc_link_args="${LDFLAGS} `l \
-			X11 X11-xcb pangoft2-1.0 pango-1.0 harfbuzz fontconfig fribidi epoxy Xi atk-bridge-2.0 \
+			X11 X11-xcb Xcursor Xdamage Xinerama pangoft2-1.0 pango-1.0 harfbuzz fontconfig fribidi epoxy Xi atk-bridge-2.0 \
 			dbus-1 atspi atk-1.0 Xrender Xfixes Xext xkbcommon wayland-client wayland-cursor wayland-egl \
 			Xrandr freetype pixman-1 png16 xcb-shm xcb xcb-render Xau Xdmcp expat uuid \
 			mount blkid gio-2.0 gmodule-2.0 glib-2.0 gobject-2.0 unwind dw elf zstd lzma bz2 z ffi pcre`" \
@@ -4714,7 +4717,7 @@ EOF
 		fetch opencv_contrib || return
 		unpack opencv_contrib || return
 		libdirs="`l \
-			gtk-3 X11 X11-xcb gdk-3 pangocairo-1.0 cairo-gobject gdk_pixbuf-2.0 \
+			gtk-3 X11 X11-xcb gdk-3 Xcursor Xdamage Xinerama pangocairo-1.0 cairo-gobject gdk_pixbuf-2.0 \
 			cairo pangoft2-1.0 pango-1.0 harfbuzz fontconfig fribidi epoxy Xi atk-bridge-2.0 \
 			dbus-1 atspi atk-1.0 Xrender Xfixes Xext xkbcommon wayland-client wayland-cursor wayland-egl \
 			Xrandr freetype pixman-1 jpeg webp png16 tiff protobuf glog gflags xcb-shm xcb xcb-render Xau Xdmcp expat uuid mount blkid \
