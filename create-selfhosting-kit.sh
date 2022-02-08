@@ -176,7 +176,7 @@ EOF
 : ${git_ver:=2.35.1}
 : ${openssh_ver:=8.8p1}
 : ${lzip_ver:=1.22}
-: ${ed_ver:=1.17}
+: ${ed_ver:=1.18}
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.2.3}
 : ${dtc_ver:=1.6.0}
@@ -207,7 +207,7 @@ EOF
 : ${findutils_ver:=4.9.0}
 : ${libatomic_ops_ver:=7.6.12}
 : ${gc_ver:=8.0.6}
-: ${poke_ver:=2.0}
+: ${poke_ver:=2.1}
 : ${jq_ver:=1.6}
 
 : ${help2man_ver:=1.47.16}

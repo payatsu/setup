@@ -48,7 +48,7 @@
 : ${binutils_ver:=2.37}
 : ${elfutils_ver:=0.186}
 : ${systemtap_ver:=4.6}
-: ${ed_ver:=1.17}
+: ${ed_ver:=1.18}
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.2.3}
 : ${linux_ver:=5.14.9}
@@ -242,7 +242,7 @@
 : ${protobuf_ver:=3.19.4}
 : ${grpc_ver:=1.43.0}
 : ${libbacktrace_ver:=git}
-: ${poke_ver:=2.0}
+: ${poke_ver:=2.1}
 
 : ${xproto_ver:=7.0.31}
 : ${libXau_ver:=1.0.9}
