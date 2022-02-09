@@ -2621,12 +2621,15 @@ EOF
 		unpack ${1} || return
 		[ -f ${v4l_utils_bld_dir}/Makefile ] ||
 			(cd ${v4l_utils_bld_dir}
+			remove_rpath_option ${1} || return
 			${v4l_utils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--disable-rpath --with-udevdir=${prefix}/lib/udev \
 				CPPFLAGS="${CPPFLAGS} `I X11/Xlib.h`" \
 				LIBS="${LIBS} `l xcb Xau Xdmcp jpeg z GLX X11 GLdispatch stdc++`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-				) || return
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${v4l_utils_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${v4l_utils_bld_dir} -j ${jobs} -k check || return
@@ -5069,11 +5072,12 @@ truncate_path_in_elf()
 
 remove_rpath_option()
 {
-	eval d=\${${1}_bld_dir}
+	_1=`echo ${1} | tr - _`
+	eval d=\${${_1}_bld_dir}
 	[ ! -f ${d}/libtool ] ||
 		{ sed -i -e 's/^\(\<runpath_var\>=\).\+/\1dummy_runpath/' ${d}/libtool && return;} || return
 
-	eval d=\${${1}_src_dir}
+	eval d=\${${_1}_src_dir}
 	for f in `grep -le '\<rpath\>' -r ${d} --exclude=ltmain.sh --exclude=Makefile.in`; do
 		sed -i -e 's/\(\$\(wl\|{wl}\)\)\?-\?-rpath[, ]\(\$\(wl\|{wl}\)\)\?\$\(libdir\|(libdir)\)//' ${f} || return
 	done
