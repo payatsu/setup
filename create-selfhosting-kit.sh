@@ -3848,10 +3848,13 @@ EOF
 		print_header_path Xproto.h X11 > /dev/null || ${0} ${cmdopt} xproto || return
 		print_header_path lbx.h X11/extensions > /dev/null || ${0} ${cmdopt} xextproto || return
 		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
+		${0} ${cmdopt} util-macros || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libXext_bld_dir}/Makefile ] ||
 			(cd ${libXext_bld_dir}
+			autoreconf -fiv -I ${DESTDIR}${prefix}/share/aclocal ${libXext_src_dir} || return
+			remove_rpath_option ${1} || return
 			${libXext_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--enable-malloc0returnsnull \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
