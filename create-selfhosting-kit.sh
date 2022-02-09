@@ -4526,10 +4526,13 @@ EOF
 		print_header_path XI.h X11/extensions > /dev/null || ${0} ${cmdopt} inputproto || return
 		print_header_path XInput.h X11/extensions > /dev/null || ${0} ${cmdopt} libXi || return
 		print_header_path Xext.h X11/extensions > /dev/null || ${0} ${cmdopt} libXext || return
+		${0} ${cmdopt} util-macros || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libXtst_bld_dir}/Makefile ] ||
 			(cd ${libXtst_bld_dir}
+			autoreconf -fiv -I ${DESTDIR}${prefix}/share/aclocal ${libXtst_src_dir} || return
+			remove_rpath_option ${1} || return
 			${libXtst_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 			) || return
