@@ -3869,10 +3869,13 @@ EOF
 		print_header_path SM.h X11/SM > /dev/null || ${0} ${cmdopt} libSM || return
 		print_header_path XKBproto.h X11 > /dev/null || ${0} ${cmdopt} kbproto || return
 		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
+		${0} ${cmdopt} util-macros || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libXt_bld_dir}/Makefile ] ||
 			(cd ${libXt_bld_dir}
+			autoreconf -fiv -I ${DESTDIR}${prefix}/share/aclocal ${libXt_src_dir} || return
+			remove_rpath_option ${1} || return
 			${libXt_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--enable-malloc0returnsnull \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
