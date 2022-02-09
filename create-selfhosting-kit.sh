@@ -4072,10 +4072,13 @@ EOF
 		print_header_path renderproto.h X11/extensions > /dev/null || ${0} ${cmdopt} renderproto || return
 		print_header_path Xrender.h X11/extensions > /dev/null || ${0} ${cmdopt} libXrender || return
 		print_header_path randrproto.h X11/extensions > /dev/null || ${0} ${cmdopt} randrproto || return
+		${0} ${cmdopt} util-macros || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libXrandr_bld_dir}/Makefile ] ||
 			(cd ${libXrandr_bld_dir}
+			autoreconf -fiv -I ${DESTDIR}${prefix}/share/aclocal ${libXrandr_src_dir} || return
+			remove_rpath_option ${1} || return
 			${libXrandr_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--enable-malloc0returnsnull \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
