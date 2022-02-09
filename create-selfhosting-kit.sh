@@ -3826,10 +3826,13 @@ EOF
 		print_header_path Xtrans.h X11/Xtrans > /dev/null || ${0} ${cmdopt} xtrans || return
 		print_header_path XI.h X11/extensions > /dev/null || ${0} ${cmdopt} inputproto || return
 		print_header_path XKBproto.h X11 > /dev/null || ${0} ${cmdopt} kbproto || return
+		${0} ${cmdopt} util-macros || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libX11_bld_dir}/Makefile ] ||
 			(cd ${libX11_bld_dir}
+			autoreconf -fiv -I ${DESTDIR}${prefix}/share/aclocal ${libX11_src_dir} || return
+			remove_rpath_option ${1} || return
 			${libX11_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--enable-malloc0returnsnull \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
