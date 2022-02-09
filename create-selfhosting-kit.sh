@@ -3944,11 +3944,15 @@ EOF
 		print_header_path XI.h X11/extensions > /dev/null || ${0} ${cmdopt} inputproto || return
 		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
 		print_header_path Xext.h X11/extensions > /dev/null || ${0} ${cmdopt} libXext || return
+		${0} ${cmdopt} util-macros || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libXi_bld_dir}/Makefile ] ||
 			(cd ${libXi_bld_dir}
+			autoreconf -fiv -I ${DESTDIR}${prefix}/share/aclocal ${libXi_src_dir} || return
+			remove_rpath_option ${1} || return
 			${libXi_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				--enable-malloc0returnsnull \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libXi_bld_dir} -j ${jobs} || return
