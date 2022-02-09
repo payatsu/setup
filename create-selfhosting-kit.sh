@@ -2545,7 +2545,7 @@ EOF
 		which pkg-config > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} pkg-config || return
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
-		print_header_path pixman.h pixman-1.0 > /dev/null || ${0} ${cmdopt} pixman || return
+		print_header_path pixman.h pixman-1 > /dev/null || ${0} ${cmdopt} pixman || return
 		fetch ${1} || return
 		unpack ${1} || return
 		(cd ${qemu_bld_dir}
@@ -4350,6 +4350,7 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${freetype_bld_dir} -j ${jobs} -k check || return
 		make -C ${freetype_bld_dir} -j ${jobs} RC= DESTDIR=${DESTDIR} install || return
+		truncate_path_in_elf ${DESTDIR}${prefix}/lib/libfreetype.so ${DESTDIR} ${prefix}/lib || return
 		;;
 	fontconfig)
 		[ -f ${DESTDIR}${prefix}/include/fontconfig/fontconfig.h -a "${force_install}" != yes ] && return
@@ -4376,7 +4377,7 @@ EOF
 		print_header_path ft2build.h freetype2 > /dev/null || ${0} ${cmdopt} freetype || return
 		print_header_path fontconfig.h fontconfig > /dev/null || ${0} ${cmdopt} fontconfig || return
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
-		print_header_path pixman.h pixman-1.0 > /dev/null || ${0} ${cmdopt} pixman || return
+		print_header_path pixman.h pixman-1 > /dev/null || ${0} ${cmdopt} pixman || return
 		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
 		print_header_path Xext.h X11/extensions > /dev/null || ${0} ${cmdopt} libXext || return
 		fetch ${1} || return
