@@ -3748,10 +3748,13 @@ EOF
 		print_header_path Xtrans.h X11/Xtrans > /dev/null || ${0} ${cmdopt} xtrans || return
 		print_header_path ICE.h X11/ICE > /dev/null || ${0} ${cmdopt} libICE || return
 		print_header_path uuid.h uuid > /dev/null || ${0} ${cmdopt} util-linux || return
+		${0} ${cmdopt} util-macros || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libSM_bld_dir}/Makefile ] ||
 			(cd ${libSM_bld_dir}
+			autoreconf -fiv -I ${DESTDIR}${prefix}/share/aclocal ${libSM_src_dir} || return
+			remove_rpath_option ${1} || return
 			${libSM_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
