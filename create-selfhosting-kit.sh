@@ -4070,10 +4070,13 @@ EOF
 		print_header_path xfixesproto.h X11/extensions > /dev/null || ${0} ${cmdopt} fixesproto || return
 		print_header_path Xfixes.h X11/extensions > /dev/null || ${0} ${cmdopt} libXfixes || return
 		print_header_path Xrender.h X11/extensions > /dev/null || ${0} ${cmdopt} libXrender || return
+		${0} ${cmdopt} util-macros || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libXcursor_bld_dir}/Makefile ] ||
 			(cd ${libXcursor_bld_dir}
+			autoreconf -fiv -I ${DESTDIR}${prefix}/share/aclocal ${libXcursor_src_dir} || return
+			remove_rpath_option ${1} || return
 			${libXcursor_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
