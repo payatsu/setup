@@ -3998,10 +3998,13 @@ EOF
 		print_header_path Xfixes.h X11/extensions > /dev/null || ${0} ${cmdopt} libXfixes || return
 		print_header_path lbx.h X11/extensions > /dev/null || ${0} ${cmdopt} xextproto || return
 		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
+		${0} ${cmdopt} util-macros || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libXdamage_bld_dir}/Makefile ] ||
 			(cd ${libXdamage_bld_dir}
+			autoreconf -fiv -I ${DESTDIR}${prefix}/share/aclocal ${libXdamage_src_dir} || return
+			remove_rpath_option ${1} || return
 			${libXdamage_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
