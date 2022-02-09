@@ -4114,10 +4114,13 @@ EOF
 		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
 		print_header_path Xext.h X11/extensions > /dev/null || ${0} ${cmdopt} libXext || return
 		print_header_path panoramiXproto.h X11/extensions > /dev/null || ${0} ${cmdopt} xineramaproto || return
+		${0} ${cmdopt} util-macros || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libXinerama_bld_dir}/Makefile ] ||
 			(cd ${libXinerama_bld_dir}
+			autoreconf -fiv -I ${DESTDIR}${prefix}/share/aclocal ${libXinerama_src_dir} || return
+			remove_rpath_option ${1} || return
 			${libXinerama_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--enable-malloc0returnsnull \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
