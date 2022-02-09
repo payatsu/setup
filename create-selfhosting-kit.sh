@@ -1062,6 +1062,7 @@ build()
 		unpack ${1} || return
 		[ -f ${xz_bld_dir}/Makefile ] ||
 			(cd ${xz_bld_dir}
+			autoreconf -fiv ${xz_src_dir} || return
 			remove_rpath_option ${1} || return
 			${xz_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
 		make -C ${xz_bld_dir} -j ${jobs} || return
@@ -1857,6 +1858,7 @@ EOF
 		unpack ${1} || return
 		[ -f ${numactl_bld_dir}/Makefile ] ||
 			(cd ${numactl_bld_dir}
+			autoreconf -fiv ${numactl_src_dir} || return
 			remove_rpath_option ${1} || return
 			${numactl_src_dir}/configure --prefix=${prefix} --host=${host}) || return
 		make -C ${numactl_bld_dir} -j ${jobs} V=1 || return
@@ -3771,10 +3773,13 @@ EOF
 		print_library_path xcb-proto.pc > /dev/null || ${0} ${cmdopt} xcb-proto || return
 		print_header_path Xauth.h X11 > /dev/null || ${0} ${cmdopt} libXau || return
 		print_header_path Xdmcp.h X11 > /dev/null || ${0} ${cmdopt} libXdmcp || return
+		${0} ${cmdopt} util-macros || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libxcb_bld_dir}/Makefile ] ||
 			(cd ${libxcb_bld_dir}
+			autoreconf -fiv -I ${DESTDIR}${prefix}/share/aclocal ${libxcb_src_dir} || return
+			remove_rpath_option ${1} || return
 			${libxcb_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
@@ -5026,7 +5031,7 @@ remove_rpath_option()
 	for f in `grep -le '\<rpath\>' -r ${d} --exclude=ltmain.sh --exclude=Makefile.in`; do
 		sed -i -e 's/\(\$\(wl\|{wl}\)\)\?-\?-rpath[, ]\(\$\(wl\|{wl}\)\)\?\$\(libdir\|(libdir)\)//' ${f} || return
 	done
-	for f in `find ${d} -type f -name libtool.m4`; do
+	for f in `find ${d} -type f -name libtool.m4 -o -name aclocal.m4`; do
 		sed -i -e 's/\(\<runpath_var\>=\).\+/\1dummy_runpath/' ${f} || return
 	done
 }
