@@ -3476,7 +3476,10 @@ EOF
 		unpack ${1} || return
 		[ -f ${tiff_bld_dir}/Makefile ] ||
 			(cd ${tiff_bld_dir}
-			${tiff_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+			remove_rpath_option ${1} || return
+			${tiff_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} || return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${tiff_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${tiff_bld_dir} -j ${jobs} -k check || return
