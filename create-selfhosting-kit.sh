@@ -3004,7 +3004,9 @@ EOF
 				--with-libreadline-prefix=`print_prefix readline.h readline` \
 				LIBS="${LIBS} `l tinfo`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-				) || return
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${poke_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${poke_bld_dir} -j ${jobs} -k check || return
