@@ -1554,11 +1554,15 @@ EOF
 		unpack ${1} || return
 		[ -f ${source_highlight_bld_dir}/Makefile ] ||
 			(cd ${source_highlight_bld_dir}
+			remove_rpath_option ${1} || return
 			${source_highlight_src_dir}/configure --prefix=${prefix} --host=${host} \
 				--with-boost=`print_prefix regex.hpp boost` \
 				--with-boost-libdir=`print_library_dir libboost_regex.so` \
 				--without-doxygen \
-				CXXFLAGS="${CXXFLAGS} -std=c++14") || return # XXX: workaround for Dynamic Exception Specification.
+				CXXFLAGS="${CXXFLAGS} -std=c++14" \
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${source_highlight_bld_dir} -j ${jobs} -k || true
 		[ "${enable_check}" != yes ] ||
 			make -C ${source_highlight_bld_dir} -j ${jobs} -k check || return
