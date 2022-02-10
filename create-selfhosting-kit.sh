@@ -4388,13 +4388,17 @@ EOF
 		unpack ${1} || return
 		[ -f ${cairo_src_dir}/Makefile ] ||
 			(cd ${cairo_bld_dir}
+			GTKDOCIZE=true autoreconf -fiv ${cairo_src_dir} || return
+			remove_rpath_option ${1} || return
 			${cairo_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--x-includes=`print_header_dir Xlib.h X11` --x-libraries=`print_library_dir libX11.so` \
 				--enable-xlib-xcb \
 				CPPFLAGS="${CPPFLAGS} `I zlib.h`" \
 				LIBS="${LIBS} `l Xext X11 xcb Xau Xdmcp expat uuid z`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-				) || return
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${cairo_bld_dir} -j ${jobs} || return
 		make -C ${cairo_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
