@@ -4361,12 +4361,16 @@ EOF
 		unpack ${1} || return
 		[ -f ${fontconfig_bld_dir}/Makefile ] ||
 			(cd ${fontconfig_bld_dir}
+			autoreconf -fiv ${fontconfig_src_dir} || return
+			remove_rpath_option ${1} || return
 			${fontconfig_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--enable-static --disable-rpath \
 				CPPFLAGS="${CPPFLAGS} `I uuid/uuid.h`" \
 				LIBS="${LIBS} `l png z`" \
 				PKG_CONFIG_SYSROOT_DIR=`print_pkg_config_sysroot expat.pc` \
-				) || return
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${fontconfig_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${fontconfig_bld_dir} -j ${jobs} -k check || return
