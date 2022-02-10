@@ -113,7 +113,7 @@ EOF
 : ${libidn2_ver:=2.3.2}
 : ${curl_ver:=7.75.0}
 : ${elfutils_ver:=0.186}
-: ${binutils_ver:=2.37}
+: ${binutils_ver:=2.38}
 : ${gmp_ver:=6.2.1}
 : ${mpfr_ver:=4.1.0}
 : ${mpc_ver:=1.2.1}

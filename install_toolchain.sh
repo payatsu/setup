@@ -45,7 +45,7 @@
 : ${gawk_ver:=5.1.0}
 : ${gnulib_ver:=git}
 : ${make_ver:=4.3}
-: ${binutils_ver:=2.37}
+: ${binutils_ver:=2.38}
 : ${elfutils_ver:=0.186}
 : ${systemtap_ver:=4.6}
 : ${ed_ver:=1.18}
