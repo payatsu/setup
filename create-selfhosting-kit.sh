@@ -1235,7 +1235,10 @@ EOF
 		unpack ${1} || return
 		[ -f ${gmp_bld_dir}/Makefile ] ||
 			(cd ${gmp_bld_dir}
-			${gmp_src_dir}/configure --prefix=${prefix} --host=${host} --enable-cxx) || return
+			remove_rpath_option ${1} || return
+			${gmp_src_dir}/configure --prefix=${prefix} --host=${host} --enable-cxx || return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${gmp_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${gmp_bld_dir} -j ${jobs} -k check || return
