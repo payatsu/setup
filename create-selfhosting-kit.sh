@@ -3673,9 +3673,10 @@ EOF
 			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
 			-DCMAKE_Fortran_COMPILER=${FC:-${host:+${host}-}gfortran} \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DCMAKE_CROSSCOMPILING=ON \
 			-DCMAKE_SYSTEM_NAME=Linux \
 			-DCMAKE_SYSTEM_PROCESSOR=`echo ${host} | cut -d - -f 1` \
-			-DDYNAMIC_ARCH=ON -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=ON \
+			-DDYNAMIC_ARCH=OFF -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=ON \
 			|| return
 		cmake --build ${OpenBLAS_bld_dir} -v -j ${jobs} || return
 		cmake --install ${OpenBLAS_bld_dir} -v ${strip:+--${strip}} || return
