@@ -4550,7 +4550,7 @@ EOF
 			remove_rpath_option ${1} || return
 			${dbus_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--x-includes=`print_header_dir Xlib.h X11` --x-libraries=`print_library_dir libX11.so` \
-				LIBS="${LIBS} `l xcb Xau Xdmcp gmodule-2.0 glib-2.0 mount uuid blkid ffi pcre`" \
+				LIBS="${LIBS} `Wl_rpath_link xcb uuid`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				|| return
 			remove_rpath_option ${1} || return
