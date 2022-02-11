@@ -831,6 +831,15 @@ L()
 	done | sed -e 's/^/-L/' | squash_options || return
 }
 
+Wl_rpath_link()
+{
+	for l in "$@"; do
+		echo ${l} | grep -qe '/' && d=`dirname ${l}` || d=
+		f=lib`basename ${l}`.so
+		print_library_dir ${f} ${d} || return
+	done | sed -e 's/^/-Wl,-rpath-link,/' | squash_options || return
+}
+
 l()
 {
 	L "$@" || return
@@ -3685,9 +3694,17 @@ EOF
 		[ -x ${DESTDIR}${prefix}/bin/f2py -a "${force_install}" != yes ] && return
 		print_binary_path python3 > /dev/null || ${0} ${cmdopt} Python || return
 		python3 -c 'import Cython' || ${0} ${cmdopt} --host ${build} --target ${build} cython || return
-#		print_header_path openblas_config.h openblas > /dev/null || ${0} ${cmdopt} OpenBLAS || return
+		print_header_path openblas_config.h openblas > /dev/null || ${0} ${cmdopt} OpenBLAS || return
 		fetch ${1} || return
 		unpack ${1} || return
+		sed -e '
+			/^#\[DEFAULT\]$/,/^$/{
+				s/^#//
+				s!^\(library_dirs = \)/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib$!\1'`print_library_dir libopenblas.so`'!
+				s!^\(include_dirs = \)/usr/local/include:/usr/include$!\1'`print_header_dir openblas_config.h openblas`'!
+			}
+			/^\[DEFAULT\]$/aextra_link_args = '`Wl_rpath_link gfortran`'
+		' ${numpy_src_dir}/site.cfg.example > ${numpy_src_dir}/site.cfg || return
 		(cd ${numpy_src_dir}
 		CC=${CC:-${host:+${host}-}gcc} LDSHARED="${CC:-${host:+${host}-}gcc} --shared" \
 		CFLAGS="${CFLAGS} -I${DESTDIR}${prefix}/include `I Python.h`" \
