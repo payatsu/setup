@@ -4678,7 +4678,6 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
-			-Dc_link_args="${LDFLAGS} `l gmodule-2.0 glib-2.0 mount blkid ffi pcre`" \
 			-Dtests=disabled \
 			${gstreamer_src_dir} ${gstreamer_bld_dir} || return
 		ninja -v -C ${gstreamer_bld_dir} || return
@@ -4695,7 +4694,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
-			-Dc_link_args="${LDFLAGS} `l mount blkid gmodule-2.0 glib-2.0 unwind dw elf zstd lzma bz2 z ffi pcre`" \
+			-Dc_link_args="${LDFLAGS} `Wl_rpath_link gmodule-2.0 unwind dw ffi pcre`" \
 			${gst_plugins_base_src_dir} ${gst_plugins_base_bld_dir} || return
 		ninja -v -C ${gst_plugins_base_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${gst_plugins_base_bld_dir} install || return
@@ -4711,11 +4710,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
-			-Dc_link_args="${LDFLAGS} `l \
-			X11 X11-xcb Xcursor Xdamage Xinerama pangoft2-1.0 pango-1.0 harfbuzz fontconfig fribidi epoxy Xi atk-bridge-2.0 \
-			dbus-1 atspi atk-1.0 Xrender Xfixes Xext xkbcommon wayland-client wayland-cursor wayland-egl \
-			Xrandr freetype pixman-1 png16 xcb-shm xcb xcb-render Xau Xdmcp expat uuid \
-			mount blkid gio-2.0 gmodule-2.0 glib-2.0 gobject-2.0 unwind dw elf zstd lzma bz2 z ffi pcre`" \
+			-Dc_link_args="${LDFLAGS} `Wl_rpath_link gmodule-2.0 unwind dw ffi pcre`" \
 			${gst_plugins_good_src_dir} ${gst_plugins_good_bld_dir} || return
 		ninja -v -C ${gst_plugins_good_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${gst_plugins_good_bld_dir} install || return
@@ -4730,7 +4725,6 @@ EOF
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dtests=disabled \
-			-Dc_link_args="${LDFLAGS} `l mount blkid gmodule-2.0 glib-2.0 unwind dw elf zstd lzma bz2 z ffi pcre`" \
 			${gst_editing_services_src_dir} ${gst_editing_services_bld_dir} || return
 		ninja -v -C ${gst_editing_services_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${gst_editing_services_bld_dir} install || return
