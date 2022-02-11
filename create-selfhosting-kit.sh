@@ -4629,7 +4629,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
-			-Dc_link_args="${LIBS} `l ffi pcre`" \
+			-Dc_link_args="${LIBS} `Wl_rpath_link ffi pcre`" \
 			${graphene_src_dir} ${graphene_bld_dir} || return
 		ninja -v -C ${graphene_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${graphene_bld_dir} install || return
