@@ -4664,7 +4664,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
-			-Dc_link_args="${LDFLAGS} `l Xext X11 xcb Xau Xdmcp stdc++`" \
+			-Dc_link_args="${LDFLAGS} `Wl_rpath_link Xext X11 xcb Xau Xdmcp stdc++`" \
 			-Dwayland-backend=false -Dintrospection=false -Dmedia-gstreamer=disabled \
 			${gtk_src_dir} ${gtk_bld_dir} || return
 		ninja -v -C ${gtk_bld_dir} || return
