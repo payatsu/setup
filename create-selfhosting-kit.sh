@@ -4429,7 +4429,7 @@ EOF
 				--x-includes=`print_header_dir Xlib.h X11` --x-libraries=`print_library_dir libX11.so` \
 				--enable-xlib-xcb \
 				CPPFLAGS="${CPPFLAGS} `I zlib.h`" \
-				LIBS="${LIBS} `l Xext X11 xcb Xau Xdmcp expat uuid z`" \
+				LDFLAGS="${LDFLAGS} `L z` `Wl_rpath_link X11 xcb uuid`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				|| return
 			remove_rpath_option ${1} || return
