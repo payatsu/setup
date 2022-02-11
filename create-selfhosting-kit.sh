@@ -4822,11 +4822,11 @@ EOF
 		init opencv_contrib || return
 		fetch opencv_contrib || return
 		unpack opencv_contrib || return
-		libdirs="`l \
+		libdirs="`l harfbuzz freetype` `Wl_rpath_link \
 			gtk-3 X11 X11-xcb gdk-3 Xcursor Xdamage Xinerama pangocairo-1.0 cairo-gobject gdk_pixbuf-2.0 \
-			cairo pangoft2-1.0 pango-1.0 harfbuzz fontconfig fribidi epoxy Xi atk-bridge-2.0 \
+			cairo pangoft2-1.0 pango-1.0 fontconfig fribidi epoxy Xi atk-bridge-2.0 \
 			dbus-1 atspi atk-1.0 Xrender Xfixes Xext xkbcommon wayland-client wayland-cursor wayland-egl \
-			Xrandr freetype pixman-1 jpeg webp png16 tiff protobuf glog gflags xcb-shm xcb xcb-render Xau Xdmcp expat uuid mount blkid \
+			Xrandr pixman-1 jpeg webp png16 tiff protobuf glog gflags xcb-shm xcb xcb-render Xau Xdmcp expat uuid mount blkid \
 			gstpbutils-1.0 gstriff-1.0 gsttag-1.0 gstaudio-1.0 gstvideo-1.0 gstapp-1.0 gstbase-1.0 gstreamer-1.0 \
 			gio-2.0 gmodule-2.0 glib-2.0 gobject-2.0 unwind dw elf zstd lzma bz2 z ffi pcre stdc++`"
 		for build_shared_libs in ON OFF; do
