@@ -3118,7 +3118,7 @@ EOF
 				--system-curl --system-expat --system-zlib --system-bzip2 --system-liblzma -- \
 				-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
 				-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
-				-DCMAKE_CXX_FLAGS="${CXXFLAGS} `l ssl crypto zstd idn2`" \
+				-DCMAKE_CXX_FLAGS="${CXXFLAGS} `Wl_rpath_link idn2 ssl crypto zstd `" \
 				-DCURL_INCLUDE_DIR=`print_header_dir curl.h curl` \
 				-DCURL_LIBRARY_RELEASE=`print_library_path libcurl.so` \
 				-DEXPAT_INCLUDE_DIR=`print_header_dir expat.h` \
