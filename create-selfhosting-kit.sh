@@ -1187,8 +1187,7 @@ build()
 			${elfutils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--enable-libdebuginfod --disable-debuginfod \
 				CFLAGS="${CFLAGS} `I zlib.h zstd.h`" \
-				LDFLAGS="${LDFLAGS} `L z bz2 lzma zstd`" \
-				LIBS="${LIBS} `l z bz2 lzma curl zstd idn2 ssl crypto`" \
+				LDFLAGS="${LDFLAGS} `L z` `Wl_rpath_link curl idn2 ssl crypto bz2 lzma zstd z`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${elfutils_bld_dir} -j ${jobs} || return
