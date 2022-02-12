@@ -4543,7 +4543,7 @@ EOF
 			remove_rpath_option ${1} || return
 			${dbus_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--x-includes=`print_header_dir Xlib.h X11` --x-libraries=`print_library_dir libX11.so` \
-				LIBS="${LIBS} `Wl_rpath_link xcb uuid`" \
+				LDFLAGS="${LDFLAGS} `Wl_rpath_link xcb uuid`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				|| return
 			remove_rpath_option ${1} || return
@@ -4622,7 +4622,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
-			-Dc_link_args="${LIBS} `Wl_rpath_link ffi pcre`" \
+			-Dc_link_args="${LDFLAGS} `Wl_rpath_link ffi pcre`" \
 			${graphene_src_dir} ${graphene_bld_dir} || return
 		ninja -v -C ${graphene_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${graphene_bld_dir} install || return
