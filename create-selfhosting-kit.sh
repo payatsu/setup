@@ -1612,7 +1612,7 @@ EOF
 				--enable-pcre2-16 --enable-pcre2-32 --enable-jit --enable-newline-is-any \
 				--enable-pcre2grep-libz --enable-pcre2grep-libbz2 \
 				CPPFLAGS="${CPPFLAGS} `I bzlib.h`" \
-				LDFLAGS="${LDFLAGS} `L bz2`") || return
+				LDFLAGS="${LDFLAGS} `L z bz2`") || return
 		make -C ${pcre2_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${pcre2_bld_dir} -j ${jobs} -k check || return
