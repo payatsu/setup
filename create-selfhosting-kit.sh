@@ -1690,8 +1690,7 @@ EOF
 			(cd ${babeltrace_bld_dir}
 			${babeltrace_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				CPPFLAGS="${CPPFLAGS} `I popt.h`" \
-				LDFLAGS="${LDFLAGS} `L popt`" \
-				LIBS="${LIBS} `l pcre z bz2 lzma zstd`" \
+				LDFLAGS=""${LDFLAGS}" `Wl_rpath_link pcre ffi dw elf bz2 lzma zstd z`"\
 				PKG_CONFIG_SYSROOT_DIR=`print_pkg_config_sysroot glib-2.0.pc` \
 				ac_cv_func_malloc_0_nonnull=yes \
 				ac_cv_func_realloc_0_nonnull=yes \
