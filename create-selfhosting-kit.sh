@@ -2085,7 +2085,6 @@ EOF
 				ac_cv_path_PCAP_CONFIG=: \
 				CPPFLAGS="${CPPFLAGS} `I pcap.h`" \
 				LDFLAGS="${LDFLAGS} `L pcap`" \
-				LIBS="${LIBS} -lpcap" \
 				) || return
 		make -C ${tcpdump_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
