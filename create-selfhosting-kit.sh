@@ -1163,8 +1163,7 @@ build()
 			--with-zlib=`print_prefix zlib.h` \
 			--with-zstd=`print_prefix zstd.h` \
 			--with-ssl=`print_prefix ssl.h openssl` \
-			LDFLAGS="${LDFLAGS} `L zstd idn2`" \
-			LIBS='-lzstd -lidn2' \
+			LDFLAGS="${LDFLAGS} `Wl_rpath_link zstd idn2`" \
 			PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		) || return
 		make -C ${curl_bld_dir} -j ${jobs} || return
