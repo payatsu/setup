@@ -3440,7 +3440,7 @@ EOF
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
 			-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON \
 			-DCMAKE_C_FLAGS="${CFLAGS} `I clang/Basic/Version.h`" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I curses.h histedit.h` `l edit python$(print_target_python_version)$(print_target_python_abi) ncurses panel xml2 lzma z`" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I curses.h histedit.h` `Wl_rpath_link edit python$(print_target_python_version)$(print_target_python_abi) ncurses panel xml2 lzma z`" \
 			`[ ${build} != ${host} ] && { echo -n -DLLVM_TABLEGEN=; which llvm-tblgen;}` \
 			`[ ${build} != ${host} ] && { echo -n -DLLDB_TABLEGEN_EXE=; which lldb-tblgen;}` \
 			-DLLDB_ENABLE_LUA=OFF \
