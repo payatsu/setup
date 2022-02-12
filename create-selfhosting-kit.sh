@@ -1438,7 +1438,7 @@ EOF
 			sed -i -e 's/\(-Wl,\)\?-rpath[, ]\$(libdir) \?//' ${readline_src_dir}/support/shobj-conf || return
 			${readline_src_dir}/configure --prefix=${prefix} --host=${host} \
 				--enable-multibyte --with-curses) || return
-		make -C ${readline_bld_dir} -j ${jobs} SHLIB_LIBS="`l tinfo`" || return
+		make -C ${readline_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${readline_bld_dir} -j ${jobs} -k check || return
 		make -C ${readline_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
