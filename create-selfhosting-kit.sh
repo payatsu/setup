@@ -1209,7 +1209,6 @@ build()
 			[ -f host_configargs ] || cat << EOF | tr '\n' ' ' > host_configargs || return
 --disable-rpath
 --enable-install-libiberty
-LIBS='`l z curl zstd idn2 ssl crypto`'
 PKG_CONFIG_SYSROOT_DIR=${DESTDIR}
 EOF
 			${binutils_src_dir}/configure --prefix=${prefix} --host=${host} --target=${target} \
@@ -1218,8 +1217,7 @@ EOF
 				--with-system-zlib --with-debuginfod \
 				CFLAGS="${CFLAGS} `I zlib.h elfutils/debuginfod.h`" \
 				CXXFLAGS="${CXXFLAGS} `I zlib.h`" \
-				LDFLAGS="${LDFLAGS} `L z debuginfod`" \
-				LIBS="`l z curl zstd idn2 ssl crypto`" \
+				LDFLAGS="${LDFLAGS} `L z` `Wl_rpath_link curl zstd idn2 ssl crypto`" \
 				host_configargs="`cat host_configargs`") || return
 		make -C ${binutils_bld_dir} -j 1 || return
 		[ "${enable_check}" != yes ] ||
