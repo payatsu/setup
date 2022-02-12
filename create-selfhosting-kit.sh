@@ -2745,7 +2745,7 @@ EOF
 		[ -f ${tcsh_bld_dir}/Makefile ] ||
 			(cd ${tcsh_bld_dir}
 			${tcsh_src_dir}/configure --prefix=${prefix} --host=${host} --disable-rpath \
-				CFLAGS="${CFLAGS} `l tinfo`") || return
+				CFLAGS="${CFLAGS} `L tinfo`") || return
 		make -C ${tcsh_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${tcsh_bld_dir} -j ${jobs} -k check || return
