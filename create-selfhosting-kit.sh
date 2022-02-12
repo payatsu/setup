@@ -3947,7 +3947,7 @@ EOF
 			autoreconf -fiv -I ${DESTDIR}${prefix}/share/aclocal ${libXpm_src_dir} || return
 			remove_rpath_option ${1} || return
 			${libXpm_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-				LIBS="`l SM ICE uuid xcb Xau Xdmcp`" \
+				LDFLAGS="${LDFLAGS} `Wl_rpath_link SM ICE uuid xcb Xau Xdmcp`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libXpm_bld_dir} -j ${jobs} || return
