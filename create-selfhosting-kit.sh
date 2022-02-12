@@ -4356,7 +4356,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
-			-Dc_link_args="${LDFLAGS} `l blkid uuid`" \
+			-Dc_link_args="${LDFLAGS} `Wl_rpath_link blkid uuid`" \
 			-Dgi_cross_use_prebuilt_gi=true \
 			-Dbuild_introspection_data=false \
 			-Dgi_cross_pkgconfig_sysroot_path=${DESTDIR} \
