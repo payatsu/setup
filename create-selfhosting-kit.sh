@@ -1832,16 +1832,16 @@ EOF
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${host:+${host}-} \
-			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
-			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
-			LDFLAGS="${LDFLAGS} `l babeltrace dw uuid pcre gmodule-2.0 glib-2.0 ffi popt elf bz2 lzma z curl ssl crypto idn2 zstd stdc++`" \
+			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L opcodes bfd dw elf crypto lzma zstd z babeltrace-ctf bpf cap numa opencsd_c_api opencsd unwind pfm`" \
+			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L opcodes bfd dw elf crypto lzma zstd z babeltrace-ctf bpf cap numa opencsd_c_api opencsd unwind pfm`" \
+			LDFLAGS="${LDFLAGS} `Wl_rpath_link dw elf bz2 lzma zstd z babeltrace popt uuid gmodule-2.0 glib-2.0 stdc++`" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 			prefix=${prefix} all || return
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${host:+${host}-} \
-			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
-			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L elf bpf babeltrace popt curl zstd`" \
-			LDFLAGS="${LDFLAGS} `l babeltrace dw uuid pcre gmodule-2.0 glib-2.0 ffi popt elf bz2 lzma z curl ssl crypto idn2 zstd stdc++`" \
+			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L opcodes bfd dw elf crypto lzma zstd z babeltrace-ctf bpf cap numa opencsd_c_api opencsd unwind pfm`" \
+			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L opcodes bfd dw elf crypto lzma zstd z babeltrace-ctf bpf cap numa opencsd_c_api opencsd unwind pfm`" \
+			LDFLAGS="${LDFLAGS} `Wl_rpath_link dw elf bz2 lzma zstd z babeltrace popt uuid gmodule-2.0 glib-2.0 stdc++`" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 			prefix=${prefix} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
