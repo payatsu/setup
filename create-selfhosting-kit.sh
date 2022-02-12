@@ -1726,8 +1726,8 @@ EOF
 --disable-rpath
 CFLAGS='${CFLAGS} `I zlib.h curses.h Python.h`'
 CPPFLAGS='${CPPFLAGS} `I zlib.h Python.h`'
-LDFLAGS='-L`print_prefix Python.h`/lib `L popt`'
-LIBS='${LIBS} `l popt uuid gmodule-2.0 ffi glib-2.0 pcre dw elf z bz2 lzma curl ssl crypto zstd idn2`'
+LDFLAGS='-L`print_prefix Python.h`/lib `Wl_rpath_link popt gmodule-2.0 glib-2.0 pcre ffi curl idn2 ssl crypto dw elf bz2 lzma zstd z`'
+LIBS='${LIBS} `L tinfo z`'
 PKG_CONFIG_SYSROOT_DIR=${DESTDIR}
 EOF
 			${gdb_src_dir}/configure --prefix=${prefix} --host=${host} --target=${target} \
@@ -1740,7 +1740,7 @@ EOF
 				--with-python=python3 --without-guile \
 				--with-lzma=yes --with-liblzma-prefix=`print_prefix lzma.h` \
 				--with-babeltrace=yes --with-libbabeltrace-prefix=`print_prefix babeltrace.h babeltrace` \
-				LDFLAGS="${LDFLAGS} `L z ncurses popt`" \
+				LDFLAGS="${LDFLAGS} `Wl_rpath_link ncurses popt z`" \
 				host_configargs="`cat host_configargs`") || return
 		make -C ${gdb_bld_dir} -j ${jobs} V=1 || return
 		[ "${enable_check}" != yes ] ||
