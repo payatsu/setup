@@ -3651,6 +3651,7 @@ EOF
 		unpack ${1} || return
 		[ -f ${protobuf_bld_dir}/Makefile ] ||
 			(cd ${protobuf_bld_dir}
+			autoreconf -fiv ${protobuf_src_dir} || return
 			remove_rpath_option ${1} || return
 			${protobuf_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
 		make -C ${protobuf_bld_dir} -j ${jobs} || return
