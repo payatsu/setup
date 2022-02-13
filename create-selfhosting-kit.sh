@@ -3981,7 +3981,9 @@ EOF
 			remove_rpath_option ${1} || return
 			${libXaw_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-				) || return
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${libXaw_bld_dir} -j ${jobs} || return
 		make -C ${libXaw_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
