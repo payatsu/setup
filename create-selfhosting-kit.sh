@@ -3959,7 +3959,9 @@ EOF
 			${libXpm_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				LDFLAGS="${LDFLAGS} `Wl_rpath_link SM ICE uuid xcb Xau Xdmcp`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-				) || return
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${libXpm_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${libXpm_bld_dir} -j ${jobs} -k check || return
