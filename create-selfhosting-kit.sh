@@ -4004,7 +4004,9 @@ EOF
 			${libXi_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--enable-malloc0returnsnull \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-				) || return
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${libXi_bld_dir} -j ${jobs} || return
 		make -C ${libXi_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
