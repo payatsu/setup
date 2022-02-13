@@ -2264,9 +2264,9 @@ install_native_binutils()
 			CFLAGS="${CFLAGS} `I zlib.h`" CXXFLAGS="${CXXFLAGS} `I zlib.h`" \
 			LDFLAGS="${LDFLAGS} `L z`" \
 			host_configargs=--enable-install-libiberty) || return
-	make -C ${binutils_bld_dir} -j 1 || return
+	make -C ${binutils_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${binutils_bld_dir} -j 1 -k check || return
+		make -C ${binutils_bld_dir} -j ${jobs} -k check || return
 	source_path -f || return
 	make -C ${binutils_bld_dir} -j 1 install${strip:+-${strip}} || return
 	update_path || return
@@ -2299,7 +2299,7 @@ install_native_elfutils()
 	make -C ${elfutils_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${elfutils_bld_dir} -j ${jobs} -k check || return
-	make -C ${elfutils_bld_dir} -j 1 install${strip:+-${strip}} || return
+	make -C ${elfutils_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
@@ -2925,7 +2925,7 @@ EOF
 			--with-versioned-syms --enable-termcap --enable-colors \
 			PKG_CONFIG_LIBDIR=${prefix}/lib/${host}/pkgconfig \
 			) || return
-	make -C ${ncurses_bld_dir} -j 1 || return # XXX work around for parallel make
+	make -C ${ncurses_bld_dir} -j ${jobs} || return
 	make -C ${ncurses_bld_dir} -j ${jobs} install || return
 	make -C ${ncurses_bld_dir} -j ${jobs} distclean || return
 	[ -f ${ncurses_bld_dir}/Makefile ] ||
@@ -2936,7 +2936,7 @@ EOF
 			--with-versioned-syms --enable-termcap --enable-widec --enable-colors --with-pthread --enable-reentrant \
 			PKG_CONFIG_LIBDIR=${prefix}/lib/${host}/pkgconfig \
 			) || return
-	make -C ${ncurses_bld_dir} -j 1 || return # XXX work around for parallel make
+	make -C ${ncurses_bld_dir} -j ${jobs} || return
 	make -C ${ncurses_bld_dir} -j ${jobs} install || return
 	update_path || return
 	for h in `find ${DESTDIR}${prefix}/include/ncurses \( -type f -o -type l \) -name '*.h'`; do
@@ -5002,14 +5002,14 @@ install_native_openssl()
 	(cd ${openssl_bld_dir}
 	MACHINE=`echo ${host} | cut -d- -f1` SYSTEM=Linux \
 		${openssl_src_dir}/config --prefix=${prefix} shared) || return
-	make -C ${openssl_bld_dir} -j 1 CROSS_COMPILE=${host}- || return # XXX work around for parallel make
+	make -C ${openssl_bld_dir} -j ${jobs} CROSS_COMPILE=${host}- || return
 	[ "${enable_check}" != yes ] ||
-		make -C ${openssl_bld_dir} -j 1 -k test || return # XXX work around for parallel make
+		make -C ${openssl_bld_dir} -j ${jobs} -k test || return
 	mkdir -pv ${DESTDIR}${prefix}/ssl || return
 	rm -fv ${DESTDIR}${prefix}/ssl/certs || return
 	[ ! -d /etc/ssl/certs ] || ln -fsv /etc/ssl/certs ${DESTDIR}${prefix}/ssl/certs || return
 	[   -d /etc/ssl/certs ] || mkdir -pv ${DESTDIR}${prefix}/ssl/certs || return
-	make -C ${openssl_bld_dir} -j 1 DESTDIR=${DESTDIR} install || return # XXX work around for parallel make
+	make -C ${openssl_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 	mkdir -pv ${DESTDIR}${prefix}/lib/pkgconfig || return
 	for f in libcrypto.pc libssl.pc openssl.pc; do
 		[ ! -f ${DESTDIR}${prefix}/lib64/pkgconfig/${f} ] || ln -fsv ../../lib64/pkgconfig/${f} ${DESTDIR}${prefix}/lib/pkgconfig || return
@@ -5218,7 +5218,7 @@ install_native_git()
 		--with-zlib=`print_prefix zlib.h`) || return
 	sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_src_dir}/Makefile || return
 	sed -i -e 's/^\(CC_LD_DYNPATH=\).\+/\1-L/' ${git_src_dir}/config.mak.autogen || return
-	make -C ${git_src_dir} -j 1       V=1 PROFILE=BUILD LDFLAGS="${LDFLAGS} -ldl" all || return
+	make -C ${git_src_dir} -j ${jobs} V=1 PROFILE=BUILD LDFLAGS="${LDFLAGS} -ldl" all || return
 	make -C ${git_src_dir} -j ${jobs} V=1 doc || install_native_git_manpages || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${git_src_dir} -j ${jobs} -k V=1 test || return
@@ -6166,7 +6166,7 @@ install_native_perl()
 		(cd ${perl_bld_dir}
 		${perl_src_dir}/Configure -de -Dprefix=${prefix} -Dcc=${CC:-${host:+${host}-}gcc} \
 			-Dusethreads -Duse64bitint -Duse64bitall -Dusemorebits -Duseshrplib -Dmksymlinks) || return
-	make -C ${perl_bld_dir} -j 1 || return
+	make -C ${perl_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${perl_bld_dir} -j ${jobs} -k test || return
 	make -C ${perl_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
