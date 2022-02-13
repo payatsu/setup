@@ -3510,7 +3510,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${giflib_bld_dir}/Makefile ] || cp -Tvr ${giflib_src_dir} ${giflib_bld_dir} || return
-		make -C ${giflib_bld_dir} -j ${jobs} CC=${CC:-${host:+${host}-}gcc} || return
+		make -C ${giflib_bld_dir} -j ${jobs} CC="${CC:-${host:+${host}-}gcc}" || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${giflib_bld_dir} -j ${jobs} -k check || return
 		make -C ${giflib_bld_dir} -j ${jobs} install DESTDIR=${DESTDIR} PREFIX=${prefix} || return
