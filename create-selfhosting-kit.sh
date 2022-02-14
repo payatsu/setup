@@ -5132,8 +5132,10 @@ remove_rpath_option()
 {
 	_1=`echo ${1} | tr - _`
 	eval d=\${${_1}_bld_dir}
-	[ ! -f ${d}/libtool ] ||
-		{ sed -i -e 's/^\(\<runpath_var\>=\).\+/\1dummy_runpath/' ${d}/libtool && return;} || return
+	for f in libtool ${host}-libtool; do
+		[ ! -f ${d}/${f} ] ||
+			{ sed -i -e 's/^\(\<runpath_var\>=\).\+/\1dummy_runpath/' ${d}/${f} && return;} || return
+	done
 
 	eval d=\${${_1}_src_dir}
 	for f in `grep -le '\<rpath\>' -r ${d} --exclude=ltmain.sh --exclude=Makefile.in`; do
