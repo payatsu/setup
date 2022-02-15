@@ -5452,7 +5452,7 @@ main()
 	[ -z "${target}" ] && target=${host}
 	DESTDIR=`readlink -m ${host}`
 
-	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} --target ${build} binutils gcc cmake ninja meson ccache || return
+	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} --target ${build} binutils gcc perl cmake ninja meson ccache || return
 	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
 
 	! which ccache > /dev/null || ccache -M 8G || return
