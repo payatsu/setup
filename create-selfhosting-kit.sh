@@ -2265,6 +2265,9 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${automake_bld_dir} -j ${jobs} -k check || return
 		make -C ${automake_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		for f in aclocal automake; do
+			sed -i -e '1s%^.\+$%\#!/usr/bin/env perl%' ${DESTDIR}${prefix}/bin/${f} || return
+		done
 		;;
 	bison)
 		[ -x ${DESTDIR}${prefix}/bin/bison -a "${force_install}" != yes ] && return
