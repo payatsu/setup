@@ -2249,6 +2249,9 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${autoconf_bld_dir} -j ${jobs} -k check || return
 		make -C ${autoconf_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		for f in autoheader autom4te autoreconf autoscan autoupdate ifnames; do
+			sed -i -e '1s%^.\+$%\#!/usr/bin/env perl%' ${DESTDIR}${prefix}/bin/${f} || return
+		done
 		;;
 	automake)
 		[ -x ${DESTDIR}${prefix}/bin/automake -a "${force_install}" != yes ] && return
