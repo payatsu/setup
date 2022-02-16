@@ -3744,7 +3744,8 @@ EOF
 		unpack ${1} || return
 		[ -f ${libXau_bld_dir}/Makefile ] ||
 			(cd ${libXau_bld_dir}
-			${libXau_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+			${libXau_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR}) || return
 		make -C ${libXau_bld_dir} -j ${jobs} || return
 		make -C ${libXau_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
@@ -3755,7 +3756,8 @@ EOF
 		unpack ${1} || return
 		[ -f ${libXdmcp_bld_dir}/Makefile ] ||
 			(cd ${libXdmcp_bld_dir}
-			${libXdmcp_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+			${libXdmcp_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR}) || return
 		make -C ${libXdmcp_bld_dir} -j ${jobs} || return
 		make -C ${libXdmcp_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
