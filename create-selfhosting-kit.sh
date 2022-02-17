@@ -1187,7 +1187,8 @@ build()
 		[ -f ${elfutils_bld_dir}/Makefile ] ||
 			(cd ${elfutils_bld_dir}
 			${elfutils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				--enable-libdebuginfod --disable-debuginfod \
+				--enable-libdebuginfod`which pkg-config > /dev/null || echo =dummy` \
+				--disable-debuginfod \
 				CFLAGS="${CFLAGS} `I zlib.h zstd.h`" \
 				LDFLAGS="${LDFLAGS} `L z` `Wl_rpath_link curl idn2 ssl crypto bz2 lzma zstd z`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
