@@ -1071,8 +1071,10 @@ build()
 		unpack ${1} || return
 		[ -f ${xz_bld_dir}/Makefile ] ||
 			(cd ${xz_bld_dir}
-			autoreconf -fiv ${xz_src_dir} || return
-			remove_rpath_option ${1} || return
+			which autoreconf > /dev/null && {
+				autoreconf -fiv ${xz_src_dir} || return
+				remove_rpath_option ${1} || return
+			}
 			${xz_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
 		make -C ${xz_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
