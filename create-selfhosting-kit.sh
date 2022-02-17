@@ -1588,8 +1588,10 @@ EOF
 		unpack ${1} || return
 		[ -f ${pcre_bld_dir}/Makefile ] ||
 			(cd ${pcre_bld_dir}
-			autoreconf -fiv ${pcre_src_dir} || return
-			remove_rpath_option ${1} || return
+			which autoreconf > /dev/null && {
+				autoreconf -fiv ${pcre_src_dir} || return
+				remove_rpath_option ${1} || return
+			}
 			${pcre_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--enable-pcre16 --enable-pcre32 --enable-jit --enable-utf --enable-unicode-properties \
 				--enable-newline-is-any --enable-pcregrep-libz --enable-pcregrep-libbz2 \
