@@ -2316,17 +2316,12 @@ EOF
 		;;
 	pkg-config)
 		[ -x ${DESTDIR}${prefix}/bin/pkg-config -a "${force_install}" != yes ] && return
+		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		fetch ${1} || return
 		unpack ${1} || return
-		[ -f ${pkg_config_bld_dir}/Makefile -a -f ${pkg_config_bld_dir}/glib/Makefile ] ||
+		[ -f ${pkg_config_bld_dir}/Makefile ] ||
 			(cd ${pkg_config_bld_dir}
-			${pkg_config_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				--with-internal-glib --without-libiconv \
-				CFLAGS="${CFLAGS} -DLIBICONV_PLUG" \
-				glib_cv_stack_grows=no \
-				glib_cv_uscore=no \
-				ac_cv_func_posix_getpwuid_r=yes \
-				ac_cv_func_posix_getgrgid_r=yes) || return
+			${pkg_config_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
 		make -C ${pkg_config_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${pkg_config_bld_dir} -j ${jobs} -k check || return
