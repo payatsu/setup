@@ -1596,7 +1596,7 @@ EOF
 			${pcre_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--enable-pcre16 --enable-pcre32 --enable-jit --enable-utf --enable-unicode-properties \
 				--enable-newline-is-any --enable-pcregrep-libz --enable-pcregrep-libbz2 \
-				CPPFLAGS="${CPPFLAGS} `I zlib.h bzlib.h`" \
+				CPPFLAGS="${CPPFLAGS} `I zlib.h bzlib.h` -Wl,-rpath-link,${pcre_bld_dir}/.libs" \
 				LDFLAGS="${LDFLAGS} `L z bz2`" \
 				|| return
 			remove_rpath_option ${1} || return
