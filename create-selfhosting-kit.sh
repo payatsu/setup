@@ -3884,6 +3884,7 @@ EOF
 			remove_rpath_option ${1} || return
 			${libX11_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--enable-malloc0returnsnull \
+				--with-keysymdefdir=`print_header_dir keysymdef.h` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				|| return
 			remove_rpath_option ${1} || return
