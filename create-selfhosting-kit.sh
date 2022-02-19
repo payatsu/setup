@@ -244,7 +244,7 @@ EOF
 : ${glog_ver:=0.5.0}
 : ${protobuf_ver:=3.19.4}
 
-: ${cython_ver:=0.29.27}
+: ${cython_ver:=0.29.28}
 : ${OpenBLAS_ver:=0.3.19}
 : ${numpy_ver:=1.22.2}
 
