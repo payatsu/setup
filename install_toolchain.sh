@@ -3104,7 +3104,7 @@ install_native_zlib()
 	unpack zlib || return
 	(cd ${zlib_bld_dir}
 	echo ${host} | grep -qe '^\(x86_64\|i686\)-w64-mingw32$' && static=--static || static=''
-	eval `[ ${build} != ${host} ] && echo CHOST=${host}` ${zlib_src_dir}/configure --prefix=${prefix} ${static}) || return
+	eval `[ ${build} != ${host} ] && echo CHOST=${host}` ${zlib_src_dir}/configure --prefix=${prefix} --uname=linux ${static}) || return
 	make -C ${zlib_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${zlib_bld_dir} -j ${jobs} -k check || return
