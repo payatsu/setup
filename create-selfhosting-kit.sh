@@ -4231,7 +4231,9 @@ EOF
 		unpack ${1} || return
 		[ -f ${libxshmfence_bld_dir}/Makefile ] ||
 			(cd ${libxshmfence_bld_dir}
-			${libxshmfence_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+			${libxshmfence_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+			) || return
 		make -C ${libxshmfence_bld_dir} -j ${jobs} || return
 		make -C ${libxshmfence_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
