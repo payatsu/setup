@@ -2319,12 +2319,12 @@ EOF
 		;;
 	pkg-config)
 		[ -x ${DESTDIR}${prefix}/bin/pkg-config -a "${force_install}" != yes ] && return
-		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${pkg_config_bld_dir}/Makefile ] ||
 			(cd ${pkg_config_bld_dir}
-			${pkg_config_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
+			${pkg_config_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				`print_header_path glib.h glib-2.0 > /dev/null || echo --with-internal-glib`) || return
 		make -C ${pkg_config_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${pkg_config_bld_dir} -j ${jobs} -k check || return
@@ -5467,7 +5467,7 @@ main()
 	DESTDIR=`readlink -m ${host}`
 
 	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} --target ${build} \
-		binutils gcc perl m4 autoconf automake libtool gettext \
+		pkg-config binutils gcc perl m4 autoconf automake libtool gettext \
 		cmake ninja meson ccache || return
 	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
 
