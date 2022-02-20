@@ -904,7 +904,7 @@ print_pkg_config_libdir()
 			${DESTDIR}${prefix}/lib \
 			${DESTDIR}${prefix}/lib64 \
 			${DESTDIR}${prefix}/share; do
-			find ${d} -maxdepth 2 -type d -name pkgconfig
+			find ${d} -maxdepth 2 -type d -name pkgconfig 2> /dev/null
 		done
 
 		LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
