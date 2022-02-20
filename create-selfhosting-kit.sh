@@ -1182,7 +1182,7 @@ build()
 		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
 		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
 		print_header_path curl.h curl > /dev/null || ${0} ${cmdopt} curl || return
-		which m4 > /dev/null || ${0} ${cmdopt} --host ${build} --target {build} m4 || return
+		which m4 > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} m4 || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${elfutils_bld_dir}/Makefile ] ||
