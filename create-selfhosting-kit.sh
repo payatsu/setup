@@ -4257,7 +4257,7 @@ EOF
 		[ -f ${DESTDIR}${prefix}/include/wayland-version.h -a "${force_install}" != yes ] && return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
-		which wayland-scanner > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
+		[ ${build} = ${host} ] || which wayland-scanner > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		print_header_path ffi.h > /dev/null || ${0} ${cmdopt} libffi || return
 		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
 		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
