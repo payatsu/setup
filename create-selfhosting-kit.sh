@@ -1502,6 +1502,7 @@ EOF
 		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
 		print_header_path ffi.h > /dev/null || ${0} ${cmdopt} libffi || return
 		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
 		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
@@ -1521,8 +1522,11 @@ EOF
 				--with-openssl=`print_prefix ssl.h openssl` \
 				--without-ensurepip \
 				LDSHARED= \
-				CFLAGS="${CFLAGS} -I`{ print_header_dir curses.h ncursesw | sed -e 's/include$/&\/ncursesw/'; print_header_dir curses.h;} | head -n 1` `I expat.h`" \
-				LDFLAGS="${LDFLAGS} `L expat`" \
+				CFLAGS="${CFLAGS} -I`{ \
+					print_header_dir curses.h ncursesw | sed -e 's/include$/&\/ncursesw/'
+					print_header_dir curses.h
+				} | head -n 1` `I zlib.h expat.h` " \
+				LDFLAGS="${LDFLAGS} `L z expat`" \
 				LIBS="${LIBS} `l ffi`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				CONFIG_SITE=config.site || return
