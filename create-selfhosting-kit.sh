@@ -1514,8 +1514,15 @@ EOF
 		[ -f ${Python_bld_dir}/Makefile ] ||
 			(cd ${Python_bld_dir}
 			sed -i -e '
-				/^ \+\<system_lib_dirs\> = /s!\]$!, '"'${DESTDIR}${prefix}/lib'"'&!
-				/^ \+\<system_include_dirs\> = /s!\]$!, '"'${DESTDIR}${prefix}/include'"'&!' ${Python_src_dir}/setup.py || return
+				/^\( \+\)\<system_lib_dirs\> = .\+$/{
+					p
+					s!!\1self.compiler.library_dirs.append('"'${DESTDIR}${prefix}/lib'"')!
+				}
+				/^\( \+\)\<system_include_dirs\> = .\+$/{
+					p
+					s!!\1self.compiler.include_dirs.append('"'${DESTDIR}${prefix}/include'"')!
+				}' \
+				${Python_src_dir}/setup.py || return
 			[ ${build} = ${host} -o -f config.site ] || cat << EOF > config.site || return
 ac_cv_file__dev_ptmx=yes
 ac_cv_file__dev_ptc=no
