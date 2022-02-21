@@ -1506,11 +1506,16 @@ EOF
 		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
 		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		print_header_path readline.h readline > /dev/null || ${0} ${cmdopt} readline || return
+		print_header_path sqlite3.h > /dev/null || ${0} ${cmdopt} sqlite || return
 		[ ${build} = ${host} ] || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${Python_bld_dir}/Makefile ] ||
 			(cd ${Python_bld_dir}
+			sed -i -e '
+				/^ \+\<system_lib_dirs\> = /s!\]$!, '"'${DESTDIR}${prefix}/lib'"'&!
+				/^ \+\<system_include_dirs\> = /s!\]$!, '"'${DESTDIR}${prefix}/include'"'&!' ${Python_src_dir}/setup.py || return
 			[ ${build} = ${host} -o -f config.site ] || cat << EOF > config.site || return
 ac_cv_file__dev_ptmx=yes
 ac_cv_file__dev_ptc=no
@@ -1525,8 +1530,8 @@ EOF
 				CFLAGS="${CFLAGS} -I`{ \
 					print_header_dir curses.h ncursesw | sed -e 's/include$/&\/ncursesw/'
 					print_header_dir curses.h
-				} | head -n 1` `I zlib.h expat.h` " \
-				LDFLAGS="${LDFLAGS} `L z expat`" \
+				} | head -n 1` `I zlib.h expat.h readline.h` " \
+				LDFLAGS="${LDFLAGS} `L z expat readline`" \
 				LIBS="${LIBS} `l ffi`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				CONFIG_SITE=config.site || return
