@@ -4263,8 +4263,9 @@ EOF
 		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
 		fetch ${1} || return
 		unpack ${1} || return
-		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
-			--build.pkg-config-path `host=${build} print_library_dir wayland-scanner.pc` \
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both \
+			`[ ${build} = ${host} ] && echo --native-file ${cross_file} || echo --cross-file ${cross_file}` \
+			--build.pkg-config-path `readlink -m ${build}${prefix}/lib64/pkgconfig` \
 			-Ddocumentation=false ${wayland_src_dir} ${wayland_bld_dir} || return
 		ninja -v -C ${wayland_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${wayland_bld_dir} install || return
