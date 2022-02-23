@@ -1415,7 +1415,7 @@ EOF
 				) || return
 		make -C ${ncurses_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} || return
 		make -C ${ncurses_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
-		for h in `find ${DESTDIR}${prefix}/include/ncurses \( -type f -o -type l \) -name '*.h'`; do
+		for h in `find ${DESTDIR}${prefix}/include/ncursesw \( -type f -o -type l \) -name '*.h'`; do
 			ln -fsv `echo ${h} | sed -e "s%${DESTDIR}${prefix}/include/%%"` ${DESTDIR}${prefix}/include || return
 		done
 		rm -fv ${DESTDIR}${prefix}/lib/libncurses.so || return
@@ -1534,10 +1534,7 @@ EOF
 				--with-openssl=`print_prefix ssl.h openssl` \
 				--without-ensurepip \
 				LDSHARED= \
-				CFLAGS="${CFLAGS} -I`{ \
-					print_header_dir curses.h ncursesw | sed -e 's/include$/&\/ncursesw/'
-					print_header_dir curses.h
-				} | head -n 1` `I zlib.h expat.h readline.h` " \
+				CFLAGS="${CFLAGS} `I zlib.h expat.h curses.h readline.h` " \
 				LDFLAGS="${LDFLAGS} `L z expat readline`" \
 				LIBS="${LIBS} `l ffi`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
@@ -2594,8 +2591,8 @@ EOF
 			${host:+--cross-prefix=${host}-} \
 			--cc=${CC:-${host:+${host}-}gcc} --host-cc=${build:+${build}-}gcc \
 			--cxx=${CXX:-${host:+${host}-}g++} \
-			--extra-cflags="`I zlib.h`" \
-			--extra-ldflags="`l pcre z`" \
+			--extra-cflags="`I zlib.h curses.h`" \
+			--extra-ldflags="`l pcre z curses`" \
 			) || return
 		make -C ${qemu_bld_dir} -j ${jobs} V=1 || return
 		[ "${enable_check}" != yes ] ||
