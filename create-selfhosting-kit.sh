@@ -149,6 +149,7 @@ EOF
 : ${libpfm_ver:=4.11.0}
 : ${libbpf_ver:=0.4.0}
 : ${bcc_ver:=0.20.0}
+: ${cereal_ver:=1.3.1}
 : ${bpftrace_ver:=0.13.0}
 : ${libtraceevent_ver:=1.3.3}
 : ${libtracefs_ver:=1.2.3}
@@ -508,6 +509,9 @@ fetch()
 	bcc)
 		wget -O ${bcc_src_dir}.tar.gz \
 			https://github.com/iovisor/bcc/archive/v${bcc_ver}.tar.gz || return;;
+	cereal)
+		wget -O ${cereal_src_dir}.tar.gz \
+			https://github.com/USCiLab/cereal/archive/v${cereal_ver}.tar.gz || return;;
 	bpftrace)
 		wget -O ${bpftrace_src_dir}.tar.gz \
 			https://github.com/iovisor/bpftrace/archive/v${bpftrace_ver}.tar.gz || return;;
@@ -1997,6 +2001,22 @@ EOF
 			|| return
 		cmake --build ${bcc_bld_dir} -v -j ${jobs} || return
 		cmake --install ${bcc_bld_dir} -v ${strip:+--${strip}} || return
+		;;
+	cereal)
+		[ -f ${DESTDIR}${prefix}/include/cereal/version.hpp -a "${force_install}" != yes ] && return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
+		fetch ${1} || return
+		unpack ${1} || return
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${cereal_src_dir} -B ${cereal_bld_dir} \
+			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} \
+			-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DTHREAD_SAFE=ON \
+			-DJUST_INSTALL_CEREAL=ON \
+			|| return
+		cmake --build ${cereal_bld_dir} -v -j ${jobs} || return
+		cmake --install ${cereal_bld_dir} -v ${strip:+--${strip}} || return
 		;;
 	bpftrace)
 		[ -x ${DESTDIR}${prefix}/bin/bpftrace -a "${force_install}" != yes ] && return
