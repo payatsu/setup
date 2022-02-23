@@ -2582,6 +2582,7 @@ EOF
 	qemu)
 		[ -x ${DESTDIR}${prefix}/bin/qemu-img -a "${force_install}" != yes ] && return
 		which pkg-config > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} pkg-config || return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
 		print_header_path pixman.h pixman-1 > /dev/null || ${0} ${cmdopt} pixman || return
@@ -2593,7 +2594,7 @@ EOF
 			${host:+--cross-prefix=${host}-} \
 			--cc=${CC:-${host:+${host}-}gcc} --host-cc=${build:+${build}-}gcc \
 			--cxx=${CXX:-${host:+${host}-}g++} \
-			--extra-cflags=`I zlib.h` \
+			--extra-cflags="`I zlib.h`" \
 			--extra-ldflags="`l pcre z`" \
 			) || return
 		make -C ${qemu_bld_dir} -j ${jobs} V=1 || return
