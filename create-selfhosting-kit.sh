@@ -2029,6 +2029,7 @@ EOF
 		print_header_path libelf.h > /dev/null || ${0} ${cmdopt} elfutils || return
 		print_header_path bfd.h > /dev/null || ${0} ${cmdopt} binutils || return
 		print_header_path bcc_version.h bcc > /dev/null || ${0} ${cmdopt} bcc || return
+		print_header_path version.hpp cereal > /dev/null || ${0} ${cmdopt} cereal || return
 		fetch ${1} || return
 		unpack ${1} || return
 		sed -i -e 's/\(set(CMAKE_REQUIRED_LIBRARIES bcc\)\()\)/\1 tinfo\2/' ${bpftrace_src_dir}/CMakeLists.txt || return
