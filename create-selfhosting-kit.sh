@@ -810,7 +810,7 @@ print_library_path()
 		`LANG=C ${CC:-${host:+${host}-}gcc} -print-search-dirs |
 			sed -e '/^libraries: =/{s/^libraries: =//;p};d' | xargs -d : realpath -eq`; do
 		[ -d ${d}${2:+/${2}} ] || continue
-		candidates=`find ${d}${2:+/${2}} \( -type f -o -type l \) -name ${1} | filter_shortest_hierarchy`
+		candidates=`find ${d}${2:+/${2}} \( -type f -o -type l \) -name ${1} 2> /dev/null | filter_shortest_hierarchy`
 		[ -n "${candidates}" ] && echo "${candidates}" && return
 	done
 	return 1
@@ -5277,7 +5277,7 @@ set_compiler_as_env_vars()
 			sed -e '/^libraries: =/{s/^libraries: =//;p};d' |
 			xargs -d : realpath -eq
 		[ ${build} = ${host} ] && echo /usr/local/lib64 /usr/local/lib | tr ' ' '\n'
-		} | xargs -I @ find @ -maxdepth 2 -type d -name pkgconfig` \
+		} | xargs -I @ find @ -maxdepth 2 -type d -name pkgconfig 2> /dev/null` \
 		${DESTDIR}${prefix}/lib/pkgconfig \
 		${DESTDIR}${prefix}/lib/${host:+${host}/}pkgconfig \
 		${DESTDIR}${prefix}/lib64/pkgconfig \
