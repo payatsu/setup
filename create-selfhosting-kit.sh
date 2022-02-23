@@ -1995,9 +1995,11 @@ EOF
 			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_C_FLAGS="${CFLAGS} `L elf z`" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I FlexLexer.h` `l elf z tinfo`" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I FlexLexer.h` `Wl_rpath_link elf curl z tinfo`" \
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
 			-DPYTHON_CMD=python3 \
+			-DLIBELF_LIBRARIES=`print_library_path libelf.so` \
+			-DLIBDEBUGINFOD_LIBRARIES=`print_library_path libdebuginfod.so` \
 			|| return
 		cmake --build ${bcc_bld_dir} -v -j ${jobs} || return
 		cmake --install ${bcc_bld_dir} -v ${strip:+--${strip}} || return
