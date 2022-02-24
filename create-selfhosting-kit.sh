@@ -1667,7 +1667,7 @@ EOF
 			(cd ${popt_bld_dir}
 			sed -i -e '/^AM_C_PROTOTYPES$/d' ${popt_src_dir}/configure.ac || return
 			sed -i -e '/^TESTS = /d' ${popt_src_dir}/Makefile.am || return
-			gettext_datadir=$(dirname $(which gettext))/../share/gettext autoreconf -fiv ${popt_src_dir} || return
+			autoreconf -fiv ${popt_src_dir} || return
 			${popt_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-rpath) || return
 		make -C ${popt_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
@@ -2140,7 +2140,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${procps_src_dir}/configure ] ||
-			(cd ${procps_src_dir}; gettext_datadir=$(dirname $(which gettext))/../share/gettext ./autogen.sh) || return
+			(cd ${procps_src_dir}; ./autogen.sh) || return
 		[ -f ${procps_bld_dir}/configure ] || cp -Tvr ${procps_src_dir} ${procps_bld_dir} || return
 		[ -f ${procps_bld_dir}/Makefile ] ||
 			(cd ${procps_bld_dir}
@@ -5083,6 +5083,15 @@ exec `which ${f}` --automake-acdir=\${dir}-${am_ver} --system-acdir=\${dir} \"\$
 exec `which autom4te` -B $(readlink -m $(dirname $(which autoconf))/../share/autoconf) \"\$@\"" || return
 }
 
+generate_gettext_wrapper()
+{
+	! which autopoint > /dev/null && return
+
+	generate_command_wrapper ${1} autopoint "\
+export gettext_datadir=$(dirname $(which gettext))/../share/gettext
+exec `which autopoint` \"\$@\"" || return
+}
+
 generate_meson_cross_file()
 {
 	cross_file=${1}
@@ -5343,6 +5352,7 @@ setup_pathconfig_for_build()
 	# the following functions assume that ${dir} is not in ${PATH} yet.
 	generate_autoconf_wrapper ${dir} || return
 	generate_automake_wrapper ${dir} ${a} || return
+	generate_gettext_wrapper ${dir} || return
 
 	# ccache must have the highest priority in the PATH.
 	# In other words, when you invoke a compiler(when you run '${host}-gcc' command),
