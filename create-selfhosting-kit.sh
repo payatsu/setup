@@ -147,10 +147,10 @@ EOF
 : ${OpenCSD_ver:=1.1.0}
 : ${libunwindnongnu_ver:=1.6.2}
 : ${libpfm_ver:=4.11.0}
-: ${libbpf_ver:=0.4.0}
-: ${bcc_ver:=0.20.0}
+: ${libbpf_ver:=0.7.0}
+: ${bcc_ver:=0.24.0}
 : ${cereal_ver:=1.3.1}
-: ${bpftrace_ver:=0.13.0}
+: ${bpftrace_ver:=0.14.1}
 : ${libtraceevent_ver:=1.3.3}
 : ${libtracefs_ver:=1.2.3}
 : ${trace_cmd_ver:=v2.9.4}
@@ -1973,8 +1973,8 @@ EOF
 	bcc)
 		[ -f ${DESTDIR}${prefix}/include/bcc/bcc_version.h -a "${force_install}" != yes ] && return
 		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
-		${0} ${cmdopt} --host ${build} --target ${build} bison || return
-		${0} ${cmdopt} --host ${build} --target ${build} flex || return
+		which bison > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} bison || return
+		which flex > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} flex || return
 		print_header_path FlexLexer.h > /dev/null || ${0} ${cmdopt} flex || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		print_header_path Version.h clang/Basic > /dev/null || ${0} ${cmdopt} clang || return
@@ -2023,8 +2023,8 @@ EOF
 	bpftrace)
 		[ -x ${DESTDIR}${prefix}/bin/bpftrace -a "${force_install}" != yes ] && return
 		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
-		${0} ${cmdopt} --host ${build} --target ${build} bison || return
-		${0} ${cmdopt} --host ${build} --target ${build} flex || return
+		which bison > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} bison || return
+		which flex > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} flex || return
 		print_header_path FlexLexer.h > /dev/null || ${0} ${cmdopt} flex || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
 		print_header_path Version.h clang/Basic > /dev/null || ${0} ${cmdopt} clang || return
@@ -2040,19 +2040,27 @@ EOF
 			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
 			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-			-DCMAKE_C_FLAGS="${CFLAGS} `l elf z`" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bcc/compat/linux/bpf.h`/bcc/compat `I libelf.h bfd.h` `l elf z tinfo`" \
+			-DCMAKE_C_FLAGS="${CFLAGS} `Wl_rpath_link debuginfod`" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bfd.h libz.h` `Wl_rpath_link debuginfod curl zstd tinfo`" \
+			-DENABLE_MAN=OFF \
 			-DBUILD_TESTING=OFF \
 			-DLIBBCC_INCLUDE_DIRS=`print_header_dir bcc_version.h bcc` \
 			-DLIBBCC_LIBRARIES=`print_library_path libbcc.so` \
 			-DLIBBFD_INCLUDE_DIRS=`print_header_dir bfd.h` \
-			-DLIBBFD_LIBRARIES="`print_library_path libbfd.so`;`print_library_path libcurl.so`;`print_library_path libzstd.so`" \
+			-DLIBBFD_LIBRARIES=`print_library_path libbfd.so` \
+			-DLIBBPF_INCLUDE_DIRS=`print_header_dir libbpf.h` \
+			-DLIBBPF_LIBRARIES=`print_library_path libbpf.so` \
+			-DLIBDW_INCLUDE_DIRS=`print_header_dir libdw.h elfutils.h` \
+			-DLIBDW_LIBRARIES=`print_library_path libdw.so` \
+			-DLIBELF_INCLUDE_DIRS=`print_header_dir libelf.h` \
+			-DLIBELF_LIBRARIES=`print_library_path libelf.so` \
 			-DLIBOPCODES_INCLUDE_DIRS=`print_header_dir dis-asm.h` \
 			-DLIBOPCODES_LIBRARIES=`print_library_path libopcodes.so` \
+			-DLIBZ_LIBRARIES=`print_library_path libz.so` \
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
 			-DClang_DIR=`print_library_dir ClangConfig.cmake` \
 			|| return
-		cmake --build ${bpftrace_bld_dir} -v -j ${jobs} --target bpftrace man || return
+		cmake --build ${bpftrace_bld_dir} -v -j ${jobs} || return
 		cmake --install ${bpftrace_bld_dir} -v ${strip:+--${strip}} || return
 		;;
 	libtraceevent)
