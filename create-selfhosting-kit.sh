@@ -5045,7 +5045,7 @@ generate_autoconf_wrapper()
 {
 	! which autoconf > /dev/null && return
 
-	for f in autoconf autoheader; do
+	for f in autoconf autoheader autoreconf; do
 		generate_command_wrapper ${1} ${f} "\
 export AUTOM4TE=`which autom4te`
 export autom4te_perllibdir=$(readlink -m $(dirname $(which autoconf))/../share/autoconf)
