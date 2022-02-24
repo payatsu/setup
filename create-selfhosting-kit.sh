@@ -2329,6 +2329,10 @@ EOF
 		print_binary_path bison > /dev/null || ${0} ${cmdopt} bison || return
 		fetch ${1} || return
 		unpack ${1} || return
+		grep -qe '^AC_USE_SYSTEM_EXTENSIONS$' ${flex_src_dir}/configure.ac || {
+			sed -i -e '/^AC_CONFIG_AUX_DIR/aAC_USE_SYSTEM_EXTENSIONS' ${flex_src_dir}/configure.ac || return
+			autoreconf -fiv ${flex_src_dir} || return
+		}
 		[ -f ${flex_bld_dir}/Makefile ] ||
 			(cd ${flex_bld_dir}
 			${flex_src_dir}/configure --prefix=${prefix} --host=${host} \
