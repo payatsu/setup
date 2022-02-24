@@ -5086,6 +5086,20 @@ exec `which ${f}` --automake-acdir=\${dir}-${am_ver} --system-acdir=\${dir} \"\$
 	unset am_ver
 }
 
+generate_libtool_wrapper()
+{
+	! which libtoolize > /dev/null && return
+
+	mkdir -pv ${1}/lt_pkgdatadir || return
+	ln -fs $(readlink -m $(dirname $(which libtoolize))/../share/libtool/build-aux) ${1}/lt_pkgdatadir/build-aux || return
+	ln -fs $(readlink -m $(dirname $(which libtoolize))/../share/libtool)           ${1}/lt_pkgdatadir/libltdl || return
+	ln -fs $(readlink -m $(dirname $(which automake))/../share/aclocal)             ${1}/lt_pkgdatadir/m4 || return
+
+	generate_command_wrapper ${1} libtoolize "\
+export _lt_pkgdatadir=${1}/lt_pkgdatadir
+exec `which libtoolize` \"\$@\"" || return
+}
+
 generate_gettext_wrapper()
 {
 	! which autopoint > /dev/null && return
@@ -5355,6 +5369,7 @@ setup_pathconfig_for_build()
 	# the following functions assume that ${dir} is not in ${PATH} yet.
 	generate_autoconf_wrapper ${dir} || return
 	generate_automake_wrapper ${dir} ${a} || return
+	generate_libtool_wrapper ${dir} || return
 	generate_gettext_wrapper ${dir} || return
 
 	# ccache must have the highest priority in the PATH.
