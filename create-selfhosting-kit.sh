@@ -5045,9 +5045,14 @@ generate_autoconf_wrapper()
 {
 	! which autoconf > /dev/null && return
 
+	generate_command_wrapper ${1} autom4te "\
+exec `which autom4te` -B $(readlink -m $(dirname $(which autoconf))/../share/autoconf) \"\$@\"" || return
+
 	for f in autoconf autoheader autoreconf; do
 		generate_command_wrapper ${1} ${f} "\
-export AUTOM4TE=`which autom4te`
+export AUTOCONF=${1}/autoconf
+export AUTOHEADER=${1}/autoheader
+export AUTOM4TE=${1}/autom4te
 export autom4te_perllibdir=$(readlink -m $(dirname $(which autoconf))/../share/autoconf)
 export AC_MACRODIR=\${autom4te_perllibdir}
 export trailer_m4=\${AC_MACRODIR}/autoconf/trailer.m4
@@ -5079,8 +5084,6 @@ exec `which ${f}` --automake-acdir=\${dir}-${am_ver} --system-acdir=\${dir} \"\$
 	done
 
 	unset am_ver
-	generate_command_wrapper ${1} autom4te "\
-exec `which autom4te` -B $(readlink -m $(dirname $(which autoconf))/../share/autoconf) \"\$@\"" || return
 }
 
 generate_gettext_wrapper()
