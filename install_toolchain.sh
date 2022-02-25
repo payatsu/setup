@@ -1577,6 +1577,15 @@ L()
 	done | sed -e 's/^/-L/' | squash_options || return
 }
 
+Wl_rpath_link()
+{
+	for l in "$@"; do
+		echo ${l} | grep -qe '/' && d=`dirname ${l}` || d=
+		f=lib`basename ${l}`.so
+		print_library_dir ${f} ${d} || return
+	done | sed -e 's/^/-Wl,-rpath-link,/' | squash_options || return
+}
+
 l()
 {
 	L "$@" || return
