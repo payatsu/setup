@@ -1320,6 +1320,8 @@ EOF
 			${gcc_src_dir}/configure --prefix=${prefix} --host=${host} --target=${target} \
 				--with-gmp=`print_prefix gmp.h` --with-mpfr=`print_prefix mpfr.h` --with-mpc=`print_prefix mpc.h` \
 				--with-isl=`print_prefix version.h isl` --with-system-zlib \
+				--with-stage1-ldflags="-static-libstdc++ -static-libgcc `L z`" \
+				--with-boot-ldflags="-static-libstdc++ -static-libgcc `L z`" \
 				--enable-languages=c`{
 					echo ${target} | grep -qe linux && echo ,c++
 					[ ${build} = ${host} ] || which ${host}-gccgo > /dev/null && echo ,go
@@ -1336,7 +1338,7 @@ EOF
 			CPPFLAGS="${CPPFLAGS} -DLIBICONV_PLUG" \
 			CPPFLAGS_FOR_TARGET="${CPPFLAGS} -DLIBICONV_PLUG" \
 			CFLAGS_FOR_TARGET="${CFLAGS} -Wno-error" \
-			LDFLAGS="${LDFLAGS} `L z`" || return
+			|| return
 		[ "${enable_check}" != yes ] ||
 			make -C ${gcc_bld_dir} -j ${jobs} -k check || return
 		make -C ${gcc_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
