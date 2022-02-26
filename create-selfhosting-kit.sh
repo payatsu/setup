@@ -5009,6 +5009,7 @@ which_real()
 {
 	for p in `which -a ${1}`; do
 		readlink ${p} | grep -qe '/ccache$' && continue
+		echo ${p} | grep -qe ^`dirname ${0}` && continue
 		echo ${p}
 		break
 	done
@@ -5049,7 +5050,7 @@ generate_toolchain_wrapper()
 	generate_command_wrapper ${1} ${host:+${host}-}${2} \
 		"`{
 			echo exec
-			which ${host:+${host}-}${2}
+			which_real ${host:+${host}-}${2}
 			eval echo \\\${$(echo ${2} | tr a-z A-Z):-\\\${host:+\\\${host}-}${2}} | grep -oPe '(?<= ).+'
 			echo \\"\\$@\\"
 		} | tr '\n' ' '`" || return
@@ -5060,17 +5061,17 @@ generate_autoconf_wrapper()
 	! which autoconf > /dev/null && return
 
 	generate_command_wrapper ${1} autom4te "\
-exec `which autom4te` -B $(readlink -m $(dirname $(which autoconf))/../share/autoconf) \"\$@\"" || return
+exec `which_real autom4te` -B $(readlink -m $(dirname $(which_real autoconf))/../share/autoconf) \"\$@\"" || return
 
 	for f in autoconf autoheader autoreconf; do
 		generate_command_wrapper ${1} ${f} "\
 export AUTOCONF=${1}/autoconf
 export AUTOHEADER=${1}/autoheader
 export AUTOM4TE=${1}/autom4te
-export autom4te_perllibdir=$(readlink -m $(dirname $(which autoconf))/../share/autoconf)
+export autom4te_perllibdir=$(readlink -m $(dirname $(which_real autoconf))/../share/autoconf)
 export AC_MACRODIR=\${autom4te_perllibdir}
 export trailer_m4=\${AC_MACRODIR}/autoconf/trailer.m4
-exec `which ${f}` -I \${AC_MACRODIR} \"\$@\"" || return
+exec `which_real ${f}` -I \${AC_MACRODIR} \"\$@\"" || return
 	done
 }
 
@@ -5084,17 +5085,17 @@ generate_automake_wrapper()
 	for f in automake automake-${am_ver}; do
 		generate_command_wrapper ${1} ${f} "\
 export PERLLIB=$(readlink -m $(dirname ${2})/../share/automake)-${am_ver}
-exec `which ${f}` --libdir \${PERLLIB} \"\$@\"" || return
+exec `which_real ${f}` --libdir \${PERLLIB} \"\$@\"" || return
 	done
 
 	for f in aclocal aclocal-${am_ver}; do
 		generate_command_wrapper ${1} ${f} "\
-export autom4te_perllibdir=$(readlink -m $(dirname $(which autoconf))/../share/autoconf)
+export autom4te_perllibdir=$(readlink -m $(dirname $(which_real autoconf))/../share/autoconf)
 export AC_MACRODIR=\${autom4te_perllibdir}
 export PERLLIB=$(readlink -m $(dirname ${2})/../share/automake)-${am_ver}
 export AUTOMAKE_UNINSTALLED=1
 dir=$(readlink -m $(dirname ${2})/../share/aclocal)
-exec `which ${f}` --automake-acdir=\${dir}-${am_ver} --system-acdir=\${dir} \"\$@\"" || return
+exec `which_real ${f}` --automake-acdir=\${dir}-${am_ver} --system-acdir=\${dir} \"\$@\"" || return
 	done
 
 	unset am_ver
@@ -5105,13 +5106,13 @@ generate_libtool_wrapper()
 	! which libtoolize > /dev/null && return
 
 	mkdir -pv ${1}/lt_pkgdatadir || return
-	ln -fs $(readlink -m $(dirname $(which libtoolize))/../share/libtool/build-aux) ${1}/lt_pkgdatadir/build-aux || return
-	ln -fs $(readlink -m $(dirname $(which libtoolize))/../share/libtool)           ${1}/lt_pkgdatadir/libltdl || return
-	ln -fs $(readlink -m $(dirname $(which automake))/../share/aclocal)             ${1}/lt_pkgdatadir/m4 || return
+	ln -Tfsv $(readlink -m $(dirname $(which_real libtoolize))/../share/libtool/build-aux) ${1}/lt_pkgdatadir/build-aux || return
+	ln -Tfsv $(readlink -m $(dirname $(which_real libtoolize))/../share/libtool)           ${1}/lt_pkgdatadir/libltdl || return
+	ln -Tfsv $(readlink -m $(dirname $(which_real automake))/../share/aclocal)             ${1}/lt_pkgdatadir/m4 || return
 
 	generate_command_wrapper ${1} libtoolize "\
 export _lt_pkgdatadir=${1}/lt_pkgdatadir
-exec `which libtoolize` \"\$@\"" || return
+exec `which_real libtoolize` \"\$@\"" || return
 }
 
 generate_gettext_wrapper()
@@ -5119,8 +5120,8 @@ generate_gettext_wrapper()
 	! which autopoint > /dev/null && return
 
 	generate_command_wrapper ${1} autopoint "\
-export gettext_datadir=$(dirname $(which gettext))/../share/gettext
-exec `which autopoint` \"\$@\"" || return
+export gettext_datadir=$(dirname $(which_real gettext))/../share/gettext
+exec `which_real autopoint` \"\$@\"" || return
 }
 
 generate_meson_cross_file()
