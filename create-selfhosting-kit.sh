@@ -2354,7 +2354,7 @@ EOF
 		;;
 	libtool)
 		[ -x ${DESTDIR}${prefix}/bin/libtool -a "${force_install}" != yes ] && return
-		print_binary_path flex > /dev/null || ${0} ${cmdopt} flex || return
+		which m4 > /dev/null || ${0} ${cmdopt} m4 || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libtool_bld_dir}/Makefile ] ||
@@ -5104,6 +5104,7 @@ exec `which_real ${f}` --automake-acdir=\${dir}-${am_ver} --system-acdir=\${dir}
 generate_libtool_wrapper()
 {
 	! which libtoolize > /dev/null && return
+	! which automake > /dev/null && return
 
 	mkdir -pv ${1}/lt_pkgdatadir || return
 	ln -Tfsv $(readlink -m $(dirname $(which_real libtoolize))/../share/libtool/build-aux) ${1}/lt_pkgdatadir/build-aux || return
