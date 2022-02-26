@@ -1836,6 +1836,7 @@ EOF
 		;;
 	linux)
 		[ -f ${DESTDIR}${prefix}/include/linux/version.h -a "${force_install}" != yes ] && return
+		which rsync > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} rsync || return
 		fetch ${1} || return
 		unpack ${1} || return
 		make -C ${linux_src_dir} -j ${jobs} V=1 O=${linux_bld_dir} mrproper || return
