@@ -212,6 +212,7 @@ EOF
 : ${jq_ver:=1.6}
 
 : ${help2man_ver:=1.47.16}
+: ${texinfo_ver:=6.8}
 : ${coreutils_ver:=9.0}
 : ${file_ver:=5.41}
 
@@ -402,7 +403,7 @@ fetch()
 			https://zlib.net/${zlib_name}.tar.xz || return;;
 	libunistring|binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|\
 	autoconf|automake|bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|\
-	emacs|nano|grep|diffutils|patch|global|findutils|poke|help2man|coreutils)
+	emacs|nano|grep|diffutils|patch|global|findutils|poke|help2man|texinfo|coreutils)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
 				https://ftp.gnu.org/gnu/${1}/\${${_1}_name}.tar.${compress_format} \
@@ -3111,6 +3112,19 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${help2man_bld_dir} -j ${jobs} -k check || return
 		make -C ${help2man_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		;;
+	texinfo)
+		[ -x ${DESTDIR}${prefix}/bin/makeinfo -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${texinfo_bld_dir}/Makefile ] ||
+			(cd ${texinfo_bld_dir}
+			${texinfo_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+				--disable-rpath) || return
+		make -C ${texinfo_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${texinfo_bld_dir} -j ${jobs} -k check || return
+		make -C ${texinfo_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	coreutils)
 		[ -x ${DESTDIR}${prefix}/bin/cat -a "${force_install}" != yes ] && return
