@@ -2354,7 +2354,7 @@ EOF
 		;;
 	libtool)
 		[ -x ${DESTDIR}${prefix}/bin/libtool -a "${force_install}" != yes ] && return
-		which m4 > /dev/null || ${0} ${cmdopt} m4 || return
+		print_binary_path automake > /dev/null || ${0} ${cmdopt} automake || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libtool_bld_dir}/Makefile ] ||
