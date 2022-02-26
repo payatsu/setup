@@ -1701,6 +1701,7 @@ EOF
 		;;
 	babeltrace)
 		[ -x ${DESTDIR}${prefix}/bin/babeltrace -a "${force_install}" != yes ] && return
+		which bison > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} bison || return
 		print_header_path pcre.h > /dev/null || ${0} ${cmdopt} pcre || return
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		print_header_path uuid.h uuid > /dev/null || ${0} ${cmdopt} util-linux || return
