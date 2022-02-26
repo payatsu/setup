@@ -5381,11 +5381,6 @@ setup_pathconfig_for_build()
 	. ${DESTDIR}${prefix}/pathconfig.sh || return
 
 	dir=`dirname ${0}`
-	# the following functions assume that ${dir} is not in ${PATH} yet.
-	generate_autoconf_wrapper ${dir} || return
-	generate_automake_wrapper ${dir} || return
-	generate_libtool_wrapper ${dir} || return
-	generate_gettext_wrapper ${dir} || return
 
 	# ccache must have the highest priority in the PATH.
 	# In other words, when you invoke a compiler(when you run '${host}-gcc' command),
@@ -5414,6 +5409,11 @@ setup_pathconfig_for_build()
 	set_compiler_as_env_vars || return
 	generate_toolchain_wrapper ${dir} || return
 	generate_meson_cross_file ${dir}/${host} || return
+
+	generate_autoconf_wrapper ${dir} || return
+	generate_automake_wrapper ${dir} || return
+	generate_libtool_wrapper ${dir} || return
+	generate_gettext_wrapper ${dir} || return
 
 	unset dir d
 }
