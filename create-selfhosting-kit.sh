@@ -5144,6 +5144,16 @@ export gettext_datadir=$(dirname $(which_real gettext))/../share/gettext
 exec `which_real autopoint` \"\$@\"" || return
 }
 
+generate_texinfo_wrapper()
+{
+	! which makeinfo > /dev/null && return
+
+	generate_command_wrapper ${1} makeinfo "\
+dir=$(readlink -m $(dirname $(which_real makeinfo))/../share/texinfo)
+export PERLLIB=\${dir}:\${dir}/lib/libintl-perl/lib:\${dir}/lib/Unicode-EastAsianWidth/lib:\${dir}/lib/Text-Unidecode/lib
+exec `which_real makeinfo` \"\$@\"" || return
+}
+
 generate_meson_cross_file()
 {
 	cross_file=${1}
@@ -5433,6 +5443,7 @@ setup_pathconfig_for_build()
 	generate_automake_wrapper ${dir} || return
 	generate_libtool_wrapper ${dir} || return
 	generate_gettext_wrapper ${dir} || return
+	generate_texinfo_wrapper ${dir} || return
 
 	unset dir d
 }
@@ -5567,7 +5578,7 @@ main()
 	DESTDIR=`readlink -m ${host}`
 
 	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} --target ${build} \
-		pkg-config binutils gcc perl m4 autoconf automake libtool gettext \
+		pkg-config perl texinfo binutils gcc m4 autoconf automake libtool gettext \
 		cmake ninja meson ccache || return
 	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
 
