@@ -3115,16 +3115,21 @@ EOF
 		;;
 	texinfo)
 		[ -x ${DESTDIR}${prefix}/bin/makeinfo -a "${force_install}" != yes ] && return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${texinfo_bld_dir}/Makefile ] ||
 			(cd ${texinfo_bld_dir}
 			${texinfo_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-				--disable-rpath) || return
+				--disable-rpath \
+				LDFLAGS="${LDFLAGS} `L tinfo`") || return
 		make -C ${texinfo_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${texinfo_bld_dir} -j ${jobs} -k check || return
 		make -C ${texinfo_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		for f in pod2texi texi2any; do
+			sed -i -e '1s,^.\+$,#!/usr/bin/env perl,' ${DESTDIR}${prefix}/bin/${f} || return
+		done
 		;;
 	coreutils)
 		[ -x ${DESTDIR}${prefix}/bin/cat -a "${force_install}" != yes ] && return
