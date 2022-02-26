@@ -5079,12 +5079,12 @@ generate_automake_wrapper()
 {
 	! which automake > /dev/null && return
 
-	am_ver=$(grep -m 1 -oPe "(?<=automake-)[\d.]+(?='\)$)" ${2})
+	am_ver=$(grep -m 1 -oPe "(?<=automake-)[\d.]+(?='\)$)" $(which_real automake))
 	[ -z "${am_ver}" ] && return
 
 	for f in automake automake-${am_ver}; do
 		generate_command_wrapper ${1} ${f} "\
-export PERLLIB=$(readlink -m $(dirname ${2})/../share/automake)-${am_ver}
+export PERLLIB=$(readlink -m $(dirname $(which_real automake))/../share/automake)-${am_ver}
 exec `which_real ${f}` --libdir \${PERLLIB} \"\$@\"" || return
 	done
 
@@ -5092,9 +5092,9 @@ exec `which_real ${f}` --libdir \${PERLLIB} \"\$@\"" || return
 		generate_command_wrapper ${1} ${f} "\
 export autom4te_perllibdir=$(readlink -m $(dirname $(which_real autoconf))/../share/autoconf)
 export AC_MACRODIR=\${autom4te_perllibdir}
-export PERLLIB=$(readlink -m $(dirname ${2})/../share/automake)-${am_ver}
+export PERLLIB=$(readlink -m $(dirname $(which_real automake))/../share/automake)-${am_ver}
 export AUTOMAKE_UNINSTALLED=1
-dir=$(readlink -m $(dirname ${2})/../share/aclocal)
+dir=$(readlink -m $(dirname $(which_real automake))/../share/aclocal)
 exec `which_real ${f}` --automake-acdir=\${dir}-${am_ver} --system-acdir=\${dir} \"\$@\"" || return
 	done
 
@@ -5381,10 +5381,9 @@ setup_pathconfig_for_build()
 	. ${DESTDIR}${prefix}/pathconfig.sh || return
 
 	dir=`dirname ${0}`
-	a=`which automake`
 	# the following functions assume that ${dir} is not in ${PATH} yet.
 	generate_autoconf_wrapper ${dir} || return
-	generate_automake_wrapper ${dir} ${a} || return
+	generate_automake_wrapper ${dir} || return
 	generate_libtool_wrapper ${dir} || return
 	generate_gettext_wrapper ${dir} || return
 
@@ -5416,7 +5415,7 @@ setup_pathconfig_for_build()
 	generate_toolchain_wrapper ${dir} || return
 	generate_meson_cross_file ${dir}/${host} || return
 
-	unset dir a d
+	unset dir d
 }
 
 manipulate_libc()
