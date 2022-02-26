@@ -12,7 +12,7 @@ pkgs="`${target_script} --help | sed -e '/\[PACKAGES\]/,$p;d' | sed -e 1d`"
 for p in ${pkgs}; do
 	if ! ${target_script} --strip --cleanup --prepare $@ ${p}; then
 		case ${p} in
-		gcc|gdb|crash|bcc|bpftrace|tmux|emacs|go|qemu|OpenBLAS)
+		gcc|gdb|crash|tmux|emacs|go|qemu)
 			continue;;
 		esac
 		echo ERROR: build of \'${p}\' failed. >> test-result.log
