@@ -2533,7 +2533,7 @@ EOF
 		unpack ${1} || return
 		[ -f ${bc_bld_dir}/Makefile ] ||
 			(cd ${bc_bld_dir}
-			sed -i -e 's!^	\./fbc\>!	bc!' ${bc_src_dir}/bc/Makefile.am || return
+			! which bc > /dev/null || sed -i -e 's!^	\./fbc\>!	bc!' ${bc_src_dir}/bc/Makefile.am || return
 			autoreconf -v ${bc_src_dir} || return
 			${bc_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules --with-readline) || return
 		make -C ${bc_bld_dir} -j ${jobs} || return
