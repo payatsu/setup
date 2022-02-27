@@ -1029,12 +1029,6 @@ meson()
 	command meson "$@"
 }
 
-ninja()
-{
-	echo ninja "$@"
-	command ninja "$@"
-}
-
 build()
 {
 	case ${1} in
