@@ -5019,7 +5019,6 @@ update_ccache_wrapper()
 
 generate_command_wrapper()
 {
-	[ -f ${1}/${2} ] && return
 	cat << EOF > ${1}/${2} || return
 #!/bin/sh
 ${3}
@@ -5212,7 +5211,7 @@ generate_llvm_config_dummy()
 		"\
 while [ \$# -gt 0 ]; do
 	case \$1 in
-	--bindir)      dirname `which llvm-config`;;
+	--bindir)      dirname `which_real llvm-config`;;
 	--cmakedir)    echo `print_library_dir LLVMConfig.cmake`;;
 	--includedir)  echo `print_header_dir llvm-config.h`;;
 	--libdir)      echo `print_library_dir libLLVM.so`;;
