@@ -2392,7 +2392,9 @@ EOF
 		[ -f ${pkg_config_bld_dir}/Makefile ] ||
 			(cd ${pkg_config_bld_dir}
 			${pkg_config_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				`print_header_path glib.h glib-2.0 > /dev/null || echo --with-internal-glib`) || return
+				`print_header_path glib.h glib-2.0 > /dev/null || echo --with-internal-glib` \
+				LDFLAGS="${LDFLAGS} `Wl_rpath_link pcre`" \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR}) || return
 		make -C ${pkg_config_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${pkg_config_bld_dir} -j ${jobs} -k check || return
