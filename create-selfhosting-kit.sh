@@ -2223,7 +2223,13 @@ EOF
 		sed -i -e 's/^	\$(HOSTCC)/	gcc/' ${iproute2_bld_dir}/netem/Makefile || return
 		sed -i -e '
 			s!^    : \${CC=gcc}$!    CC="'"${CC:-${host:+${host}-}gcc}"'"!
-			/^check_elf$/aecho "LDLIBS += '"`l z`"'" >> $CONFIG' ${iproute2_bld_dir}/configure || return
+			/^check_elf$/{
+				aecho "LDLIBS += '"`L elf` `Wl_rpath_link z`"'" >> $CONFIG
+			}
+			/^check_cap$/{
+				aecho "CFLAGS += '"`I sys/capability.h`"'" >> $CONFIG
+				aecho "LDLIBS += '"`L cap`"'" >> $CONFIG
+			}' ${iproute2_bld_dir}/configure || return
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 			make -C ${iproute2_bld_dir} -j ${jobs} V=1 \
 				PREFIX=${prefix} \
