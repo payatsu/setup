@@ -2000,10 +2000,14 @@ EOF
 			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
 			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-			-DCMAKE_C_FLAGS="${CFLAGS} `L elf z`" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I FlexLexer.h` `Wl_rpath_link elf curl z tinfo`" \
+			-DCMAKE_C_FLAGS="${CFLAGS} `L z`" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `Wl_rpath_link curl z tinfo`" \
+			-DENABLE_LLVM_SHARED=ON \
 			-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
 			-DPYTHON_CMD=python3 \
+			-DFLEX_INCLUDE_DIRS=`print_header_dir FlexLexer.h` \
+			-DFLEX_LIBRARIES=`print_library_path libfl.so` \
+			-DLIBELF_INCLUDE_DIRS=`print_header_dir libelf.h` \
 			-DLIBELF_LIBRARIES=`print_library_path libelf.so` \
 			-DLIBDEBUGINFOD_LIBRARIES=`print_library_path libdebuginfod.so` \
 			|| return

@@ -2557,10 +2557,14 @@ install_native_bcc()
 		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
 		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-		-DCMAKE_C_FLAGS="${CFLAGS} `L elf z`" \
-		-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I FlexLexer.h` `l elf z tinfo`" \
+		-DCMAKE_C_FLAGS="${CFLAGS} `L z`" \
+		-DCMAKE_CXX_FLAGS="${CXXFLAGS} `Wl_rpath_link z tinfo`" \
+		-DENABLE_LLVM_SHARED=ON \
 		-DLLVM_DIR=`print_library_dir LLVMConfig.cmake` \
 		-DPYTHON_CMD=python3 \
+		-DFLEX_INCLUDE_DIRS=`print_header_dir FlexLexer.h` \
+		-DFLEX_LIBRARIES=`print_library_path libfl.so` \
+		-DLIBELF_INCLUDE_DIRS=`print_header_dir libelf.h` \
 		|| return
 	cmake --build ${bcc_bld_dir} -v -j 1 || return # don't run parallel build to avoid out of memory.
 	cmake --install ${bcc_bld_dir} -v ${strip:+--${strip}} || return
