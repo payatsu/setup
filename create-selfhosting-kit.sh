@@ -2114,9 +2114,13 @@ EOF
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		make -C ${trace_cmd_src_dir} -j ${jobs} V=1 O=${trace_cmd_bld_dir} \
 			CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
+			CPPFLAGS="${CPPFLAGS} `I event-parse.h tracefs.h`" \
+			LDFLAGS="${LDFLAGS} `L traceevent ltracefs`" \
 			etcdir=${prefix}/etc || return
 		make -C ${trace_cmd_src_dir} -j ${jobs} V=1 O=${trace_cmd_bld_dir} \
 			CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
+			CPPFLAGS="${CPPFLAGS} `I event-parse.h tracefs.h`" \
+			LDFLAGS="${LDFLAGS} `L traceevent ltracefs`" \
 			etcdir=${prefix}/etc install || return
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/trace-cmd || return
