@@ -1023,6 +1023,18 @@ cmake()
 	command cmake "$@"
 }
 
+meson()
+{
+	echo meson "$@"
+	command meson "$@"
+}
+
+ninja()
+{
+	echo ninja "$@"
+	command ninja "$@"
+}
+
 build()
 {
 	case ${1} in
@@ -4338,7 +4350,7 @@ EOF
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both \
 			`[ ${build} = ${host} ] && echo --native-file ${cross_file} || echo --cross-file ${cross_file}` \
-			--build.pkg-config-path `readlink -m ${build}${prefix}/lib64/pkgconfig` \
+			--build.pkg-config-path `readlink -m ${build}${prefix}/lib/${build}/pkgconfig` \
 			-Ddocumentation=false ${wayland_src_dir} ${wayland_bld_dir} || return
 		ninja -v -C ${wayland_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${wayland_bld_dir} install || return
