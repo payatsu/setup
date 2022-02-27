@@ -4362,9 +4362,16 @@ EOF
 		print_header_path wayland-version.h > /dev/null || ${0} ${cmdopt} wayland || return
 		fetch ${1} || return
 		unpack ${1} || return
-		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file}  \
-			--build.pkg-config-path `host=${build} print_library_dir wayland-scanner.pc` \
-			${wayland_protocols_src_dir} ${wayland_protocols_bld_dir} || return
+		generate_command_wrapper ${wayland_protocols_bld_dir} pkg-config \
+			"exec `which_real pkg-config` --define-variable=prefix=`readlink -m ${build}${prefix}` \"\$@\"" || return
+		PATH=${wayland_protocols_bld_dir}:${PATH} \
+			meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file}  \
+				--build.pkg-config-path `readlink -m ${build}${prefix}/lib/${build}/pkgconfig` \
+				-Dc_args="${CFLAGS} `I wayland-client.h`" \
+				-Dc_link_args="${LIBS} `L wayland-client wayland-server`" \
+				-Dcpp_args="${CXXFLAGS} `I wayland-client.h`" \
+				-Dcpp_link_args="${LIBS} `L wayland-client wayland-server`" \
+				${wayland_protocols_src_dir} ${wayland_protocols_bld_dir} || return
 		ninja -v -C ${wayland_protocols_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${wayland_protocols_bld_dir} install || return
 		;;
