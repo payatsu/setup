@@ -2050,7 +2050,7 @@ EOF
 			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
 			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-			-DCMAKE_C_FLAGS="${CFLAGS} `Wl_rpath_link debuginfod`" \
+			-DCMAKE_C_FLAGS="${CFLAGS} `Wl_rpath_link debuginfod stdc++`" \
 			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bfd.h libz.h` `Wl_rpath_link debuginfod curl zstd tinfo`" \
 			-DENABLE_MAN=OFF \
 			-DBUILD_TESTING=OFF \
