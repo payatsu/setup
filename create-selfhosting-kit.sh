@@ -140,7 +140,7 @@ EOF
 : ${crash_ver:=8.0.0}
 : ${strace_ver:=5.16}
 : ${systemtap_ver:=4.6}
-: ${linux_ver:=5.14.9}
+: ${linux_ver:=5.16.11}
 : ${perf_ver:=${linux_ver}}
 : ${libcap_ver:=2.49}
 : ${numactl_ver:=2.0.14}

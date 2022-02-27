@@ -51,7 +51,7 @@
 : ${ed_ver:=1.18}
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.2.3}
-: ${linux_ver:=5.14.9}
+: ${linux_ver:=5.16.11}
 : ${perf_ver:=${linux_ver}}
 : ${libcap_ver:=2.49}
 : ${numactl_ver:=2.0.14}
