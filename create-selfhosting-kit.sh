@@ -3513,8 +3513,9 @@ EOF
 		[ -f ${swig_bld_dir}/Makefile ] ||
 			(cd ${swig_bld_dir}
 			${swig_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --enable-cpp11-testing \
-				CFLAGS="${CFLAGS} `I pcre.h` `L z`" \
-				LDFLAGS="${LDFLAGS} `L pcre`") || return
+				CFLAGS="${CFLAGS} `I zlib.h` `L z`" \
+				PCRE_CFLAGS="${CFLAGS} `I pcre.h`" \
+				PCRE_LIBS="${LIBS} `l pcre`") || return
 		make -C ${swig_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${swig_bld_dir} -j ${jobs} -k check || return
