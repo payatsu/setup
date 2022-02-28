@@ -4342,8 +4342,8 @@ EOF
 		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
 		fetch ${1} || return
 		unpack ${1} || return
-		generate_command_wrapper ${wayland_bld_dir} pkg-config \
-			"exec `which_real pkg-config` --define-variable=prefix=`readlink -m ${build}${prefix}` \"\$@\"" || return
+		generate_command_wrapper ${wayland_bld_dir} pkg-config "
+			exec `which_real pkg-config` --define-variable=prefix=`readlink -m ${build}${prefix}` \"\$@\"" || return
 		PATH=${wayland_bld_dir}:${PATH} \
 			meson --prefix ${prefix} ${strip:+--${strip}} --default-library both \
 				`[ ${build} = ${host} ] && echo --native-file ${cross_file} || echo --cross-file ${cross_file}` \
@@ -4362,8 +4362,8 @@ EOF
 		print_header_path wayland-version.h > /dev/null || ${0} ${cmdopt} wayland || return
 		fetch ${1} || return
 		unpack ${1} || return
-		generate_command_wrapper ${wayland_protocols_bld_dir} pkg-config \
-			"exec `which_real pkg-config` --define-variable=prefix=`readlink -m ${build}${prefix}` \"\$@\"" || return
+		generate_command_wrapper ${wayland_protocols_bld_dir} pkg-config "
+			exec `which_real pkg-config` --define-variable=prefix=`readlink -m ${build}${prefix}` \"\$@\"" || return
 		PATH=${wayland_protocols_bld_dir}:${PATH} \
 			meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file}  \
 				--build.pkg-config-path `readlink -m ${build}${prefix}/lib/${build}/pkgconfig` \
@@ -4458,9 +4458,14 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		generate_llvm_config_dummy `dirname ${0}` || return
-		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
-			--build.pkg-config-path `host=${build} print_library_dir wayland-scanner.pc` \
-			-Dglvnd=true -Dshared-llvm=disabled -Dglx-direct=false ${mesa_src_dir} ${mesa_bld_dir} || return
+		generate_command_wrapper ${mesa_bld_dir} pkg-config "
+			[ \${2} = \"wayland-scanner\" ] && exec `which_real pkg-config` --define-variable=prefix=`readlink -m ${build}${prefix}` \"\$@\"
+			exec `which_real pkg-config` \"\$@\"
+			" || return
+		PATH=${mesa_bld_dir}:${PATH} \
+			meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+				--build.pkg-config-path `readlink -m ${build}${prefix}/lib/${build}/pkgconfig` \
+				-Dglvnd=true -Dshared-llvm=disabled -Dglx-direct=false ${mesa_src_dir} ${mesa_bld_dir} || return
 		ninja -v -C ${mesa_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${mesa_bld_dir} install || return
 		;;
