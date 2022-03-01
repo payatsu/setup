@@ -4555,6 +4555,7 @@ EOF
 		print_header_path expat.h > /dev/null || ${0} ${cmdopt} expat || return
 		print_header_path uuid.h uuid > /dev/null || ${0} ${cmdopt} util-linux || return
 		print_header_path ft2build.h freetype2 > /dev/null || ${0} ${cmdopt} freetype || return
+		which gperf > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gperf || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${fontconfig_bld_dir}/Makefile ] ||
