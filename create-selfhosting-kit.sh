@@ -4501,6 +4501,8 @@ EOF
 		;;
 	gobject-introspection)
 		[ -f ${DESTDIR}${prefix}/include/gobject-introspection-1.0/giversion.h -a "${force_install}" != yes ] && return
+		which bison > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} bison || return
+		which flex > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} flex || return
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
