@@ -215,6 +215,7 @@ EOF
 : ${texinfo_ver:=6.8}
 : ${coreutils_ver:=9.0}
 : ${file_ver:=5.41}
+: ${gperf_ver:=3.1}
 
 : ${go_ver:=1.16.11}
 : ${cmake_ver:=3.22.0}
@@ -403,7 +404,7 @@ fetch()
 			https://zlib.net/${zlib_name}.tar.xz || return;;
 	libunistring|binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|\
 	autoconf|automake|bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|\
-	emacs|nano|grep|diffutils|patch|global|findutils|poke|help2man|texinfo|coreutils)
+	emacs|nano|grep|diffutils|patch|global|findutils|poke|help2man|texinfo|coreutils|gperf)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
 				https://ftp.gnu.org/gnu/${1}/\${${_1}_name}.tar.${compress_format} \
@@ -3191,6 +3192,20 @@ EOF
 		make -C ${file_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		truncate_path_in_elf ${DESTDIR}${prefix}/bin/file ${DESTDIR} ${prefix}/lib || return
 		truncate_path_in_elf ${DESTDIR}${prefix}/lib/libmagic.so ${DESTDIR} ${prefix}/lib || return
+		;;
+	gperf)
+		[ -x ${DESTDIR}${prefix}/bin/gperf -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${gperf_bld_dir}/Makefile ] ||
+			(cd ${gperf_bld_dir}
+			${gperf_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+		make -C ${gperf_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${gperf_bld_dir} -j ${jobs} -k check || return
+		make -C ${gperf_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/gperf || return
 		;;
 	go)
 		[ -x ${DESTDIR}${prefix}/go/bin/go -a "${force_install}" != yes ] && return
