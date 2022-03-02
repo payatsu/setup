@@ -4688,7 +4688,7 @@ EOF
 		print_header_path png.h > /dev/null || ${0} ${cmdopt} libpng || return
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		print_header_path Xdamage.h X11/extensions > /dev/null || ${0} ${cmdopt} libXdamage || return
-		print_header_path Xcursor.h X11/extensions > /dev/null || ${0} ${cmdopt} libXcursor || return
+		print_header_path Xcursor.h X11/Xcursor > /dev/null || ${0} ${cmdopt} libXcursor || return
 		print_header_path Xinerama.h X11/extensions > /dev/null || ${0} ${cmdopt} libXinerama || return
 		print_binary_path update-mime-database > /dev/null || ${0} ${cmdopt} shared-mime-info || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
