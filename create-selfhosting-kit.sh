@@ -3290,9 +3290,11 @@ EOF
 		[ -f ${libxml2_bld_dir}/Makefile ] ||
 			(cd ${libxml2_bld_dir}
 			${libxml2_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-				--without-python --disable-silent-rules \
+				--with-python --with-python-install-dir=${prefix}/lib/python`print_target_python_version`/site-packages \
+				--disable-silent-rules \
 				CFLAGS="${CFLAGS} `I zlib.h`" \
 				LDFLAGS="${LDFLAGS} `L z`" \
+				ac_cv_path_PYTHON=python3 \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${libxml2_bld_dir} -j ${jobs} || return
