@@ -4960,6 +4960,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			-Dlibpython-dir=`print_library_dir libpython$(print_target_python_version).so`  \
 			${gst_python_src_dir} ${gst_python_bld_dir} || return
 		ninja -v -C ${gst_python_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${gst_python_bld_dir} install || return
