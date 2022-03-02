@@ -4963,6 +4963,7 @@ EOF
 	opencv)
 		[ -f ${DESTDIR}${prefix}/include/opencv`print_version opencv 1`/opencv2/opencv.hpp -a "${force_install}" != yes ] && return
 		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
+		which protoc > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} protobuf || return
 		print_header_path jpeglib.h > /dev/null || ${0} ${cmdopt} jpeg || return
 		print_header_path decode.h webp > /dev/null || ${0} ${cmdopt} libwebp || return
 		print_header_path png.h > /dev/null || ${0} ${cmdopt} libpng || return
@@ -5008,6 +5009,7 @@ EOF
 				-DENABLE_PRECOMPILED_HEADERS=OFF \
 				-DOPENCV_EXTRA_MODULES_PATH=${opencv_contrib_src_dir}/modules \
 				-DOPENCV_GENERATE_PKGCONFIG=ON \
+				-DCCACHE_PROGRAM=`which ccache` \
 				-DZLIB_INCLUDE_DIR=`print_header_dir zlib.h` \
 				-DZLIB_LIBRARY=`print_library_path libz.so` \
 				-DJPEG_INCLUDE_DIR=`print_header_dir jpeglib.h` \
@@ -5018,6 +5020,7 @@ EOF
 				-DPNG_LIBRARY=`print_library_path libpng.so`  \
 				-DTIFF_INCLUDE_DIR=`print_header_dir tiff.h` \
 				-DTIFF_LIBRARY=`print_library_path libtiff.so` \
+				-DProtobuf_PROTOC_EXECUTABLE=`which protoc` \
 				-DProtobuf_INCLUDE_DIR=`print_header_dir message.h google/protobuf` \
 				-DProtobuf_LIBRARY=`print_library_path libprotobuf.so` \
 				-DCMAKE_INCLUDE_PATH=`print_prefix gflags.h gflags` \
