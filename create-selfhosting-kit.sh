@@ -4832,7 +4832,8 @@ EOF
 			-Dc_link_args="${LDFLAGS} `Wl_rpath_link Xext X11 xcb Xau Xdmcp stdc++`" \
 			-Dwayland-backend=false -Dintrospection=false -Dmedia-gstreamer=disabled \
 			${gtk_src_dir} ${gtk_bld_dir} || return
-		ninja -v -C ${gtk_bld_dir} || return
+		XDG_DATA_DIRS=$(readlink -m $(dirname $(which update-mime-database))/../share) \
+			ninja -v -C ${gtk_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${gtk_bld_dir} install || return
 		;;
 	gstreamer)
