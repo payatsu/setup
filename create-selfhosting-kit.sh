@@ -4840,6 +4840,8 @@ EOF
 		print_header_path atk-bridge.h at-spi2-atk/2.0 > /dev/null || ${0} ${cmdopt} at-spi2-atk || return # for GTK3 only.
 		print_header_path xkbcommon.h xkbcommon > /dev/null || ${0} ${cmdopt} libxkbcommon || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		which wayland-scanner > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} wayland || return
+		which gdk-pixbuf-pixdata > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gdk-pixbuf || return
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
