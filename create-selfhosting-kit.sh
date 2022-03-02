@@ -1014,24 +1014,6 @@ print_swig_lib_dir()
 	return 1
 }
 
-make()
-{
-	echo make "$@"
-	command make "$@"
-}
-
-cmake()
-{
-	echo cmake "$@"
-	command cmake "$@"
-}
-
-meson()
-{
-	echo meson "$@"
-	command meson "$@"
-}
-
 build()
 {
 	case ${1} in
