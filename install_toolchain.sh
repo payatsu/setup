@@ -2143,6 +2143,7 @@ install_native_autoconf()
 
 install_native_autoconf_archive()
 {
+	[ -f ${prefix}/share/aclocal/ax_cxx_bool.m4 -a "${force_install}" != yes ] && return
 	fetch autoconf-archive || return
 	unpack autoconf-archive || return
 	[ -f ${autoconf_archive_bld_dir}/Makefile ] ||

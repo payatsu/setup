@@ -166,6 +166,7 @@ EOF
 : ${m4_ver:=1.4.19}
 : ${perl_ver:=5.34.0}
 : ${autoconf_ver:=2.71}
+: ${autoconf_archive_ver:=2022.02.11}
 : ${automake_ver:=1.16.5}
 : ${bison_ver:=3.8.1}
 : ${flex_ver:=2.6.4}
@@ -403,7 +404,7 @@ fetch()
 		wget -O ${zlib_src_dir}.tar.xz \
 			https://zlib.net/${zlib_name}.tar.xz || return;;
 	libunistring|binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|\
-	autoconf|automake|bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|\
+	autoconf|autoconf-archive|automake|bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|\
 	emacs|nano|grep|diffutils|patch|global|findutils|poke|help2man|texinfo|coreutils|gperf)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
@@ -954,6 +955,7 @@ print_packages()
 		s/util_linux/util-linux/
 		s/trace_cmd/trace-cmd/
 		s/i2c_tools/i2c-tools/
+		s/autoconf_archive/autoconf-archive/
 		s/pkg_config/pkg-config/
 		s/vimdoc_ja/vimdoc-ja/
 		s/u_boot/u-boot/
@@ -2331,6 +2333,18 @@ EOF
 		for f in autoheader autom4te autoreconf autoscan autoupdate ifnames; do
 			sed -i -e '1s%^.\+$%\#!/usr/bin/env perl%' ${DESTDIR}${prefix}/bin/${f} || return
 		done
+		;;
+	autoconf-archive)
+		[ -f ${DESTDIR}${prefix}/share/aclocal/ax_cxx_bool.m4 -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${autoconf_archive_bld_dir}/Makefile ] ||
+			(cd ${autoconf_archive_bld_dir}
+			${autoconf_archive_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+		make -C ${autoconf_archive_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${autoconf_archive_bld_dir} -j ${jobs} -k check || return
+		make -C ${autoconf_archive_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		;;
 	automake)
 		[ -x ${DESTDIR}${prefix}/bin/automake -a "${force_install}" != yes ] && return
