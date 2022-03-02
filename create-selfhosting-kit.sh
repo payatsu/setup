@@ -3785,6 +3785,7 @@ EOF
 		which make > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} make || return
 		fetch ${1} || return
 		unpack ${1} || return
+		mkdir -pv ${protobuf_src_dir}/third_party/googletest/m4 || return
 		[ -f ${protobuf_bld_dir}/Makefile ] ||
 			(cd ${protobuf_bld_dir}
 			autoreconf -fiv ${protobuf_src_dir} || return

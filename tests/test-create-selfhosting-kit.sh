@@ -11,7 +11,7 @@ pkgs="`${target_script} --help | sed -e '/\[PACKAGES\]/,$p;d' | sed -e 1d`"
 
 for p in ${pkgs}; do
 	case ${p} in
-	gcc|gdb|crash|tmux|emacs|go|qemu|texinfo|protobuf)
+	gcc|gdb|crash|tmux|emacs|go|qemu|texinfo)
 		continue;;
 	esac
 
