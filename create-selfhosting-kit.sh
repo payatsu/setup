@@ -5244,6 +5244,9 @@ exe_wrapper = ['`print_qemu`', '-L', '`print_sysroot`', '-E', 'LD_LIBRARY_PATH=`
 sys_root = '${DESTDIR}'
 pkg_config_libdir = [`print_pkg_config_libdir | sed -e "s/^/'/;s/$/'/;s/:/', '/g"`]
 
+[cmake]
+LLVM_DIR = '`print_library_dir LLVMConfig.cmake`'
+
 [host_machine]
 system     = 'linux'
 cpu_family = '`echo ${host} | cut -d - -f 1`'
