@@ -643,7 +643,7 @@ fetch()
 			http://xmlsoft.org/sources/\${${_1}_name}.tar.gz || return;;
 	libedit)
 		wget -O ${libedit_src_dir}.tar.gz \
-			https://thrysoee.dk/editline/${libedit_name}.tar.gz || return;;
+			https://www.thrysoee.dk/editline/${libedit_name}.tar.gz || return;;
 	swig)
 		wget --trust-server-names -O ${swig_src_dir}.tar.gz \
 			https://sourceforge.net/projects/swig/files/swig/${swig_name}/${swig_name}.tar.gz/download || return;;
