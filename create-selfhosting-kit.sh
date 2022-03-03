@@ -5194,7 +5194,7 @@ generate_libtool_wrapper()
 	! which libtoolize > /dev/null && return
 	! which automake > /dev/null && return
 
-	mkdir -pv ${1}/lt_pkgdatadir || return
+	mkdir -p ${1}/lt_pkgdatadir || return
 	ln -Tfs $(readlink -m $(dirname $(which_real libtoolize))/../share/libtool/build-aux) ${1}/lt_pkgdatadir/build-aux || return
 	ln -Tfs $(readlink -m $(dirname $(which_real libtoolize))/../share/libtool)           ${1}/lt_pkgdatadir/libltdl || return
 	ln -Tfs $(readlink -m $(dirname $(which_real automake))/../share/aclocal)             ${1}/lt_pkgdatadir/m4 || return
