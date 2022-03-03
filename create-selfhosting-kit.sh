@@ -3794,7 +3794,8 @@ EOF
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${OpenBLAS_src_dir} -B ${OpenBLAS_bld_dir} \
 			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
-			-DCMAKE_Fortran_COMPILER=${FC:-${host:+${host}-}gfortran} \
+			`which ${FC:-${host:+${host}-}gfortran} > /dev/null &&
+				echo -DCMAKE_Fortran_COMPILER=${FC:-${host:+${host}-}gfortran}` \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_CROSSCOMPILING=ON \
 			-DCMAKE_SYSTEM_NAME=Linux \
