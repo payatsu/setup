@@ -567,7 +567,7 @@ fetch()
 				https://github.com/linux-test-project/lcov/archive/v${lcov_ver}.tar.gz || return;;
 		strace)
 			wget -O ${strace_src_dir}.tar.xz \
-				https://strace.io/files/${strace_ver}/${strace_name}.tar.xz || return;;
+				https://github.com/strace/strace/releases/download/v${strace_ver}/${strace_name}.tar.xz || return;;
 		ltrace)
 			wget -O ${ltrace_src_dir}.tar.bz2 \
 				https://www.ltrace.org/ltrace_${ltrace_ver}.orig.tar.bz2 || return;;

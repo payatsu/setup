@@ -484,7 +484,7 @@ fetch()
 			https://github.com/crash-utility/crash/archive/${crash_ver}.tar.gz || return;;
 	strace)
 		wget -O ${strace_src_dir}.tar.xz \
-			https://strace.io/files/${strace_ver}/${strace_name}.tar.xz || return;;
+			https://github.com/strace/strace/releases/download/v${strace_ver}/${strace_name}.tar.xz || return;;
 	systemtap)
 		wget -O ${systemtap_src_dir}.tar.gz \
 			https://sourceware.org/systemtap/ftp/releases/${systemtap_name}.tar.gz || return;;
