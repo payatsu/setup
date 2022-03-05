@@ -1808,7 +1808,6 @@ EOF
 		print_header_path sqlite3.h > /dev/null || ${0} ${cmdopt} sqlite || return
 		fetch ${1} || return
 		unpack ${1} || return
-		generate_python_config_dummy `dirname ${0}` || return
 		[ -f ${systemtap_bld_dir}/Makefile ] ||
 			(cd ${systemtap_bld_dir}
 			${systemtap_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
@@ -5313,6 +5312,8 @@ while [ \$# -gt 0 ]; do
 	shift
 done
 " || return
+
+	ln -fs python-config ${1}/python$(print_target_python_version)-config || return
 }
 
 truncate_path_in_elf()
@@ -5516,6 +5517,8 @@ setup_pathconfig_for_build()
 	generate_libtool_wrapper ${dir} || return
 	generate_gettext_wrapper ${dir} || return
 	generate_texinfo_wrapper ${dir} || return
+
+	generate_python_config_dummy ${dir}|| return
 
 	unset dir d
 }
