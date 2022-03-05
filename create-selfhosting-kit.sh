@@ -5298,6 +5298,8 @@ done
 
 generate_python_config_dummy()
 {
+	! print_binary_path python > /dev/null && return
+
 	generate_command_wrapper ${1} python-config \
 		"\
 while [ \$# -gt 0 ]; do
