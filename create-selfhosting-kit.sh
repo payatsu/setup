@@ -1814,6 +1814,7 @@ EOF
 				--without-python2-probes --without-python3-probes \
 				CPPFLAGS="${CPPFLAGS} `I elfutils/libdw.h Python.h sqlite3.h`" \
 				LDFLAGS="${LDFLAGS} `L dw` `Wl_rpath_link python$(print_target_python_version)$(print_target_python_abi) curl idn2 ssl crypto bz2 lzma zstd z`" \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		sed -i -e '/^\<LDFLAGS\>/{
 			s/\( -lc\)\?$/ -lc/
