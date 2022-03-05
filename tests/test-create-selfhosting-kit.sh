@@ -20,7 +20,7 @@ for p in ${pkgs}; do
 		break
 	fi
 
-	find src -mindepth 2 -maxdepth 2 -type d -exec rm -fr {} +
+	find src -mindepth 2 -maxdepth 2 -name '*-git' -prune -o -type d -exec rm -fr {} +
 done
 
 {
