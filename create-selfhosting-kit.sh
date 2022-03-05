@@ -124,7 +124,7 @@ EOF
 
 : ${ncurses_ver:=6.3}
 : ${readline_ver:=8.1}
-: ${expat_ver:=2.4.1}
+: ${expat_ver:=2.4.7}
 : ${libffi_ver:=3.4.2}
 : ${sqlite_ver:=3340100}
 : ${Python_ver:=3.10.2}
@@ -429,8 +429,8 @@ fetch()
 		wget -O ${ccache_src_dir}.tar.xz \
 			https://github.com/ccache/ccache/releases/download/v${ccache_ver}/${ccache_name}.tar.xz || return;;
 	expat)
-		wget -O ${expat_src_dir}.tar.bz2 \
-			https://sourceforge.net/projects/expat/files/expat/${expat_ver}/${expat_name}.tar.bz2/download || return;;
+		wget -O ${expat_src_dir}.tar.xz \
+			https://github.com/libexpat/libexpat/releases/download/R_`echo ${expat_ver} | tr . _`/${expat_name}.tar.xz || return;;
 	libffi)
 		wget -O ${libffi_src_dir}.tar.gz \
 			https://github.com/libffi/libffi/releases/download/v${libffi_ver}/${libffi_name}.tar.gz || return;;

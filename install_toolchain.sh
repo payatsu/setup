@@ -145,7 +145,7 @@
 : ${nghttp2_ver:=1.47.0}
 : ${brotli_ver:=1.0.9}
 : ${curl_ver:=7.75.0}
-: ${expat_ver:=2.4.1}
+: ${expat_ver:=2.4.7}
 : ${asciidoc_ver:=8.6.9}
 : ${libxml2_ver:=2.9.11}
 : ${libxslt_ver:=1.1.34}
@@ -716,8 +716,8 @@ fetch()
 			wget -O ${curl_src_dir}.tar.xz \
 				https://curl.se/download/${curl_name}.tar.xz || return;;
 		expat)
-			wget -O ${expat_src_dir}.tar.bz2 \
-				https://sourceforge.net/projects/expat/files/expat/${expat_ver}/${expat_name}.tar.bz2/download || return;;
+			wget -O ${expat_src_dir}.tar.xz \
+				https://github.com/libexpat/libexpat/releases/download/R_`echo ${expat_ver} | tr . _`/${expat_name}.tar.xz || return;;
 		asciidoc)
 			wget -O ${asciidoc_src_dir}.tar.gz \
 				https://sourceforge.net/projects/asciidoc/files/asciidoc/${asciidoc_ver}/${asciidoc_name}.tar.gz/download || return;;
