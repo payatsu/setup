@@ -4650,11 +4650,13 @@ EOF
 		;;
 	itstool)
 		[ -x ${DESTDIR}${prefix}/bin/itstool -a "${force_install}" != yes ] && return
+		which xml2-config > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} libxml2 || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${itstool_bld_dir}/Makefile ] ||
 			(cd ${itstool_bld_dir}
-			${itstool_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+			${itstool_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				PYTHON=python3) || return
 		make -C ${itstool_bld_dir} -j ${jobs} || return
 		make -C ${itstool_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
