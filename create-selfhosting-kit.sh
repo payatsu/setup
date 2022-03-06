@@ -3282,6 +3282,7 @@ EOF
 		[ -d ${DESTDIR}${prefix}/include/libxml2 -a "${force_install}" != yes ] && return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
+		print_binary_path python3 > /dev/null || ${0} ${cmdopt} Python || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${libxml2_bld_dir}/Makefile ] ||
@@ -5301,7 +5302,7 @@ done
 
 generate_python_config_dummy()
 {
-	! print_binary_path python > /dev/null && return
+	! print_binary_path python3 > /dev/null && return
 
 	generate_command_wrapper ${1} python-config \
 		"\
