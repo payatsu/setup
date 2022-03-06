@@ -2838,6 +2838,7 @@ EOF
 	vim)
 		[ -x ${DESTDIR}${prefix}/bin/vim -a "${force_install}" != yes ] && return
 		which msgfmt > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gettext || return
+		which patch > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} patch || return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
 		fetch ${1} || return
@@ -3424,6 +3425,7 @@ EOF
 	clang)
 		[ -x ${DESTDIR}${prefix}/bin/clang -a "${force_install}" != yes ] && return
 		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
+		which patch > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} patch || return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		print_header_path llvm-config.h llvm/Config > /dev/null || ${0} ${cmdopt} llvm || return
