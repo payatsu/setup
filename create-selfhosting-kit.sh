@@ -4656,9 +4656,10 @@ EOF
 		[ -f ${itstool_bld_dir}/Makefile ] ||
 			(cd ${itstool_bld_dir}
 			${itstool_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-				PYTHON=python3) || return
+				PYTHON=`which python3`) || return
 		make -C ${itstool_bld_dir} -j ${jobs} || return
 		make -C ${itstool_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		sed -i -e '1s%^.\+$%\#!/usr/bin/env python3%' ${DESTDIR}${prefix}/bin/itstool || return
 		;;
 	shared-mime-info)
 		[ -x ${DESTDIR}${prefix}/bin/update-mime-database -a "${force_install}" != yes ] && return
