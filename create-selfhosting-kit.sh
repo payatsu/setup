@@ -5661,7 +5661,7 @@ main()
 	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} --target ${build} \
 		pkg-config perl texinfo binutils gcc \
 		m4 autoconf autoconf-archive automake libtool gettext \
-		cmake ninja meson ccache || return
+		cmake ninja Python meson ccache || return
 	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
 
 	! which ccache > /dev/null || ccache -M 8G || return
