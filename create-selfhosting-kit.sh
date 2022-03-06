@@ -4368,7 +4368,11 @@ EOF
 		PATH=${wayland_bld_dir}:${PATH} \
 			meson --prefix ${prefix} ${strip:+--${strip}} --default-library both \
 				`[ ${build} = ${host} ] && echo --native-file ${cross_file} || echo --cross-file ${cross_file}` \
-				--build.pkg-config-path `readlink -m ${build}${prefix}/lib/${build}/pkgconfig` \
+				--build.pkg-config-path `{
+					echo ${build}${prefix}/lib/${build}/pkgconfig
+					echo ${build}${prefix}/lib64/pkgconfig
+					echo ${build}${prefix}/lib/pkgconfig
+				} | xargs readlink -m | tr '\n' :` \
 				-Dc_args="${CFLAGS} `I ffi.h` `I libxml2/libxml/parser.h`/libxml2" \
 				-Dc_link_args="${LDFLAGS} `L ffi expat xml2` `Wl_rpath_link lzma z`" \
 				-Ddocumentation=false ${wayland_src_dir} ${wayland_bld_dir} || return
