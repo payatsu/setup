@@ -446,7 +446,7 @@ fetch()
 		wget -O ${Python_src_base}/Python-${Python_ver}.tar.xz \
 			https://www.python.org/ftp/python/${Python_ver}/${Python_name}.tar.xz || return;;
 	boost)
-		wget --trust-server-names -O ${boost_src_dir}.tar.bz2 \
+		wget -O ${boost_src_dir}.tar.bz2 \
 			https://boostorg.jfrog.io/artifactory/main/release/`echo ${boost_ver} | tr _ .`/source/${boost_name}.tar.bz2 || return;;
 	source-highlight)
 		wget -O ${source_highlight_src_dir}.tar.gz \
@@ -600,7 +600,7 @@ fetch()
 		wget -O ${tmux_src_dir}.tar.gz \
 			https://github.com/tmux/tmux/releases/download/${tmux_ver}/${tmux_name}.tar.gz || return;;
 	zsh)
-		wget --trust-server-names -O ${zsh_src_dir}.tar.xz \
+		wget -O ${zsh_src_dir}.tar.xz \
 			https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return;;
 	tcsh)
 		wget -O ${tcsh_src_dir}.tar.gz \
@@ -645,13 +645,13 @@ fetch()
 		wget -O ${libedit_src_dir}.tar.gz \
 			https://www.thrysoee.dk/editline/${libedit_name}.tar.gz || return;;
 	swig)
-		wget --trust-server-names -O ${swig_src_dir}.tar.gz \
+		wget -O ${swig_src_dir}.tar.gz \
 			https://sourceforge.net/projects/swig/files/swig/${swig_name}/${swig_name}.tar.gz/download || return;;
 	llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://github.com/llvm/llvm-project/releases/download/llvmorg-\${${_1}_ver}/\${${_1}_name}.tar.xz || return;;
 	libpng)
-		wget --trust-server-names -O ${libpng_src_dir}.tar.xz \
+		wget -O ${libpng_src_dir}.tar.xz \
 			https://download.sourceforge.net/libpng/${libpng_name}.tar.xz || return;;
 	tiff)
 		wget -O ${tiff_src_dir}.tar.gz \
@@ -660,7 +660,7 @@ fetch()
 		wget -O ${jpeg_src_dir}.tar.gz \
 			https://www.ijg.org/files/${jpeg_name}.tar.gz || return;;
 	giflib)
-		wget --trust-server-names -O ${giflib_src_dir}.tar.gz \
+		wget -O ${giflib_src_dir}.tar.gz \
 			https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.gz/download || return;;
 	libwebp)
 		wget -O ${libwebp_src_dir}.tar.gz \

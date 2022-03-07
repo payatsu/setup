@@ -538,7 +538,7 @@ fetch()
 			wget -O ${newlib_src_dir}.tar.gz \
 				ftp://sourceware.org/pub/newlib/${newlib_name}.tar.gz || return;;
 		mingw-w64)
-			wget --trust-server-names -O ${mingw_w64_src_dir}.tar.bz2 \
+			wget -O ${mingw_w64_src_dir}.tar.bz2 \
 				https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v${mingw_w64_ver}.tar.bz2/download || return;;
 		isl)
 			wget -O ${isl_src_dir}.tar.xz \
@@ -581,7 +581,7 @@ fetch()
 			wget -O ${pigz_src_dir}.tar.gz \
 				https://zlib.net/pigz/${pigz_name}.tar.gz || return;;
 		libpng)
-			wget --trust-server-names -O ${libpng_src_dir}.tar.xz \
+			wget -O ${libpng_src_dir}.tar.xz \
 				https://download.sourceforge.net/libpng/${libpng_name}.tar.xz || return;;
 		tiff)
 			wget -O ${tiff_src_dir}.tar.gz \
@@ -590,7 +590,7 @@ fetch()
 			wget -O ${jpeg_src_dir}.tar.gz \
 				https://www.ijg.org/files/${jpeg_name}.tar.gz || return;;
 		giflib)
-			wget --trust-server-names -O ${giflib_src_dir}.tar.gz \
+			wget -O ${giflib_src_dir}.tar.gz \
 				https://sourceforge.net/projects/giflib/files/${giflib_name}.tar.gz/download || return;;
 		libwebp)
 			wget -O ${libwebp_src_dir}.tar.gz \
@@ -644,7 +644,7 @@ fetch()
 			wget -O ${fontconfig_src_dir}.tar.bz2 \
 				https://www.freedesktop.org/software/fontconfig/release/${fontconfig_name}.tar.bz2 || return;;
 		plantuml)
-			wget --trust-server-names -O ${plantuml_src_dir}.jar \
+			wget -O ${plantuml_src_dir}.jar \
 				https://sourceforge.net/projects/plantuml/files/${plantuml_name}.jar/download || return
 			[ -f ${plantuml_src_dir}.pdf ] ||
 				wget -O ${plantuml_src_dir}.pdf \
@@ -678,10 +678,10 @@ fetch()
 			wget -O ${tmux_src_dir}.tar.gz \
 				https://github.com/tmux/tmux/releases/download/${tmux_ver}/${tmux_name}.tar.gz || return;;
 		expect)
-			wget --trust-server-names -O ${expect_src_dir}.tar.gz \
+			wget -O ${expect_src_dir}.tar.gz \
 				https://sourceforge.net/projects/expect/files/Expect/${expect_ver}/${expect_name}.tar.gz/download || return;;
 		zsh)
-			wget --trust-server-names -O ${zsh_src_dir}.tar.xz \
+			wget -O ${zsh_src_dir}.tar.xz \
 				https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return;;
 		tcsh)
 			wget -O ${tcsh_src_dir}.tar.gz \
@@ -776,7 +776,7 @@ fetch()
 			wget -O ${libedit_src_dir}.tar.gz \
 				https://www.thrysoee.dk/editline/${libedit_name}.tar.gz || return;;
 		swig)
-			wget --trust-server-names -O ${swig_src_dir}.tar.gz \
+			wget -O ${swig_src_dir}.tar.gz \
 				https://sourceforge.net/projects/swig/files/swig/${swig_name}/${swig_name}.tar.gz/download || return;;
 		llvm|compiler-rt|libunwind|libcxxabi|libcxx|clang|clang-tools-extra|lld|lldb)
 			eval [ "\${${_p}_ver}" = git ] && {
@@ -798,7 +798,7 @@ fetch()
 			git clone --depth 1 --recursive \
 				https://github.com/MaskRay/ccls ${ccls_src_dir} || return;;
 		boost)
-			wget --trust-server-names -O ${boost_src_dir}.tar.bz2 \
+			wget -O ${boost_src_dir}.tar.bz2 \
 				https://boostorg.jfrog.io/artifactory/main/release/`echo ${boost_ver} | tr _ .`/source/${boost_name}.tar.bz2 || return;;
 		Python2|Python)
 			eval wget -O ${Python_src_base}/Python-\${${_p}_ver}.tar.xz \
