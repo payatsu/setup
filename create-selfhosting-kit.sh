@@ -302,6 +302,8 @@ EOF
 : ${harfbuzz_ver:=3.4.0}
 : ${pango_ver:=1.49.3}
 : ${itstool_ver:=2.0.7}
+: ${libxslt_ver:=1.1.34}
+: ${xmlto_ver:=0.0.28}
 : ${shared_mime_info_ver:=2.1}
 : ${gdk_pixbuf_ver:=2.42.6}
 : ${atk_ver:=2.36.0}
@@ -743,6 +745,9 @@ fetch()
 	itstool)
 		wget -O ${itstool_src_dir}.tar.bz2 \
 			http://files.itstool.org/itstool/${itstool_name}.tar.bz2 || return;;
+	xmlto)
+		wget -O ${xmlto_src_dir}.tar.bz2 \
+			https://releases.pagure.org/xmlto/${xmlto_name}.tar.bz2 || return;;
 	shared-mime-info)
 		wget -O ${shared_mime_info_src_dir}.tar.bz2 \
 			https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/${shared_mime_info_ver}/${shared_mime_info_name}.tar.bz2 || return;;
@@ -4660,6 +4665,34 @@ EOF
 		make -C ${itstool_bld_dir} -j ${jobs} || return
 		make -C ${itstool_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		sed -i -e '1s%^.\+$%\#!/usr/bin/env python3%' ${DESTDIR}${prefix}/bin/itstool || return
+		;;
+	libxslt)
+		[ -d ${DESTDIR}${prefix}/include/libxslt -a "${force_install}" != yes ] && return
+		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libxslt_bld_dir}/Makefile ] ||
+			(cd ${libxslt_bld_dir}
+			${libxslt_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+			) || return
+		make -C ${libxslt_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${libxslt_bld_dir} -j ${jobs} -k check || return
+		make -C ${libxslt_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	xmlto)
+		[ -x ${DESTDIR}${prefix}/bin/xmlto -a "${force_install}" != yes ] && return
+		print_header_path xslt.h libxslt > /dev/null || ${0} ${cmdopt} libxslt || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${xmlto_bld_dir}/Makefile ] ||
+			(cd ${xmlto_bld_dir}
+			${xmlto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
+		make -C ${xmlto_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${xmlto_bld_dir} -j ${jobs} -k check || return
+		make -C ${xmlto_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		;;
 	shared-mime-info)
 		[ -x ${DESTDIR}${prefix}/bin/update-mime-database -a "${force_install}" != yes ] && return
