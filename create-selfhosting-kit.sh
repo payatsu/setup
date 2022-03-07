@@ -1019,6 +1019,21 @@ print_swig_lib_dir()
 	return 1
 }
 
+wget()
+{
+	! which wget > /dev/null || wget "$@" || return
+
+	while getopts O: arg; do
+		case ${arg} in
+		O) fname=${OPTARG};;
+		esac
+	done
+	shift `expr ${OPTIND} - 1`
+
+	! which curl > /dev/null || curl ${fname:+-o ${fname}} "$@" || return
+	unset fname
+}
+
 build()
 {
 	case ${1} in
