@@ -60,7 +60,7 @@
 : ${libpfm_ver:=4.11.0}
 : ${libbpf_ver:=0.7.0}
 : ${bcc_ver:=0.24.0}
-: ${cereal_ver:=1.3.1}
+: ${cereal_ver:=1.3.2}
 : ${bpftrace_ver:=0.14.1}
 : ${libtraceevent_ver:=1.3.3}
 : ${libtracefs_ver:=1.2.3}
