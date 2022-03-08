@@ -4705,6 +4705,7 @@ EOF
 		print_header_path xslt.h libxslt > /dev/null || ${0} ${cmdopt} libxslt || return
 		fetch ${1} || return
 		unpack ${1} || return
+		sed -i -e 's/ --nonet//' ${xmlto_src_dir}/xmlto.in || return
 		[ -f ${xmlto_bld_dir}/Makefile ] ||
 			(cd ${xmlto_bld_dir}
 			${xmlto_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host}) || return
@@ -4719,12 +4720,17 @@ EOF
 		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
 		which itstool > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} itstool || return
 		which meson > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} meson || return
+		which xmlto > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} xmlto || return
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		[ ${build} = ${host} ] || which update-mime-database > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
-		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
-			${shared_mime_info_src_dir} ${shared_mime_info_bld_dir} || return
+		generate_command_wrapper ${shared_mime_info_bld_dir} xmlto "
+			export FORMAT_DIR=$(readlink -m $(dirname $(which_real xmlto))/../share/xmlto/format)
+			exec `which_real xmlto` \"\$@\"" || return
+		PATH=${shared_mime_info_bld_dir}:${PATH} \
+			meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+				${shared_mime_info_src_dir} ${shared_mime_info_bld_dir} || return
 		ninja -v -C ${shared_mime_info_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${shared_mime_info_bld_dir} install || return
 		update-mime-database ${DESTDIR}${prefix}/share/mime || return
