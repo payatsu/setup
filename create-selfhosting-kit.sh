@@ -4693,6 +4693,7 @@ EOF
 		[ -f ${libxslt_bld_dir}/Makefile ] ||
 			(cd ${libxslt_bld_dir}
 			${libxslt_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				--with-python=`which python3` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 			) || return
 		make -C ${libxslt_bld_dir} -j ${jobs} || return
