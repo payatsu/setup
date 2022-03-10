@@ -4750,6 +4750,7 @@ EOF
 		fetch ${1} || return
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			-Dman=false \
 			${gdk_pixbuf_src_dir} ${gdk_pixbuf_bld_dir} || return
 		ninja -v -C ${gdk_pixbuf_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${gdk_pixbuf_bld_dir} install || return
