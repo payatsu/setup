@@ -4780,6 +4780,7 @@ EOF
 			autoreconf -fiv ${dbus_src_dir} || return
 			remove_rpath_option ${1} || return
 			${dbus_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				--disable-xml-docs \
 				--x-includes=`print_header_dir Xlib.h X11` --x-libraries=`print_library_dir libX11.so` \
 				LDFLAGS="${LDFLAGS} `Wl_rpath_link xcb uuid`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
