@@ -4727,12 +4727,8 @@ EOF
 		[ ${build} = ${host} ] || which update-mime-database > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
-		generate_command_wrapper ${shared_mime_info_bld_dir} xmlto "
-			export FORMAT_DIR=$(readlink -m $(dirname $(which_real xmlto))/../share/xmlto/format)
-			exec `which_real xmlto` \"\$@\"" || return
-		PATH=${shared_mime_info_bld_dir}:${PATH} \
-			meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
-				${shared_mime_info_src_dir} ${shared_mime_info_bld_dir} || return
+		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
+			${shared_mime_info_src_dir} ${shared_mime_info_bld_dir} || return
 		ninja -v -C ${shared_mime_info_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${shared_mime_info_bld_dir} install || return
 		update-mime-database ${DESTDIR}${prefix}/share/mime || return
@@ -5294,6 +5290,15 @@ export PERLLIB=\${dir}:\${dir}/lib/libintl-perl/lib:\${dir}/lib/Unicode-EastAsia
 exec `which_real makeinfo` \"\$@\"" || return
 }
 
+generate_xmlto_wrapper()
+{
+	! which xmlto > /dev/null && return
+
+	generate_command_wrapper ${1} xmlto "
+export FORMAT_DIR=$(readlink -m $(dirname $(which_real xmlto))/../share/xmlto/format)
+exec `which_real xmlto` \"\$@\"" || return
+}
+
 generate_meson_cross_file()
 {
 	cross_file=${1}
@@ -5591,6 +5596,7 @@ setup_pathconfig_for_build()
 	generate_libtool_wrapper ${dir} || return
 	generate_gettext_wrapper ${dir} || return
 	generate_texinfo_wrapper ${dir} || return
+	generate_xmlto_wrapper ${dir} || return
 
 	generate_python_config_dummy ${dir}|| return
 
