@@ -1030,12 +1030,14 @@ wget()
 
 	for w in \
 			"`which wget > /dev/null && echo wget ${fname:+-O ${fname}}`" \
-			"`which curl > /dev/null && echo curl ${fname:+-o ${fname}} -L`" \
+			"`which curl > /dev/null && echo curl ${fname:+-o ${fname}} -fL`" \
 		; do
 		[ -z "${w}" ] && continue
 		command ${w} "$@" && break
 	done
+	exit_status=$?
 	unset fname w
+	return ${exit_status}
 }
 
 build()
