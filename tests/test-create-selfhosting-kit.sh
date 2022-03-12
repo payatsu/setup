@@ -9,13 +9,15 @@ pkgs="`${target_script} --help | sed -e '/\[PACKAGES\]/,$p;d' | sed -e 1d`"
 	date
 } >> test-result.log
 
+${target_script} --strip --cleanup --prepare $@ || exit
+
 for p in ${pkgs}; do
 	case ${p} in
 	gcc|gdb|crash|linux|qemu|e2fsprogs|tmux|emacs|texinfo|go)
 		continue;;
 	esac
 
-	if ! ${target_script} --strip --cleanup --prepare $@ ${p}; then
+	if ! ${target_script} --strip --cleanup $@ ${p}; then
 		echo ERROR: build of \'${p}\' failed. >> test-result.log
 		break
 	fi
