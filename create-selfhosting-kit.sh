@@ -183,7 +183,7 @@ EOF
 : ${rsync_ver:=3.2.3}
 : ${dtc_ver:=1.6.0}
 : ${kmod_ver:=28}
-: ${u_boot_ver:=2021.01}
+: ${u_boot_ver:=2022.01}
 : ${pixman_ver:=0.40.0}
 : ${qemu_ver:=6.1.0}
 : ${tar_ver:=1.34}
@@ -582,7 +582,7 @@ fetch()
 			https://www.kernel.org/pub/linux/utils/kernel/kmod/${kmod_name}.tar.xz || return;;
 	u-boot)
 		wget -O ${u_boot_src_dir}.tar.bz2 \
-			ftp://ftp.denx.de/pub/u-boot/${u_boot_name}.tar.bz2 || return;;
+			https://ftp.denx.de/pub/u-boot/${u_boot_name}.tar.bz2 || return;;
 	pixman)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://www.cairographics.org/releases/\${${_1:-pixman}_name}.tar.gz || return;;

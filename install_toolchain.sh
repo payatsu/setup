@@ -67,7 +67,7 @@
 : ${trace_cmd_ver:=v2.9.4}
 : ${kmod_ver:=28}
 : ${dtc_ver:=1.6.0}
-: ${u_boot_ver:=2021.01}
+: ${u_boot_ver:=2022.01}
 : ${qemu_ver:=6.1.0}
 : ${gperf_ver:=3.1}
 : ${glibc_ver:=2.35}
@@ -530,7 +530,7 @@ fetch()
 				https://www.kernel.org/pub/software/utils/dtc/${dtc_name}.tar.xz || return;;
 		u-boot)
 			wget -O ${u_boot_src_dir}.tar.bz2 \
-				ftp://ftp.denx.de/pub/u-boot/${u_boot_name}.tar.bz2 || return;;
+				https://ftp.denx.de/pub/u-boot/${u_boot_name}.tar.bz2 || return;;
 		qemu)
 			wget -O ${qemu_src_dir}.tar.xz \
 				https://download.qemu.org/${qemu_name}.tar.xz || return;;
