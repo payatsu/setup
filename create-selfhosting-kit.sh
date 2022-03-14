@@ -4517,6 +4517,7 @@ EOF
 		PATH=${mesa_bld_dir}:${PATH} \
 			meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 				--build.pkg-config-path `readlink -m ${build}${prefix}/lib/${build}/pkgconfig` \
+				-Dcpp_link_args="${LDFLAGS} `L zstd`" \
 				-Dglvnd=true -Dshared-llvm=disabled -Dglx-direct=false ${mesa_src_dir} ${mesa_bld_dir} || return
 		ninja -v -C ${mesa_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${mesa_bld_dir} install || return
