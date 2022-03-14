@@ -1108,7 +1108,7 @@ build()
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${zstd_bld_dir}/Makefile ] || cp -Tvr ${zstd_src_dir} ${zstd_bld_dir} || return
-		make -C ${zstd_bld_dir} -j ${jobs} V=1 CC="${CC:-${host:+${host}-}gcc}" || return
+		make -C ${zstd_bld_dir} -j ${jobs} V=1 prefix=${prefix} CC="${CC:-${host:+${host}-}gcc}" || return
 		make -C ${zstd_bld_dir} -j ${jobs} V=1 prefix=${DESTDIR}${prefix} install || return
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/zstd || return
