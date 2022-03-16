@@ -21,11 +21,13 @@ runtest()
 
 		if ! ${target_script} --strip --cleanup $@ ${p}; then
 			echo ERROR: build of \'${p}\' failed. >> test-result.log
-			break
+			return 1
 		fi
 
 		find src -mindepth 2 -maxdepth 2 -name '*-git' -prune -o -type d -exec rm -fr {} +
 	done
+
+	${target_script} --strip --cleanup --with-libc $@ || return
 }
 
 runtest $@ || exit
