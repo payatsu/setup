@@ -5737,8 +5737,8 @@ main()
 	DESTDIR=`readlink -m ${host}`
 
 	[ -z "${prepare}" ] || ${0} ${cmdopt} --host ${build} --target ${build} \
-		pkg-config perl texinfo gawk binutils gcc \
-		m4 autoconf autoconf-archive automake libtool gettext \
+		pkg-config perl texinfo m4 gawk binutils gcc \
+		autoconf autoconf-archive automake libtool gettext \
 		cmake ninja Python meson ccache || return
 	[ -n "${fetch_only}" ] || setup_pathconfig_for_build || return
 
