@@ -2254,6 +2254,7 @@ EOF
 				CONFDIR=${prefix}/etc/iproute2 \
 				NETNS_RUN_DIR=${prefix}/var/run/netns \
 				NETNS_ETC_DIR=${prefix}/etc/netns \
+				KERNEL_INCLUDE=`print_sysroot`/usr/include \
 				HOSTCC="${CC:-${host:+${host}-}gcc}" || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${iproute2_bld_dir} -j ${jobs} -k check || return
