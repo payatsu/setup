@@ -291,7 +291,7 @@
 : ${pixman_ver:=0.40.0}
 : ${cairo_ver:=1.16.0}
 : ${fribidi_ver:=1.0.11}
-: ${harfbuzz_ver:=4.0.0}
+: ${harfbuzz_ver:=4.0.1}
 : ${pango_ver:=1.49.3}
 : ${pygobject_ver:=3.42.0}
 : ${itstool_ver:=2.0.7}
