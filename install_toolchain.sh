@@ -286,7 +286,7 @@
 : ${libglvnd_ver:=1.4.0}
 : ${mesa_ver:=21.3.1}
 : ${glu_ver:=9.0.2}
-: ${libepoxy_ver:=1.5.9}
+: ${libepoxy_ver:=1.5.10}
 : ${gobject_introspection_ver:=1.70.0}
 : ${pixman_ver:=0.40.0}
 : ${cairo_ver:=1.16.0}
