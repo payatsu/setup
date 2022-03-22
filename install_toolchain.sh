@@ -303,7 +303,7 @@
 : ${libXtst_ver:=1.2.3}
 : ${at_spi2_core_ver:=AT_SPI2_CORE_2_42_0}
 : ${at_spi2_atk_ver:=AT_SPI2_ATK_2_38_0}
-: ${graphene_ver:=1.10.6}
+: ${graphene_ver:=1.10.8}
 : ${gtk_ver:=3.24.31}
 : ${webkitgtk_ver:=2.14.0}
 : ${qt_ver:=5.12.12}
