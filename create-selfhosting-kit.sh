@@ -221,7 +221,7 @@ EOF
 : ${go_ver:=1.16.11}
 : ${cmake_ver:=3.22.0}
 : ${ninja_ver:=1.10.2}
-: ${meson_ver:=0.59.4}
+: ${meson_ver:=0.58.1}
 : ${libxml2_ver:=2.9.11}
 : ${llvm_ver:=12.0.1}
 : ${compiler_rt_ver:=${llvm_ver}}
@@ -316,7 +316,7 @@ EOF
 : ${libxkbcommon_ver:=1.4.0}
 : ${gtk_ver:=3.24.31}
 
-: ${gstreamer_ver:=1.20.1}
+: ${gstreamer_ver:=1.18.6}
 : ${gst_plugins_base_ver:=${gstreamer_ver}}
 : ${gst_plugins_good_ver:=${gstreamer_ver}}
 : ${gst_editing_services_ver:=${gstreamer_ver}}

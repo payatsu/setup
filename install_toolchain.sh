@@ -161,7 +161,7 @@
 : ${utf8proc_ver:=2.7.0}
 : ${subversion_ver:=1.14.1}
 : ${ninja_ver:=1.10.2}
-: ${meson_ver:=0.59.4}
+: ${meson_ver:=0.58.1}
 : ${cmake_ver:=3.22.0}
 : ${bazel_ver:=2.2.0}
 : ${Bear_ver:=2.4.3}
@@ -219,7 +219,7 @@
 : ${opencv_contrib_ver:=${opencv_ver}}
 : ${v4l_utils_ver:=1.22.1}
 : ${yavta_ver:=git}
-: ${gstreamer_ver:=1.20.1}
+: ${gstreamer_ver:=1.18.6}
 : ${gst_plugins_base_ver:=${gstreamer_ver}}
 : ${gst_plugins_good_ver:=${gstreamer_ver}}
 : ${gst_editing_services_ver:=${gstreamer_ver}}
