@@ -170,7 +170,7 @@ EOF
 : ${automake_ver:=1.16.5}
 : ${bison_ver:=3.8.1}
 : ${flex_ver:=2.6.4}
-: ${libtool_ver:=2.4.6}
+: ${libtool_ver:=2.4.7}
 : ${pkg_config_ver:=0.29.2}
 : ${sed_ver:=4.8}
 : ${gawk_ver:=5.1.0}

@@ -40,7 +40,7 @@
 : ${autoconf_archive_ver:=2022.02.11}
 : ${automake_ver:=1.16.5}
 : ${autogen_ver:=5.18.16}
-: ${libtool_ver:=2.4.6}
+: ${libtool_ver:=2.4.7}
 : ${sed_ver:=4.8}
 : ${gawk_ver:=5.1.0}
 : ${gnulib_ver:=git}
