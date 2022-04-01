@@ -235,11 +235,11 @@
 : ${tcpdump_ver:=4.99.1}
 : ${nmap_ver:=7.90}
 : ${npth_ver:=1.6}
-: ${libgpg_error_ver:=1.42}
-: ${libgcrypt_ver:=1.9.3}
+: ${libgpg_error_ver:=1.44}
+: ${libgcrypt_ver:=1.10.1}
 : ${libksba_ver:=1.6.0}
 : ${libassuan_ver:=2.5.5}
-: ${gnupg_ver:=2.2.29}
+: ${gnupg_ver:=2.3.4}
 : ${protobuf_ver:=3.19.4}
 : ${grpc_ver:=1.44.0}
 : ${libbacktrace_ver:=git}
