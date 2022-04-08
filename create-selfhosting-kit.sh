@@ -758,8 +758,8 @@ fetch()
 		eval wget -O \${${_1}_src_dir}.tar.bz2 \
 			https://gitlab.gnome.org/GNOME/${1}/-/archive/\${${_1}_ver}/\${${_1}_name}.tar.bz2 || return;;
 	graphene)
-		wget -O ${graphene_src_dir}.tar.xz \
-			https://github.com/ebassi/graphene/releases/download/${graphene_ver}/${graphene_name}.tar.xz || return;;
+		wget -O ${graphene_src_dir}.tar.gz \
+			https://github.com/ebassi/graphene/archive/refs/tags/${graphene_ver}.tar.gz || return;;
 	libxkbcommon)
 		wget -O ${libxkbcommon_src_dir}.tar.xz \
 			https://xkbcommon.org/download/${libxkbcommon_name}.tar.xz || return;;

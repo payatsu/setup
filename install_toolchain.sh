@@ -985,8 +985,8 @@ fetch()
 			wget -O ${shared_mime_info_src_dir}.tar.bz2 \
 				https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/${shared_mime_info_ver}/${shared_mime_info_name}.tar.bz2 || return;;
 		graphene)
-			wget -O ${graphene_src_dir}.tar.xz \
-				https://github.com/ebassi/graphene/releases/download/${graphene_ver}/${graphene_name}.tar.xz || return;;
+			wget -O ${graphene_src_dir}.tar.gz \
+				https://github.com/ebassi/graphene/archive/refs/tags/${graphene_ver}.tar.gz || return;;
 		glib|gobject-introspection|pango|gdk-pixbuf|atk|pygobject|gtk)
 			plus=`[ ${p} = gtk ] && eval echo \$\{${_p}_ver} | grep -qe '^3\.' && echo +`
 			eval wget -O \${${_p}_src_dir}.tar.xz \
