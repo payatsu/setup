@@ -6201,7 +6201,7 @@ install_native_go()
 	rm -v ${DESTDIR}${prefix}/go/bin/go || return
 	cp -Tfvr ${go_src_dir} ${DESTDIR}${prefix}/go || return
 	update_path || return
-	GOPATH=${DESTDIR}${prefix}/.go go get golang.org/x/tools/cmd/... || return
+	GOPATH=${DESTDIR}${prefix}/.go go install golang.org/x/tools/cmd/...@latest || return
 }
 
 install_native_perl()
