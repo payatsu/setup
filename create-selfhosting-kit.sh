@@ -725,8 +725,8 @@ fetch()
 		wget -O ${glu_src_dir}.tar.xz \
 			https://archive.mesa3d.org//glu/${glu_name}.tar.xz || return;;
 	libepoxy)
-		wget -O ${libepoxy_src_dir}.tar.xz \
-			https://github.com/anholt/libepoxy/releases/download/${libepoxy_ver}/${libepoxy_name}.tar.xz || return;;
+		wget -O ${libepoxy_src_dir}.tar.gz \
+			https://github.com/anholt/libepoxy/archive/refs/tags/${libepoxy_ver}.tar.gz || return;;
 	freetype)
 		wget -O ${freetype_src_dir}.tar.xz \
 			https://download.savannah.gnu.org/releases/freetype/${freetype_name}.tar.xz || return;;
