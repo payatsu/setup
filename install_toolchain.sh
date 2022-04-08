@@ -13,7 +13,7 @@
 : ${cpio_ver:=2.13}
 : ${xz_ver:=5.2.5}
 : ${bzip2_ver:=1.0.8}
-: ${gzip_ver:=1.11}
+: ${gzip_ver:=1.12}
 : ${zip_ver:=3.0}
 : ${unzip_ver:=6.0}
 : ${lzip_ver:=1.22}
