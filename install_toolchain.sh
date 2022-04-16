@@ -5603,8 +5603,7 @@ install_native_compiler_rt()
 		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
 		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DCMAKE_INSTALL_RPATH=';' -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ \
-		-DCMAKE_CXX_COMPILER_ID=Clang || return
+		-DCMAKE_INSTALL_RPATH=';' -DSANITIZER_CXX_ABI=libc++ || return
 	cmake --build ${compiler_rt_bld_dir} -v -j ${jobs} || return
 	cmake --install ${compiler_rt_bld_dir} -v ${strip:+--${strip}} || return
 	mkdir -pv ${DESTDIR}${prefix}/lib/clang/`llvm-config --version`/lib || return
@@ -5657,6 +5656,7 @@ install_native_libcxxabi()
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
 		-DCMAKE_INSTALL_RPATH=';' \
 		-DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+		-DLIBCXXABI_LIBCXX_INCLUDES=${libcxx_src_dir}/include \
 		-DLLVM_PATH=${llvm_src_dir} || return
 	cmake --build ${libcxxabi_bld_dir} -v -j ${jobs} || return
 	cmake --install ${libcxxabi_bld_dir} -v ${strip:+--${strip}} || return
@@ -5751,7 +5751,8 @@ install_native_lld()
 		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
 		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON || return
+		-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON \
+		-DLLVM_CONFIG=`which llvm-config` || return
 	cmake --build ${lld_bld_dir} -v -j ${jobs} || return
 	cmake --install ${lld_bld_dir} -v ${strip:+--${strip}} || return
 }

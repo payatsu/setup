@@ -3367,8 +3367,7 @@ EOF
 			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
 			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-			-DCMAKE_INSTALL_RPATH=';' -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DSANITIZER_CXX_ABI=libc++ \
-			-DCMAKE_CXX_COMPILER_ID=Clang || return
+			-DCMAKE_INSTALL_RPATH=';' -DSANITIZER_CXX_ABI=libc++ || return
 		cmake --build ${compiler_rt_bld_dir} -v -j ${jobs} || return
 		cmake --install ${compiler_rt_bld_dir} -v ${strip:+--${strip}} || return
 # FIXME
@@ -3530,7 +3529,8 @@ EOF
 			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DLLVM_TABLEGEN_EXE=`which llvm-tblgen` \
-			-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON || return
+			-DCMAKE_INSTALL_RPATH=';' -DLLVM_LINK_LLVM_DYLIB=ON \
+			-DLLVM_CONFIG=`which llvm-config` || return
 		cmake --build ${lld_bld_dir} -v -j ${jobs} || return
 		cmake --install ${lld_bld_dir} -v ${strip:+--${strip}} || return
 		;;
