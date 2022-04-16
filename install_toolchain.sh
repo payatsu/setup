@@ -31,7 +31,7 @@
 : ${pkg_config_ver:=0.29.2}
 : ${help2man_ver:=1.47.16}
 : ${texinfo_ver:=6.8}
-: ${coreutils_ver:=9.0}
+: ${coreutils_ver:=9.1}
 : ${busybox_ver:=1.34.1}
 : ${bison_ver:=3.8.1}
 : ${flex_ver:=2.6.4}
@@ -50,7 +50,7 @@
 : ${systemtap_ver:=4.6}
 : ${ed_ver:=1.18}
 : ${bc_ver:=1.07.1}
-: ${rsync_ver:=3.2.3}
+: ${rsync_ver:=3.2.4}
 : ${linux_ver:=5.16.11}
 : ${perf_ver:=${linux_ver}}
 : ${libcap_ver:=2.49}
@@ -180,7 +180,7 @@
 : ${lldb_ver:=${llvm_ver}}
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
-: ${boost_ver:=1_78_0}
+: ${boost_ver:=1_79_0}
 : ${Python_ver:=3.10.2}
 : ${Python2_ver:=2.7.18}
 : ${cython_ver:=0.29.28}

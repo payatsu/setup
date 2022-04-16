@@ -128,7 +128,7 @@ EOF
 : ${libffi_ver:=3.4.2}
 : ${sqlite_ver:=3340100}
 : ${Python_ver:=3.10.2}
-: ${boost_ver:=1_78_0}
+: ${boost_ver:=1_79_0}
 : ${source_highlight_ver:=3.1.9}
 : ${pcre_ver:=8.45}
 : ${pcre2_ver:=10.39}
@@ -180,7 +180,7 @@ EOF
 : ${lzip_ver:=1.22}
 : ${ed_ver:=1.18}
 : ${bc_ver:=1.07.1}
-: ${rsync_ver:=3.2.3}
+: ${rsync_ver:=3.2.4}
 : ${dtc_ver:=1.6.0}
 : ${kmod_ver:=28}
 : ${u_boot_ver:=2022.01}
@@ -214,7 +214,7 @@ EOF
 
 : ${help2man_ver:=1.47.16}
 : ${texinfo_ver:=6.8}
-: ${coreutils_ver:=9.0}
+: ${coreutils_ver:=9.1}
 : ${file_ver:=5.41}
 : ${gperf_ver:=3.1}
 
