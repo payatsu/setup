@@ -175,7 +175,7 @@ EOF
 : ${sed_ver:=4.8}
 : ${gawk_ver:=5.1.0}
 : ${gettext_ver:=0.21}
-: ${git_ver:=2.35.3}
+: ${git_ver:=2.36.0}
 : ${openssh_ver:=8.8p1}
 : ${lzip_ver:=1.22}
 : ${ed_ver:=1.18}
