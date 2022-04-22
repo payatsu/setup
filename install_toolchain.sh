@@ -77,7 +77,7 @@
 : ${mpfr_ver:=4.1.0}
 : ${mpc_ver:=1.2.1}
 : ${isl_ver:=0.20}
-: ${gcc_ver:=11.2.0}
+: ${gcc_ver:=11.3.0}
 : ${readline_ver:=8.1}
 : ${ncurses_ver:=6.3}
 : ${popt_ver:=1.18}
