@@ -240,7 +240,7 @@
 : ${libksba_ver:=1.6.0}
 : ${libassuan_ver:=2.5.5}
 : ${gnupg_ver:=2.3.5}
-: ${protobuf_ver:=3.19.4}
+: ${protobuf_ver:=3.20.1}
 : ${grpc_ver:=1.44.0}
 : ${libbacktrace_ver:=git}
 : ${poke_ver:=2.1}
