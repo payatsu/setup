@@ -103,7 +103,7 @@
 : ${nano_ver:=6.2}
 : ${grep_ver:=3.7}
 : ${global_ver:=6.6.6}
-: ${pcre2_ver:=10.39}
+: ${pcre2_ver:=10.40}
 : ${the_silver_searcher_ver:=2.2.0}
 : ${the_platinum_searcher_ver:=2.2.0}
 : ${highway_ver:=1.1.0}
