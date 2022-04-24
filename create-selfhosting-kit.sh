@@ -245,7 +245,7 @@ EOF
 : ${openexr_ver:=3.1.3}
 : ${eigen_ver:=3.4.0}
 : ${gflags_ver:=2.2.2}
-: ${glog_ver:=0.5.0}
+: ${glog_ver:=0.6.0}
 : ${protobuf_ver:=3.20.1}
 
 : ${cython_ver:=0.29.28}

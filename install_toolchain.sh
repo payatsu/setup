@@ -208,7 +208,7 @@
 : ${x265_ver:=3.2.1}
 : ${libav_ver:=11.9}
 : ${gflags_ver:=2.2.2}
-: ${glog_ver:=0.5.0}
+: ${glog_ver:=0.6.0}
 : ${openjpeg_ver:=2.4.0}
 : ${Imath_ver:=3.1.5}
 : ${openexr_ver:=3.1.3}
