@@ -299,7 +299,7 @@ EOF
 : ${fontconfig_ver:=2.13.1}
 : ${cairo_ver:=1.16.0}
 : ${fribidi_ver:=1.0.12}
-: ${harfbuzz_ver:=4.2.0}
+: ${harfbuzz_ver:=4.2.1}
 : ${pango_ver:=1.49.3}
 : ${itstool_ver:=2.0.7}
 : ${libxslt_ver:=1.1.34}
