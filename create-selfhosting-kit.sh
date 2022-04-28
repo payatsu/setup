@@ -200,7 +200,7 @@ EOF
 : ${vim_ver:=8.2.3993}
 : ${vimdoc_ja_ver:=master}
 : ${emacs_ver:=28.1}
-: ${nano_ver:=6.2}
+: ${nano_ver:=6.3}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.7}
 : ${diffutils_ver:=3.8}
