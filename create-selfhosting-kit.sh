@@ -185,7 +185,7 @@ EOF
 : ${kmod_ver:=28}
 : ${u_boot_ver:=2022.01}
 : ${pixman_ver:=0.40.0}
-: ${qemu_ver:=6.1.0}
+: ${qemu_ver:=7.0.0}
 : ${tar_ver:=1.34}
 : ${cpio_ver:=2.13}
 : ${e2fsprogs_ver:=1.46.2}
