@@ -6120,7 +6120,6 @@ install_native_numpy()
 install_native_rustc()
 {
 	[ -x ${prefix}/bin/rustc -a "${force_install}" != yes ] && return
-	which python2 > /dev/null || install_native_Python2 || return
 	which cmake > /dev/null || install_native_cmake || return
 	which curl > /dev/null || install_native_curl || return
 	which git > /dev/null || install_native_git || return
