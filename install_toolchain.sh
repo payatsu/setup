@@ -4272,7 +4272,6 @@ install_native_vim()
 	which gettext > /dev/null || install_native_gettext || return
 	print_header_path lua.h > /dev/null || install_native_lua || return
 	print_library_path libperl.so > /dev/null || install_native_perl || return
-	print_header_path Python.h python`python --version 2>&1 | grep -oe '[[:digit:]]\.[[:digit:]]\{1,2\}'` > /dev/null || (install_native_Python2) || return
 	print_header_path Python.h python`python3 --version | grep -oe '[[:digit:]]\.[[:digit:]]\{1,2\}'` > /dev/null || install_native_Python || return
 	print_library_path tclConfig.sh > /dev/null || install_native_tcl || return
 	print_header_path ruby.h > /dev/null || install_native_ruby || return
@@ -4285,7 +4284,6 @@ install_native_vim()
 			--with-features=huge --enable-fail-if-missing \
 			--enable-luainterp=dynamic --with-lua-prefix=`print_prefix lua.h` \
 			--enable-perlinterp=dynamic \
-			--enable-pythoninterp=dynamic \
 			--enable-python3interp=dynamic \
 			--enable-tclinterp=dynamic --with-tclsh=tclsh \
 			--enable-rubyinterp=dynamic \
