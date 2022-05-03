@@ -4080,7 +4080,7 @@ install_native_mesa()
 	print_header_path dri3proto.h X11/extensions > /dev/null || install_native_dri3proto || return
 	print_header_path GLdispatchABI.h glvnd > /dev/null || install_native_libglvnd || return
 	which meson > /dev/null || install_native_meson || return
-	pip install mako || return
+	pip3 install mako || return
 	fetch mesa || return
 	unpack mesa || return
 	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both \
