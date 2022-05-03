@@ -146,7 +146,7 @@
 : ${brotli_ver:=1.0.9}
 : ${curl_ver:=7.75.0}
 : ${expat_ver:=2.4.7}
-: ${asciidoc_ver:=8.6.9}
+: ${asciidoc_ver:=10.1.4}
 : ${libxml2_ver:=2.9.11}
 : ${libxslt_ver:=1.1.34}
 : ${xmlto_ver:=0.0.28}
@@ -720,7 +720,7 @@ fetch()
 				https://github.com/libexpat/libexpat/releases/download/R_`echo ${expat_ver} | tr . _`/${expat_name}.tar.xz || return;;
 		asciidoc)
 			wget -O ${asciidoc_src_dir}.tar.gz \
-				https://sourceforge.net/projects/asciidoc/files/asciidoc/${asciidoc_ver}/${asciidoc_name}.tar.gz/download || return;;
+				https://github.com/asciidoc-py/asciidoc-py/releases/download/${asciidoc_ver}/${asciidoc_name}.tar.gz || return;;
 		libxml2|libxslt)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				http://xmlsoft.org/sources/\${${_p:-libxml2}_name}.tar.gz || return;;
@@ -5162,6 +5162,8 @@ install_native_asciidoc()
 	which xsltproc > /dev/null || install_native_libxslt || return
 	fetch asciidoc || return
 	unpack asciidoc || return
+	[ -f ${asciidoc_src_dir}/configure ] || autoreconf -fiv ${asciidoc_src_dir} || return
+	sed -i -e 's!^\(	python3 -m pip install --root \$(DESTDIR)\)\( \.\)$!\1 --prefix '${prefix}'\2!' ${asciidoc_src_dir}/Makefile.in || return
 	[ -f ${asciidoc_bld_dir}/configure ] || cp -Tvr ${asciidoc_src_dir} ${asciidoc_bld_dir} || return
 	[ -f ${asciidoc_bld_dir}/Makefile ] ||
 		(cd ${asciidoc_bld_dir}
