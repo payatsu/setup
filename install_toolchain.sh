@@ -6068,6 +6068,7 @@ install_native_Python()
 	make -C ${Python_bld_dir} -j ${jobs} install || return
 	update_path || return
 	pip`print_version Python 1` install -U pip || return
+	ln -fsv python3 ${DESTDIR}${prefix}/bin/python || return
 	[ -z "${strip}" ] && return
 	for v in `print_version Python` `print_version Python`m; do
 		[ ! -f ${DESTDIR}${prefix}/bin/python${v} ] || ${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/python${v} || return
