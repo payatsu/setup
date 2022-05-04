@@ -154,7 +154,7 @@
 : ${git_ver:=2.36.0}
 : ${git_manpages_ver:=${git_ver}}
 : ${git_lfs_ver:=3.1.4}
-: ${mercurial_ver:=5.4}
+: ${mercurial_ver:=6.1.1}
 : ${sqlite_ver:=3340100}
 : ${apr_ver:=1.7.0}
 : ${apr_util_ver:=1.6.1}
@@ -5298,10 +5298,10 @@ install_native_git_lfs()
 install_native_mercurial()
 {
 	[ -x ${prefix}/bin/hg -a "${force_install}" != yes ] && return
-	which python > /dev/null || (install_native_Python2) || return
+	which python3 > /dev/null || install_native_Python || return
 	fetch mercurial || return
 	unpack mercurial || return
-	pip install docutils || return
+	pip3 install docutils || return
 	make -C ${mercurial_src_dir} -j ${jobs} PYTHON=python all || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${mercurial_src_dir} -j ${jobs} PYTHON=python -k check || return
