@@ -112,7 +112,7 @@ EOF
 : ${libunistring_ver:=1.0}
 : ${libidn2_ver:=2.3.2}
 : ${curl_ver:=7.75.0}
-: ${elfutils_ver:=0.186}
+: ${elfutils_ver:=0.187}
 : ${binutils_ver:=2.38}
 : ${gmp_ver:=6.2.1}
 : ${mpfr_ver:=4.1.0}
