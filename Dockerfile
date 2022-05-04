@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:experimental
 
-ARG baseimage=ubuntu:20.04
+ARG baseimage=ubuntu:22.04
 ARG prefix=/usr/local
 ARG prefixbase=local
 ARG njobs=4
