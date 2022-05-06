@@ -118,7 +118,7 @@
 : ${patch_ver:=2.7.6}
 : ${findutils_ver:=4.9.0}
 : ${procps_ver:=3.3.16}
-: ${lsof_ver:=4.94.0}
+: ${lsof_ver:=4.95.0}
 : ${sysstat_ver:=12.5.4}
 : ${less_ver:=581.2}
 : ${groff_ver:=1.22.4}
