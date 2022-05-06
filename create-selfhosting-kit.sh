@@ -3241,7 +3241,7 @@ EOF
 		mkdir -pv ${DESTDIR}${prefix}/go/bin || return
 		[ -f ${DESTDIR}${prefix}/go/bin/go ] || ln -sv `which go` ${DESTDIR}${prefix}/go/bin/go || return
 		(cd ${go_src_dir}/src
-		GOROOT_BOOTSTRAP=`go version | grep -qe gccgo && echo ${DESTDIR}${prefix}/go` \
+		GOROOT_BOOTSTRAP=`go version | grep -qe '\<\(gccgo\|unknown\)\>' && echo ${DESTDIR}${prefix}/go` \
 			GOROOT_FINAL=${prefix}/go GOARCH=`print_goarch ${host}` GOOS=linux bash -x ${go_src_dir}/src/make.bash -v) || return
 		rm -v ${DESTDIR}${prefix}/go/bin/go || return
 		cp -Tfvr ${go_src_dir} ${DESTDIR}${prefix}/go || return

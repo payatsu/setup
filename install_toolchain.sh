@@ -6198,7 +6198,7 @@ install_native_go()
 	mkdir -pv ${DESTDIR}${prefix}/go/bin || return
 	[ -f ${DESTDIR}${prefix}/go/bin/go ] || ln -sv `which go` ${DESTDIR}${prefix}/go/bin/go || return
 	(cd ${go_src_dir}/src
-	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=`go version | grep -qe gccgo && echo ${DESTDIR}${prefix}/go` \
+	CGO_CPPFLAGS=-I${prefix}/include GOROOT_BOOTSTRAP=`go version | grep -qe '\<\(gccgo\|unknown\)\>' && echo ${DESTDIR}${prefix}/go` \
 		GOROOT_FINAL=${prefix}/go bash -x ${go_src_dir}/src/make.bash -v) || return
 	rm -v ${DESTDIR}${prefix}/go/bin/go || return
 	cp -Tfvr ${go_src_dir} ${DESTDIR}${prefix}/go || return
