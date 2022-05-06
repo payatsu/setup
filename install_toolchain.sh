@@ -99,7 +99,7 @@
 : ${vim_ver:=8.2.3993}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
-: ${neovim_ver:=0.5.1}
+: ${neovim_ver:=0.7.0}
 : ${nano_ver:=6.3}
 : ${grep_ver:=3.7}
 : ${global_ver:=6.6.6}
@@ -4347,14 +4347,14 @@ install_native_ctags()
 install_native_neovim()
 {
 	[ -x ${prefix}/bin/nvim -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	which ninja > /dev/null || install_native_ninja || return
 	fetch neovim || return
 	unpack neovim || return
 	make -C ${neovim_src_dir} -j ${jobs} \
-		BUILD_TYPE='Unix Makefiles' BUILD_TOOL=make \
 		CMAKE_BUILD_TYPE=${cmake_build_type} \
 		CMAKE_INSTALL_PREFIX=${prefix} || return
 	make -C ${neovim_src_dir} -j ${jobs} \
-		BUILD_TYPE='Unix Makefiles' BUILD_TOOL=make \
 		install || return
 	[ -z "${strip}" ] && return
 	${host:+${host}-}strip -v ${prefix}/bin/nvim || return
