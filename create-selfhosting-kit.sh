@@ -218,7 +218,7 @@ EOF
 : ${file_ver:=5.41}
 : ${gperf_ver:=3.1}
 
-: ${go_ver:=1.16.11}
+: ${go_ver:=1.18.1}
 : ${cmake_ver:=3.22.0}
 : ${ninja_ver:=1.10.2}
 : ${meson_ver:=0.58.1}
