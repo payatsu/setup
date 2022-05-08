@@ -4465,7 +4465,7 @@ install_native_the_platinum_searcher()
 {
 	[ -x ${prefix}/bin/pt -a "${force_install}" != yes ] && return
 	which go > /dev/null || install_native_go || return
-	GOPATH=${DESTDIR}${prefix}/.go go get -v github.com/monochromegane/the_platinum_searcher/... || return
+	GOPATH=${DESTDIR}${prefix}/.go go install -v github.com/monochromegane/the_platinum_searcher/...@v${the_platinum_searcher_ver} || return
 	mkdir -pv ${DESTDIR}${prefix}/bin && ln -fsv ../.go/bin/pt ${DESTDIR}${prefix}/bin || return
 }
 
