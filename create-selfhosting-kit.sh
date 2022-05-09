@@ -114,6 +114,7 @@ EOF
 : ${curl_ver:=7.75.0}
 : ${elfutils_ver:=0.187}
 : ${binutils_ver:=2.38}
+: ${glibc_ver:=2.35}
 : ${gmp_ver:=6.2.1}
 : ${mpfr_ver:=4.1.0}
 : ${mpc_ver:=1.2.1}
@@ -405,7 +406,7 @@ fetch()
 	zlib)
 		wget -O ${zlib_src_dir}.tar.xz \
 			https://zlib.net/${zlib_name}.tar.xz || return;;
-	libunistring|binutils|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|\
+	libunistring|binutils|glibc|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|\
 	autoconf|autoconf-archive|automake|bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|\
 	emacs|nano|grep|diffutils|patch|global|findutils|poke|help2man|texinfo|coreutils|gperf)
 		for compress_format in xz bz2 gz lz; do
@@ -1259,6 +1260,25 @@ EOF
 		for l in libbfd.so libctf-nobfd.so libctf.so libopcodes.so; do
 			truncate_path_in_elf ${DESTDIR}${prefix}/lib/${l} ${DESTDIR} ${prefix}/lib: || return
 		done
+		;;
+	glibc)
+		[ -f ${DESTDIR}${prefix}/include/stdio.h -a "${force_install}" != yes ] && return
+		which gawk > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gawk || return
+		which gperf > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gperf || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${glibc_bld_dir}/Makefile ] ||
+			(cd ${glibc_bld_dir}
+			${glibc_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+				--with-headers=`print_sysroot`/usr/include \
+				--disable-sanity-checks \
+				libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes libc_cv_ctors_header=yes) || return
+		make -C ${glibc_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install-headers || return
+		make -C ${glibc_bld_dir} -j ${jobs} AR=${host}-ar || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${glibc_bld_dir} -j ${jobs} -k check || return
+		make -C ${glibc_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+		mkdir -pv ${DESTDIR}${prefix}/lib || return # XXX: workaround for aarch64
 		;;
 	gmp)
 		[ -f ${DESTDIR}${prefix}/include/gmp.h -a "${force_install}" != yes ] && return
