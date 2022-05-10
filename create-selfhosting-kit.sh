@@ -5659,7 +5659,7 @@ manipulate_libc()
 	) || return
 
 	! echo ${target} | grep -qe linux ||
-		for l in libc.so libc.so.6 libc_nonshared.a libm.so libm.so.6; do
+		for l in libc.a libc.so libc.so.6 libc_nonshared.a libm.so libm.so.6; do
 			case ${1} in
 			copy) [ -f ${d}/${l} ] || cp -fv `$([ ${host} = ${target} ] \
 					&& echo ${CC:-${target:+${target}-}gcc} \
