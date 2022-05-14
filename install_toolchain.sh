@@ -229,7 +229,7 @@
 : ${orc_ver:=0.4.32}
 : ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.30.0}
-: ${bat_ver:=0.20.0}
+: ${bat_ver:=0.21.0}
 : ${jq_ver:=1.6}
 : ${libpcap_ver:=1.10.1}
 : ${tcpdump_ver:=4.99.1}
