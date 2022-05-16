@@ -5661,10 +5661,13 @@ manipulate_libc()
 	! echo ${target} | grep -qe linux ||
 		for l in libc.a libc.so libc.so.6 libc_nonshared.a libm.so libm.so.6; do
 			case ${1} in
-			copy) [ -f ${d}/${l} ] || cp -fv `$([ ${host} = ${target} ] \
-					&& echo ${CC:-${target:+${target}-}gcc} \
-					|| echo ${target:+${target}-}gcc \
-				) -print-file-name=${l}` ${d} || return;;
+			copy) [ -f ${d}/${l} ] && continue
+					f=`$([ ${host} = ${target} ] \
+						&& echo ${CC:-${target:+${target}-}gcc} \
+						|| echo ${target:+${target}-}gcc \
+					) -print-file-name=${l}`
+					[ ! -e ${f} ] || cp -fv ${f} ${d} || return
+					unset f;;
 			remove) rm -fv ${d}/${l} || return;;
 			esac
 		done
