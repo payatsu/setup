@@ -5677,7 +5677,7 @@ manipulate_libc()
 			s! '${DESTDIR}'! !
 		' ${d}/libc.so || return
 
-	for l in libgcc.a libgcc.so libgcc_s.so; do
+	for l in libstdc++.a libstdc++.so libgcc.a libgcc.so libgcc_s.so; do
 		(cd `$([ ${host} = ${target} ] \
 				&& echo ${CC:-${target:+${target}-}gcc} \
 				|| echo ${target:+${target}-}gcc \
