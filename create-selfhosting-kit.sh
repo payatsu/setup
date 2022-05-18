@@ -1265,6 +1265,7 @@ EOF
 		[ -f ${DESTDIR}${prefix}/include/stdio.h -a "${force_install}" != yes ] && return
 		which gawk > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gawk || return
 		which gperf > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} gperf || return
+		which bison > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} bison || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${glibc_bld_dir}/Makefile ] ||
