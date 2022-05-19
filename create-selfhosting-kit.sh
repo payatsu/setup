@@ -3715,7 +3715,7 @@ EOF
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${openjpeg_src_dir} -B ${openjpeg_bld_dir} \
 			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
-			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
+			-DCMAKE_C_FLAGS="`L tiff`" \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 			-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DCMAKE_INCLUDE_PATH=`print_prefix png.h` \
