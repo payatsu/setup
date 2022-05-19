@@ -160,7 +160,7 @@
 : ${apr_util_ver:=1.6.1}
 : ${utf8proc_ver:=2.7.0}
 : ${subversion_ver:=1.14.1}
-: ${ninja_ver:=1.10.2}
+: ${ninja_ver:=1.11.0}
 : ${meson_ver:=0.58.1}
 : ${cmake_ver:=3.22.0}
 : ${bazel_ver:=2.2.0}
