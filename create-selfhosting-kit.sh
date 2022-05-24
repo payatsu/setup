@@ -222,7 +222,7 @@ EOF
 : ${go_ver:=1.18.1}
 : ${cmake_ver:=3.22.0}
 : ${ninja_ver:=1.11.0}
-: ${meson_ver:=0.58.1}
+: ${meson_ver:=0.62.1}
 : ${libxml2_ver:=2.9.11}
 : ${llvm_ver:=12.0.1}
 : ${compiler_rt_ver:=${llvm_ver}}
@@ -305,7 +305,7 @@ EOF
 : ${itstool_ver:=2.0.7}
 : ${libxslt_ver:=1.1.34}
 : ${xmlto_ver:=0.0.28}
-: ${shared_mime_info_ver:=2.1}
+: ${shared_mime_info_ver:=2.2}
 : ${gdk_pixbuf_ver:=2.42.6}
 : ${atk_ver:=2.36.0}
 : ${dbus_ver:=1.12.20}

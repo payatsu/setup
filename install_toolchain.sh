@@ -161,7 +161,7 @@
 : ${utf8proc_ver:=2.7.0}
 : ${subversion_ver:=1.14.1}
 : ${ninja_ver:=1.11.0}
-: ${meson_ver:=0.58.1}
+: ${meson_ver:=0.62.1}
 : ${cmake_ver:=3.22.0}
 : ${bazel_ver:=2.2.0}
 : ${Bear_ver:=2.4.3}
@@ -295,7 +295,7 @@
 : ${pango_ver:=1.49.3}
 : ${pygobject_ver:=3.42.0}
 : ${itstool_ver:=2.0.7}
-: ${shared_mime_info_ver:=2.1}
+: ${shared_mime_info_ver:=2.2}
 : ${gdk_pixbuf_ver:=2.42.6}
 : ${atk_ver:=2.36.0}
 : ${dbus_ver:=1.12.20}
