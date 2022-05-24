@@ -315,7 +315,7 @@ EOF
 : ${at_spi2_atk_ver:=AT_SPI2_ATK_2_38_0}
 : ${graphene_ver:=1.10.8}
 : ${libxkbcommon_ver:=1.4.0}
-: ${gtk_ver:=3.24.31}
+: ${gtk_ver:=3.24.34}
 
 : ${gstreamer_ver:=1.18.6}
 : ${gst_plugins_base_ver:=${gstreamer_ver}}
@@ -4925,7 +4925,7 @@ EOF
 		unpack ${1} || return
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dc_link_args="${LDFLAGS} `Wl_rpath_link Xext X11 xcb Xau Xdmcp stdc++`" \
-			-Dwayland-backend=false -Dintrospection=false -Dmedia-gstreamer=disabled \
+			-Dintrospection=false \
 			${gtk_src_dir} ${gtk_bld_dir} || return
 		XDG_DATA_DIRS=$(readlink -m $(dirname $(which update-mime-database))/../share) \
 			ninja -v -C ${gtk_bld_dir} || return

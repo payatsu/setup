@@ -304,7 +304,7 @@
 : ${at_spi2_core_ver:=AT_SPI2_CORE_2_42_0}
 : ${at_spi2_atk_ver:=AT_SPI2_ATK_2_38_0}
 : ${graphene_ver:=1.10.8}
-: ${gtk_ver:=3.24.31}
+: ${gtk_ver:=3.24.34}
 : ${webkitgtk_ver:=2.14.0}
 : ${qt_ver:=5.12.12}
 
@@ -4143,8 +4143,8 @@ install_native_gtk()
 	fetch gtk || return
 	unpack gtk || return
 	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both \
-		-Dc_link_args="${LDFLAGS} `L stdc++`" -Dwayland-backend=false \
-		-Dmedia-gstreamer=disabled ${gtk_src_dir} ${gtk_bld_dir} || return
+		-Dc_link_args="${LDFLAGS} `L stdc++`" \
+		${gtk_src_dir} ${gtk_bld_dir} || return
 	ninja -v -C ${gtk_bld_dir} || return
 	ninja -v -C ${gtk_bld_dir} install || return
 	update_path || return
