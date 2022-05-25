@@ -260,8 +260,8 @@ EOF
 : ${xtrans_ver:=1.4.0}
 : ${libICE_ver:=1.0.10}
 : ${libSM_ver:=1.2.3}
-: ${xcb_proto_ver:=1.14.1}
-: ${libxcb_ver:=1.14}
+: ${xcb_proto_ver:=1.15}
+: ${libxcb_ver:=1.15}
 : ${xextproto_ver:=7.3.0}
 : ${inputproto_ver:=2.3.2}
 : ${kbproto_ver:=1.0.7}
