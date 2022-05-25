@@ -308,7 +308,7 @@ EOF
 : ${shared_mime_info_ver:=2.2}
 : ${gdk_pixbuf_ver:=2.42.8}
 : ${atk_ver:=2.38.0}
-: ${dbus_ver:=1.12.20}
+: ${dbus_ver:=1.14.0}
 : ${recordproto_ver:=1.14.2}
 : ${libXtst_ver:=1.2.3}
 : ${at_spi2_core_ver:=AT_SPI2_CORE_2_42_0}
@@ -753,8 +753,8 @@ fetch()
 		wget -O ${shared_mime_info_src_dir}.tar.bz2 \
 			https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/${shared_mime_info_ver}/${shared_mime_info_name}.tar.bz2 || return;;
 	dbus)
-		wget -O ${dbus_src_dir}.tar.gz \
-			https://dbus.freedesktop.org/releases/dbus/${dbus_name}.tar.gz || return;;
+		wget -O ${dbus_src_dir}.tar.xz \
+			https://dbus.freedesktop.org/releases/dbus/${dbus_name}.tar.xz || return;;
 	at-spi2-core|at-spi2-atk)
 		eval wget -O \${${_1}_src_dir}.tar.bz2 \
 			https://gitlab.gnome.org/GNOME/${1}/-/archive/\${${_1}_ver}/\${${_1}_name}.tar.bz2 || return;;

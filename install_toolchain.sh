@@ -298,7 +298,7 @@
 : ${shared_mime_info_ver:=2.2}
 : ${gdk_pixbuf_ver:=2.42.8}
 : ${atk_ver:=2.38.0}
-: ${dbus_ver:=1.12.20}
+: ${dbus_ver:=1.14.0}
 : ${recordproto_ver:=1.14.2}
 : ${libXtst_ver:=1.2.3}
 : ${at_spi2_core_ver:=AT_SPI2_CORE_2_42_0}
@@ -992,8 +992,8 @@ fetch()
 			eval wget -O \${${_p}_src_dir}.tar.xz \
 				https://ftp.gnome.org/pub/gnome/sources/${p:-glib}${plus}/\`print_version ${p:-glib}\`/\${${_p:-glib}_name}.tar.xz || return;;
 		dbus)
-			wget -O ${dbus_src_dir}.tar.gz \
-				https://dbus.freedesktop.org/releases/dbus/${dbus_name}.tar.gz || return;;
+			wget -O ${dbus_src_dir}.tar.xz \
+				https://dbus.freedesktop.org/releases/dbus/${dbus_name}.tar.xz || return;;
 		at-spi2-core|at-spi2-atk)
 			eval wget -O \${${_p}_src_dir}.tar.bz2 \
 				https://gitlab.gnome.org/GNOME/${p}/-/archive/\${${_p}_ver}/\${${_p}_name}.tar.bz2 || return;;
