@@ -269,7 +269,7 @@ EOF
 : ${libXext_ver:=1.3.4}
 : ${libXt_ver:=1.2.1}
 : ${libXmu_ver:=1.1.3}
-: ${libXpm_ver:=3.5.11}
+: ${libXpm_ver:=3.5.13}
 : ${libXaw_ver:=1.0.14}
 : ${libXi_ver:=1.7}
 : ${fixesproto_ver:=5.0}
