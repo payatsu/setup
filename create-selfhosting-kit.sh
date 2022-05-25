@@ -2897,7 +2897,6 @@ EOF
 			(cd ${vim_bld_dir}
 			[ -f src/auto/config.cache ] || cat << EOF > src/auto/config.cache || return
 ac_cv_small_wchar_t=${ac_cv_small_wchar_t=no}
-ac_cv_have_x=${ac_cv_have_x=have_x=no}
 vim_cv_getcwd_broken=${vim_cv_getcwd_broken=no}
 vim_cv_memmove_handles_overlap=${vim_cv_memmove_handles_overlap=yes}
 vim_cv_stat_ignores_slash=${vim_cv_stat_ignores_slash=no}
@@ -2916,8 +2915,11 @@ EOF
 				--enable-python3interp=dynamic --with-python3-command=python3 \
 				--enable-cscope --enable-terminal --enable-autoservername --enable-multibyte \
 				--with-tlib=tinfo \
-				LDFLAGS="${LDFLAGS} `L tinfo`" \
+				CC="${CC:-${host:+${host}-}gcc} `I X11/Xlib.h`" \
+				CPPFLAGS="${CPPFLAGS} `I X11/Xlib.h`" \
+				LDFLAGS="${LDFLAGS} `L tinfo` `Wl_rpath_link z`" \
 				STRIP=${host:+${host}-}strip \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 			) || return
 		patch -N -p0 -d ${vim_bld_dir} <<'EOF' || [ $? = 1 ] || return
 --- src/Makefile
