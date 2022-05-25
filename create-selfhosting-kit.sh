@@ -280,7 +280,7 @@ EOF
 : ${libXrender_ver:=0.9.10}
 : ${randrproto_ver:=1.5.0}
 : ${libXrandr_ver:=1.5.2}
-: ${libXcursor_ver:=1.2.0}
+: ${libXcursor_ver:=1.2.1}
 : ${xineramaproto_ver:=1.2.1}
 : ${libXinerama_ver:=1.1.4}
 : ${libpciaccess_ver:=0.16}
