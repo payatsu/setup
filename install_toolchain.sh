@@ -296,8 +296,8 @@
 : ${pygobject_ver:=3.42.1}
 : ${itstool_ver:=2.0.7}
 : ${shared_mime_info_ver:=2.2}
-: ${gdk_pixbuf_ver:=2.42.6}
-: ${atk_ver:=2.36.0}
+: ${gdk_pixbuf_ver:=2.42.8}
+: ${atk_ver:=2.38.0}
 : ${dbus_ver:=1.12.20}
 : ${recordproto_ver:=1.14.2}
 : ${libXtst_ver:=1.2.3}
