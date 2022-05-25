@@ -276,7 +276,7 @@
 : ${libXinerama_ver:=1.1.4}
 : ${libxkbcommon_ver:=1.4.0}
 : ${libpciaccess_ver:=0.16}
-: ${libdrm_ver:=2.4.109}
+: ${libdrm_ver:=2.4.110}
 : ${libxshmfence_ver:=1.3}
 : ${wayland_ver:=1.20.0}
 : ${wayland_protocols_ver:=1.25}

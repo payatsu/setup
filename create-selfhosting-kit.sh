@@ -291,7 +291,7 @@ EOF
 : ${wayland_ver:=1.20.0}
 : ${wayland_protocols_ver:=1.25}
 : ${libglvnd_ver:=1.4.0}
-: ${libdrm_ver:=2.4.109}
+: ${libdrm_ver:=2.4.110}
 : ${mesa_ver:=21.3.1}
 : ${glu_ver:=9.0.2}
 : ${libepoxy_ver:=1.5.10}
