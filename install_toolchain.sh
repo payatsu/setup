@@ -301,7 +301,7 @@
 : ${dbus_ver:=1.14.0}
 : ${recordproto_ver:=1.14.2}
 : ${libXtst_ver:=1.2.3}
-: ${at_spi2_core_ver:=AT_SPI2_CORE_2_42_0}
+: ${at_spi2_core_ver:=AT_SPI2_CORE_2_44_1}
 : ${at_spi2_atk_ver:=AT_SPI2_ATK_2_38_0}
 : ${graphene_ver:=1.10.8}
 : ${gtk_ver:=3.24.34}
