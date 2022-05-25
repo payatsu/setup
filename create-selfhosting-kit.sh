@@ -301,7 +301,7 @@ EOF
 : ${cairo_ver:=1.16.0}
 : ${fribidi_ver:=1.0.12}
 : ${harfbuzz_ver:=4.2.1}
-: ${pango_ver:=1.49.3}
+: ${pango_ver:=1.50.7}
 : ${itstool_ver:=2.0.7}
 : ${libxslt_ver:=1.1.34}
 : ${xmlto_ver:=0.0.28}
@@ -323,7 +323,7 @@ EOF
 : ${gst_editing_services_ver:=${gstreamer_ver}}
 : ${gst_rtsp_server_ver:=${gstreamer_ver}}
 : ${gst_omx_ver:=${gstreamer_ver}}
-: ${pygobject_ver:=3.42.0}
+: ${pygobject_ver:=3.42.1}
 : ${gst_python_ver:=${gstreamer_ver}}
 : ${orc_ver:=0.4.32}
 
