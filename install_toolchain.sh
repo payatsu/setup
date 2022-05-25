@@ -256,7 +256,7 @@
 : ${xextproto_ver:=7.3.0}
 : ${inputproto_ver:=2.3.2}
 : ${kbproto_ver:=1.0.7}
-: ${libX11_ver:=1.7.2}
+: ${libX11_ver:=1.8}
 : ${libXext_ver:=1.3.4}
 : ${libXt_ver:=1.2.1}
 : ${libXmu_ver:=1.1.3}
