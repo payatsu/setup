@@ -153,7 +153,7 @@
 : ${gettext_ver:=0.21}
 : ${git_ver:=2.36.1}
 : ${git_manpages_ver:=${git_ver}}
-: ${git_lfs_ver:=3.1.4}
+: ${git_lfs_ver:=3.2.0}
 : ${mercurial_ver:=6.1.1}
 : ${sqlite_ver:=3340100}
 : ${apr_ver:=1.7.0}
