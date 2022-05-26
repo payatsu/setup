@@ -152,9 +152,9 @@ EOF
 : ${bcc_ver:=0.24.0}
 : ${cereal_ver:=1.3.2}
 : ${bpftrace_ver:=0.14.1}
-: ${libtraceevent_ver:=1.3.3}
-: ${libtracefs_ver:=1.2.3}
-: ${trace_cmd_ver:=v2.9.4}
+: ${libtraceevent_ver:=1.6.0}
+: ${libtracefs_ver:=1.4.0}
+: ${trace_cmd_ver:=v3.1}
 : ${libpcap_ver:=1.10.1}
 : ${tcpdump_ver:=4.99.1}
 : ${procps_ver:=3.3.16}
@@ -2147,18 +2147,19 @@ EOF
 		[ -x ${DESTDIR}${prefix}/bin/trace-cmd -a "${force_install}" != yes ] && return
 		print_header_path kbuffer.h traceevent > /dev/null || ${0} ${cmdopt} libtraceevent || return
 		print_header_path tracefs.h tracefs > /dev/null || ${0} ${cmdopt} libtracefs || return
+		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
 		fetch ${1} || return
 		unpack ${1} || return
 		sed -i -e 's/ -Wl,-rpath=\$(libdir)//' ${trace_cmd_src_dir}/scripts/utils.mk || return
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		make -C ${trace_cmd_src_dir} -j ${jobs} V=1 O=${trace_cmd_bld_dir} \
 			CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
-			CPPFLAGS="${CPPFLAGS} `I event-parse.h tracefs.h`" \
+			CPPFLAGS="${CPPFLAGS} `I event-parse.h tracefs.h zstd.h`" \
 			LDFLAGS="${LDFLAGS} `L traceevent ltracefs`" \
 			etcdir=${prefix}/etc || return
 		make -C ${trace_cmd_src_dir} -j ${jobs} V=1 O=${trace_cmd_bld_dir} \
 			CROSS_COMPILE=${host:+${host}-} DESTDIR=${DESTDIR} prefix=${prefix} \
-			CPPFLAGS="${CPPFLAGS} `I event-parse.h tracefs.h`" \
+			CPPFLAGS="${CPPFLAGS} `I event-parse.h tracefs.h zstd.h`" \
 			LDFLAGS="${LDFLAGS} `L traceevent ltracefs`" \
 			etcdir=${prefix}/etc install || return
 		[ -z "${strip}" ] && return
