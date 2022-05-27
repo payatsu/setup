@@ -2512,12 +2512,13 @@ EOF
 			--with-perl=perl --with-python=python3 --with-zlib=`print_prefix zlib.h` \
 			--without-tcltk \
 			CURL_CONFIG=`print_binary_path curl-config` \
+			LDFLAGS="${LDFLAGS} `Wl_rpath_link idn2 ssl crypto zstd z`" \
 			ac_cv_iconv_omits_bom=no \
 			ac_cv_fread_reads_directories=yes \
 			ac_cv_snprintf_returns_bogus=no \
 			) || return
 		sed -i -e 's/+= -DNO_HMAC_CTX_CLEANUP/+= # -DNO_HMAC_CTX_CLEANUP/' ${git_src_dir}/Makefile || return
-		sed -i -e 's/^\(CC_LD_DYNPATH=\).\+/\1-L/' ${git_src_dir}/config.mak.autogen || return
+		sed -i -e '/^CC_LD_DYNPATH=/s/\(rpath\),$/\1-link,/' ${git_src_dir}/config.mak.autogen || return
 		make -C ${git_src_dir} -j ${jobs} V=1 LDFLAGS="${LDFLAGS} -ldl" all || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${git_src_dir} -j ${jobs} -k V=1 test || return
