@@ -2509,7 +2509,9 @@ EOF
 		./configure --prefix=${prefix} --host=${host} \
 			--with-openssl=`print_prefix ssl.h openssl` --with-libpcre=`print_prefix pcre2.h` \
 			--with-curl=`print_prefix curl.h curl` --with-expat=`print_prefix expat.h` \
-			--with-perl=perl --with-python=python3 --with-zlib=`print_prefix zlib.h` \
+			--with-perl=perl \
+			--with-python=`print_binary_path python3 > /dev/null && echo ${prefix}/bin/python3 || echo /usr/bin/python3` \
+			--with-zlib=`print_prefix zlib.h` \
 			--without-tcltk \
 			CURL_CONFIG=`print_binary_path curl-config` \
 			LDFLAGS="${LDFLAGS} `Wl_rpath_link idn2 ssl crypto zstd z`" \
