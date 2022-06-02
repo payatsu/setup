@@ -198,6 +198,7 @@ EOF
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.1.16}
 : ${tcsh_ver:=TCSH6_23_00}
+: ${less_ver:=581.2}
 : ${vim_ver:=8.2.3993}
 : ${vimdoc_ja_ver:=master}
 : ${emacs_ver:=28.1}
@@ -408,7 +409,7 @@ fetch()
 			https://zlib.net/${zlib_name}.tar.xz || return;;
 	libunistring|binutils|glibc|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|\
 	autoconf|autoconf-archive|automake|bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|\
-	emacs|nano|grep|diffutils|patch|global|findutils|poke|help2man|texinfo|coreutils|gperf)
+	less|emacs|nano|grep|diffutils|patch|global|findutils|poke|help2man|texinfo|coreutils|gperf)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
 				https://ftp.gnu.org/gnu/${1}/\${${_1}_name}.tar.${compress_format} \
@@ -2894,6 +2895,20 @@ EOF
 			make -C ${tcsh_bld_dir} -j ${jobs} -k check || return
 		make -C ${tcsh_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		ln -fsv tcsh ${DESTDIR}/${prefix}/bin/csh || return
+		;;
+	less)
+		[ -x ${DESTDIR}${prefix}/bin/less -a "${force_install}" != yes ] && return
+		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${less_bld_dir}/Makefile ] ||
+			(cd ${less_bld_dir}
+			${less_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
+				LDFLAGS="${LDFLAGS} `L tinfo`") || return
+		make -C ${less_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${less_bld_dir} -j ${jobs} -k check || return
+		make -C ${less_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	vim)
 		[ -x ${DESTDIR}${prefix}/bin/vim -a "${force_install}" != yes ] && return
