@@ -943,6 +943,13 @@ print_binary_path()
 	return 1
 }
 
+print_binary_path_in_prefix()
+{
+	candidate=`print_binary_path ${1} ${2}`
+	[ -n "${candidate}" ] || return
+	echo ${candidate} | sed -e "s!^${DESTDIR}!!" || return
+}
+
 print_qemu()
 {
 	echo qemu-`echo ${host} | cut -d - -f 1` || return
@@ -2509,8 +2516,8 @@ EOF
 		./configure --prefix=${prefix} --host=${host} \
 			--with-openssl=`print_prefix ssl.h openssl` --with-libpcre=`print_prefix pcre2.h` \
 			--with-curl=`print_prefix curl.h curl` --with-expat=`print_prefix expat.h` \
-			--with-perl=perl \
-			--with-python=`print_binary_path python3 > /dev/null && echo ${prefix}/bin/python3 || echo /usr/bin/python3` \
+			--with-perl=`print_binary_path_in_prefix perl || echo /usr/bin/perl` \
+			--with-python=`print_binary_path_in_prefix python3 || echo /usr/bin/python3` \
 			--with-zlib=`print_prefix zlib.h` \
 			--without-tcltk \
 			CURL_CONFIG=`print_binary_path curl-config` \
