@@ -219,6 +219,7 @@ EOF
 : ${coreutils_ver:=9.1}
 : ${file_ver:=5.41}
 : ${gperf_ver:=3.1}
+: ${gdbm_ver:=1.23}
 
 : ${go_ver:=1.18.1}
 : ${cmake_ver:=3.22.0}
@@ -409,7 +410,8 @@ fetch()
 			https://zlib.net/${zlib_name}.tar.xz || return;;
 	libunistring|binutils|glibc|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|\
 	autoconf|autoconf-archive|automake|bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|\
-	less|emacs|nano|grep|diffutils|patch|global|findutils|poke|help2man|texinfo|coreutils|gperf)
+	less|emacs|nano|grep|diffutils|patch|global|findutils|poke|help2man|texinfo|coreutils|gperf|\
+	gdbm)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
 				https://ftp.gnu.org/gnu/${1}/\${${_1}_name}.tar.${compress_format} \
@@ -3280,6 +3282,18 @@ EOF
 		make -C ${gperf_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/gperf || return
+		;;
+	gdbm)
+		[ -f ${DESTDIR}${prefix}/include/gdbm.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${gdbm_bld_dir}/Makefile ] ||
+			(cd ${gdbm_bld_dir}
+			${gdbm_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules --disable-rpath) || return
+		make -C ${gdbm_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${gdbm_bld_dir} -j ${jobs} -k check || return
+		make -C ${gdbm_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	go)
 		[ -x ${DESTDIR}${prefix}/go/bin/go -a "${force_install}" != yes ] && return
