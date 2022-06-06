@@ -222,6 +222,7 @@ EOF
 : ${groff_ver:=1.22.4}
 : ${gdbm_ver:=1.23}
 : ${libpipeline_ver:=1.5.3}
+: ${man_db_ver:=2.9.4}
 
 : ${go_ver:=1.18.1}
 : ${cmake_ver:=3.22.0}
@@ -982,9 +983,10 @@ print_packages()
 		s/i2c_tools/i2c-tools/
 		s/autoconf_archive/autoconf-archive/
 		s/pkg_config/pkg-config/
-		s/vimdoc_ja/vimdoc-ja/
 		s/u_boot/u-boot/
 		s/v4l_utils/v4l-utils/
+		s/vimdoc_ja/vimdoc-ja/
+		s/man_db/man-db/
 		s/compiler_rt/compiler-rt/
 		s/clang_tools_extra/clang-tools-extra/
 		s/util_macros/util-macros/
@@ -3333,6 +3335,28 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${libpipeline_bld_dir} -j ${jobs} -k check || return
 		make -C ${libpipeline_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	man-db)
+		[ -x ${DESTDIR}${prefix}/bin/man -a "${force_install}" != yes ] && return
+		print_header_path gdbm.h > /dev/null || ${0} ${cmdopt} gdbm || return
+		print_header_path pipeline.h > /dev/null || ${0} ${cmdopt} libpipeline || return
+		print_binary_path groff > /dev/null || ${0} ${cmdopt} groff || return
+		which groff > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} groff || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${man_db_bld_dir}/Makefile ] ||
+			(cd ${man_db_bld_dir}
+			${man_db_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--disable-setuid --enable-static --disable-rpath \
+				--without-systemdtmpfilesdir --without-systemdsystemunitdir \
+				CFLAGS="${CFLAGS} `I gdbm.h`" \
+				LDFLAGS="${LDFLAGS} `L z` `Wl_rpath_link pipeline`") || return
+		GROFF_FONT_PATH=$(dirname $(which groff))/../share/groff/current/font \
+		GROFF_TMAC_PATH=$(dirname $(which groff))/../share/groff/current/tmac \
+			make -C ${man_db_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${man_db_bld_dir} -j ${jobs} -k check || return
+		make -C ${man_db_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	go)
 		[ -x ${DESTDIR}${prefix}/go/bin/go -a "${force_install}" != yes ] && return
