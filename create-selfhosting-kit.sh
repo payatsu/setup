@@ -220,6 +220,7 @@ EOF
 : ${file_ver:=5.41}
 : ${gperf_ver:=3.1}
 : ${gdbm_ver:=1.23}
+: ${libpipeline_ver:=1.5.3}
 
 : ${go_ver:=1.18.1}
 : ${cmake_ver:=3.22.0}
@@ -632,6 +633,13 @@ fetch()
 	file)
 		wget -O ${file_src_dir}.tar.gz \
 			http://ftp.astron.com/pub/file/${file_name}.tar.gz || return;;
+	libpipeline|man-db)
+		for compress_format in xz gz; do
+			eval wget -O \${${_1}_src_dir}.tar.${compress_format:-xz} \
+				https://download.savannah.nongnu.org/releases/${1:-man-db}/\${${_1:-man_db}_name}.tar.${compress_format:-xz} \
+				&& break \
+				|| eval rm -v \${${_1}_src_dir}.tar.${compress_format:-xz}
+		done || return;;
 	go)
 		wget -O ${go_src_dir}.tar.gz \
 			https://storage.googleapis.com/golang/go${go_ver}.src.tar.gz || return;;
@@ -3294,6 +3302,18 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${gdbm_bld_dir} -j ${jobs} -k check || return
 		make -C ${gdbm_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	libpipeline)
+		[ -f ${DESTDIR}${prefix}/include/pipeline.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${libpipeline_bld_dir}/Makefile ] ||
+			(cd ${libpipeline_bld_dir}
+			${libpipeline_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules --enable-static --disable-rpath) || return
+		make -C ${libpipeline_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${libpipeline_bld_dir} -j ${jobs} -k check || return
+		make -C ${libpipeline_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	go)
 		[ -x ${DESTDIR}${prefix}/go/bin/go -a "${force_install}" != yes ] && return
