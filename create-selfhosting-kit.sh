@@ -219,6 +219,7 @@ EOF
 : ${coreutils_ver:=9.1}
 : ${file_ver:=5.41}
 : ${gperf_ver:=3.1}
+: ${groff_ver:=1.22.4}
 : ${gdbm_ver:=1.23}
 : ${libpipeline_ver:=1.5.3}
 
@@ -412,7 +413,7 @@ fetch()
 	libunistring|binutils|glibc|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|\
 	autoconf|autoconf-archive|automake|bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|\
 	less|emacs|nano|grep|diffutils|patch|global|findutils|poke|help2man|texinfo|coreutils|gperf|\
-	gdbm)
+	groff|gdbm)
 		for compress_format in xz bz2 gz lz; do
 			eval wget -O \${${_1}_src_dir}.tar.${compress_format} \
 				https://ftp.gnu.org/gnu/${1}/\${${_1}_name}.tar.${compress_format} \
@@ -3290,6 +3291,24 @@ EOF
 		make -C ${gperf_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/gperf || return
+		;;
+	groff)
+		[ -x ${DESTDIR}${prefix}/bin/groff -a "${force_install}" != yes ] && return
+		[ ${build} = ${host} ] || which groff > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${groff_bld_dir}/Makefile ] ||
+			(cd ${groff_bld_dir}
+			${groff_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules --disable-rpath) || return
+		sed -i -e '
+			s/^\(\<GROFFBIN\> = \).\+/\1groff/
+			s!^\(\<GROFF_BIN_PATH\> = \).\+!\1'$(dirname $(which groff))'!
+			s/^\(\<PDFMOMBIN\> = \).\+/\1pdfmom/
+			' ${groff_bld_dir}/Makefile || return
+		make -C ${groff_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${groff_bld_dir} -j ${jobs} -k check || return
+		make -C ${groff_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	gdbm)
 		[ -f ${DESTDIR}${prefix}/include/gdbm.h -a "${force_install}" != yes ] && return
