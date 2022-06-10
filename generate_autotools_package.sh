@@ -119,6 +119,7 @@ clean-local:
 EOF
 
 mkdir -p${verbose:+v} build-aux m4 || return
+touch build-aux/.gitkeep m4/.gitkeep || return
 
 libtoolize -c ${verbose:+-v} -W all || return
 aclocal ${verbose:+--verbose} -W all || return
@@ -137,8 +138,8 @@ echo \
 	.deps .libs \
 	GTAGS GRTAGS GPATH \
 	Makefile Makefile.in aclocal.m4 autom4te.cache autoscan.log \
-	config.h config.h.in config.log config.status \
-	configure libtool stamp-h1 tags \
+	build-aux/* !build-aux/.gitkeep config.h config.h.in config.log config.status \
+	configure libtool m4/* !m4/.gitkeep stamp-h1 tags \
 	src/${package_name} \
 	tests/googletest-release-*/ \
 	tests/gtest/ \
@@ -147,6 +148,6 @@ echo \
 
 git rev-parse > /dev/null 2>&1 || git init . || return
 git add .gitignore || return
-git add build-aux m4 || return
+git add build-aux/.gitkeep m4/.gitkeep || return
 git add README README.md || return
 git add configure.ac Makefile.am src/Makefile.am src/${package_name}.cpp tests/Makefile.am tests/test.cpp || return
