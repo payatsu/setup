@@ -332,7 +332,7 @@ EOF
 : ${gst_python_ver:=${gstreamer_ver}}
 : ${orc_ver:=0.4.32}
 
-: ${opencv_ver:=4.5.5}
+: ${opencv_ver:=4.6.0}
 : ${opencv_contrib_ver:=${opencv_ver}}
 
 : ${prefix:=${default_prefix}}
