@@ -194,7 +194,7 @@ EOF
 
 : ${screen_ver:=4.9.0}
 : ${libevent_ver:=2.1.12-stable}
-: ${tmux_ver:=3.2a}
+: ${tmux_ver:=3.3a}
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.1.16}
 : ${tcsh_ver:=TCSH6_23_00}
