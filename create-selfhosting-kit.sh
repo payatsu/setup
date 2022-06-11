@@ -227,7 +227,7 @@ EOF
 : ${go_ver:=1.18.1}
 : ${cmake_ver:=3.22.0}
 : ${ninja_ver:=1.11.0}
-: ${meson_ver:=0.62.1}
+: ${meson_ver:=0.62.2}
 : ${libxml2_ver:=2.9.11}
 : ${llvm_ver:=12.0.1}
 : ${compiler_rt_ver:=${llvm_ver}}
