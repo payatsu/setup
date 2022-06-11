@@ -157,7 +157,7 @@ EOF
 : ${trace_cmd_ver:=v3.1}
 : ${libpcap_ver:=1.10.1}
 : ${tcpdump_ver:=4.99.1}
-: ${procps_ver:=3.3.16}
+: ${procps_ver:=3.3.17}
 : ${sysstat_ver:=12.5.4}
 : ${inetutils_ver:=2.2}
 : ${iproute2_ver:=5.9.0}
