@@ -84,7 +84,7 @@
 : ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=12.1}
 : ${crash_ver:=8.0.1}
-: ${lcov_ver:=1.15}
+: ${lcov_ver:=1.16}
 : ${strace_ver:=5.17}
 : ${ltrace_ver:=0.7.3}
 : ${valgrind_ver:=3.18.1}
