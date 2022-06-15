@@ -3302,7 +3302,7 @@ EOF
 		[ -f ${groff_bld_dir}/Makefile ] ||
 			(cd ${groff_bld_dir}
 			${groff_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules --disable-rpath) || return
-		sed -i -e '
+		[ ${build} = ${host} ] || sed -i -e '
 			s/^\(\<GROFFBIN\> = \).\+/\1groff/
 			s!^\(\<GROFF_BIN_PATH\> = \).\+!\1'$(dirname $(which groff))'!
 			s/^\(\<PDFMOMBIN\> = \).\+/\1pdfmom/
