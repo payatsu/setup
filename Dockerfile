@@ -31,7 +31,7 @@ harfbuzz pango itstool shared-mime-info gdk-pixbuf atk dbus recordproto \
 libXtst at-spi2-core at-spi2-atk graphene gtk v4l-utils gstreamer orc \
 gst-plugins-base gst-plugins-good gst-editing-services gst-rtsp-server gst-omx \
 libwebp openjpeg Imath openexr eigen gflags glog qt hdf5 opencv \
-emacs ghostscript graphviz jdk plantuml"
+emacs ghostscript graphviz jdk plantuml wget"
 
 RUN \
 apt-get update && apt-get upgrade -y && \
@@ -70,7 +70,7 @@ echo Asia/Tokyo > /etc/timezone && \
 DEBIAN_FRONTEND=noninteractive \
 apt-get install -y --no-install-recommends tzdata locales && \
 apt-get install -y --no-install-recommends \
-libc6-dev wget \
+libc6-dev \
 ca-certificates \
 sudo \
 fonts-ricty-diminished \
