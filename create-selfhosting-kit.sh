@@ -108,7 +108,7 @@ EOF
 : ${bzip2_ver:=1.0.8}
 : ${xz_ver:=5.2.5}
 : ${zstd_ver:=1.5.2}
-: ${openssl_ver:=1.1.1o}
+: ${openssl_ver:=1.1.1p}
 : ${libunistring_ver:=1.0}
 : ${libidn2_ver:=2.3.2}
 : ${curl_ver:=7.75.0}
