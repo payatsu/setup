@@ -144,7 +144,7 @@
 : ${openssh_ver:=8.8p1}
 : ${nghttp2_ver:=1.48.0}
 : ${brotli_ver:=1.0.9}
-: ${curl_ver:=7.75.0}
+: ${curl_ver:=7.84.0}
 : ${expat_ver:=2.4.7}
 : ${asciidoc_ver:=10.1.4}
 : ${libxml2_ver:=2.9.11}
@@ -5125,7 +5125,7 @@ install_native_curl()
 	${curl_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 		--enable-optimize --disable-silent-rules \
 		--enable-http --enable-ftp --enable-file \
-		--enable-ldap --enable-ldaps --enable-rtsp --enable-proxy \
+		--disable-ldap --disable-ldaps --enable-rtsp --enable-proxy \
 		--enable-dict --enable-telnet --enable-tftp --enable-pop3 \
 		--enable-imap --enable-smb --enable-smtp --enable-gopher \
 		--enable-mqtt --enable-manual --enable-ipv6 \

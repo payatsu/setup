@@ -111,7 +111,7 @@ EOF
 : ${openssl_ver:=1.1.1p}
 : ${libunistring_ver:=1.0}
 : ${libidn2_ver:=2.3.2}
-: ${curl_ver:=7.75.0}
+: ${curl_ver:=7.84.0}
 : ${elfutils_ver:=0.187}
 : ${binutils_ver:=2.38}
 : ${glibc_ver:=2.35}
@@ -1197,7 +1197,7 @@ build()
 		${curl_src_dir}/configure --prefix=${prefix} --host=${host} \
 			--enable-optimize --disable-silent-rules \
 			--enable-http --enable-ftp --enable-file \
-			--enable-ldap --enable-ldaps --enable-rtsp --enable-proxy \
+			--disable-ldap --disable-ldaps --enable-rtsp --enable-proxy \
 			--enable-dict --enable-telnet --enable-tftp --enable-pop3 \
 			--enable-imap --enable-smb --enable-smtp --enable-gopher \
 			--enable-mqtt --enable-manual --enable-ipv6 --enable-openssl-auto-load-config \
