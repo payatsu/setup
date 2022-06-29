@@ -96,7 +96,7 @@
 : ${giflib_ver:=5.2.1}
 : ${libwebp_ver:=1.2.1}
 : ${emacs_ver:=28.1}
-: ${vim_ver:=8.2.3993}
+: ${vim_ver:=9.0.0006}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.7.2}

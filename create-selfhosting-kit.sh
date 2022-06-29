@@ -199,7 +199,7 @@ EOF
 : ${bash_ver:=5.1.16}
 : ${tcsh_ver:=TCSH6_23_00}
 : ${less_ver:=581.2}
-: ${vim_ver:=8.2.3993}
+: ${vim_ver:=9.0.0006}
 : ${vimdoc_ja_ver:=master}
 : ${emacs_ver:=28.1}
 : ${nano_ver:=6.3}
