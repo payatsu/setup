@@ -5216,6 +5216,7 @@ EOF
 				-DPNG_LIBRARY=`print_library_path libpng.so`  \
 				-DTIFF_INCLUDE_DIR=`print_header_dir tiff.h` \
 				-DTIFF_LIBRARY=`print_library_path libtiff.so` \
+				-DOpenJPEG_DIR=`print_library_dir OpenJPEGConfig.cmake` \
 				-DProtobuf_PROTOC_EXECUTABLE=`which protoc` \
 				-DProtobuf_INCLUDE_DIR=`print_header_dir message.h google/protobuf` \
 				-DProtobuf_LIBRARY=`print_library_path libprotobuf.so` \
