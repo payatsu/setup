@@ -5130,7 +5130,7 @@ install_native_curl()
 		--enable-imap --enable-smb --enable-smtp --enable-gopher \
 		--enable-mqtt --enable-manual --enable-ipv6 \
 		--disable-versioned-symbols \
-		--with-ssl=`print_prefix ssl.h openssl` \
+		--with-openssl=`print_prefix ssl.h openssl` \
 		LDFLAGS="${LDFLAGS} `L psl`") || return
 	make -C ${curl_bld_dir} -j ${jobs} || return
 	make -C ${curl_bld_dir} -j ${jobs} install || return
