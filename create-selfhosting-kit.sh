@@ -111,6 +111,7 @@ EOF
 : ${openssl_ver:=1.1.1p}
 : ${libunistring_ver:=1.0}
 : ${libidn2_ver:=2.3.2}
+: ${nghttp2_ver:=1.48.0}
 : ${curl_ver:=7.84.0}
 : ${elfutils_ver:=0.187}
 : ${binutils_ver:=2.38}
@@ -566,6 +567,9 @@ fetch()
 	libidn2)
 		wget -O ${libidn2_src_dir}.tar.gz \
 			https://ftp.gnu.org/gnu/libidn/${libidn2_name}.tar.gz || return;;
+	nghttp2)
+		wget -O ${nghttp2_src_dir}.tar.xz \
+			https://github.com/nghttp2/nghttp2/releases/download/v${nghttp2_ver}/${nghttp2_name}.tar.xz || return;;
 	curl)
 		wget -O ${curl_src_dir}.tar.xz \
 			https://curl.se/download/${curl_name}.tar.xz || return;;
@@ -1185,12 +1189,24 @@ build()
 			make -C ${libidn2_bld_dir} -j ${jobs} -k check || return
 		make -C ${libidn2_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
+	nghttp2)
+		[ -f ${DESTDIR}${prefix}/include/nghttp2/nghttp2.h -a "${force_install}" != yes ] && return
+		which pkg-config > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} pkg-config || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${nghttp2_bld_dir}/Makefile ] ||
+			(cd ${nghttp2_bld_dir}
+			${nghttp2_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules --enable-lib-only) || return
+		make -C ${nghttp2_bld_dir} -j ${jobs} || return
+		make -C ${nghttp2_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
 	curl)
 		[ -x ${DESTDIR}${prefix}/bin/curl -a "${force_install}" != yes ] && return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
 		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
 		print_header_path idn2.h > /dev/null || ${0} ${cmdopt} libidn2 || return
+		print_header_path nghttp2.h nghttp2 > /dev/null || ${0} ${cmdopt} nghttp2 || return
 		fetch ${1} || return
 		unpack ${1} || return
 		(cd ${curl_bld_dir}
