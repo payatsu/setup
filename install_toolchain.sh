@@ -144,6 +144,7 @@
 : ${openssh_ver:=8.8p1}
 : ${nghttp2_ver:=1.48.0}
 : ${brotli_ver:=1.0.9}
+: ${libssh_ver:=0.9.6}
 : ${curl_ver:=7.84.0}
 : ${expat_ver:=2.4.7}
 : ${asciidoc_ver:=10.1.4}
@@ -712,6 +713,9 @@ fetch()
 		brotli)
 			wget -O ${brotli_src_dir}.tar.gz \
 				https://github.com/google/brotli/archive/refs/tags/v${brotli_ver}.tar.gz || return;;
+		libssh)
+			wget -O ${libssh_src_dir}.tar.xz \
+				https://www.libssh.org/files/`print_version libssh`/${libssh_name}.tar.xz || return;;
 		curl)
 			wget -O ${curl_src_dir}.tar.xz \
 				https://curl.se/download/${curl_name}.tar.xz || return;;
@@ -5110,6 +5114,25 @@ install_native_brotli()
 		|| return
 	cmake --build ${brotli_bld_dir} -v -j ${jobs} || return
 	cmake --install ${brotli_bld_dir} -v ${strip:+--${strip}} || return
+	update_path || return
+}
+
+install_native_libssh()
+{
+	[ -f ${prefix}/include/libssh/libssh.h -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	fetch libssh || return
+	unpack libssh || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${libssh_src_dir} -B ${libssh_bld_dir} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+		|| return
+	cmake --build ${libssh_bld_dir} -v -j ${jobs} || return
+	cmake --install ${libssh_bld_dir} -v ${strip:+--${strip}} || return
 	update_path || return
 }
 
