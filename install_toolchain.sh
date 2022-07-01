@@ -5154,6 +5154,7 @@ install_native_curl()
 		--enable-mqtt --enable-manual --enable-ipv6 \
 		--disable-versioned-symbols \
 		--with-openssl=`print_prefix ssl.h openssl` \
+		--with-libssh=`print_prefix libssh.h libssh || echo no` \
 		LDFLAGS="${LDFLAGS} `L psl`") || return
 	make -C ${curl_bld_dir} -j ${jobs} || return
 	make -C ${curl_bld_dir} -j ${jobs} install || return

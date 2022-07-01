@@ -112,6 +112,7 @@ EOF
 : ${libunistring_ver:=1.0}
 : ${libidn2_ver:=2.3.2}
 : ${nghttp2_ver:=1.48.0}
+: ${libssh_ver:=0.9.6}
 : ${curl_ver:=7.84.0}
 : ${elfutils_ver:=0.187}
 : ${binutils_ver:=2.38}
@@ -570,6 +571,9 @@ fetch()
 	nghttp2)
 		wget -O ${nghttp2_src_dir}.tar.xz \
 			https://github.com/nghttp2/nghttp2/releases/download/v${nghttp2_ver}/${nghttp2_name}.tar.xz || return;;
+	libssh)
+		wget -O ${libssh_src_dir}.tar.xz \
+			https://www.libssh.org/files/`print_version libssh`/${libssh_name}.tar.xz || return;;
 	curl)
 		wget -O ${curl_src_dir}.tar.xz \
 			https://curl.se/download/${curl_name}.tar.xz || return;;
@@ -1200,6 +1204,27 @@ build()
 		make -C ${nghttp2_bld_dir} -j ${jobs} || return
 		make -C ${nghttp2_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
+	libssh)
+		[ -f ${DESTDIR}${prefix}/include/libssh/libssh.h -a "${force_install}" != yes ] && return
+		which cmake > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} cmake || return
+		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		fetch ${1} || return
+		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${libssh_src_dir} -B ${libssh_bld_dir} \
+			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
+			-DCMAKE_C_FLAGS="${CFLAGS} `Wl_rpath_link crypto z`" \
+			-DCMAKE_CXX_FLAGS="${CFLAGS} `Wl_rpath_link crypto z`" \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DZLIB_INCLUDE_DIR=`print_header_dir zlib.h` \
+			-DZLIB_LIBRARY=`print_library_path libz.so` \
+			|| return
+		cmake --build ${libssh_bld_dir} -v -j ${jobs} || return
+		cmake --install ${libssh_bld_dir} -v ${strip:+--${strip}} || return
+		;;
 	curl)
 		[ -x ${DESTDIR}${prefix}/bin/curl -a "${force_install}" != yes ] && return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
@@ -1221,6 +1246,7 @@ build()
 			--with-zlib=`print_prefix zlib.h` \
 			--with-zstd=`print_prefix zstd.h` \
 			--with-openssl=`print_prefix ssl.h openssl` \
+			--with-libssh=`print_prefix libssh.h libssh || echo no` \
 			LDFLAGS="${LDFLAGS} `Wl_rpath_link zstd idn2`" \
 			PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		) || return
@@ -2093,7 +2119,7 @@ EOF
 		unpack ${1} || return
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${cereal_src_dir} -B ${cereal_bld_dir} \
-			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} \
 			-DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 			-DTHREAD_SAFE=ON \
