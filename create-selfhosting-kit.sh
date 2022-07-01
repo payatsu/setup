@@ -227,7 +227,7 @@ EOF
 : ${man_db_ver:=2.9.4}
 
 : ${go_ver:=1.18.1}
-: ${cmake_ver:=3.22.0}
+: ${cmake_ver:=3.23.2}
 : ${ninja_ver:=1.11.0}
 : ${meson_ver:=0.62.2}
 : ${libxml2_ver:=2.9.11}
