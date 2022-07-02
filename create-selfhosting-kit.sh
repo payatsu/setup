@@ -1389,8 +1389,12 @@ EOF
 		unpack ${1} || return
 		[ -f ${mpc_bld_dir}/Makefile ] ||
 			(cd ${mpc_bld_dir}
+			remove_rpath_option ${1} || return
 			${mpc_src_dir}/configure --prefix=${prefix} --host=${host} \
-				--with-gmp=`print_prefix gmp.h` --with-mpfr=`print_prefix mpfr.h`) || return
+				--with-gmp=`print_prefix gmp.h` --with-mpfr=`print_prefix mpfr.h` \
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${mpc_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${mpc_bld_dir} -j ${jobs} -k check || return
