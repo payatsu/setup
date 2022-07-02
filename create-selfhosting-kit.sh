@@ -339,6 +339,7 @@ EOF
 
 : ${lcms2_ver:=2.13.1}
 : ${liblqr_ver:=0.4.2}
+: ${fftw_ver:=3.3.10}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -800,6 +801,9 @@ fetch()
 	liblqr)
 		wget -O ${liblqr_src_dir}.tar.gz \
 			https://github.com/carlobaldassi/liblqr/archive/refs/tags/v${liblqr_ver}.tar.gz || return;;
+	fftw)
+		wget -O ${fftw_src_dir}.tar.gz \
+			https://fftw.org/pub/fftw/${fftw_name}.tar.gz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -5377,6 +5381,21 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${liblqr_bld_dir} -j ${jobs} -k check || return
 		make -C ${liblqr_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	fftw)
+		[ -f ${DESTDIR}${prefix}/include/fftw3.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${fftw_bld_dir}/Makefile ] ||
+			(cd ${fftw_bld_dir}
+			${fftw_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--enable-shared --enable-threads \
+				|| return
+			) || return
+		make -C ${fftw_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${fftw_bld_dir} -j ${jobs} -k check || return
+		make -C ${fftw_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac

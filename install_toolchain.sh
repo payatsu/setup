@@ -230,6 +230,7 @@
 : ${orc_ver:=0.4.32}
 : ${lcms2_ver:=2.13.1}
 : ${liblqr_ver:=0.4.2}
+: ${fftw_ver:=3.3.10}
 : ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.30.0}
 : ${bat_ver:=0.21.0}
@@ -915,6 +916,9 @@ fetch()
 		liblqr)
 			wget -O ${liblqr_src_dir}.tar.gz \
 				https://github.com/carlobaldassi/liblqr/archive/refs/tags/v${liblqr_ver}.tar.gz || return;;
+		fftw)
+			wget -O ${fftw_src_dir}.tar.gz \
+				https://fftw.org/pub/fftw/${fftw_name}.tar.gz || return;;
 		googletest)
 			wget -O ${googletest_src_dir}.tar.gz \
 				https://github.com/google/googletest/archive/release-${googletest_ver}.tar.gz || return;;
@@ -7001,6 +7005,24 @@ install_native_liblqr()
 	[ "${enable_check}" != yes ] ||
 		make -C ${liblqr_bld_dir} -j ${jobs} -k check || return
 	make -C ${liblqr_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_fftw()
+{
+	[ -f ${prefix}/include/fftw3.h -a "${force_install}" != yes ] && return
+	fetch fftw || return
+	unpack fftw || return
+	[ -f ${fftw_bld_dir}/Makefile ] ||
+		(cd ${fftw_bld_dir}
+		${fftw_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+			--enable-shared --enable-openmp --enable-threads \
+			|| return
+		) || return
+	make -C ${fftw_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${fftw_bld_dir} -j ${jobs} -k check || return
+	make -C ${fftw_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
