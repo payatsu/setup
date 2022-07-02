@@ -1342,6 +1342,7 @@ EOF
 		;;
 	gmp)
 		[ -f ${DESTDIR}${prefix}/include/gmp.h -a "${force_install}" != yes ] && return
+		which m4 > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} m4 || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${gmp_bld_dir}/Makefile ] ||
