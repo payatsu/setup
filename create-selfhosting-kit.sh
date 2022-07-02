@@ -3485,6 +3485,8 @@ EOF
 		unpack ${1} || return
 		[ -f ${libxml2_bld_dir}/Makefile ] ||
 			(cd ${libxml2_bld_dir}
+			autoreconf -fiv ${libxml2_src_dir} || return
+			remove_rpath_option ${1} || return
 			${libxml2_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
 				--with-python --with-python-install-dir=${prefix}/lib/python`print_target_python_version`/site-packages \
 				--disable-silent-rules \
@@ -3492,7 +3494,9 @@ EOF
 				LDFLAGS="${LDFLAGS} `L z`" \
 				ac_cv_path_PYTHON=python3 \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-				) || return
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${libxml2_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${libxml2_bld_dir} -j ${jobs} -k check || return
