@@ -1819,13 +1819,17 @@ EOF
 			ACLOCAL_PATH=`print_aclocal_dir | tr '\n' :` ./bootstrap) || return
 		[ -f ${babeltrace_bld_dir}/Makefile ] ||
 			(cd ${babeltrace_bld_dir}
+			remove_rpath_option ${1} || return
 			${babeltrace_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				CPPFLAGS="${CPPFLAGS} `I popt.h`" \
 				LDFLAGS=""${LDFLAGS}" `Wl_rpath_link pcre ffi dw elf bz2 lzma zstd z`"\
 				PKG_CONFIG_SYSROOT_DIR=`print_pkg_config_sysroot glib-2.0.pc` \
 				ac_cv_func_malloc_0_nonnull=yes \
 				ac_cv_func_realloc_0_nonnull=yes \
-				bt_cv_lib_elfutils=yes) || return
+				bt_cv_lib_elfutils=yes \
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${babeltrace_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${babeltrace_bld_dir} -j ${jobs} -k check || return
