@@ -2711,15 +2711,20 @@ EOF
 		[ -x ${DESTDIR}${prefix}/bin/kmod -a "${force_install}" != yes ] && return
 		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
 		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
+		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
 		print_header_path ssl.h openssl > /dev/null || ${0} ${cmdopt} openssl || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${kmod_bld_dir}/Makefile ] ||
 			(cd ${kmod_bld_dir}
+			autoreconf -fiv ${kmod_src_dir} || return
+			remove_rpath_option ${1} || return
 			${kmod_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-				--with-xz --with-zlib --with-openssl \
+				--with-zstd --with-xz --with-zlib --with-openssl \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
-				) || return
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${kmod_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${kmod_bld_dir} -j ${jobs} -k check || return
