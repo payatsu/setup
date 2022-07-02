@@ -3390,11 +3390,15 @@ EOF
 		unpack ${1} || return
 		[ -f ${man_db_bld_dir}/Makefile ] ||
 			(cd ${man_db_bld_dir}
+			remove_rpath_option ${1} || return
 			${man_db_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--disable-setuid --enable-static --disable-rpath \
 				--without-systemdtmpfilesdir --without-systemdsystemunitdir \
 				CFLAGS="${CFLAGS} `I gdbm.h`" \
-				LDFLAGS="${LDFLAGS} `L z` `Wl_rpath_link pipeline`") || return
+				LDFLAGS="${LDFLAGS} `L z` `Wl_rpath_link pipeline`" \
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		GROFF_FONT_PATH=$(dirname $(which groff))/../share/groff/current/font \
 		GROFF_TMAC_PATH=$(dirname $(which groff))/../share/groff/current/tmac \
 			make -C ${man_db_bld_dir} -j ${jobs} || return
