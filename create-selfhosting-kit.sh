@@ -3313,10 +3313,14 @@ EOF
 		unpack ${1} || return
 		[ -f ${file_bld_dir}/Makefile ] ||
 			(cd ${file_bld_dir}
+			autoreconf -fiv ${file_src_dir} || return
+			remove_rpath_option ${1} || return
 			${file_src_dir}/configure --prefix=${prefix} --host=${host} --enable-static --disable-silent-rules \
 				CFLAGS="${CFLAGS} `I zlib.h bzlib.h lzma.h`" \
 				LDFLAGS="${LDFLAGS} `L z bz2 lzma`" \
-				) || return
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${file_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${file_bld_dir} -j ${jobs} check || return
