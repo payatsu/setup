@@ -1240,6 +1240,7 @@ build()
 		fetch ${1} || return
 		unpack ${1} || return
 		(cd ${curl_bld_dir}
+		remove_rpath_option ${1} || return
 		${curl_src_dir}/configure --prefix=${prefix} --host=${host} \
 			--enable-optimize --disable-silent-rules \
 			--enable-http --enable-ftp --enable-file \
@@ -1254,11 +1255,11 @@ build()
 			--with-libssh=`print_prefix libssh.h libssh || echo no` \
 			LDFLAGS="${LDFLAGS} `Wl_rpath_link zstd idn2`" \
 			PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+			|| return
+		remove_rpath_option ${1} || return
 		) || return
 		make -C ${curl_bld_dir} -j ${jobs} || return
 		make -C ${curl_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
-		truncate_path_in_elf ${DESTDIR}${prefix}/bin/curl ${DESTDIR} ${prefix}/lib || return
-		truncate_path_in_elf ${DESTDIR}${prefix}/lib/libcurl.so ${DESTDIR} ${prefix}/lib || return
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/curl || return
 		;;
