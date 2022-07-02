@@ -228,6 +228,7 @@
 : ${gst_omx_ver:=${gstreamer_ver}}
 : ${gst_python_ver:=${gstreamer_ver}}
 : ${orc_ver:=0.4.32}
+: ${lcms2_ver:=2.13.1}
 : ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.30.0}
 : ${bat_ver:=0.21.0}
@@ -907,6 +908,9 @@ fetch()
 		gstreamer|gst-plugins-base|gst-plugins-good|gst-editing-services|gst-rtsp-server|gst-omx|gst-python|orc)
 			eval wget -O \${${_p}_src_dir}.tar.xz \
 				https://gstreamer.freedesktop.org/src/${p:-gstreamer}/\${${_p:-gstreamer}_name}.tar.xz || return;;
+		lcms2)
+			wget -O ${lcms2_src_dir}.tar.gz \
+				https://sourceforge.net/projects/lcms/files/lcms/`print_version lcms2 2`/${lcms2_name}.tar.gz/download || return;;
 		googletest)
 			wget -O ${googletest_src_dir}.tar.gz \
 				https://github.com/google/googletest/archive/release-${googletest_ver}.tar.gz || return;;
@@ -6955,6 +6959,24 @@ install_native_orc()
 	meson --prefix ${prefix} ${strip:+--${strip}} --default-library both ${orc_src_dir} ${orc_bld_dir} || return
 	ninja -v -C ${orc_bld_dir} || return
 	ninja -v -C ${orc_bld_dir} install || return
+	update_path || return
+}
+
+install_native_lcms2()
+{
+	[ -f ${prefix}/include/lcms2.h -a "${force_install}" != yes ] && return
+	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path tiff.h > /dev/null || install_native_tiff || return
+	fetch lcms2 || return
+	unpack lcms2 || return
+	[ -f ${lcms2_bld_dir}/Makefile ] ||
+		(cd ${lcms2_bld_dir}
+		${lcms2_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
+	make -C ${lcms2_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${lcms2_bld_dir} -j ${jobs} -k check || return
+	make -C ${lcms2_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 

@@ -337,6 +337,8 @@ EOF
 : ${opencv_ver:=4.6.0}
 : ${opencv_contrib_ver:=${opencv_ver}}
 
+: ${lcms2_ver:=2.13.1}
+
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
 : ${jobs:=${default_jobs}}
@@ -791,6 +793,9 @@ fetch()
 	opencv|opencv_contrib)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://github.com/opencv/${_1:-opencv}/archive/\${${_1:-opencv}_ver}.tar.gz || return;;
+	lcms2)
+		wget -O ${lcms2_src_dir}.tar.gz \
+			https://sourceforge.net/projects/lcms/files/lcms/`print_version lcms2 2`/${lcms2_name}.tar.gz/download || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -5286,6 +5291,25 @@ EOF
 		;;
 	opencv_contrib)
 		echo nothing to do for ${1}.
+		;;
+	lcms2)
+		[ -f ${DESTDIR}${prefix}/include/lcms2.h -a "${force_install}" != yes ] && return
+		print_header_path jpeglib.h > /dev/null || ${0} ${cmdopt} jpeg || return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path tiff.h > /dev/null || ${0} ${cmdopt} tiff || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${lcms2_bld_dir}/Makefile ] ||
+			(cd ${lcms2_bld_dir}
+			${lcms2_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--with-jpeg=`print_prefix jpeglib.h` \
+				--with-tiff=`print_prefix tiff.h` \
+				--with-zlib=`print_prefix zlib.h` \
+				) || return
+		make -C ${lcms2_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${lcms2_bld_dir} -j ${jobs} -k check || return
+		make -C ${lcms2_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
