@@ -2308,9 +2308,13 @@ EOF
 		unpack ${1} || return
 		[ -f ${inetutils_bld_dir}/Makefile ] ||
 			(cd ${inetutils_bld_dir}
+			autoreconf -fiv ${inetutils_src_dir} || return
+			remove_rpath_option ${1} || return
 			${inetutils_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
-			CFLAGS="${CFLAGS} `I curses.h` -DPATH_PROCNET_DEV=\\\"/proc/net/dev\\\"" \
-			LDFLAGS="${LDFLAGS} `l tinfo`" \
+				CFLAGS="${CFLAGS} `I curses.h` -DPATH_PROCNET_DEV=\\\"/proc/net/dev\\\"" \
+				LDFLAGS="${LDFLAGS} `l tinfo`" \
+				|| return
+			remove_rpath_option ${1} || return
 			) || return
 		make -C ${inetutils_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
