@@ -5301,11 +5301,14 @@ EOF
 		unpack ${1} || return
 		[ -f ${lcms2_bld_dir}/Makefile ] ||
 			(cd ${lcms2_bld_dir}
+			remove_rpath_option ${1} || return
 			${lcms2_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--with-jpeg=`print_prefix jpeglib.h` \
 				--with-tiff=`print_prefix tiff.h` \
 				--with-zlib=`print_prefix zlib.h` \
-				) || return
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${lcms2_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${lcms2_bld_dir} -j ${jobs} -k check || return

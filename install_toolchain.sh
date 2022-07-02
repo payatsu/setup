@@ -6972,7 +6972,10 @@ install_native_lcms2()
 	unpack lcms2 || return
 	[ -f ${lcms2_bld_dir}/Makefile ] ||
 		(cd ${lcms2_bld_dir}
-		${lcms2_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
+		remove_rpath_option lcms2 || return
+		${lcms2_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules || return
+		remove_rpath_option lcms2 || return
+		) || return
 	make -C ${lcms2_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${lcms2_bld_dir} -j ${jobs} -k check || return
