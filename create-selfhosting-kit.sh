@@ -4872,9 +4872,13 @@ EOF
 		unpack ${1} || return
 		[ -f ${libxslt_bld_dir}/Makefile ] ||
 			(cd ${libxslt_bld_dir}
+			autoreconf -fiv ${libxslt_src_dir} || return
+			remove_rpath_option ${1} || return
 			${libxslt_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
 				--with-python=`which python3` \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				|| return
+			remove_rpath_option ${1} || return
 			) || return
 		make -C ${libxslt_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
