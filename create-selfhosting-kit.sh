@@ -338,6 +338,7 @@ EOF
 : ${opencv_contrib_ver:=${opencv_ver}}
 
 : ${lcms2_ver:=2.13.1}
+: ${liblqr_ver:=0.4.2}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -796,6 +797,9 @@ fetch()
 	lcms2)
 		wget -O ${lcms2_src_dir}.tar.gz \
 			https://sourceforge.net/projects/lcms/files/lcms/`print_version lcms2 2`/${lcms2_name}.tar.gz/download || return;;
+	liblqr)
+		wget -O ${liblqr_src_dir}.tar.gz \
+			https://github.com/carlobaldassi/liblqr/archive/refs/tags/v${liblqr_ver}.tar.gz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -5357,6 +5361,22 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${lcms2_bld_dir} -j ${jobs} -k check || return
 		make -C ${lcms2_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	liblqr)
+		[ -f ${DESTDIR}${prefix}/include/lqr-1/lqr.h -a "${force_install}" != yes ] && return
+		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${liblqr_bld_dir}/Makefile ] ||
+			(cd ${liblqr_bld_dir}
+			${liblqr_src_dir}/configure --prefix=${prefix} --host=${host} --enable-static \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				|| return
+			) || return
+		make -C ${liblqr_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${liblqr_bld_dir} -j ${jobs} -k check || return
+		make -C ${liblqr_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac

@@ -229,6 +229,7 @@
 : ${gst_python_ver:=${gstreamer_ver}}
 : ${orc_ver:=0.4.32}
 : ${lcms2_ver:=2.13.1}
+: ${liblqr_ver:=0.4.2}
 : ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.30.0}
 : ${bat_ver:=0.21.0}
@@ -911,6 +912,9 @@ fetch()
 		lcms2)
 			wget -O ${lcms2_src_dir}.tar.gz \
 				https://sourceforge.net/projects/lcms/files/lcms/`print_version lcms2 2`/${lcms2_name}.tar.gz/download || return;;
+		liblqr)
+			wget -O ${liblqr_src_dir}.tar.gz \
+				https://github.com/carlobaldassi/liblqr/archive/refs/tags/v${liblqr_ver}.tar.gz || return;;
 		googletest)
 			wget -O ${googletest_src_dir}.tar.gz \
 				https://github.com/google/googletest/archive/release-${googletest_ver}.tar.gz || return;;
@@ -6980,6 +6984,23 @@ install_native_lcms2()
 	[ "${enable_check}" != yes ] ||
 		make -C ${lcms2_bld_dir} -j ${jobs} -k check || return
 	make -C ${lcms2_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_liblqr()
+{
+	[ -f ${prefix}/include/lqr-1/lqr.h -a "${force_install}" != yes ] && return
+	print_header_path glib.h glib-2.0 > /dev/null || install_native_glib || return
+	fetch liblqr || return
+	unpack liblqr || return
+	[ -f ${liblqr_bld_dir}/Makefile ] ||
+		(cd ${liblqr_bld_dir}
+		${liblqr_src_dir}/configure --prefix=${prefix} --host=${host} --enable-static || return
+		) || return
+	make -C ${liblqr_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${liblqr_bld_dir} -j ${jobs} -k check || return
+	make -C ${liblqr_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 
