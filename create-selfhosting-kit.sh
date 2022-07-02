@@ -1409,9 +1409,14 @@ EOF
 		unpack ${1} || return
 		[ -f ${isl_bld_dir}/Makefile ] ||
 			(cd ${isl_bld_dir}
+			autoreconf -fiv ${isl_src_dir} || return
+			remove_rpath_option ${1} || return
 			${isl_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--with-gmp-prefix=`print_prefix gmp.h` \
-				LDFLAGS="${LDFLAGS} `L z gmp`" LIBS=-lgmp) || return
+				LDFLAGS="${LDFLAGS} `L z gmp`" LIBS=-lgmp \
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
 		make -C ${isl_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${isl_bld_dir} -j ${jobs} -k check || return
