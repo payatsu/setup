@@ -3922,6 +3922,7 @@ EOF
 			|| return
 		cmake --build ${openjpeg_bld_dir} -v -j ${jobs} || return
 		cmake --install ${openjpeg_bld_dir} -v ${strip:+--${strip}} || return
+		sed -i -e "1s!^\(prefix=\).\+\$!\1${prefix}!" ${DESTDIR}${prefix}/lib/pkgconfig/libopenjp2.pc || return
 		;;
 	Imath)
 		[ -f ${DESTDIR}${prefix}/include/Imath/half.h -a "${force_install}" != yes ] && return
