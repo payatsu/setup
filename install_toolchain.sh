@@ -231,6 +231,7 @@
 : ${lcms2_ver:=2.13.1}
 : ${liblqr_ver:=0.4.2}
 : ${fftw_ver:=3.3.10}
+: ${ImageMagick_ver:=7.1.0-39}
 : ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.30.0}
 : ${bat_ver:=0.21.0}
@@ -919,6 +920,9 @@ fetch()
 		fftw)
 			wget -O ${fftw_src_dir}.tar.gz \
 				https://fftw.org/pub/fftw/${fftw_name}.tar.gz || return;;
+		ImageMagick)
+			wget -O ${ImageMagick_src_dir}.tar.xz \
+				https://imagemagick.org/archive/releases/${ImageMagick_name}.tar.xz || return;;
 		googletest)
 			wget -O ${googletest_src_dir}.tar.gz \
 				https://github.com/google/googletest/archive/release-${googletest_ver}.tar.gz || return;;
@@ -7023,6 +7027,41 @@ install_native_fftw()
 	[ "${enable_check}" != yes ] ||
 		make -C ${fftw_bld_dir} -j ${jobs} -k check || return
 	make -C ${fftw_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
+}
+
+install_native_ImageMagick()
+{
+	[ -f ${prefix}/include/ImageMagick-`print_version ImageMagick 1`/MagickCore/version.h -a "${force_install}" != yes ] && return
+	print_header_path bzlib.h > /dev/null || install_native_bzip2 || return
+	print_header_path fftw3.h > /dev/null || install_native_fftw || return
+	print_header_path fontconfig.h fontconfig > /dev/null || install_native_fontconfig || return
+	print_header_path ft2build.h freetype2 > /dev/null || install_native_freetype || return
+	print_header_path jpeglib.h > /dev/null || install_native_jpeg || return
+	print_header_path lcms2.h > /dev/null || install_native_lcms2 || return
+	print_header_path lqr.h lqr-1 > /dev/null || install_native_liblqr || return
+	print_header_path lzma.h > /dev/null || install_native_xz || return
+	print_header_path openexr.h OpenEXR > /dev/null || install_native_openexr || return
+	print_header_path openjpeg.h > /dev/null || install_native_openjpeg || return
+	print_header_path pango.h pango-1.0/pango > /dev/null || install_native_pango || return
+	print_header_path png.h > /dev/null || install_native_libpng || return
+	print_header_path tiff.h > /dev/null || install_native_tiff || return
+	print_header_path decode.h webp > /dev/null || install_native_libwebp || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	print_header_path xmlversion.h libxml2/libxml > /dev/null || install_native_libxml2 || return
+	print_header_path zlib.h > /dev/null || install_native_zlib || return
+	print_header_path zstd.h > /dev/null || install_native_zstd || return
+	fetch ImageMagick || return
+	unpack ImageMagick || return
+	[ -f ${ImageMagick_bld_dir}/Makefile ] ||
+		(cd ${ImageMagick_bld_dir}
+		${ImageMagick_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+			--with-modules --with-fftw || return
+		) || return
+	make -C ${ImageMagick_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${ImageMagick_bld_dir} -j ${jobs} -k check || return
+	make -C ${ImageMagick_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 

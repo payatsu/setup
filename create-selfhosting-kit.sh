@@ -340,6 +340,7 @@ EOF
 : ${lcms2_ver:=2.13.1}
 : ${liblqr_ver:=0.4.2}
 : ${fftw_ver:=3.3.10}
+: ${ImageMagick_ver:=7.1.0-39}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
@@ -804,6 +805,9 @@ fetch()
 	fftw)
 		wget -O ${fftw_src_dir}.tar.gz \
 			https://fftw.org/pub/fftw/${fftw_name}.tar.gz || return;;
+	ImageMagick)
+		wget -O ${ImageMagick_src_dir}.tar.xz \
+			https://imagemagick.org/archive/releases/${ImageMagick_name}.tar.xz || return;;
 	*) echo ERROR: not implemented. can not fetch \'${1}\'. >&2; return 1;;
 	esac
 }
@@ -5402,6 +5406,43 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${fftw_bld_dir} -j ${jobs} -k check || return
 		make -C ${fftw_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	ImageMagick)
+		[ -f ${DESTDIR}${prefix}/include/ImageMagick-`print_version ImageMagick 1`/MagickCore/version.h -a "${force_install}" != yes ] && return
+		print_header_path bzlib.h > /dev/null || ${0} ${cmdopt} bzip2 || return
+		print_header_path fftw3.h > /dev/null || ${0} ${cmdopt} fftw || return
+		print_header_path fontconfig.h fontconfig > /dev/null || ${0} ${cmdopt} fontconfig || return
+		print_header_path ft2build.h freetype2 > /dev/null || ${0} ${cmdopt} freetype || return
+		print_header_path jpeglib.h > /dev/null || ${0} ${cmdopt} jpeg || return
+		print_header_path lcms2.h > /dev/null || ${0} ${cmdopt} lcms2 || return
+		print_header_path lqr.h lqr-1 > /dev/null || ${0} ${cmdopt} liblqr || return
+		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
+		print_header_path openexr.h OpenEXR > /dev/null || ${0} ${cmdopt} openexr || return
+		print_header_path openjpeg.h > /dev/null || ${0} ${cmdopt} openjpeg || return
+		print_header_path pango.h pango-1.0/pango > /dev/null || ${0} ${cmdopt} pango || return
+		print_header_path png.h > /dev/null || ${0} ${cmdopt} libpng || return
+		print_header_path tiff.h > /dev/null || ${0} ${cmdopt} tiff || return
+		print_header_path decode.h webp > /dev/null || ${0} ${cmdopt} libwebp || return
+		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
+		print_header_path xmlversion.h libxml2/libxml > /dev/null || ${0} ${cmdopt} libxml2 || return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${ImageMagick_bld_dir}/Makefile ] ||
+			(cd ${ImageMagick_bld_dir}
+			${ImageMagick_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--with-modules --with-fftw \
+				--x-includes=`print_header_dir Xlib.h X11` --x-libraries=`print_library_dir libX11.so` \
+				CPPFLAGS="${CPPFLAGS} `I bzlib.h`" \
+				LDFLAGS="${LDFLAGS} `L bz2` `Wl_rpath_link xcb uuid`" \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				|| return
+			) || return
+		make -C ${ImageMagick_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${ImageMagick_bld_dir} -j ${jobs} -k check || return
+		make -C ${ImageMagick_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	*) echo ERROR: not implemented. can not build \'${1}\'. >&2; return 1;;
 	esac
