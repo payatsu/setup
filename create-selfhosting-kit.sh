@@ -5431,6 +5431,7 @@ EOF
 		unpack ${1} || return
 		[ -f ${ImageMagick_bld_dir}/Makefile ] ||
 			(cd ${ImageMagick_bld_dir}
+			remove_rpath_option ${1} || return
 			${ImageMagick_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
 				--with-modules --with-fftw \
 				--x-includes=`print_header_dir Xlib.h X11` --x-libraries=`print_library_dir libX11.so` \
@@ -5438,6 +5439,7 @@ EOF
 				LDFLAGS="${LDFLAGS} `L bz2` `Wl_rpath_link xcb uuid`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				|| return
+			remove_rpath_option ${1} || return
 			) || return
 		make -C ${ImageMagick_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
