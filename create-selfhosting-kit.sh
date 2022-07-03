@@ -3961,6 +3961,11 @@ EOF
 			cmake --build ${openexr_bld_dir} -v -j ${jobs} || return
 			cmake --install ${openexr_bld_dir} -v ${strip:+--${strip}} || return
 		done
+		sed -i -e "s!^\(prefix=\).\+\$!\1${prefix}!" -e '
+			s!^\(libdir=\).\+$!\1${prefix}/lib!
+			s!^\(includedir=\).\+$!\1${prefix}/include!
+			s!^\(OpenEXR_includedir=\).\+$!\1${prefix}/include/OpenEXR!
+			' ${DESTDIR}${prefix}/lib/pkgconfig/OpenEXR.pc || return
 		;;
 	eigen)
 		[ -f ${DESTDIR}${prefix}/include/eigen3/Eigen/Core -a "${force_install}" != yes ] && return
