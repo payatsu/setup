@@ -5,7 +5,7 @@
 # [TODO] libav<-
 # [TODO] webkitgtk<-libsoup
 # [TODO] libmount
-# [TODO] rsvg, imagemagick
+# [TODO] rsvg
 # [TODO] Polly, MySQL, grub
 # [TODO] update-alternatives
 
@@ -231,7 +231,7 @@
 : ${lcms2_ver:=2.13.1}
 : ${liblqr_ver:=0.4.2}
 : ${fftw_ver:=3.3.10}
-: ${ImageMagick_ver:=7.1.0-39}
+: ${ImageMagick_ver:=7.1.0-40}
 : ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.30.0}
 : ${bat_ver:=0.21.0}
