@@ -1381,12 +1381,14 @@ EOF
 		unpack ${1} || return
 		[ -f ${mpfr_bld_dir}/Makefile ] ||
 			(cd ${mpfr_bld_dir}
-			autoreconf -fiv ${mpfr_src_dir} || return
-			remove_rpath_option ${1} || return
+			which autoreconf > /dev/null && {
+				autoreconf -fiv ${mpfr_src_dir} || return
+				remove_rpath_option ${1} || return
+			}
 			${mpfr_src_dir}/configure --prefix=${prefix} --host=${host} \
 				--with-gmp=`print_prefix gmp.h` \
 				|| return
-			remove_rpath_option ${1} || return
+			! which autoreconf > /dev/null || remove_rpath_option ${1} || return
 			) || return
 		make -C ${mpfr_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
