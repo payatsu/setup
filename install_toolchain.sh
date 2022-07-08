@@ -231,7 +231,7 @@
 : ${lcms2_ver:=2.13.1}
 : ${liblqr_ver:=0.4.2}
 : ${fftw_ver:=3.3.10}
-: ${ImageMagick_ver:=7.1.0-40}
+: ${ImageMagick_ver:=7.1.0-41}
 : ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.30.0}
 : ${bat_ver:=0.21.0}

@@ -340,7 +340,7 @@ EOF
 : ${lcms2_ver:=2.13.1}
 : ${liblqr_ver:=0.4.2}
 : ${fftw_ver:=3.3.10}
-: ${ImageMagick_ver:=7.1.0-40}
+: ${ImageMagick_ver:=7.1.0-41}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
