@@ -19,6 +19,7 @@ x-volumes:
   - "/tmp/.X11-unix:/tmp/.X11-unix"
   - "${HOME}/.gitconfig:${HOME}/.gitconfig:ro"
   - "${HOME}/.ssh:${HOME}/.ssh:ro"
+  - "${HOME}/workspace:${HOME}/workspace"
 
 services:
   base:
