@@ -4751,8 +4751,9 @@ EOF
 		PATH=${mesa_bld_dir}:${PATH} \
 			meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 				--build.pkg-config-path `readlink -m ${build}${prefix}/lib/${build}/pkgconfig` \
-				-Dcpp_link_args="${LDFLAGS} `L zstd`" \
-				-Dglvnd=true -Dshared-llvm=disabled -Dglx-direct=false ${mesa_src_dir} ${mesa_bld_dir} || return
+				-Dc_args="${CFLAGS} `I zlib.h` `I libdrm/drm.h`/libdrm `I libdrm/nouveau/nouveau.h`/libdrm/nouveau" \
+				-Dcpp_link_args="${LDFLAGS} `L zstd` `Wl_rpath_link lzma`" \
+				-Dplatforms=x11 -Dglvnd=true -Dshared-llvm=disabled -Dglx-direct=false ${mesa_src_dir} ${mesa_bld_dir} || return
 		ninja -v -C ${mesa_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${mesa_bld_dir} install || return
 		;;
