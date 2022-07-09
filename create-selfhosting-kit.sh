@@ -1823,6 +1823,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Diconv=auto -Dtests=false -Dc_args="${CFLAGS} -DLIBICONV_PLUG" ${glib_src_dir} ${glib_bld_dir} || return
 		ninja -v -C ${glib_bld_dir} || return
@@ -4627,6 +4628,7 @@ EOF
 		generate_command_wrapper ${wayland_bld_dir} pkg-config "
 			exec `which_real pkg-config` --define-variable=prefix=`readlink -m ${build}${prefix}` \"\$@\"" || return
 		PATH=${wayland_bld_dir}:${PATH} \
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 			meson --prefix ${prefix} ${strip:+--${strip}} --default-library both \
 				`[ ${build} = ${host} ] && echo --native-file ${cross_file} || echo --cross-file ${cross_file}` \
 				--build.pkg-config-path `{
@@ -4701,6 +4703,7 @@ EOF
 		print_header_path glxproto.h GL > /dev/null || ${0} ${cmdopt} glproto || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			${libglvnd_src_dir} ${libglvnd_bld_dir} || return
 		ninja -v -C ${libglvnd_bld_dir} || return
@@ -4764,6 +4767,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			${glu_src_dir} ${glu_bld_dir} || return
 		ninja -v -C ${glu_bld_dir} || return
@@ -4778,6 +4782,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dc_args="${CFLAGS} `I X11/Xlib.h`" \
 			${libepoxy_src_dir} ${libepoxy_bld_dir} || return
@@ -4795,6 +4800,7 @@ EOF
 		[ ${build} = ${host} ] || which g-ir-scanner > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dc_link_args="${LDFLAGS} `Wl_rpath_link blkid uuid`" \
 			-Dgi_cross_use_prebuilt_gi=true \
@@ -4892,6 +4898,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			${harfbuzz_src_dir} ${harfbuzz_bld_dir} || return
 		ninja -v -C ${harfbuzz_bld_dir} || return
@@ -4906,6 +4913,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			${pango_src_dir} ${pango_bld_dir} || return
 		ninja -v -C ${pango_bld_dir} || return
@@ -4969,6 +4977,7 @@ EOF
 		[ ${build} = ${host} ] || which update-mime-database > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} ${1} || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			${shared_mime_info_src_dir} ${shared_mime_info_bld_dir} || return
 		ninja -v -C ${shared_mime_info_bld_dir} || return
@@ -4987,6 +4996,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dman=false \
 			${gdk_pixbuf_src_dir} ${gdk_pixbuf_bld_dir} || return
@@ -5001,6 +5011,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dintrospection=false \
 			${atk_src_dir} ${atk_bld_dir} || return
@@ -5075,6 +5086,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dintrospection=no \
 			${at_spi2_core_src_dir} ${at_spi2_core_bld_dir} || return
@@ -5090,6 +5102,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			${at_spi2_atk_src_dir} ${at_spi2_atk_bld_dir} || return
 		ninja -v -C ${at_spi2_atk_bld_dir} || return
@@ -5102,6 +5115,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dc_link_args="${LDFLAGS} `Wl_rpath_link ffi pcre`" \
 			${graphene_src_dir} ${graphene_bld_dir} || return
@@ -5116,6 +5130,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Denable-docs=false -Denable-wayland=false \
 			${libxkbcommon_src_dir} ${libxkbcommon_bld_dir} || return
@@ -5139,6 +5154,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dc_link_args="${LDFLAGS} `Wl_rpath_link Xext X11 xcb Xau Xdmcp stdc++`" \
 			-Dintrospection=false \
@@ -5653,7 +5669,6 @@ llvm-config = 'llvm-config'
 exe_wrapper = ['`print_qemu`', '-L', '`print_sysroot`', '-E', 'LD_LIBRARY_PATH=`print_libdir`']
 
 [properties]
-sys_root = '${DESTDIR}'
 pkg_config_libdir = [`print_pkg_config_libdir | sed -e "s/^/'/;s/$/'/;s/:/', '/g"`]
 
 [cmake]
