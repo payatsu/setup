@@ -258,7 +258,7 @@ EOF
 
 : ${cython_ver:=0.29.30}
 : ${OpenBLAS_ver:=0.3.20}
-: ${numpy_ver:=1.23.0}
+: ${numpy_ver:=1.23.1}
 
 : ${util_macros_ver:=1.19.3}
 : ${xproto_ver:=7.0.31}
