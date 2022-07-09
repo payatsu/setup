@@ -4989,6 +4989,7 @@ EOF
 	gdk-pixbuf)
 		[ -f ${DESTDIR}${prefix}/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h -a "${force_install}" != yes ] && return
 		print_header_path png.h > /dev/null || ${0} ${cmdopt} libpng || return
+		print_header_path jpeglib.h > /dev/null || ${0} ${cmdopt} jpeg || return
 		print_header_path glib.h glib-2.0 > /dev/null || ${0} ${cmdopt} glib || return
 		print_header_path Xdamage.h X11/extensions > /dev/null || ${0} ${cmdopt} libXdamage || return
 		print_header_path Xcursor.h X11/Xcursor > /dev/null || ${0} ${cmdopt} libXcursor || return
