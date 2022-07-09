@@ -5173,6 +5173,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dtests=disabled \
 			${gstreamer_src_dir} ${gstreamer_bld_dir} || return
@@ -5189,6 +5190,7 @@ EOF
 		print_header_path png.h > /dev/null || ${0} ${cmdopt} libpng || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dc_link_args="${LDFLAGS} `Wl_rpath_link gmodule-2.0 unwind dw ffi pcre`" \
 			${gst_plugins_base_src_dir} ${gst_plugins_base_bld_dir} || return
@@ -5205,6 +5207,7 @@ EOF
 		print_header_path gtk.h gtk-`print_version gtk 1`.0/gtk > /dev/null || ${0} ${cmdopt} gtk || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dc_link_args="${LDFLAGS} `Wl_rpath_link gmodule-2.0 unwind dw ffi pcre`" \
 			${gst_plugins_good_src_dir} ${gst_plugins_good_bld_dir} || return
@@ -5219,6 +5222,7 @@ EOF
 		print_header_path video.h gstreamer-1.0/gst/video > /dev/null || ${0} ${cmdopt} gst-plugins-base || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dtests=disabled \
 			${gst_editing_services_src_dir} ${gst_editing_services_bld_dir} || return
@@ -5233,6 +5237,7 @@ EOF
 		print_header_path video.h gstreamer-1.0/gst/video > /dev/null || ${0} ${cmdopt} gst-plugins-base || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dtests=disabled ${gst_rtsp_server_src_dir} ${gst_rtsp_server_bld_dir} || return
 		ninja -v -C ${gst_rtsp_server_bld_dir} || return
@@ -5246,6 +5251,7 @@ EOF
 		print_header_path video.h gstreamer-1.0/gst/video > /dev/null || ${0} ${cmdopt} gst-plugins-base || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dtarget=generic ${gst_omx_src_dir} ${gst_omx_bld_dir} || return
 		ninja -v -C ${gst_omx_bld_dir} || return
@@ -5258,6 +5264,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dpycairo=disabled -Dtests=false \
 			${pygobject_src_dir} ${pygobject_bld_dir} || return
@@ -5273,6 +5280,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			-Dlibpython-dir=`print_library_dir libpython$(print_target_python_version).so`  \
 			${gst_python_src_dir} ${gst_python_bld_dir} || return
