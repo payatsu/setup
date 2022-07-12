@@ -110,7 +110,7 @@ EOF
 : ${zstd_ver:=1.5.2}
 : ${openssl_ver:=1.1.1q}
 : ${libunistring_ver:=1.0}
-: ${libidn2_ver:=2.3.2}
+: ${libidn2_ver:=2.3.3}
 : ${nghttp2_ver:=1.48.0}
 : ${libssh_ver:=0.9.6}
 : ${curl_ver:=7.84.0}
@@ -161,7 +161,7 @@ EOF
 : ${tcpdump_ver:=4.99.1}
 : ${procps_ver:=3.3.17}
 : ${sysstat_ver:=12.5.4}
-: ${inetutils_ver:=2.2}
+: ${inetutils_ver:=2.3}
 : ${iproute2_ver:=5.9.0}
 : ${nmap_ver:=7.90}
 : ${i2c_tools_ver:=4.2}

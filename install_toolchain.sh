@@ -135,7 +135,7 @@
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.1.16}
 : ${tcsh_ver:=TCSH6_23_00}
-: ${inetutils_ver:=2.2}
+: ${inetutils_ver:=2.3}
 : ${iproute2_ver:=5.9.0}
 : ${util_linux_ver:=2.37.2}
 : ${e2fsprogs_ver:=1.46.2}
@@ -195,7 +195,7 @@
 : ${tcl_ver:=8.6.11}
 : ${tk_ver:=8.6.11}
 : ${libunistring_ver:=1.0}
-: ${libidn2_ver:=2.3.2}
+: ${libidn2_ver:=2.3.3}
 : ${libpsl_ver:=0.21.1}
 : ${libatomic_ops_ver:=7.6.12}
 : ${gc_ver:=8.0.6}
