@@ -296,7 +296,7 @@ EOF
 : ${dri2proto_ver:=2.8}
 : ${dri3proto_ver:=1.0}
 : ${wayland_ver:=1.20.0}
-: ${wayland_protocols_ver:=1.25}
+: ${wayland_protocols_ver:=1.26}
 : ${libglvnd_ver:=1.4.0}
 : ${libdrm_ver:=2.4.110}
 : ${mesa_ver:=21.3.1}
