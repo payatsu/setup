@@ -246,7 +246,7 @@
 : ${libassuan_ver:=2.5.5}
 : ${gnupg_ver:=2.3.6}
 : ${protobuf_ver:=3.19.4}
-: ${grpc_ver:=1.47.1}
+: ${grpc_ver:=1.48.0}
 : ${libbacktrace_ver:=git}
 : ${poke_ver:=2.1}
 
