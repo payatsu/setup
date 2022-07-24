@@ -140,7 +140,7 @@
 : ${util_linux_ver:=2.37.2}
 : ${e2fsprogs_ver:=1.46.2}
 : ${squashfs_ver:=4.4}
-: ${openssl_ver:=1.1.1q}
+: ${openssl_ver:=3.0.5}
 : ${openssh_ver:=8.8p1}
 : ${nghttp2_ver:=1.48.0}
 : ${brotli_ver:=1.0.9}
@@ -5066,8 +5066,7 @@ install_native_openssl()
 	fetch openssl || return
 	unpack openssl || return
 	(cd ${openssl_bld_dir}
-	MACHINE=`echo ${host} | cut -d- -f1` SYSTEM=Linux \
-		${openssl_src_dir}/config --prefix=${prefix} shared) || return
+	${openssl_src_dir}/config --prefix=${prefix} shared linux-`echo ${host} | cut -d- -f1`) || return
 	make -C ${openssl_bld_dir} -j ${jobs} CROSS_COMPILE=${host}- || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${openssl_bld_dir} -j ${jobs} -k test || return

@@ -108,7 +108,7 @@ EOF
 : ${bzip2_ver:=1.0.8}
 : ${xz_ver:=5.2.5}
 : ${zstd_ver:=1.5.2}
-: ${openssl_ver:=1.1.1q}
+: ${openssl_ver:=3.0.5}
 : ${libunistring_ver:=1.0}
 : ${libidn2_ver:=2.3.3}
 : ${nghttp2_ver:=1.48.0}
@@ -1167,8 +1167,7 @@ build()
 		unpack ${1} || return
 		[ -f ${openssl_bld_dir}/Makefile ] ||
 			(cd ${openssl_bld_dir}
-			MACHINE=`echo ${host} | cut -d- -f1` SYSTEM=Linux \
-				${openssl_src_dir}/config --prefix=${prefix} shared) || return
+			${openssl_src_dir}/config --prefix=${prefix} shared linux-`echo ${host} | cut -d- -f1`) || return
 		make -C ${openssl_bld_dir} -j ${jobs} `[ -z "${CC}" ] && echo CROSS_COMPILE=${host}-` || return
 		[ "${enable_check}" != yes ] ||
 			make -C ${openssl_bld_dir} -j ${jobs} -k test || return
