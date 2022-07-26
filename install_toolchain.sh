@@ -248,7 +248,7 @@
 : ${protobuf_ver:=3.19.4}
 : ${grpc_ver:=1.48.0}
 : ${libbacktrace_ver:=git}
-: ${poke_ver:=2.1}
+: ${poke_ver:=2.4}
 
 : ${xproto_ver:=7.0.31}
 : ${libXau_ver:=1.0.9}
