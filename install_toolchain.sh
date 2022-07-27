@@ -184,7 +184,7 @@
 : ${boost_ver:=1_79_0}
 : ${Python_ver:=3.10.5}
 : ${Python2_ver:=2.7.18}
-: ${cython_ver:=0.29.30}
+: ${cython_ver:=0.29.31}
 : ${OpenBLAS_ver:=0.3.20}
 : ${numpy_ver:=1.23.1}
 : ${rustc_ver:=1.62.1}
@@ -231,7 +231,7 @@
 : ${lcms2_ver:=2.13.1}
 : ${liblqr_ver:=0.4.2}
 : ${fftw_ver:=3.3.10}
-: ${ImageMagick_ver:=7.1.0-43}
+: ${ImageMagick_ver:=7.1.0-44}
 : ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.31.0}
 : ${bat_ver:=0.21.0}

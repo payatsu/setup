@@ -256,7 +256,7 @@ EOF
 : ${glog_ver:=0.6.0}
 : ${protobuf_ver:=3.19.4}
 
-: ${cython_ver:=0.29.30}
+: ${cython_ver:=0.29.31}
 : ${OpenBLAS_ver:=0.3.20}
 : ${numpy_ver:=1.23.1}
 
@@ -340,7 +340,7 @@ EOF
 : ${lcms2_ver:=2.13.1}
 : ${liblqr_ver:=0.4.2}
 : ${fftw_ver:=3.3.10}
-: ${ImageMagick_ver:=7.1.0-43}
+: ${ImageMagick_ver:=7.1.0-44}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
