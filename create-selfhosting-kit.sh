@@ -256,7 +256,7 @@ EOF
 : ${glog_ver:=0.6.0}
 : ${protobuf_ver:=3.19.4}
 
-: ${cython_ver:=0.29.31}
+: ${cython_ver:=0.29.32}
 : ${OpenBLAS_ver:=0.3.20}
 : ${numpy_ver:=1.23.1}
 
