@@ -156,11 +156,11 @@
 : ${git_manpages_ver:=${git_ver}}
 : ${git_lfs_ver:=3.2.0}
 : ${mercurial_ver:=6.1.1}
-: ${sqlite_ver:=3340100}
+: ${sqlite_ver:=3390200}
 : ${apr_ver:=1.7.0}
 : ${apr_util_ver:=1.6.1}
 : ${utf8proc_ver:=2.7.0}
-: ${subversion_ver:=1.14.1}
+: ${subversion_ver:=1.14.2}
 : ${ninja_ver:=1.11.0}
 : ${meson_ver:=0.63.0}
 : ${cmake_ver:=3.23.2}
@@ -749,16 +749,16 @@ fetch()
 				https://www.mercurial-scm.org/release/${mercurial_name}.tar.gz || return;;
 		sqlite)
 			wget -O ${sqlite_src_dir}.tar.gz \
-				https://www.sqlite.org/2021/${sqlite_name}.tar.gz || return;;
+				https://www.sqlite.org/2022/${sqlite_name}.tar.gz || return;;
 		apr|apr-util)
 			eval wget -O \${${_p}_src_dir}.tar.bz2 \
-				https://ftp.tsukuba.wide.ad.jp/software/apache/apr/\${${_p:-apr}_name}.tar.bz2 || return;;
+				https://dlcdn.apache.org/apr/\${${_p:-apr}_name}.tar.bz2 || return;;
 		utf8proc)
 			wget -O ${utf8proc_src_dir}.tar.gz \
 				https://github.com/JuliaStrings/utf8proc/archive/v${utf8proc_ver}.tar.gz || return;;
 		subversion)
 			wget -O ${subversion_src_dir}.tar.bz2 \
-				https://ftp.tsukuba.wide.ad.jp/software/apache/subversion/${subversion_name}.tar.bz2 || return;;
+				https://dlcdn.apache.org/subversion/${subversion_name}.tar.bz2 || return;;
 		ninja)
 			wget -O ${ninja_src_dir}.tar.gz \
 				https://github.com/ninja-build/ninja/archive/v${ninja_ver}.tar.gz || return;;
@@ -5425,14 +5425,17 @@ install_native_subversion()
 	unpack subversion || return
 	[ -f ${subversion_bld_dir}/Makefile ] ||
 		(cd ${subversion_bld_dir}
+		(cd ${subversion_src_dir}; ./autogen.sh || return) || return
 		remove_rpath_option subversion || return
-		autoreconf -fiv ${subversion_src_dir} || return
 		${subversion_src_dir}/configure --prefix=${prefix} --build=${build} \
 			--with-zlib=`print_prefix zlib.h` \
 			--with-sqlite=`print_prefix sqlite3.h` \
 			--with-lz4=`print_prefix lz4.h` ${strip:+--enable-optimize} \
 			CFLAGS="${CFLAGS} `I utf8proc.h`" \
-			LDFLAGS="${LDFLAGS} `L utf8proc`") || return
+			LDFLAGS="${LDFLAGS} `L utf8proc`" \
+			|| return
+		remove_rpath_option subversion || return
+		) || return
 	make -C ${subversion_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${subversion_bld_dir} -j ${jobs} -k check || return

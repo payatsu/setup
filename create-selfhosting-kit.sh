@@ -129,7 +129,7 @@ EOF
 : ${readline_ver:=8.1}
 : ${expat_ver:=2.4.7}
 : ${libffi_ver:=3.4.2}
-: ${sqlite_ver:=3340100}
+: ${sqlite_ver:=3390200}
 : ${Python_ver:=3.10.5}
 : ${boost_ver:=1_79_0}
 : ${source_highlight_ver:=3.1.9}
@@ -457,7 +457,7 @@ fetch()
 					https://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return;;
 	sqlite)
 		wget -O ${sqlite_src_dir}.tar.gz \
-			https://www.sqlite.org/2021/${sqlite_name}.tar.gz || return;;
+			https://www.sqlite.org/2022/${sqlite_name}.tar.gz || return;;
 	Python)
 		wget -O ${Python_src_base}/Python-${Python_ver}.tar.xz \
 			https://www.python.org/ftp/python/${Python_ver}/${Python_name}.tar.xz || return;;
