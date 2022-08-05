@@ -116,7 +116,7 @@ EOF
 : ${curl_ver:=7.84.0}
 : ${elfutils_ver:=0.187}
 : ${binutils_ver:=2.38}
-: ${glibc_ver:=2.35}
+: ${glibc_ver:=2.36}
 : ${gmp_ver:=6.2.1}
 : ${mpfr_ver:=4.1.0}
 : ${mpc_ver:=1.2.1}

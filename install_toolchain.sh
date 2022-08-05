@@ -70,7 +70,7 @@
 : ${u_boot_ver:=2022.01}
 : ${qemu_ver:=7.0.0}
 : ${gperf_ver:=3.1}
-: ${glibc_ver:=2.35}
+: ${glibc_ver:=2.36}
 : ${newlib_ver:=4.1.0}
 : ${mingw_w64_ver:=9.0.0}
 : ${gmp_ver:=6.2.1}
