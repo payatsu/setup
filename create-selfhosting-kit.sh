@@ -226,7 +226,7 @@ EOF
 : ${libpipeline_ver:=1.5.3}
 : ${man_db_ver:=2.9.4}
 
-: ${go_ver:=1.18.4}
+: ${go_ver:=1.19}
 : ${cmake_ver:=3.23.2}
 : ${ninja_ver:=1.11.0}
 : ${meson_ver:=0.63.0}
