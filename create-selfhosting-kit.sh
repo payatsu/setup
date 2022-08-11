@@ -151,7 +151,7 @@ EOF
 : ${libunwindnongnu_ver:=1.6.2}
 : ${libpfm_ver:=4.11.0}
 : ${libbpf_ver:=0.8.1}
-: ${bcc_ver:=0.24.0}
+: ${bcc_ver:=0.25.0}
 : ${cereal_ver:=1.3.2}
 : ${bpftrace_ver:=0.15.0}
 : ${libtraceevent_ver:=1.6.0}
