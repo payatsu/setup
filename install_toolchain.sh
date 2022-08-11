@@ -233,7 +233,7 @@
 : ${fftw_ver:=3.3.10}
 : ${ImageMagick_ver:=7.1.0-45}
 : ${googletest_ver:=1.10.0}
-: ${fzf_ver:=0.31.0}
+: ${fzf_ver:=0.32.1}
 : ${bat_ver:=0.21.0}
 : ${jq_ver:=1.6}
 : ${libpcap_ver:=1.10.1}
