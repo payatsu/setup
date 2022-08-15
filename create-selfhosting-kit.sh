@@ -183,7 +183,7 @@ EOF
 : ${lzip_ver:=1.22}
 : ${ed_ver:=1.18}
 : ${bc_ver:=1.07.1}
-: ${rsync_ver:=3.2.4}
+: ${rsync_ver:=3.2.5}
 : ${dtc_ver:=1.6.0}
 : ${kmod_ver:=28}
 : ${u_boot_ver:=2022.01}
