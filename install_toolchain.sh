@@ -484,10 +484,8 @@ fetch()
 				https://download.samba.org/pub/rsync/src/${rsync_name}.tar.gz || return;;
 		linux|perf)
 			case `print_version linux` in
-			2.6)     linux_major_ver=v2.6;;
-			3.*)     linux_major_ver=v3.x;;
-			[456].*) linux_major_ver=v`print_version linux 1`.x;;
-			*)       echo unsupported linux version >&2; return 1;;
+			2.6) linux_major_ver=v2.6;;
+			*)   linux_major_ver=v`print_version linux 1`.x;;
 			esac
 			wget -O ${linux_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/kernel/${linux_major_ver:-v`print_version linux 1`.x}/${linux_name}.tar.xz || return;;

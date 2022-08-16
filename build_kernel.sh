@@ -76,9 +76,7 @@ fetch()
 {
 	case `echo ${linux_ver} | cut -d. -f1,2` in
 	2.6) linux_major_ver=v2.6;;
-	3.*) linux_major_ver=v3.x;;
-	[456].*) linux_major_ver=v`echo ${linux_ver} | cut -d. -f1`.x;;
-	*)   echo unsupported linux version >&2; return 1;;
+	*) linux_major_ver=v`echo ${linux_ver} | cut -d. -f1`.x;;
 	esac
 	[ -f Kbuild ] || {
 		[ -f linux-${linux_ver}.tar.xz ] || wget ${verbose:+-v} https://www.kernel.org/pub/linux/kernel/${linux_major_ver}/linux-${linux_ver}.tar.xz || return
