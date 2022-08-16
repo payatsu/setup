@@ -165,6 +165,7 @@ EOF
 : ${iproute2_ver:=5.9.0}
 : ${nmap_ver:=7.90}
 : ${i2c_tools_ver:=4.2}
+: ${pciutils_ver:=3.8.0}
 
 : ${m4_ver:=1.4.19}
 : ${perl_ver:=5.36.0}
@@ -560,7 +561,10 @@ fetch()
 			https://nmap.org/dist/${nmap_name}.tar.bz2 || return;;
 	i2c-tools)
 		wget -O ${i2c_tools_src_dir}.tar.xz \
-			https://mirrors.edge.kernel.org/pub/software/utils/i2c-tools/${i2c_tools_name}.tar.xz || return;;
+			https://www.kernel.org/pub/software/utils/i2c-tools/${i2c_tools_name}.tar.xz || return;;
+	pciutils)
+		wget -O ${pciutils_src_dir}.tar.xz \
+			https://www.kernel.org/pub/software/utils/pciutils/${pciutils_name}.tar.xz || return;;
 	perl)
 		wget -O ${perl_src_dir}.tar.gz \
 			https://www.cpan.org/src/5.0/${perl_name}.tar.gz || return;;
@@ -2423,6 +2427,22 @@ EOF
 		make -C ${i2c_tools_bld_dir} -j ${jobs} EXTRA= PYTHON=python3 CC="${CC:-${host:+${host}-}gcc}" AR="${AR:-${host:+${host}-}ar}" || return
 		[ -z "${strip}" ] || make -C ${i2c_tools_bld_dir} -j ${jobs} EXTRA= STRIP="${STRIP:-${host:+${host}-}strip}" strip || return
 		make -C ${i2c_tools_bld_dir} -j ${jobs} EXTRA= PREFIX=${prefix} DESTDIR=${DESTDIR} install || return
+		;;
+	pciutils)
+		[ -x ${DESTDIR}${prefix}/bin/lspci -a "${force_install}" != yes ] && return
+		print_header_path libkmod.h > /dev/null || ${0} ${cmdopt} kmod || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${pciutils_bld_dir}/Makefile ] || cp -Tvr ${pciutils_src_dir} ${pciutils_bld_dir} || return
+		sed -i -e "
+			/^\(PREFIX=\).\+/s!!\1${prefix}!
+			/^STRIP=-s\$/s!!& --strip-program=${host:+${host}-}strip!" ${pciutils_bld_dir}/Makefile || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+		make -C ${pciutils_bld_dir} -j ${jobs} PREFIX=${prefix} HOST=${host} \
+			CROSS_COMPILE=${host:+${host}-} \
+			LDFLAGS="${LDFLAGS} `Wl_rpath_link zstd lzma z crypto`" \
+			|| return
+		make -C ${pciutils_bld_dir} -j ${jobs} install DESTDIR=${DESTDIR} || return
 		;;
 	m4)
 		[ -x ${DESTDIR}${prefix}/bin/m4 -a "${force_install}" != yes ] && return
