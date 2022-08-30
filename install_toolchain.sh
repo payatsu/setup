@@ -166,7 +166,7 @@
 : ${cmake_ver:=3.23.2}
 : ${bazel_ver:=2.2.0}
 : ${Bear_ver:=2.4.3}
-: ${ccache_ver:=4.6.2}
+: ${ccache_ver:=4.6.3}
 : ${distcc_ver:=3.4}
 : ${libedit_ver:=20210910-3.1}
 : ${swig_ver:=4.0.2}
