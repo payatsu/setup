@@ -2628,14 +2628,14 @@ install_native_bpftrace()
 		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 		-DCMAKE_C_FLAGS="${CFLAGS} `Wl_rpath_link debuginfod`" \
-		-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bcc/compat/linux/bpf.h`/bcc/compat `I bfd.h libz.h` `Wl_rpath_link debuginfod curl zstd tinfo`" \
+		-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bfd.h libz.h` `Wl_rpath_link debuginfod curl zstd tinfo`" \
 		-DENABLE_MAN=OFF \
 		-DBUILD_TESTING=OFF \
 		-DLIBBCC_INCLUDE_DIRS=`print_header_dir bcc_version.h bcc` \
 		-DLIBBCC_LIBRARIES=`print_library_path libbcc.so` \
 		-DLIBBFD_INCLUDE_DIRS=`print_header_dir bfd.h` \
 		-DLIBBFD_LIBRARIES=`print_library_path libbfd.so` \
-		-DLIBBPF_INCLUDE_DIRS=`print_header_dir libbpf.h` \
+		-DLIBBPF_INCLUDE_DIRS=`print_header_dir libbpf.h bpf` \
 		-DLIBBPF_LIBRARIES=`print_library_path libbpf.so` \
 		-DLIBDW_INCLUDE_DIRS=`print_header_dir libdw.h elfutils.h` \
 		-DLIBDW_LIBRARIES=`print_library_path libdw.so` \

@@ -2201,7 +2201,7 @@ EOF
 			-DLIBBCC_LIBRARIES=`print_library_path libbcc.so` \
 			-DLIBBFD_INCLUDE_DIRS=`print_header_dir bfd.h` \
 			-DLIBBFD_LIBRARIES=`print_library_path libbfd.so` \
-			-DLIBBPF_INCLUDE_DIRS=`print_header_dir libbpf.h` \
+			-DLIBBPF_INCLUDE_DIRS=`print_header_dir libbpf.h bpf` \
 			-DLIBBPF_LIBRARIES=`print_library_path libbpf.so` \
 			-DLIBDW_INCLUDE_DIRS=`print_header_dir libdw.h elfutils.h` \
 			-DLIBDW_LIBRARIES=`print_library_path libdw.so` \
