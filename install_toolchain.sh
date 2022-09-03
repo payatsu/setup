@@ -6513,12 +6513,13 @@ install_native_jdk()
 	for f in `find ${DESTDIR}${prefix}/jdk/bin -type f`; do
 		ln -fsv `echo ${f} | sed -e "s%${DESTDIR}${prefix}/jdk/bin%../jdk/bin%"` ${DESTDIR}${prefix}/bin/`basename ${f}` || return
 	done
-	mkdir -pv ${DESTDIR}${prefix}/include || return
-	for f in `find ${DESTDIR}${prefix}/jdk/include -mindepth 1 -maxdepth 1`; do
-		ln -fsv `echo ${f} | sed -e "s%${DESTDIR}${prefix}/jdk/include%../jdk/include%"` ${DESTDIR}${prefix}/include/`basename ${f}` || return
+	mkdir -pv ${DESTDIR}${prefix}/include/linux || return
+	for f in `find ${DESTDIR}${prefix}/jdk/include -mindepth 1 -type f`; do
+		ln -fsv `echo ${f} | sed -e "s%${DESTDIR}${prefix}/jdk/include%../jdk/include%"` \
+			${DESTDIR}${prefix}/include`echo ${f} | sed -e "s%${DESTDIR}${prefix}/jdk/include%%"` || return
 	done
 	mkdir -pv ${DESTDIR}${prefix}/lib || return
-	for f in `find ${DESTDIR}${prefix}/jdk/lib -mindepth 1 -maxdepth 1 ! -name src.zip `; do
+	for f in `find ${DESTDIR}${prefix}/jdk/lib -mindepth 1 -maxdepth 1 ! -name src.zip`; do
 		ln -fsv `echo ${f} | sed -e "s%${DESTDIR}${prefix}/jdk/lib%../jdk/lib%"` ${DESTDIR}${prefix}/lib/`basename ${f}` || return
 	done
 }
