@@ -150,10 +150,10 @@ EOF
 : ${OpenCSD_ver:=1.2.1}
 : ${libunwindnongnu_ver:=1.6.2}
 : ${libpfm_ver:=4.11.0}
-: ${libbpf_ver:=0.8.1}
-: ${bcc_ver:=0.24.0}
+: ${libbpf_ver:=1.0.0}
+: ${bcc_ver:=0.25.0}
 : ${cereal_ver:=1.3.2}
-: ${bpftrace_ver:=0.15.0}
+: ${bpftrace_ver:=0.16.0}
 : ${libtraceevent_ver:=1.6.0}
 : ${libtracefs_ver:=1.4.0}
 : ${trace_cmd_ver:=v3.1}
@@ -2193,10 +2193,11 @@ EOF
 			-DCMAKE_C_COMPILER=${host:+${host}-}gcc \
 			-DCMAKE_CXX_COMPILER=${host:+${host}-}g++ \
 			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
-			-DCMAKE_C_FLAGS="${CFLAGS} `Wl_rpath_link debuginfod stdc++`" \
-			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bfd.h libz.h` `Wl_rpath_link debuginfod curl zstd tinfo`" \
+			-DCMAKE_C_FLAGS="${CFLAGS} `L elf z` `Wl_rpath_link debuginfod stdc++`" \
+			-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bfd.h libz.h` `I bcc/compat/linux/bpf.h`/bcc/compat `L elf z` `Wl_rpath_link debuginfod curl zstd tinfo`" \
 			-DENABLE_MAN=OFF \
 			-DBUILD_TESTING=OFF \
+			-DKERNEL_INCLUDE_DIRS=`print_header_dir bpf.h bcc/compat/linux`/bcc/compat \
 			-DLIBBCC_INCLUDE_DIRS=`print_header_dir bcc_version.h bcc` \
 			-DLIBBCC_LIBRARIES=`print_library_path libbcc.so` \
 			-DLIBBFD_INCLUDE_DIRS=`print_header_dir bfd.h` \
