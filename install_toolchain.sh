@@ -101,7 +101,7 @@
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.7.2}
 : ${nano_ver:=6.4}
-: ${grep_ver:=3.7}
+: ${grep_ver:=3.8}
 : ${global_ver:=6.6.6}
 : ${pcre2_ver:=10.40}
 : ${the_silver_searcher_ver:=2.2.0}
@@ -4408,7 +4408,7 @@ install_native_nano()
 install_native_grep()
 {
 	[ -x ${prefix}/bin/grep -a "${force_install}" != yes ] && return
-	print_header_path pcre.h > /dev/null || install_native_pcre || return
+	print_header_path pcre2.h > /dev/null || install_native_pcre2 || return
 	fetch grep || return
 	unpack grep || return
 	[ -f ${grep_bld_dir}/Makefile ] ||

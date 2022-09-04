@@ -207,7 +207,7 @@ EOF
 : ${emacs_ver:=28.1}
 : ${nano_ver:=6.4}
 : ${ctags_ver:=git}
-: ${grep_ver:=3.7}
+: ${grep_ver:=3.8}
 : ${diffutils_ver:=3.8}
 : ${patch_ver:=2.7.6}
 : ${global_ver:=6.6.6}
@@ -3187,7 +3187,7 @@ EOF
 		;;
 	grep)
 		[ -x ${DESTDIR}${prefix}/bin/grep -a "${force_install}" != yes ] && return
-		print_header_path pcre.h > /dev/null || ${0} ${cmdopt} pcre || return
+		print_header_path pcre2.h > /dev/null || ${0} ${cmdopt} pcre2 || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${grep_bld_dir}/Makefile ] ||
