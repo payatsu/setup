@@ -170,14 +170,14 @@ EOF
 : ${m4_ver:=1.4.19}
 : ${perl_ver:=5.36.0}
 : ${autoconf_ver:=2.71}
-: ${autoconf_archive_ver:=2022.02.11}
+: ${autoconf_archive_ver:=2022.09.03}
 : ${automake_ver:=1.16.5}
 : ${bison_ver:=3.8.1}
 : ${flex_ver:=2.6.4}
 : ${libtool_ver:=2.4.7}
 : ${pkg_config_ver:=0.29.2}
 : ${sed_ver:=4.8}
-: ${gawk_ver:=5.1.0}
+: ${gawk_ver:=5.2.0}
 : ${gettext_ver:=0.21}
 : ${git_ver:=2.37.2}
 : ${openssh_ver:=8.8p1}

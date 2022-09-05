@@ -37,12 +37,12 @@
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.19}
 : ${autoconf_ver:=2.71}
-: ${autoconf_archive_ver:=2022.02.11}
+: ${autoconf_archive_ver:=2022.09.03}
 : ${automake_ver:=1.16.5}
 : ${autogen_ver:=5.18.16}
 : ${libtool_ver:=2.4.7}
 : ${sed_ver:=4.8}
-: ${gawk_ver:=5.1.0}
+: ${gawk_ver:=5.2.0}
 : ${gnulib_ver:=git}
 : ${make_ver:=4.3}
 : ${binutils_ver:=2.38}
