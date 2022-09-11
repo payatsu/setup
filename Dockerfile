@@ -20,11 +20,11 @@ libXrender randrproto libXrandr libXcursor xineramaproto libXinerama \
 libxkbcommon libpciaccess libdrm libxshmfence wayland wayland-protocols \
 glproto dri2proto dri3proto libglvnd mesa glu libepoxy tcl tk git cpio zip \
 unzip lzip lunzip lzo lzop lz4 file groff libpipeline man-db ed bc patch \
-Bear ccache ruby libatomic_ops gc guile boost source-highlight \
-util-linux popt babeltrace gdb make autogen openssh go rustc \
-zsh bash screen libevent tmux lua vim neovim global the_silver_searcher \
-the_platinum_searcher gperf highway ripgrep fzf jq protobuf rsync dtc strace \
-sysstat procps systemtap libbpf bcc cereal bpftrace libcap numactl OpenCSD libpfm perf \
+Bear ccache ruby libatomic_ops gc guile boost source-highlight util-linux \
+popt babeltrace gdb make autogen openssh go rustc zsh bash screen libevent tmux \
+lua vim neovim global the_silver_searcher the_platinum_searcher gperf highway \
+ripgrep fzf jq protobuf rsync dtc strace sysstat procps systemtap \
+libbpf bcc cereal bpftrace libcap numactl OpenCSD libpfm libtraceevent libtracefs perf \
 libpcap tcpdump iproute2 nmap diffutils poke cython OpenBLAS numpy tiff libpng \
 jpeg giflib gobject-introspection pixman freetype fontconfig cairo fribidi \
 harfbuzz pango itstool shared-mime-info gdk-pixbuf atk dbus recordproto \

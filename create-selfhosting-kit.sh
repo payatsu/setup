@@ -1997,24 +1997,30 @@ EOF
 		print_header_path ocsd_if_version.h opencsd > /dev/null || ${0} ${cmdopt} OpenCSD || return
 		print_header_path libunwind.h > /dev/null || ${0} ${cmdopt} libunwindnongnu || return
 		print_header_path pfmlib.h perfmon > /dev/null || ${0} ${cmdopt} libpfm || return
+		print_header_path kbuffer.h traceevent > /dev/null || ${0} ${cmdopt} libtraceevent || return
+		print_header_path tracefs.h tracefs > /dev/null || ${0} ${cmdopt} libtracefs || return
 		print_header_path Python.h > /dev/null || ${0} ${cmdopt} Python || return
 		fetch linux || return
 		unpack linux || return
 		mkdir -pv ${perf_bld_dir} || return
+		ln -fsv `which pkg-config` ${perf_bld_dir}/${host}-pkg-config || return
+		PATH=${perf_bld_dir}:${PATH} \
 		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${host:+${host}-} \
-			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h Python.h` `L opcodes bfd dw elf crypto lzma zstd z babeltrace-ctf bpf cap numa opencsd_c_api opencsd unwind pfm`" \
+			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h event-parse.h Python.h` `L opcodes bfd dw elf crypto lzma zstd z babeltrace-ctf bpf cap numa opencsd_c_api opencsd unwind pfm`" \
 			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L opcodes bfd dw elf crypto lzma zstd z babeltrace-ctf bpf cap numa opencsd_c_api opencsd unwind pfm`" \
-			LDFLAGS="${LDFLAGS} `Wl_rpath_link dw elf bz2 lzma zstd z babeltrace popt uuid gmodule-2.0 glib-2.0 stdc++`" \
+			LDFLAGS="${LDFLAGS} `Wl_rpath_link traceevent dw elf bz2 lzma zstd z babeltrace popt uuid gmodule-2.0 glib-2.0 stdc++`" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
+			LIBTRACEEVENT_DYNAMIC=1 LIBTRACEFS_DYNAMIC=1 \
 			prefix=${prefix} all || return
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${host:+${host}-} \
-			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h Python.h` `L opcodes bfd dw elf crypto lzma zstd z babeltrace-ctf bpf cap numa opencsd_c_api opencsd unwind pfm`" \
+			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h event-parse.h Python.h` `L opcodes bfd dw elf crypto lzma zstd z babeltrace-ctf bpf cap numa opencsd_c_api opencsd unwind pfm`" \
 			EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h` `L opcodes bfd dw elf crypto lzma zstd z babeltrace-ctf bpf cap numa opencsd_c_api opencsd unwind pfm`" \
-			LDFLAGS="${LDFLAGS} `Wl_rpath_link dw elf bz2 lzma zstd z babeltrace popt uuid gmodule-2.0 glib-2.0 stdc++`" \
+			LDFLAGS="${LDFLAGS} `Wl_rpath_link traceevent dw elf bz2 lzma zstd z babeltrace popt uuid gmodule-2.0 glib-2.0 stdc++`" \
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
+			LIBTRACEEVENT_DYNAMIC=1 LIBTRACEFS_DYNAMIC=1 \
 			prefix=${prefix} DESTDIR=${DESTDIR} install || return
 		[ -z "${strip}" ] && return
 		for b in perf trace; do

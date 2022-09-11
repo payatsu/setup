@@ -2427,22 +2427,26 @@ install_native_perf()
 	print_header_path ocsd_if_version.h opencsd > /dev/null || install_native_OpenCSD || return
 	print_header_path libunwind.h > /dev/null || install_native_libunwindnongnu || return
 	print_header_path pfmlib.h perfmon > /dev/null || install_native_libpfm || return
+	print_header_path kbuffer.h traceevent > /dev/null || install_native_libtraceevent || return
+	print_header_path tracefs.h tracefs > /dev/null || install_native_libtracefs || return
 	fetch linux || return
 	unpack linux || return
 	mkdir -pv ${perf_bld_dir} || return
 	make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 		ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} \
-		EXTRA_CFLAGS="${CFLAGS} `I libelf.h` `L elf`" \
+		EXTRA_CFLAGS="${CFLAGS} `I libelf.h event-parse.h` `L elf`" \
 		EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h` `L elf bpf`" \
 		LDFLAGS="${LDFLAGS} `l babeltrace popt elf bz2 lzma z curl zstd`" \
 		NO_LIBPERL=1 NO_LIBPYTHON=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
+		LIBTRACEEVENT_DYNAMIC=1 LIBTRACEFS_DYNAMIC=1 \
 		prefix=${prefix} all || return
 	make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 		ARCH=${linux_arch} CROSS_COMPILE=${host:+${host}-} \
-		EXTRA_CFLAGS="${CFLAGS} `I libelf.h` `L elf`" \
+		EXTRA_CFLAGS="${CFLAGS} `I libelf.h event-parse.h` `L elf`" \
 		EXTRA_CXXFLAGS="${CXXFLAGS} `idirafter libelf.h` `L elf bpf`" \
 		LDFLAGS="${LDFLAGS} `l babeltrace popt elf bz2 lzma z curl zstd`" \
 		NO_LIBPERL=1 NO_LIBPYTHON=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
+		LIBTRACEEVENT_DYNAMIC=1 LIBTRACEFS_DYNAMIC=1 \
 		prefix=${prefix} DESTDIR=${DESTDIR} install || return
 }
 
