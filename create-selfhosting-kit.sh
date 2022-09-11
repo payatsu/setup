@@ -2014,6 +2014,8 @@ EOF
 			NO_LIBPERL=1 WERROR=0 NO_SLANG=1 CORESIGHT=1 LIBPFM4=1 \
 			LIBTRACEEVENT_DYNAMIC=1 LIBTRACEFS_DYNAMIC=1 \
 			prefix=${prefix} all || return
+		PATH=${perf_bld_dir}:${PATH} \
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		make -C ${linux_src_dir}/tools/perf -j ${jobs} V=1 VF=1 W=1 O=${perf_bld_dir} \
 			ARCH=`print_linux_arch ${host}` CROSS_COMPILE=${host:+${host}-} \
 			EXTRA_CFLAGS="${CFLAGS} `idirafter libelf.h zstd.h perfmon/pfmlib.h event-parse.h Python.h` `L opcodes bfd dw elf crypto lzma zstd z babeltrace-ctf bpf cap numa opencsd_c_api opencsd unwind pfm`" \
