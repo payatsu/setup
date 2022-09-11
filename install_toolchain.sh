@@ -182,7 +182,7 @@
 : ${cling_ver:=git}
 : ${ccls_ver:=git}
 : ${boost_ver:=1_80_0}
-: ${Python_ver:=3.10.5}
+: ${Python_ver:=3.10.7}
 : ${Python2_ver:=2.7.18}
 : ${cython_ver:=0.29.32}
 : ${OpenBLAS_ver:=0.3.21}
