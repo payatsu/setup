@@ -234,7 +234,7 @@
 : ${ImageMagick_ver:=7.1.0-46}
 : ${googletest_ver:=1.10.0}
 : ${fzf_ver:=0.33.0}
-: ${bat_ver:=0.22.0}
+: ${bat_ver:=0.22.1}
 : ${jq_ver:=1.6}
 : ${libpcap_ver:=1.10.1}
 : ${tcpdump_ver:=4.99.1}
@@ -7110,7 +7110,7 @@ install_native_bat()
 	fetch bat || return
 	unpack bat || return
 	(cd ${bat_src_dir}
-	cargo install -j ${jobs} -v --path . --no-track \
+	cargo install -j ${jobs} -v --path . --force --no-track \
 		--root ${DESTDIR}${prefix} --locked) || return
 	[ -z "${strip}" ] && return
 	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/bat || return
