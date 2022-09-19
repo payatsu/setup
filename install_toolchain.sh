@@ -7340,7 +7340,7 @@ install_native_re2()
 	[ -f ${prefix}/include/re2/re2.h -a "${force_install}" != yes ] && return
 	fetch re2 || return
 	unpack re2 || return
-	for build_shared_libs in ON OFF; do
+	for build_shared_libs in OFF ON; do
 		cmake `which ninja > /dev/null && echo -G Ninja` \
 			-S ${re2_src_dir} -B ${re2_bld_dir} \
 			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
@@ -7362,6 +7362,7 @@ install_native_grpc()
 	which cmake > /dev/null || install_native_cmake || return
 	print_header_path zlib.h > /dev/null || install_native_zlib || return
 	print_header_path ares.h > /dev/null || install_native_cares || return
+	print_header_path re2.h re2 > /dev/null || install_native_re2 || return
 	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
 	print_header_path message.h google/protobuf > /dev/null || install_native_protobuf || return
 	fetch grpc || return
@@ -7373,6 +7374,7 @@ install_native_grpc()
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 		-DgRPC_ZLIB_PROVIDER=package \
 		-DgRPC_CARES_PROVIDER=package \
+		-DgRPC_RE2_PROVIDER=package \
 		-DgRPC_SSL_PROVIDER=package \
 		-DgRPC_PROTOBUF_PROVIDER=package \
 		-DBUILD_SHARED_LIBS=ON \
