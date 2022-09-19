@@ -165,6 +165,7 @@
 : ${meson_ver:=0.63.2}
 : ${cmake_ver:=3.23.2}
 : ${bazel_ver:=5.3.0}
+: ${json_ver:=3.11.2}
 : ${Bear_ver:=2.4.3}
 : ${ccache_ver:=4.6.3}
 : ${distcc_ver:=3.4}
@@ -771,6 +772,9 @@ fetch()
 		bazel)
 			wget -O ${bazel_src_dir}.zip \
 				https://github.com/bazelbuild/bazel/releases/download/${bazel_ver}/${bazel_name}-dist.zip || return;;
+		json)
+			wget -O ${json_src_dir}.tar.gz \
+				https://github.com/nlohmann/json/archive/refs/tags/v${json_ver}.tar.gz || return;;
 		Bear)
 			wget -O ${Bear_src_dir}.tar.gz \
 				https://github.com/rizsotto/Bear/archive/${Bear_ver}.tar.gz || return;;
@@ -5534,6 +5538,22 @@ install_native_bazel()
 	update_path || return
 	[ -z "${strip}" ] && return
 	${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/bazel || return
+}
+
+install_native_json()
+{
+	[ -f ${prefix}/include/nlohmann/json.hpp -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	fetch json || return
+	unpack json || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${json_src_dir} -B ${json_bld_dir} \
+		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+		|| return
+	cmake --build ${json_bld_dir} -v -j ${jobs} || return
+	cmake --install ${json_bld_dir} -v ${strip:+--${strip}} || return
+	update_path || return
 }
 
 install_native_Bear()
