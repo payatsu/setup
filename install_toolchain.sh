@@ -164,7 +164,7 @@
 : ${ninja_ver:=1.11.1}
 : ${meson_ver:=0.63.2}
 : ${cmake_ver:=3.23.2}
-: ${bazel_ver:=2.2.0}
+: ${bazel_ver:=5.3.0}
 : ${Bear_ver:=2.4.3}
 : ${ccache_ver:=4.6.3}
 : ${distcc_ver:=3.4}
