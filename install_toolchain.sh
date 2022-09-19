@@ -246,6 +246,7 @@
 : ${libassuan_ver:=2.5.5}
 : ${gnupg_ver:=2.3.6}
 : ${protobuf_ver:=3.20.2}
+: ${cares_ver:=1.18.1}
 : ${grpc_ver:=1.49.0}
 : ${libbacktrace_ver:=git}
 : ${poke_ver:=2.4}
@@ -945,6 +946,9 @@ fetch()
 		protobuf)
 			wget -O ${protobuf_src_dir}.tar.gz \
 				https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_ver}/protobuf-all-${protobuf_ver}.tar.gz || return;;
+		cares)
+			wget -O ${cares_src_dir}.tar.gz \
+				https://c-ares.org/download/${cares_name}.tar.gz || return;;
 		grpc)
 			git clone --depth 1 -b v${grpc_ver} -j ${jobs} --recurse-submodules --shallow-submodules \
 				https://github.com/grpc/grpc ${grpc_src_dir} || return;;
@@ -1226,6 +1230,8 @@ set_src_directory()
 		eval ${_1}_name=${1}\${${_1}_ver};;
 	googletest)
 		eval ${_1}_name=${1}-release-\${${_1}_ver};;
+	cares)
+		eval ${_1}_name=c-ares-\${${_1}_ver};;
 	grpc)
 		eval ${_1}_name=${1}-\${${_1}_ver}.git;;
 	gtk)
@@ -7306,6 +7312,22 @@ install_native_protobuf()
 		make -C ${protobuf_bld_dir} -j ${jobs} -k check || return
 	make -C ${protobuf_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
+}
+
+install_native_cares()
+{
+	[ -f ${prefix}/include/ares.h -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	fetch cares || return
+	unpack cares || return
+	cmake `which ninja > /dev/null && echo -G Ninja` \
+		-S ${cares_src_dir} -B ${cares_bld_dir} \
+		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
+		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+		-DCARES_STATIC=ON \
+		|| return
+	cmake --build ${cares_bld_dir} -v -j ${jobs} || return
+	cmake --install ${cares_bld_dir} -v ${strip:+--${strip}} || return
 }
 
 install_native_grpc()
