@@ -247,6 +247,7 @@
 : ${gnupg_ver:=2.3.6}
 : ${protobuf_ver:=3.20.2}
 : ${cares_ver:=1.18.1}
+: ${re2_ver:=2022-06-01}
 : ${grpc_ver:=1.49.0}
 : ${libbacktrace_ver:=git}
 : ${poke_ver:=2.4}
@@ -949,6 +950,9 @@ fetch()
 		cares)
 			wget -O ${cares_src_dir}.tar.gz \
 				https://c-ares.org/download/${cares_name}.tar.gz || return;;
+		re2)
+			wget -O ${re2_src_dir}.tar.gz \
+				https://github.com/google/re2/archive/refs/tags/${re2_ver}.tar.gz || return;;
 		grpc)
 			git clone --depth 1 -b v${grpc_ver} -j ${jobs} --recurse-submodules --shallow-submodules \
 				https://github.com/grpc/grpc ${grpc_src_dir} || return;;
@@ -7328,6 +7332,25 @@ install_native_cares()
 		|| return
 	cmake --build ${cares_bld_dir} -v -j ${jobs} || return
 	cmake --install ${cares_bld_dir} -v ${strip:+--${strip}} || return
+	update_path || return
+}
+
+install_native_re2()
+{
+	[ -f ${prefix}/include/re2/re2.h -a "${force_install}" != yes ] && return
+	fetch re2 || return
+	unpack re2 || return
+	for build_shared_libs in ON OFF; do
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${re2_src_dir} -B ${re2_bld_dir} \
+			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DBUILD_SHARED_LIBS=${build_shared_libs} \
+			|| return
+		cmake --build ${re2_bld_dir} -v -j ${jobs} || return
+		cmake --install ${re2_bld_dir} -v ${strip:+--${strip}} || return
+	done
+	update_path || return
 }
 
 install_native_grpc()
