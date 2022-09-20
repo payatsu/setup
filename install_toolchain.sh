@@ -167,6 +167,7 @@
 : ${bazel_ver:=5.3.0}
 : ${json_ver:=3.11.2}
 : ${fmt_ver:=9.1.0}
+: ${spdlog_ver:=1.10.0}
 : ${Bear_ver:=2.4.3}
 : ${ccache_ver:=4.6.3}
 : ${distcc_ver:=3.4}
@@ -779,6 +780,9 @@ fetch()
 		fmt)
 			wget -O ${fmt_src_dir}.tar.gz \
 				https://github.com/fmtlib/fmt/archive/refs/tags/${fmt_ver}.tar.gz || return;;
+		spdlog)
+			wget -O ${spdlog_src_dir}.tar.gz \
+				https://github.com/gabime/spdlog/archive/refs/tags/v${spdlog_ver}.tar.gz || return;;
 		Bear)
 			wget -O ${Bear_src_dir}.tar.gz \
 				https://github.com/rizsotto/Bear/archive/${Bear_ver}.tar.gz || return;;
@@ -5575,6 +5579,27 @@ install_native_fmt()
 			|| return
 		cmake --build ${fmt_bld_dir} -v -j ${jobs} || return
 		cmake --install ${fmt_bld_dir} -v ${strip:+--${strip}} || return
+	done
+	update_path || return
+}
+
+install_native_spdlog()
+{
+	[ -f ${prefix}/include/spdlog/spdlog.h -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	print_header_path format.h fmt > /dev/null || install_native_fmt || return
+	fetch spdlog || return
+	unpack spdlog || return
+	for build_shared_libs in OFF ON; do
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${spdlog_src_dir} -B ${spdlog_bld_dir} \
+			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+			-DSPDLOG_BUILD_SHARED=${build_shared_libs} \
+			-DSPDLOG_FMT_EXTERNAL=ON \
+			|| return
+		cmake --build ${spdlog_bld_dir} -v -j ${jobs} || return
+		cmake --install ${spdlog_bld_dir} -v ${strip:+--${strip}} || return
 	done
 	update_path || return
 }
