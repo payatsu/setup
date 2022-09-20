@@ -166,6 +166,7 @@
 : ${cmake_ver:=3.23.2}
 : ${bazel_ver:=5.3.0}
 : ${json_ver:=3.11.2}
+: ${fmt_ver:=9.1.0}
 : ${Bear_ver:=2.4.3}
 : ${ccache_ver:=4.6.3}
 : ${distcc_ver:=3.4}
@@ -775,6 +776,9 @@ fetch()
 		json)
 			wget -O ${json_src_dir}.tar.gz \
 				https://github.com/nlohmann/json/archive/refs/tags/v${json_ver}.tar.gz || return;;
+		fmt)
+			wget -O ${fmt_src_dir}.tar.gz \
+				https://github.com/fmtlib/fmt/archive/refs/tags/${fmt_ver}.tar.gz || return;;
 		Bear)
 			wget -O ${Bear_src_dir}.tar.gz \
 				https://github.com/rizsotto/Bear/archive/${Bear_ver}.tar.gz || return;;
@@ -5553,6 +5557,25 @@ install_native_json()
 		|| return
 	cmake --build ${json_bld_dir} -v -j ${jobs} || return
 	cmake --install ${json_bld_dir} -v ${strip:+--${strip}} || return
+	update_path || return
+}
+
+install_native_fmt()
+{
+	[ -f ${prefix}/include/fmt/format.h -a "${force_install}" != yes ] && return
+	which cmake > /dev/null || install_native_cmake || return
+	fetch fmt || return
+	unpack fmt || return
+	for build_shared_libs in OFF ON; do
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${fmt_src_dir} -B ${fmt_bld_dir} \
+			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
+			-DBUILD_SHARED_LIBS=${build_shared_libs} \
+			|| return
+		cmake --build ${fmt_bld_dir} -v -j ${jobs} || return
+		cmake --install ${fmt_bld_dir} -v ${strip:+--${strip}} || return
+	done
 	update_path || return
 }
 
