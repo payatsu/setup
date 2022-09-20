@@ -128,7 +128,7 @@ EOF
 : ${ncurses_ver:=6.3}
 : ${readline_ver:=8.1}
 : ${expat_ver:=2.4.7}
-: ${libffi_ver:=3.4.2}
+: ${libffi_ver:=3.4.3}
 : ${sqlite_ver:=3390200}
 : ${Python_ver:=3.10.7}
 : ${boost_ver:=1_80_0}

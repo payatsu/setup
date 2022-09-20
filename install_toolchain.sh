@@ -24,7 +24,7 @@
 : ${zstd_ver:=1.5.2}
 : ${libarchive_ver:=3.5.2}
 : ${wget_ver:=1.21.3}
-: ${libffi_ver:=3.4.2}
+: ${libffi_ver:=3.4.3}
 : ${libiconv_ver:=1.16}
 : ${pcre_ver:=8.45}
 : ${glib_ver:=2.70.1}
