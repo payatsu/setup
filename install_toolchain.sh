@@ -970,8 +970,8 @@ fetch()
 			wget -O ${abseil_src_dir}.tar.gz \
 				https://github.com/abseil/abseil-cpp/archive/refs/tags/${abseil_ver}.tar.gz || return;;
 		grpc)
-			git clone --depth 1 -b v${grpc_ver} -j ${jobs} --recurse-submodules --shallow-submodules \
-				https://github.com/grpc/grpc ${grpc_src_dir} || return;;
+			wget -O ${grpc_src_dir}.tar.gz \
+				https://github.com/grpc/grpc/archive/refs/tags/v${grpc_ver}.tar.gz || return;;
 		libbacktrace)
 			git clone --depth 1 \
 				https://github.com/ianlancetaylor/libbacktrace ${libbacktrace_src_dir} || return;;
@@ -1254,8 +1254,6 @@ set_src_directory()
 		eval ${_1}_name=c-ares-\${${_1}_ver};;
 	abseil)
 		eval ${_1}_name=abseil-cpp-\${${_1}_ver};;
-	grpc)
-		eval ${_1}_name=${1}-\${${_1}_ver}.git;;
 	gtk)
 		plus=`eval echo \$\{${_1}_ver} | grep -qe '^3\.' && echo + || true`
 		eval ${_1}_name=${1}${plus}-\${${_1}_ver};;
@@ -7458,6 +7456,7 @@ install_native_grpc()
 	print_header_path re2.h re2 > /dev/null || install_native_re2 || return
 	print_header_path ssl.h openssl > /dev/null || install_native_openssl || return
 	print_header_path message.h google/protobuf > /dev/null || install_native_protobuf || return
+	print_header_path config.h absl/base > /dev/null || install_native_abseil || return
 	fetch grpc || return
 	unpack grpc || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
@@ -7465,12 +7464,14 @@ install_native_grpc()
 		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
 		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+		-DCMAKE_CXX_STANDARD=17 \
+		-DBUILD_SHARED_LIBS=ON \
 		-DgRPC_ZLIB_PROVIDER=package \
 		-DgRPC_CARES_PROVIDER=package \
 		-DgRPC_RE2_PROVIDER=package \
 		-DgRPC_SSL_PROVIDER=package \
 		-DgRPC_PROTOBUF_PROVIDER=package \
-		-DBUILD_SHARED_LIBS=ON \
+		-DgRPC_ABSL_PROVIDER=package \
 		|| return
 	cmake --build ${grpc_bld_dir} -v -j ${jobs} || return
 	cmake --install ${grpc_bld_dir} -v ${strip:+--${strip}} || return
