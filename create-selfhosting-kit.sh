@@ -111,7 +111,7 @@ EOF
 : ${openssl_ver:=3.0.5}
 : ${libunistring_ver:=1.0}
 : ${libidn2_ver:=2.3.3}
-: ${nghttp2_ver:=1.49.0}
+: ${nghttp2_ver:=1.50.0}
 : ${libssh_ver:=0.9.6}
 : ${curl_ver:=7.84.0}
 : ${elfutils_ver:=0.187}

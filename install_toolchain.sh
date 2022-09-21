@@ -142,7 +142,7 @@
 : ${squashfs_ver:=4.4}
 : ${openssl_ver:=3.0.5}
 : ${openssh_ver:=8.8p1}
-: ${nghttp2_ver:=1.49.0}
+: ${nghttp2_ver:=1.50.0}
 : ${brotli_ver:=1.0.9}
 : ${libssh_ver:=0.9.6}
 : ${curl_ver:=7.84.0}
