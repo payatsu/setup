@@ -164,7 +164,7 @@
 : ${ninja_ver:=1.11.1}
 : ${meson_ver:=0.63.2}
 : ${cmake_ver:=3.23.2}
-: ${bazel_ver:=5.3.0}
+: ${bazel_ver:=5.3.1}
 : ${json_ver:=3.11.2}
 : ${fmt_ver:=9.1.0}
 : ${spdlog_ver:=1.10.0}
