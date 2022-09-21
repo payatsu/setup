@@ -251,6 +251,7 @@
 : ${protobuf_ver:=3.20.2}
 : ${cares_ver:=1.18.1}
 : ${re2_ver:=2022-06-01}
+: ${abseil_ver:=20220623.1}
 : ${grpc_ver:=1.49.0}
 : ${libbacktrace_ver:=git}
 : ${poke_ver:=2.4}
@@ -965,6 +966,9 @@ fetch()
 		re2)
 			wget -O ${re2_src_dir}.tar.gz \
 				https://github.com/google/re2/archive/refs/tags/${re2_ver}.tar.gz || return;;
+		abseil)
+			wget -O ${abseil_src_dir}.tar.gz \
+				https://github.com/abseil/abseil-cpp/archive/refs/tags/${abseil_ver}.tar.gz || return;;
 		grpc)
 			git clone --depth 1 -b v${grpc_ver} -j ${jobs} --recurse-submodules --shallow-submodules \
 				https://github.com/grpc/grpc ${grpc_src_dir} || return;;
@@ -1248,6 +1252,8 @@ set_src_directory()
 		eval ${_1}_name=${1}-release-\${${_1}_ver};;
 	cares)
 		eval ${_1}_name=c-ares-\${${_1}_ver};;
+	abseil)
+		eval ${_1}_name=abseil-cpp-\${${_1}_ver};;
 	grpc)
 		eval ${_1}_name=${1}-\${${_1}_ver}.git;;
 	gtk)
@@ -7417,6 +7423,25 @@ install_native_re2()
 			|| return
 		cmake --build ${re2_bld_dir} -v -j ${jobs} || return
 		cmake --install ${re2_bld_dir} -v ${strip:+--${strip}} || return
+	done
+	update_path || return
+}
+
+install_native_abseil()
+{
+	[ -f ${prefix}/include/absl/base/config.h -a "${force_install}" != yes ] && return
+	fetch abseil || return
+	unpack abseil || return
+	for build_shared_libs in OFF ON; do
+		cmake `which ninja > /dev/null && echo -G Ninja` \
+			-S ${abseil_src_dir} -B ${abseil_bld_dir} \
+			-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
+			-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
+			-DBUILD_SHARED_LIBS=${build_shared_libs} \
+			-DABSL_PROPAGATE_CXX_STD=ON \
+			|| return
+		cmake --build ${abseil_bld_dir} -v -j ${jobs} || return
+		cmake --install ${abseil_bld_dir} -v ${strip:+--${strip}} || return
 	done
 	update_path || return
 }
