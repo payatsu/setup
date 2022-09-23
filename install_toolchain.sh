@@ -168,7 +168,7 @@
 : ${json_ver:=3.11.2}
 : ${fmt_ver:=9.1.0}
 : ${spdlog_ver:=1.10.0}
-: ${Bear_ver:=2.4.3}
+: ${Bear_ver:=3.0.20}
 : ${ccache_ver:=4.6.3}
 : ${distcc_ver:=3.4}
 : ${libedit_ver:=20210910-3.1}
@@ -5614,13 +5614,18 @@ install_native_Bear()
 	which cmake > /dev/null || install_native_cmake || return
 	which make > /dev/null || install_native_make || return
 	which python > /dev/null || which python3 > /dev/null || install_native_Python || return
+	print_header_path json.hpp nlohmann > /dev/null || install_native_json || return
+	print_header_path format.h fmt > /dev/null || install_native_fmt || return
+	print_header_path spdlog.h spdlog > /dev/null || install_native_spdlog || return
+	which grpc_cpp_plugin > /dev/null || install_native_grpc || return
 	fetch Bear || return
 	unpack Bear || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
 		-S ${Bear_src_dir} -B ${Bear_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} \
-		-DCMAKE_INSTALL_PREFIX=${prefix} || return
+		-DCMAKE_INSTALL_PREFIX=${prefix} \
+		|| return
 	cmake --build ${Bear_bld_dir} -v -j ${jobs} || return
 	cmake --install ${Bear_bld_dir} -v ${strip:+--${strip}} || return
 }
