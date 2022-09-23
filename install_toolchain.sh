@@ -252,7 +252,7 @@
 : ${cares_ver:=1.18.1}
 : ${re2_ver:=2022-06-01}
 : ${abseil_ver:=20220623.1}
-: ${grpc_ver:=1.49.0}
+: ${grpc_ver:=1.49.1}
 : ${libbacktrace_ver:=git}
 : ${poke_ver:=2.4}
 
