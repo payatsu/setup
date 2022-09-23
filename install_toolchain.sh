@@ -7475,6 +7475,7 @@ install_native_grpc()
 		|| return
 	cmake --build ${grpc_bld_dir} -v -j ${jobs} || return
 	cmake --install ${grpc_bld_dir} -v ${strip:+--${strip}} || return
+	update_path || return
 }
 
 install_native_libbacktrace()
