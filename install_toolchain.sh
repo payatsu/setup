@@ -318,6 +318,7 @@
 : ${gtk_ver:=3.24.34}
 : ${webkitgtk_ver:=2.14.0}
 : ${qt_ver:=5.12.12}
+: ${xauth_ver:=1.1.2}
 
 : ${prefix:=/toolchain}
 : ${jobs:=`grep -e processor /proc/cpuinfo | wc -l`}
@@ -987,6 +988,9 @@ fetch()
 		libpciaccess|libXtst)
 			eval wget -O \${${_p}_src_dir}.tar.gz \
 				https://www.x.org/releases/individual/lib/\${${_p:-libX11}_name}.tar.gz || return;;
+		xauth)
+			eval wget -O \${${_p}_src_dir}.tar.xz \
+				https://xorg.freedesktop.org/releases/individual/app/\${${_p:-xauth}_name}.tar.xz || return;;
 		libxkbcommon)
 			wget -O ${libxkbcommon_src_dir}.tar.xz \
 				https://xkbcommon.org/download/${libxkbcommon_name}.tar.xz || return;;
@@ -4289,6 +4293,24 @@ install_native_qt()
 		ninja -v -C ${qt_bld_dir} || return
 		ninja -v -C ${qt_bld_dir} install || return
 	fi
+	update_path || return
+}
+
+install_native_xauth()
+{
+	[ -x ${prefix}/bin/xauth -a "${force_install}" != yes ] && return
+	print_header_path Xproto.h X11 > /dev/null || install_native_xproto || return
+	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
+	print_header_path Xauth.h X11 > /dev/null || install_native_libXau || return
+	print_header_path Xext.h X11/extensions > /dev/null || install_native_libXext || return
+	print_header_path Xmu.h X11/Xmu > /dev/null || install_native_libXmu || return
+	fetch xauth || return
+	unpack xauth || return
+	[ -f ${xauth_bld_dir}/Makefile ] ||
+		(cd ${xauth_bld_dir}
+		${xauth_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${xauth_bld_dir} -j ${jobs} || return
+	make -C ${xauth_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
 	update_path || return
 }
 

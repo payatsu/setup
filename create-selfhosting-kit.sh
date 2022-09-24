@@ -324,6 +324,7 @@ EOF
 : ${graphene_ver:=1.10.8}
 : ${libxkbcommon_ver:=1.4.0}
 : ${gtk_ver:=3.24.34}
+: ${xauth_ver:=1.1.2}
 
 : ${gstreamer_ver:=1.20.3}
 : ${gst_plugins_base_ver:=${gstreamer_ver}}
@@ -740,6 +741,9 @@ fetch()
 	libxshmfence|libXtst)
 		eval wget -O \${${_1}_src_dir}.tar.gz \
 			https://www.x.org/releases/individual/lib/\${${_1:-libX11}_name}.tar.gz || return;;
+	xauth)
+		eval wget -O \${${_1}_src_dir}.tar.xz \
+			https://xorg.freedesktop.org/releases/individual/app/\${${_1:-xauth}_name}.tar.xz || return;;
 	wayland|wayland-protocols)
 		eval wget -O \${${_1}_src_dir}.tar.xz \
 			https://wayland.freedesktop.org/releases/\${${_1:-wayland}_name}.tar.xz || return;;
@@ -5199,6 +5203,25 @@ EOF
 		XDG_DATA_DIRS=$(readlink -m $(dirname $(which update-mime-database))/../share) \
 			ninja -v -C ${gtk_bld_dir} || return
 		DESTDIR=${DESTDIR} ninja -v -C ${gtk_bld_dir} install || return
+		;;
+	xauth)
+		[ -x ${DESTDIR}${prefix}/bin/xauth -a "${force_install}" != yes ] && return
+		print_header_path Xproto.h X11 > /dev/null || ${0} ${cmdopt} xproto || return
+		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return
+		print_header_path Xauth.h X11 > /dev/null || ${0} ${cmdopt} libXau || return
+		print_header_path Xext.h X11/extensions > /dev/null || ${0} ${cmdopt} libXext || return
+		print_header_path Xmu.h X11/Xmu > /dev/null || ${0} ${cmdopt} libXmu || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${xauth_bld_dir}/Makefile ] ||
+			(cd ${xauth_bld_dir}
+			${xauth_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				LDFLAGS="${LDFLAGS} `Wl_rpath_link xcb`" \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				|| return
+			) || return
+		make -C ${xauth_bld_dir} -j ${jobs} || return
+		make -C ${xauth_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	gstreamer)
 		[ -x ${DESTDIR}${prefix}/bin/gst-launch-1.0 -a "${force_install}" != yes ] && return
