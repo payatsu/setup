@@ -4751,6 +4751,7 @@ EOF
 		[ ${build} = ${host} ] || which `print_qemu` > /dev/null || ${0} ${cmdopt} --host ${build} --target ${build} qemu || return
 		fetch ${1} || return
 		unpack ${1} || return
+		PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 		meson --prefix ${prefix} ${strip:+--${strip}} --default-library both --cross-file ${cross_file} \
 			${libdrm_src_dir} ${libdrm_bld_dir} || return
 		ninja -v -C ${libdrm_bld_dir} || return
