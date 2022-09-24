@@ -2916,7 +2916,7 @@ EOF
 			(cd ${v4l_utils_bld_dir}
 			remove_rpath_option ${1} || return
 			${v4l_utils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-				--disable-rpath --with-udevdir=${prefix}/lib/udev \
+				--disable-rpath --disable-bpf --with-udevdir=${prefix}/lib/udev \
 				CPPFLAGS="${CPPFLAGS} `I X11/Xlib.h`" \
 				LDFLAGS="${LDFLAGS} `Wl_rpath_link xcb Xau Xdmcp GLX GLdispatch jpeg z stdc++`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
