@@ -6936,7 +6936,7 @@ install_native_v4l_utils()
 	[ -f ${v4l_utils_bld_dir}/Makefile ] ||
 		(cd ${v4l_utils_bld_dir}
 		${v4l_utils_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
-			--disable-rpath) || return
+			--disable-rpath --disable-bpf) || return
 	make -C ${v4l_utils_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${v4l_utils_bld_dir} -j ${jobs} -k check || return
