@@ -15,7 +15,9 @@ runtest()
 
 	for p in ${pkgs}; do
 		case ${p} in
-		gcc|gdb|crash|linux|qemu|e2fsprogs|emacs|texinfo|go)
+		gcc|gdb|crash|linux|qemu|e2fsprogs|emacs|texinfo|go|\
+		inetutils|screen|tcsh|\
+		glibc)
 			continue;;
 		esac
 
