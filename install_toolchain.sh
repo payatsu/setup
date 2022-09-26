@@ -54,7 +54,7 @@
 : ${linux_ver:=5.19.8}
 : ${perf_ver:=${linux_ver}}
 : ${libcap_ver:=2.49}
-: ${numactl_ver:=2.0.14}
+: ${numactl_ver:=2.0.15}
 : ${OpenCSD_ver:=1.2.1}
 : ${libunwindnongnu_ver:=1.6.2}
 : ${libpfm_ver:=4.11.0}
