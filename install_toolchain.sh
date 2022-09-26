@@ -235,7 +235,7 @@
 : ${liblqr_ver:=0.4.2}
 : ${fftw_ver:=3.3.10}
 : ${ImageMagick_ver:=7.1.0-46}
-: ${googletest_ver:=1.10.0}
+: ${googletest_ver:=1.12.1}
 : ${fzf_ver:=0.33.0}
 : ${bat_ver:=0.22.1}
 : ${jq_ver:=1.6}
