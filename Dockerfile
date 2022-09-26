@@ -31,7 +31,7 @@ harfbuzz pango itstool shared-mime-info gdk-pixbuf atk dbus recordproto \
 libXtst at-spi2-core at-spi2-atk graphene gtk v4l-utils gstreamer orc \
 gst-plugins-base gst-plugins-good gst-editing-services gst-rtsp-server gst-omx \
 libwebp openjpeg Imath openexr eigen gflags glog qt hdf5 opencv \
-emacs ghostscript graphviz jdk plantuml wget"
+emacs ghostscript graphviz jdk plantuml wget xauth"
 
 RUN \
 apt-get update && apt-get upgrade -y && \
@@ -105,16 +105,14 @@ vim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .vim/vimrc -U
 nvim -c 'try | call dein#update() | finally | qall! | endtry' -N -u .config/nvim/init.vim -U NONE -i NONE -V1 -e -s
 
 FROM base AS daemon
+ARG prefix
 USER root
 WORKDIR /
 RUN \
 useradd sshd && \
-apt-get update && apt-get upgrade -y && \
-apt-get install -y --no-install-recommends xauth && \
-apt-get autoremove -y && apt-get autoclean -y && rm -vr /var/lib/apt/lists/* && \
 sed -i -e '\
 	s/^#\(AddressFamily\) any$/\1 inet/;\
 	s/^#\(X11Forwarding\) no$/\1 yes/;\
-	/^X11Forwarding/aXAuthLocation /usr/bin/xauth' /usr/local/etc/sshd_config
+	/^X11Forwarding/aXAuthLocation '${prefix}'/bin/xauth' ${prefix}/etc/sshd_config
 EXPOSE 22
 CMD ["/usr/local/sbin/sshd", "-D"]
