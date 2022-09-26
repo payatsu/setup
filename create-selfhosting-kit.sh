@@ -514,7 +514,7 @@ fetch()
 			https://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/${libcap_name}.tar.gz || return;;
 	numactl)
 		wget -O ${numactl_src_dir}.tar.gz \
-			https://github.com/numactl/numactl/releases/download/v${numactl_ver}/${numactl_name}.tar.gz || return;;
+			https://github.com/numactl/numactl/archive/refs/tags/v${numactl_ver}.tar.gz || return;;
 	OpenCSD)
 		wget -O ${OpenCSD_src_dir}.tar.gz \
 			https://github.com/Linaro/OpenCSD/archive/refs/tags/v${OpenCSD_ver}.tar.gz || return;;
@@ -2732,7 +2732,7 @@ EOF
 		[ -f ${bc_bld_dir}/Makefile ] ||
 			(cd ${bc_bld_dir}
 			! which bc > /dev/null || sed -i -e 's!^	\./fbc\>!	bc!' ${bc_src_dir}/bc/Makefile.am || return
-			autoreconf -v ${bc_src_dir} || return
+			autoreconf -fiv ${bc_src_dir} || return
 			${bc_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules --with-readline) || return
 		make -C ${bc_bld_dir} -j ${jobs} || return
 		[ "${enable_check}" != yes ] ||
@@ -2937,7 +2937,7 @@ EOF
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
 		fetch ${1} || return
 		unpack ${1} || return
-		[ -f ${screen_src_dir}/configure ] || autoreconf -iv ${screen_src_dir} || return
+		[ -f ${screen_src_dir}/configure ] || autoreconf -fiv ${screen_src_dir} || return
 		[ -f ${screen_bld_dir}/Makefile ] ||
 			(cd ${screen_bld_dir}
 			${screen_src_dir}/configure --prefix=${prefix} --host=${host} \

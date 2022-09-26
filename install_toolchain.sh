@@ -501,7 +501,7 @@ fetch()
 				https://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/${libcap_name}.tar.gz || return;;
 		numactl)
 			wget -O ${numactl_src_dir}.tar.gz \
-				https://github.com/numactl/numactl/releases/download/v${numactl_ver}/${numactl_name}.tar.gz || return;;
+				https://github.com/numactl/numactl/archive/refs/tags/v${numactl_ver}.tar.gz || return;;
 		OpenCSD)
 			wget -O ${OpenCSD_src_dir}.tar.gz \
 				https://github.com/Linaro/OpenCSD/archive/refs/tags/v${OpenCSD_ver}.tar.gz || return;;
@@ -2505,6 +2505,7 @@ install_native_numactl()
 	[ -x ${prefix}/bin/numactl -a "${force_install}" != yes ] && return
 	fetch numactl || return
 	unpack numactl || return
+	[ -f ${numactl_src_dir}/configure ] || autoreconf -fiv ${numactl_src_dir} || return
 	[ -f ${numactl_bld_dir}/Makefile ] ||
 		(cd ${numactl_bld_dir}
 		remove_rpath_option numactl || return
@@ -4893,7 +4894,7 @@ install_native_screen()
 	print_header_path curses.h > /dev/null || install_native_ncurses || return
 	fetch screen || return
 	unpack screen || return
-	[ -f ${screen_src_dir}/configure ] || autoreconf -iv ${screen_src_dir} || return
+	[ -f ${screen_src_dir}/configure ] || autoreconf -fiv ${screen_src_dir} || return
 	[ -f ${screen_bld_dir}/Makefile ] ||
 		(cd ${screen_bld_dir}
 		${screen_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
