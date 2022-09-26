@@ -7187,7 +7187,7 @@ install_native_googletest()
 	fetch googletest || return
 	unpack googletest || return
 	cmake `which ninja > /dev/null && echo -G Ninja` \
-		-S ${googletest_src_dir}/googletest -B ${googletest_bld_dir} \
+		-S ${googletest_src_dir} -B ${googletest_bld_dir} \
 		-DCMAKE_C_COMPILER=${CC:-${host:+${host}-}gcc} \
 		-DCMAKE_CXX_COMPILER=${CXX:-${host:+${host}-}g++} \
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${prefix} \
