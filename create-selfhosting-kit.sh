@@ -199,7 +199,7 @@ EOF
 : ${libevent_ver:=2.1.12-stable}
 : ${tmux_ver:=3.3a}
 : ${zsh_ver:=5.8}
-: ${bash_ver:=5.1.16}
+: ${bash_ver:=5.2}
 : ${tcsh_ver:=TCSH6_23_00}
 : ${less_ver:=581.2}
 : ${vim_ver:=9.0.0006}
