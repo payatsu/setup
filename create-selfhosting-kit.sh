@@ -5535,6 +5535,7 @@ EOF
 		print_header_path openjpeg.h > /dev/null || ${0} ${cmdopt} openjpeg || return
 		print_header_path pango.h pango-1.0/pango > /dev/null || ${0} ${cmdopt} pango || return
 		print_header_path png.h > /dev/null || ${0} ${cmdopt} libpng || return
+		print_header_path libraw.h libraw > /dev/null || ${0} ${cmdopt} LibRaw || return
 		print_header_path tiff.h > /dev/null || ${0} ${cmdopt} tiff || return
 		print_header_path decode.h webp > /dev/null || ${0} ${cmdopt} libwebp || return
 		print_header_path Xlib.h X11 > /dev/null || ${0} ${cmdopt} libX11 || return

@@ -7187,6 +7187,7 @@ install_native_ImageMagick()
 	print_header_path openjpeg.h > /dev/null || install_native_openjpeg || return
 	print_header_path pango.h pango-1.0/pango > /dev/null || install_native_pango || return
 	print_header_path png.h > /dev/null || install_native_libpng || return
+	print_header_path libraw.h libraw > /dev/null || install_native_LibRaw || return
 	print_header_path tiff.h > /dev/null || install_native_tiff || return
 	print_header_path decode.h webp > /dev/null || install_native_libwebp || return
 	print_header_path Xlib.h X11 > /dev/null || install_native_libX11 || return
