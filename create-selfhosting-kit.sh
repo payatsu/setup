@@ -342,6 +342,7 @@ EOF
 : ${lcms2_ver:=2.13.1}
 : ${liblqr_ver:=0.4.2}
 : ${fftw_ver:=3.3.10}
+: ${LibRaw_ver:=0.20.2}
 : ${ImageMagick_ver:=7.1.0-49}
 
 : ${prefix:=${default_prefix}}
@@ -813,6 +814,9 @@ fetch()
 	fftw)
 		wget -O ${fftw_src_dir}.tar.gz \
 			https://fftw.org/pub/fftw/${fftw_name}.tar.gz || return;;
+	LibRaw)
+		wget -O ${LibRaw_src_dir}.tar.gz \
+			https://www.libraw.org/data/${LibRaw_name}.tar.gz || return;;
 	ImageMagick)
 		wget -O ${ImageMagick_src_dir}.tar.xz \
 			https://imagemagick.org/archive/releases/${ImageMagick_name}.tar.xz || return;;
@@ -5495,6 +5499,27 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${fftw_bld_dir} -j ${jobs} -k check || return
 		make -C ${fftw_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	LibRaw)
+		[ -f ${DESTDIR}${prefix}/include/libraw/libraw.h -a "${force_install}" != yes ] && return
+		print_header_path zlib.h > /dev/null || ${0} ${cmdopt} zlib || return
+		print_header_path jpeglib.h > /dev/null || ${0} ${cmdopt} jpeg || return
+		print_header_path lcms2.h > /dev/null || ${0} ${cmdopt} lcms2 || return
+		fetch ${1} || return
+		unpack ${1} || return
+		autoreconf -fiv ${LibRaw_src_dir} || return
+		[ -f ${LibRaw_bld_dir}/Makefile ] ||
+			(cd ${LibRaw_bld_dir}
+			remove_rpath_option ${1} || return
+			${LibRaw_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				|| return
+			remove_rpath_option ${1} || return
+			) || return
+		make -C ${LibRaw_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${LibRaw_bld_dir} -j ${jobs} -k check || return
+		make -C ${LibRaw_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	ImageMagick)
 		[ -f ${DESTDIR}${prefix}/include/ImageMagick-`print_version ImageMagick 1`/MagickCore/version.h -a "${force_install}" != yes ] && return
