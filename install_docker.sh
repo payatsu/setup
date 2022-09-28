@@ -2,20 +2,20 @@
 
 install_docker_engine()
 {
-	which docker > /dev/null && return
+	! echo "$@" | grep -e '--force' > /dev/null 2>&1 && which docker > /dev/null && return
 
 	. /etc/os-release
 	case ${ID} in
 	debian|ubuntu)
 		apt-get update || return
-		apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common || return
+		apt-get install -y ca-certificates curl gnupg lsb-release || return
 
-		curl -fsSL https://download.docker.com/linux/${ID}/gpg | apt-key add - || return
-		apt-key fingerprint 0EBFCD88 || return
+		mkdir -p /etc/apt/keyrings || return
+		curl -fsSL https://download.docker.com/linux/${ID}/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg || return
+		echo "deb [arch=`dpkg --print-architecture` signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/${ID} ${VERSION_CODENAME} stable" > /etc/apt/sources.list.d/docker.list || return
 
-		add-apt-repository "deb [arch=`dpkg --print-architecture`] https://download.docker.com/linux/${ID} ${VERSION_CODENAME} stable" || return
 		apt-get update || return
-		apt-get install -y docker-ce || return
+		apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin || return
 		;;
 	centos)
 		yum install -y yum-utils device-mapper-persistent-data lvm2 || return
