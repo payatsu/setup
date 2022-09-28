@@ -11,7 +11,7 @@ install_docker_engine()
 		apt-get install -y ca-certificates curl gnupg lsb-release || return
 
 		mkdir -p /etc/apt/keyrings || return
-		curl -fsSL https://download.docker.com/linux/${ID}/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg || return
+		curl -fsSL https://download.docker.com/linux/${ID}/gpg | gpg --yes --dearmor -o /etc/apt/keyrings/docker.gpg || return
 		echo "deb [arch=`dpkg --print-architecture` signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/${ID} ${VERSION_CODENAME} stable" > /etc/apt/sources.list.d/docker.list || return
 
 		apt-get update || return
@@ -37,9 +37,12 @@ install_docker_compose()
 
 	: ${latest_version:=`curl -fsSI https://github.com/docker/compose/releases/latest | grep -e '^\(L\|l\)ocation:' | grep -oPe '\d+(\.\d+)*'`}
 	[ -n "${latest_version}" ] || return
+
 	curl -fSL -o /usr/local/bin/docker-compose \
 		https://github.com/docker/compose/releases/download/v${latest_version}/docker-compose-`uname -s`-`uname -m` || return
 	chmod a+x /usr/local/bin/docker-compose || return
+
+	[ `echo ${latest_version} | cut -d . -f 1` -gt 1 ] && return
 
 	mkdir -pv /etc/bash_completion.d || return
 	curl -fSL -o /etc/bash_completion.d/docker-compose \
