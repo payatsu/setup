@@ -255,7 +255,7 @@ EOF
 : ${eigen_ver:=3.4.0}
 : ${gflags_ver:=2.2.2}
 : ${glog_ver:=0.6.0}
-: ${protobuf_ver:=3.19.4}
+: ${protobuf_ver:=3.20.3}
 
 : ${cython_ver:=0.29.32}
 : ${OpenBLAS_ver:=0.3.21}
