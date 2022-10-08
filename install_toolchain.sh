@@ -138,6 +138,7 @@
 : ${inetutils_ver:=2.3}
 : ${iproute2_ver:=5.9.0}
 : ${util_linux_ver:=2.37.2}
+: ${parted_ver:=3.5}
 : ${e2fsprogs_ver:=1.46.2}
 : ${squashfs_ver:=4.4}
 : ${openssl_ver:=3.0.5}
@@ -410,7 +411,7 @@ fetch()
 		case ${p} in
 		tar|cpio|gzip|wget|help2man|texinfo|coreutils|bison|m4|autoconf|autoconf-archive|automake|libtool|sed|gawk|\
 		gnulib|make|binutils|ed|bc|gperf|glibc|gmp|mpfr|mpc|readline|ncurses|gdb|emacs|libiconv|nano|grep|global|\
-		diffutils|patch|findutils|less|groff|gdbm|screen|dejagnu|bash|inetutils|gettext|libunistring|guile|poke)
+		diffutils|patch|findutils|less|groff|gdbm|screen|dejagnu|bash|inetutils|gettext|libunistring|guile|poke|parted)
 			eval [ "\${${p}_ver}" = git ] && {
 				case ${p} in
 				binutils|gdb)
@@ -5075,6 +5076,24 @@ install_native_util_linux()
 	[ "${enable_check}" != yes ] ||
 		make -C ${util_linux_bld_dir} -j ${jobs} -k check || return
 	make -C ${util_linux_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_parted()
+{
+	[ -x ${prefix}/sbin/parted -a "${force_install}" != yes ] && return
+	print_header_path uuid.h uuid > /dev/null || install_native_util_linux || return
+	fetch parted || return
+	unpack parted || return
+	[ -f ${parted_bld_dir}/Makefile ] ||
+		(cd ${parted_bld_dir}
+		remove_rpath_option parted || return
+		${parted_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+			--disable-device-mapper --disable-rpath) || return
+	make -C ${parted_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${parted_bld_dir} -j ${jobs} -k check || return
+	make -C ${parted_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_e2fsprogs()

@@ -192,6 +192,7 @@ EOF
 : ${qemu_ver:=7.0.0}
 : ${tar_ver:=1.34}
 : ${cpio_ver:=2.13}
+: ${parted_ver:=3.5}
 : ${e2fsprogs_ver:=1.46.2}
 : ${v4l_utils_ver:=1.22.1}
 
@@ -422,7 +423,7 @@ fetch()
 		wget -O ${zlib_src_dir}.tar.xz \
 			https://zlib.net/${zlib_name}.tar.xz || return;;
 	libunistring|binutils|glibc|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|\
-	autoconf|autoconf-archive|automake|bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|screen|bash|\
+	autoconf|autoconf-archive|automake|bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|parted|screen|bash|\
 	less|emacs|nano|grep|diffutils|patch|global|findutils|poke|help2man|texinfo|coreutils|gperf|\
 	groff|gdbm)
 		for compress_format in xz bz2 gz lz; do
@@ -2890,6 +2891,23 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${cpio_bld_dir} -j ${jobs} -k check || return
 		make -C ${cpio_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	parted)
+		[ -x ${DESTDIR}${prefix}/sbin/parted -a "${force_install}" != yes ] && return
+		print_header_path uuid.h uuid > /dev/null || ${0} ${cmdopt} util-linux || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${parted_bld_dir}/Makefile ] ||
+			(cd ${parted_bld_dir}
+			remove_rpath_option ${1} || return
+			${parted_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules \
+				--disable-device-mapper --disable-rpath \
+				CFLAGS="${CFLAGS} `I uuid/uuid.h`" \
+				LDFLAGS="${LDFLAGS} `L uuid`") || return
+		make -C ${parted_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${parted_bld_dir} -j ${jobs} -k check || return
+		make -C ${parted_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	e2fsprogs)
 		[ -x ${DESTDIR}${prefix}/sbin/mkfs.ext2 -a "${force_install}" != yes ] && return
