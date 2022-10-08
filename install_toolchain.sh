@@ -134,6 +134,7 @@
 : ${dejagnu_ver:=1.6.3}
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.2}
+: ${dash_ver:=0.5.11.5}
 : ${tcsh_ver:=TCSH6_23_00}
 : ${inetutils_ver:=2.3}
 : ${iproute2_ver:=5.9.0}
@@ -695,6 +696,9 @@ fetch()
 		zsh)
 			wget -O ${zsh_src_dir}.tar.xz \
 				https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return;;
+		dash)
+			wget -O ${dash_src_dir}.tar.gz \
+				https://git.kernel.org/pub/scm/utils/dash/dash.git/snapshot/${dash_name}.tar.gz || return;;
 		tcsh)
 			wget -O ${tcsh_src_dir}.tar.gz \
 				https://github.com/tcsh-org/tcsh/archive/refs/tags/${tcsh_ver}.tar.gz || return;;
@@ -5001,7 +5005,24 @@ install_native_bash()
 		make -C ${bash_bld_dir} -j ${jobs} -k check || return
 	make -C ${bash_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 	update_path || return
-	ln -fsv bash ${DESTDIR}${prefix}/bin/sh || return
+	[ -e ${DESTDIR}${prefix}/bin/sh ] || ln -fsv bash ${DESTDIR}${prefix}/bin/sh || return
+}
+
+install_native_dash()
+{
+	[ -x ${prefix}/bin/dash -a "${force_install}" != yes ] && return
+	fetch dash || return
+	unpack dash || return
+	[ -f ${dash_src_dir}/configure ] || autoreconf -fiv ${dash_src_dir} || return
+	[ -f ${dash_bld_dir}/Makefile ] ||
+		(cd ${dash_bld_dir}
+		${dash_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${dash_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${dash_bld_dir} -j ${jobs} -k check || return
+	make -C ${dash_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+	update_path || return
+	[ -e ${DESTDIR}${prefix}/bin/sh ] || ln -fsv dash ${DESTDIR}${prefix}/bin/sh || return
 }
 
 install_native_tcsh()

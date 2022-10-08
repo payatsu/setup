@@ -199,6 +199,7 @@ EOF
 : ${screen_ver:=4.9.0}
 : ${libevent_ver:=2.1.12-stable}
 : ${tmux_ver:=3.3a}
+: ${dash_ver:=0.5.11.5}
 : ${zsh_ver:=5.8}
 : ${bash_ver:=5.2}
 : ${tcsh_ver:=TCSH6_23_00}
@@ -628,6 +629,9 @@ fetch()
 	tmux)
 		wget -O ${tmux_src_dir}.tar.gz \
 			https://github.com/tmux/tmux/releases/download/${tmux_ver}/${tmux_name}.tar.gz || return;;
+	dash)
+		wget -O ${dash_src_dir}.tar.gz \
+			https://git.kernel.org/pub/scm/utils/dash/dash.git/snapshot/${dash_name}.tar.gz || return;;
 	zsh)
 		wget -O ${zsh_src_dir}.tar.xz \
 			https://sourceforge.net/projects/zsh/files/zsh/${zsh_ver}/${zsh_name}.tar.xz/download || return;;
@@ -3010,6 +3014,20 @@ EOF
 		[ -z "${strip}" ] && return
 		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/tmux || return
 		;;
+	dash)
+		[ -x ${DESTDIR}${prefix}/bin/dash -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${dash_src_dir}/configure ] || autoreconf -fiv ${dash_src_dir} || return
+		[ -f ${dash_bld_dir}/Makefile ] ||
+			(cd ${dash_bld_dir}
+			${dash_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+		make -C ${dash_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${dash_bld_dir} -j ${jobs} -k check || return
+		make -C ${dash_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		[ -e ${DESTDIR}${prefix}/bin/sh ] || ln -fsv dash ${DESTDIR}${prefix}/bin/sh || return
+		;;
 	zsh)
 		[ -x ${DESTDIR}${prefix}/bin/zsh -a "${force_install}" != yes ] && return
 		print_header_path curses.h > /dev/null || ${0} ${cmdopt} ncurses || return
@@ -3040,7 +3058,7 @@ EOF
 		[ "${enable_check}" != yes ] ||
 			make -C ${bash_bld_dir} -j ${jobs} -k check || return
 		make -C ${bash_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
-		ln -fsv bash ${DESTDIR}${prefix}/bin/sh || return
+		[ -e ${DESTDIR}${prefix}/bin/sh ] || ln -fsv bash ${DESTDIR}${prefix}/bin/sh || return
 		;;
 	tcsh)
 		[ -x ${DESTDIR}${prefix}/bin/tcsh -a "${force_install}" != yes ] && return
