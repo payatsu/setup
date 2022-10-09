@@ -186,7 +186,7 @@ EOF
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.2.6}
 : ${dtc_ver:=1.6.0}
-: ${kmod_ver:=28}
+: ${kmod_ver:=30}
 : ${u_boot_ver:=2022.01}
 : ${pixman_ver:=0.40.0}
 : ${qemu_ver:=7.0.0}

@@ -65,7 +65,7 @@
 : ${libtraceevent_ver:=1.6.0}
 : ${libtracefs_ver:=1.4.0}
 : ${trace_cmd_ver:=v3.1}
-: ${kmod_ver:=28}
+: ${kmod_ver:=30}
 : ${dtc_ver:=1.6.0}
 : ${u_boot_ver:=2022.01}
 : ${qemu_ver:=7.0.0}
