@@ -195,6 +195,7 @@ EOF
 : ${cpio_ver:=2.13}
 : ${parted_ver:=3.5}
 : ${e2fsprogs_ver:=1.46.2}
+: ${btrfs_progs_ver:=5.19.1}
 : ${v4l_utils_ver:=1.22.1}
 
 : ${screen_ver:=4.9.0}
@@ -624,6 +625,9 @@ fetch()
 	e2fsprogs)
 		wget -O ${e2fsprogs_src_dir}.tar.gz \
 			https://sourceforge.net/projects/e2fsprogs/files/e2fsprogs/v${e2fsprogs_ver}/${e2fsprogs_name}.tar.gz/download || return;;
+	btrfs-progs)
+		wget -O ${btrfs_progs_src_dir}.tar.gz \
+			https://github.com/kdave/btrfs-progs/archive/refs/tags/v${btrfs_progs_ver}.tar.gz || return;;
 	v4l-utils)
 		wget -O ${v4l_utils_src_dir}.tar.bz2 \
 			https://linuxtv.org/downloads/v4l-utils/${v4l_utils_name}.tar.bz2 || return;;
@@ -1030,6 +1034,7 @@ print_packages()
 		s/autoconf_archive/autoconf-archive/
 		s/pkg_config/pkg-config/
 		s/u_boot/u-boot/
+		s/btrfs_progs/btrfs-progs/
 		s/v4l_utils/v4l-utils/
 		s/vimdoc_ja/vimdoc-ja/
 		s/man_db/man-db/
@@ -2946,6 +2951,24 @@ EOF
 			[ -f ${DESTDIR}${prefix}/bin/${b} ] || continue
 			${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/${b} || return
 		done
+		;;
+	btrfs-progs)
+		[ -x ${DESTDIR}${prefix}/bin/mkfs.btrfs -a "${force_install}" != yes ] && return
+		print_header_path uuid.h uuid > /dev/null || ${0} ${cmdopt} util-linux || return
+		print_header_path ext2_fs.h ext2fs > /dev/null || ${0} ${cmdopt} e2fsprogs || return
+		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${btrfs_progs_src_dir}/configure ] || (cd ${btrfs_progs_src_dir}; ./autogen.sh) || return
+		[ -f ${btrfs_progs_bld_dir}/configure ] || cp -Tvr ${btrfs_progs_src_dir} ${btrfs_progs_bld_dir} || return
+		[ -f ${btrfs_progs_bld_dir}/Makefile.inc ] ||
+			(cd ${btrfs_progs_bld_dir}
+			${btrfs_progs_src_dir}/configure --prefix=${prefix} --host=${host} \
+				--disable-documentation --disable-libudev --disable-python --disable-lzo \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
+		make -C ${btrfs_progs_bld_dir} -j ${jobs} V=1 EXTRA_CFLAGS="${CFLAGS} `I uuid/uuid.h`" || return
+		make -C ${btrfs_progs_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
 		;;
 	v4l-utils)
 		[ -x ${DESTDIR}${prefix}/bin/v4l2-ctl -a "${force_install}" != yes ] && return
