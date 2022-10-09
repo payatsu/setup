@@ -139,6 +139,8 @@
 : ${inetutils_ver:=2.3}
 : ${iproute2_ver:=5.9.0}
 : ${util_linux_ver:=2.37.2}
+: ${pciutils_ver:=3.8.0}
+: ${lsscsi_ver:=r0.32}
 : ${parted_ver:=3.5}
 : ${e2fsprogs_ver:=1.46.2}
 : ${squashfs_ver:=4.4}
@@ -708,6 +710,12 @@ fetch()
 		util-linux)
 			wget -O ${util_linux_src_dir}.tar.xz \
 				https://www.kernel.org/pub/linux/utils/util-linux/v`print_version util-linux`/${util_linux_name}.tar.xz || return;;
+		pciutils)
+			wget -O ${pciutils_src_dir}.tar.xz \
+				https://www.kernel.org/pub/software/utils/pciutils/${pciutils_name}.tar.xz || return;;
+		lsscsi)
+			wget -O ${lsscsi_src_dir}.tar.gz \
+				https://github.com/doug-gilbert/lsscsi/archive/refs/tags/${lsscsi_ver}.tar.gz || return;;
 		e2fsprogs)
 			wget -O ${e2fsprogs_src_dir}.tar.gz \
 				https://sourceforge.net/projects/e2fsprogs/files/e2fsprogs/v${e2fsprogs_ver}/${e2fsprogs_name}.tar.gz/download || return;;
@@ -5097,6 +5105,37 @@ install_native_util_linux()
 	[ "${enable_check}" != yes ] ||
 		make -C ${util_linux_bld_dir} -j ${jobs} -k check || return
 	make -C ${util_linux_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+}
+
+install_native_pciutils()
+{
+	[ -x ${prefix}/bin/lspci -a "${force_install}" != yes ] && return
+	print_header_path libkmod.h > /dev/null || install_native_kmod || return
+	fetch pciutils || return
+	unpack pciutils || return
+	[ -f ${pciutils_bld_dir}/Makefile ] || cp -Tvr ${pciutils_src_dir} ${pciutils_bld_dir} || return
+	sed -i -e "
+		/^\(PREFIX=\).\+/s!!\1${prefix}!
+		/^STRIP=-s\$/s!!& --strip-program=${host:+${host}-}strip!" ${pciutils_bld_dir}/Makefile || return
+	make -C ${pciutils_bld_dir} -j ${jobs} PREFIX=${prefix} HOST=${host} \
+		CROSS_COMPILE=${host:+${host}-} \
+		LDFLAGS="${LDFLAGS} `Wl_rpath_link zstd lzma z crypto`" \
+		|| return
+	make -C ${pciutils_bld_dir} -j ${jobs} install DESTDIR=${DESTDIR} || return
+}
+
+install_native_lsscsi()
+{
+	[ -x ${prefix}/bin/lsscsi -a "${force_install}" != yes ] && return
+	fetch lsscsi || return
+	unpack lsscsi || return
+	[ -f ${lsscsi_bld_dir}/Makefile ] ||
+		(cd ${lsscsi_bld_dir}
+		${lsscsi_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
+	make -C ${lsscsi_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${lsscsi_bld_dir} -j ${jobs} -k check || return
+	make -C ${lsscsi_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 }
 
 install_native_parted()
