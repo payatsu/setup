@@ -166,6 +166,7 @@ EOF
 : ${nmap_ver:=7.90}
 : ${i2c_tools_ver:=4.2}
 : ${pciutils_ver:=3.8.0}
+: ${lsscsi_ver:=r0.32}
 
 : ${m4_ver:=1.4.19}
 : ${perl_ver:=5.36.0}
@@ -569,6 +570,9 @@ fetch()
 	pciutils)
 		wget -O ${pciutils_src_dir}.tar.xz \
 			https://www.kernel.org/pub/software/utils/pciutils/${pciutils_name}.tar.xz || return;;
+	lsscsi)
+		wget -O ${lsscsi_src_dir}.tar.gz \
+			https://github.com/doug-gilbert/lsscsi/archive/refs/tags/${lsscsi_ver}.tar.gz || return;;
 	perl)
 		wget -O ${perl_src_dir}.tar.gz \
 			https://www.cpan.org/src/5.0/${perl_name}.tar.gz || return;;
@@ -2470,6 +2474,18 @@ EOF
 			LDFLAGS="${LDFLAGS} `Wl_rpath_link zstd lzma z crypto`" \
 			|| return
 		make -C ${pciutils_bld_dir} -j ${jobs} install DESTDIR=${DESTDIR} || return
+		;;
+	lsscsi)
+		[ -x ${DESTDIR}${prefix}/bin/lsscsi -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${lsscsi_bld_dir}/Makefile ] ||
+			(cd ${lsscsi_bld_dir}
+			${lsscsi_src_dir}/configure --prefix=${prefix} --host=${host} --disable-silent-rules) || return
+		make -C ${lsscsi_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${lsscsi_bld_dir} -j ${jobs} -k check || return
+		make -C ${lsscsi_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	m4)
 		[ -x ${DESTDIR}${prefix}/bin/m4 -a "${force_install}" != yes ] && return
