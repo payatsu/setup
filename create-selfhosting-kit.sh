@@ -3007,6 +3007,7 @@ EOF
 		print_header_path uuid.h uuid > /dev/null || ${0} ${cmdopt} util-linux || return
 		print_header_path ext2_fs.h ext2fs > /dev/null || ${0} ${cmdopt} e2fsprogs || return
 		print_header_path zstd.h > /dev/null || ${0} ${cmdopt} zstd || return
+		print_header_path lzoconf.h lzo > /dev/null || ${0} ${cmdopt} lzo || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${btrfs_progs_src_dir}/configure ] || (cd ${btrfs_progs_src_dir}; ./autogen.sh) || return
@@ -3014,7 +3015,8 @@ EOF
 		[ -f ${btrfs_progs_bld_dir}/Makefile.inc ] ||
 			(cd ${btrfs_progs_bld_dir}
 			${btrfs_progs_src_dir}/configure --prefix=${prefix} --host=${host} \
-				--disable-documentation --disable-libudev --disable-python --disable-lzo \
+				--disable-documentation --disable-libudev --disable-python \
+				LDFLAGS="${LDFLAGS} `L lzo2`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				) || return
 		make -C ${btrfs_progs_bld_dir} -j ${jobs} V=1 EXTRA_CFLAGS="${CFLAGS} `I uuid/uuid.h`" || return
