@@ -108,6 +108,7 @@ EOF
 : ${bzip2_ver:=1.0.8}
 : ${xz_ver:=5.2.7}
 : ${lzo_ver:=2.10}
+: ${lzop_ver:=1.04}
 : ${zstd_ver:=1.5.2}
 : ${openssl_ver:=3.0.5}
 : ${libunistring_ver:=1.0}
@@ -435,6 +436,9 @@ fetch()
 	lzo)
 		wget -O ${lzo_src_dir}.tar.gz \
 			https://www.oberhumer.com/opensource/lzo/download/${lzo_name}.tar.gz || return;;
+	lzop)
+		wget -O ${lzop_src_dir}.tar.gz \
+			https://www.lzop.org/download/${lzop_name}.tar.gz || return;;
 	zstd)
 		wget -O ${zstd_src_dir}.tar.gz \
 			https://github.com/facebook/zstd/releases/download/v${zstd_ver}/${zstd_name}.tar.gz || return;;
@@ -1191,6 +1195,19 @@ build()
 		[ "${enable_check}" != yes ] ||
 			make -C ${lzo_bld_dir} -j ${jobs} -k test || return
 		make -C ${lzo_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	lzop)
+		[ -x ${DESTDIR}${prefix}/bin/lzop -a "${force_install}" != yes ] && return
+		print_header_path lzoconf.h lzo > /dev/null || ${0} ${cmdopt} lzo || return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${lzop_bld_dir}/Makefile ] ||
+			(cd ${lzop_bld_dir}
+			${lzop_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules \
+				CFLAGS="${CFLAGS} `I lzo/lzoconf.h`" \
+				LDFLAGS="${LDFLAGS} `L lzo2`") || return
+		make -C ${lzop_bld_dir} -j ${jobs} || return
+		make -C ${lzop_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	zstd)
 		[ -x ${DESTDIR}${prefix}/bin/zstd -a "${force_install}" != yes ] && return
