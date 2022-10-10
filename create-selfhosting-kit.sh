@@ -2986,11 +2986,17 @@ EOF
 		;;
 	e2fsprogs)
 		[ -x ${DESTDIR}${prefix}/sbin/mkfs.ext2 -a "${force_install}" != yes ] && return
+		print_header_path uuid.h uuid > /dev/null || ${0} ${cmdopt} util-linux || return
 		fetch ${1} || return
 		unpack ${1} || return
 		[ -f ${e2fsprogs_bld_dir}/Makefile ] ||
 			(cd ${e2fsprogs_bld_dir}
-			${e2fsprogs_src_dir}/configure --prefix=${prefix} --host=${host} --enable-verbose-makecmds --enable-elf-shlibs) || return
+			${e2fsprogs_src_dir}/configure --prefix=${prefix} --host=${host} \
+				--enable-verbose-makecmds --enable-elf-shlibs --disable-rpath \
+				CPPFLAGS="${CPPFLAGS} `I uuid/uuid.h`" \
+				LDFLAGS="${LDFLAGS} `L uuid blkid` `Wl_rpath_link uuid`" \
+				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
+				) || return
 		make -C ${e2fsprogs_bld_dir} -j 1 || return # -j '1' is for workaround
 		[ "${enable_check}" != yes ] ||
 			make -C ${e2fsprogs_bld_dir} -j ${jobs} -k check || return

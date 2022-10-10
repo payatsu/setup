@@ -5159,11 +5159,14 @@ install_native_parted()
 install_native_e2fsprogs()
 {
 	[ -x ${prefix}/sbin/mkfs.ext2 -a "${force_install}" != yes ] && return
+	print_header_path uuid.h uuid > /dev/null || install_native_util_linux || return
 	fetch e2fsprogs || return
 	unpack e2fsprogs || return
 	[ -f ${e2fsprogs_bld_dir}/Makefile ] ||
 		(cd ${e2fsprogs_bld_dir}
-		${e2fsprogs_src_dir}/configure --prefix=${prefix} --host=${host} --enable-verbose-makecmds --enable-elf-shlibs) || return
+		${e2fsprogs_src_dir}/configure --prefix=${prefix} --host=${host} \
+			--enable-verbose-makecmds --enable-elf-shlibs --disable-rpath \
+			) || return
 	make -C ${e2fsprogs_bld_dir} -j 1 || return # -j '1' is for workaround
 	[ "${enable_check}" != yes ] ||
 		make -C ${e2fsprogs_bld_dir} -j ${jobs} -k check || return
