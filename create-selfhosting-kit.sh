@@ -107,6 +107,7 @@ EOF
 : ${zlib_ver:=1.2.12}
 : ${bzip2_ver:=1.0.8}
 : ${xz_ver:=5.2.7}
+: ${lzo_ver:=2.10}
 : ${zstd_ver:=1.5.2}
 : ${openssl_ver:=3.0.5}
 : ${libunistring_ver:=1.0}
@@ -425,6 +426,35 @@ fetch()
 	zlib)
 		wget -O ${zlib_src_dir}.tar.xz \
 			https://zlib.net/${zlib_name}.tar.xz || return;;
+	bzip2)
+		wget -O ${bzip2_src_dir}.tar.gz \
+			https://www.sourceware.org/pub/bzip2/${bzip2_name}.tar.gz || return;;
+	xz)
+		wget -O ${xz_src_dir}.tar.bz2 \
+			https://tukaani.org/xz/${xz_name}.tar.bz2 || return;;
+	lzo)
+		wget -O ${lzo_src_dir}.tar.gz \
+			https://www.oberhumer.com/opensource/lzo/download/${lzo_name}.tar.gz || return;;
+	zstd)
+		wget -O ${zstd_src_dir}.tar.gz \
+			https://github.com/facebook/zstd/releases/download/v${zstd_ver}/${zstd_name}.tar.gz || return;;
+	openssl)
+		wget -O ${openssl_src_dir}.tar.gz \
+			https://www.openssl.org/source/${openssl_name}.tar.gz ||
+				wget -O ${openssl_src_dir}.tar.gz \
+					https://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return;;
+	libidn2)
+		wget -O ${libidn2_src_dir}.tar.gz \
+			https://ftp.gnu.org/gnu/libidn/${libidn2_name}.tar.gz || return;;
+	nghttp2)
+		wget -O ${nghttp2_src_dir}.tar.xz \
+			https://github.com/nghttp2/nghttp2/releases/download/v${nghttp2_ver}/${nghttp2_name}.tar.xz || return;;
+	libssh)
+		wget -O ${libssh_src_dir}.tar.xz \
+			https://www.libssh.org/files/`print_version libssh`/${libssh_name}.tar.xz || return;;
+	curl)
+		wget -O ${curl_src_dir}.tar.xz \
+			https://curl.se/download/${curl_name}.tar.xz || return;;
 	libunistring|binutils|glibc|gmp|mpfr|mpc|make|ncurses|readline|gdb|inetutils|m4|\
 	autoconf|autoconf-archive|automake|bison|libtool|sed|gawk|gettext|ed|bc|tar|cpio|parted|screen|bash|\
 	less|emacs|nano|grep|diffutils|patch|global|findutils|poke|help2man|texinfo|coreutils|gperf|\
@@ -445,9 +475,6 @@ fetch()
 					&& break \
 					|| rm -v ${gcc_src_dir}.tar.${compress_format}
 		done || return;;
-	zstd)
-		wget -O ${zstd_src_dir}.tar.gz \
-			https://github.com/facebook/zstd/releases/download/v${zstd_ver}/${zstd_name}.tar.gz || return;;
 	ccache)
 		wget -O ${ccache_src_dir}.tar.xz \
 			https://github.com/ccache/ccache/releases/download/v${ccache_ver}/${ccache_name}.tar.xz || return;;
@@ -457,11 +484,6 @@ fetch()
 	libffi)
 		wget -O ${libffi_src_dir}.tar.gz \
 			https://github.com/libffi/libffi/releases/download/v${libffi_ver}/${libffi_name}.tar.gz || return;;
-	openssl)
-		wget -O ${openssl_src_dir}.tar.gz \
-			https://www.openssl.org/source/${openssl_name}.tar.gz ||
-				wget -O ${openssl_src_dir}.tar.gz \
-					https://www.openssl.org/source/old/`echo ${openssl_ver} | sed -e 's/[a-z]//g'`/${openssl_name}.tar.gz || return;;
 	sqlite)
 		wget -O ${sqlite_src_dir}.tar.gz \
 			https://www.sqlite.org/2022/${sqlite_name}.tar.gz || return;;
@@ -474,12 +496,6 @@ fetch()
 	source-highlight)
 		wget -O ${source_highlight_src_dir}.tar.gz \
 			https://ftp.gnu.org/gnu/src-highlite/${source_highlight_name}.tar.gz || return;;
-	bzip2)
-		wget -O ${bzip2_src_dir}.tar.gz \
-			https://www.sourceware.org/pub/bzip2/${bzip2_name}.tar.gz || return;;
-	xz)
-		wget -O ${xz_src_dir}.tar.bz2 \
-			https://tukaani.org/xz/${xz_name}.tar.bz2 || return;;
 	elfutils)
 		wget -O ${elfutils_src_dir}.tar.bz2 \
 			https://sourceware.org/elfutils/ftp/${elfutils_ver}/${elfutils_name}.tar.bz2 || return;;
@@ -583,18 +599,6 @@ fetch()
 	pkg-config)
 		wget -O ${pkg_config_src_dir}.tar.gz \
 			https://pkg-config.freedesktop.org/releases/${pkg_config_name}.tar.gz || return;;
-	libidn2)
-		wget -O ${libidn2_src_dir}.tar.gz \
-			https://ftp.gnu.org/gnu/libidn/${libidn2_name}.tar.gz || return;;
-	nghttp2)
-		wget -O ${nghttp2_src_dir}.tar.xz \
-			https://github.com/nghttp2/nghttp2/releases/download/v${nghttp2_ver}/${nghttp2_name}.tar.xz || return;;
-	libssh)
-		wget -O ${libssh_src_dir}.tar.xz \
-			https://www.libssh.org/files/`print_version libssh`/${libssh_name}.tar.xz || return;;
-	curl)
-		wget -O ${curl_src_dir}.tar.xz \
-			https://curl.se/download/${curl_name}.tar.xz || return;;
 	git)
 		wget -O ${git_src_dir}.tar.xz \
 			https://www.kernel.org/pub/software/scm/git/${git_name}.tar.xz || return;;
@@ -1175,6 +1179,18 @@ build()
 		[ "${enable_check}" != yes ] ||
 			make -C ${xz_bld_dir} -j ${jobs} -k check || return
 		make -C ${xz_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	lzo)
+		[ -f ${DESTDIR}${prefix}/include/lzo/lzoconf.h -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${lzo_bld_dir}/Makefile ] ||
+			(cd ${lzo_bld_dir}
+			${lzo_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules --enable-shared) || return
+		make -C ${lzo_bld_dir} -j ${jobs} || return
+		[ "${enable_check}" != yes ] ||
+			make -C ${lzo_bld_dir} -j ${jobs} -k test || return
+		make -C ${lzo_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
 		;;
 	zstd)
 		[ -x ${DESTDIR}${prefix}/bin/zstd -a "${force_install}" != yes ] && return
