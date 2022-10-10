@@ -109,6 +109,7 @@ EOF
 : ${xz_ver:=5.2.7}
 : ${lzo_ver:=2.10}
 : ${lzop_ver:=1.04}
+: ${lz4_ver:=1.9.4}
 : ${zstd_ver:=1.5.2}
 : ${openssl_ver:=3.0.5}
 : ${libunistring_ver:=1.0}
@@ -439,6 +440,9 @@ fetch()
 	lzop)
 		wget -O ${lzop_src_dir}.tar.gz \
 			https://www.lzop.org/download/${lzop_name}.tar.gz || return;;
+	lz4)
+		wget -O ${lz4_src_dir}.tar.gz \
+			https://github.com/lz4/lz4/archive/v${lz4_ver}.tar.gz || return;;
 	zstd)
 		wget -O ${zstd_src_dir}.tar.gz \
 			https://github.com/facebook/zstd/releases/download/v${zstd_ver}/${zstd_name}.tar.gz || return;;
@@ -1208,6 +1212,19 @@ build()
 				LDFLAGS="${LDFLAGS} `L lzo2`") || return
 		make -C ${lzop_bld_dir} -j ${jobs} || return
 		make -C ${lzop_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install${strip:+-${strip}} || return
+		;;
+	lz4)
+		[ -x ${DESTDIR}${prefix}/bin/lz4 -a "${force_install}" != yes ] && return
+		fetch ${1} || return
+		unpack ${1} || return
+		[ -f ${lz4_bld_dir}/Makefile ] || cp -Tvr ${lz4_src_dir} ${lz4_bld_dir} || return
+		make -C ${lz4_bld_dir} -j ${jobs} V=1 CC="${CC:-${host:+${host}-}gcc}" || return
+		for f in lz4c lz4cat unlz4; do
+			rm -fv ${DESTDIR}${prefix}/bin/${f} || return
+		done
+		make -C ${lz4_bld_dir} -j ${jobs} V=1 PREFIX=${prefix} DESTDIR=${DESTDIR} install || return
+		[ -z "${strip}" ] && return
+		${host:+${host}-}strip -v ${DESTDIR}${prefix}/bin/lz4 || return
 		;;
 	zstd)
 		[ -x ${DESTDIR}${prefix}/bin/zstd -a "${force_install}" != yes ] && return
