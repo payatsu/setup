@@ -143,6 +143,7 @@
 : ${lsscsi_ver:=r0.32}
 : ${parted_ver:=3.5}
 : ${e2fsprogs_ver:=1.46.2}
+: ${btrfs_progs_ver:=5.19.1}
 : ${squashfs_ver:=4.4}
 : ${openssl_ver:=3.0.5}
 : ${openssh_ver:=9.1p1}
@@ -719,6 +720,9 @@ fetch()
 		e2fsprogs)
 			wget -O ${e2fsprogs_src_dir}.tar.gz \
 				https://sourceforge.net/projects/e2fsprogs/files/e2fsprogs/v${e2fsprogs_ver}/${e2fsprogs_name}.tar.gz/download || return;;
+		btrfs-progs)
+			wget -O ${btrfs_progs_src_dir}.tar.gz \
+				https://github.com/kdave/btrfs-progs/archive/refs/tags/v${btrfs_progs_ver}.tar.gz || return;;
 		squashfs)
 			wget -O ${squashfs_src_dir}.tar.gz \
 				https://sourceforge.net/projects/squashfs/files/squashfs/${squashfs_name}/${squashfs_name}.tar.gz/download || return;;
@@ -1352,6 +1356,7 @@ set_variables()
 			s/man_db/man-db/
 			s/source_highlight/source-highlight/
 			s/util_linux/util-linux/
+			s/btrfs_progs/btrfs-progs/
 			s/git_manpages/git-manpages/
 			s/git_lfs/git-lfs/
 			s/apr_util/apr-util/
@@ -5172,6 +5177,28 @@ install_native_e2fsprogs()
 		make -C ${e2fsprogs_bld_dir} -j ${jobs} -k check || return
 	make -C ${e2fsprogs_bld_dir} -j ${jobs} install || return
 	make -C ${e2fsprogs_bld_dir} -j ${jobs} install-libs || return
+	update_path || return
+}
+
+install_native_btrfs_progs()
+{
+	[ -x ${prefix}/bin/mkfs.btrfs -a "${force_install}" != yes ] && return
+	print_header_path uuid.h uuid > /dev/null || install_native_util_linux || return
+	print_header_path ext2_fs.h ext2fs > /dev/null || install_native_e2fsprogs || return
+	print_header_path zstd.h > /dev/null || install_native_zstd || return
+	print_header_path lzoconf.h lzo > /dev/null || install_native_lzo || return
+	fetch btrfs-progs || return
+	unpack btrfs-progs || return
+	[ -f ${btrfs_progs_src_dir}/configure ] || (cd ${btrfs_progs_src_dir}; ./autogen.sh) || return
+	[ -f ${btrfs_progs_bld_dir}/configure ] || cp -Tvr ${btrfs_progs_src_dir} ${btrfs_progs_bld_dir} || return
+	[ -f ${btrfs_progs_bld_dir}/Makefile.inc ] ||
+		(cd ${btrfs_progs_bld_dir}
+		${btrfs_progs_src_dir}/configure --prefix=${prefix} --host=${host} \
+			--disable-documentation --disable-libudev --disable-python \
+			) || return
+	make -C ${btrfs_progs_bld_dir} -j ${jobs} V=1 EXTRA_CFLAGS="${CFLAGS} `I uuid/uuid.h`" || return
+	make -C ${btrfs_progs_bld_dir} -j ${jobs} DESTDIR=${DESTDIR} install || return
+	update_path || return
 }
 
 install_native_squashfs()
