@@ -253,7 +253,7 @@
 : ${libgcrypt_ver:=1.10.1}
 : ${libksba_ver:=1.6.0}
 : ${libassuan_ver:=2.5.5}
-: ${gnupg_ver:=2.3.6}
+: ${gnupg_ver:=2.3.8}
 : ${protobuf_ver:=3.20.3}
 : ${cares_ver:=1.18.1}
 : ${re2_ver:=2022-06-01}
