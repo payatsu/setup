@@ -209,7 +209,7 @@ EOF
 : ${bash_ver:=5.2}
 : ${tcsh_ver:=TCSH6_23_00}
 : ${less_ver:=581.2}
-: ${vim_ver:=9.0.0006}
+: ${vim_ver:=9.0.0814}
 : ${vimdoc_ja_ver:=master}
 : ${emacs_ver:=28.2}
 : ${nano_ver:=6.4}
