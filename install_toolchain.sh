@@ -5669,7 +5669,7 @@ install_native_bazel()
 	[ -d ${bazel_src_dir} ] || unpack bazel ${bazel_src_dir} || return
 	[ -f ${bazel_bld_dir}/compile.sh ] || cp -Tvr ${bazel_src_dir} ${bazel_bld_dir} || return
 	(cd ${bazel_bld_dir}
-	EXTRA_BAZEL_ARGS='--host_javabase=@local_jdk//:jdk' VERBOSE=yes bash ./compile.sh)
+	EXTRA_BAZEL_ARGS='--host_javabase=@local_jdk//:jdk' VERBOSE=yes bash ./compile.sh) || return
 	mkdir -pv ${DESTDI}${prefix}/bin || return
 	cp -fv ${bazel_bld_dir}/output/bazel ${DESTDIR}${prefix}/bin/bazel || return
 	update_path || return
