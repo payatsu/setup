@@ -50,7 +50,7 @@
 : ${systemtap_ver:=4.7}
 : ${ed_ver:=1.18}
 : ${bc_ver:=1.07.1}
-: ${rsync_ver:=3.2.6}
+: ${rsync_ver:=3.2.7}
 : ${linux_ver:=6.0}
 : ${perf_ver:=${linux_ver}}
 : ${libcap_ver:=2.49}
