@@ -203,7 +203,7 @@
 : ${tcl_ver:=8.6.11}
 : ${tk_ver:=8.6.11}
 : ${libunistring_ver:=1.0}
-: ${libidn2_ver:=2.3.3}
+: ${libidn2_ver:=2.3.4}
 : ${libpsl_ver:=0.21.1}
 : ${libatomic_ops_ver:=7.6.14}
 : ${gc_ver:=8.2.2}
