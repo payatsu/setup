@@ -164,7 +164,7 @@ EOF
 : ${tcpdump_ver:=4.99.1}
 : ${procps_ver:=3.3.17}
 : ${sysstat_ver:=12.5.4}
-: ${inetutils_ver:=2.3}
+: ${inetutils_ver:=2.4}
 : ${iproute2_ver:=5.9.0}
 : ${nmap_ver:=7.90}
 : ${i2c_tools_ver:=4.2}

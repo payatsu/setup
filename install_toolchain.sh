@@ -136,7 +136,7 @@
 : ${bash_ver:=5.2}
 : ${dash_ver:=0.5.11.5}
 : ${tcsh_ver:=TCSH6_23_00}
-: ${inetutils_ver:=2.3}
+: ${inetutils_ver:=2.4}
 : ${iproute2_ver:=5.9.0}
 : ${util_linux_ver:=2.37.2}
 : ${pciutils_ver:=3.8.0}
