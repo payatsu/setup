@@ -235,7 +235,7 @@
 : ${gst_rtsp_server_ver:=${gstreamer_ver}}
 : ${gst_omx_ver:=${gstreamer_ver}}
 : ${gst_python_ver:=${gstreamer_ver}}
-: ${orc_ver:=0.4.32}
+: ${orc_ver:=0.4.33}
 : ${lcms2_ver:=2.14}
 : ${liblqr_ver:=0.4.2}
 : ${fftw_ver:=3.3.10}
