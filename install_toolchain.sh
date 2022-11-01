@@ -236,7 +236,7 @@
 : ${gst_omx_ver:=${gstreamer_ver}}
 : ${gst_python_ver:=${gstreamer_ver}}
 : ${orc_ver:=0.4.32}
-: ${lcms2_ver:=2.13.1}
+: ${lcms2_ver:=2.14}
 : ${liblqr_ver:=0.4.2}
 : ${fftw_ver:=3.3.10}
 : ${LibRaw_ver:=0.20.2}
