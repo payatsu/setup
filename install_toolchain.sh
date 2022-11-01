@@ -44,7 +44,7 @@
 : ${sed_ver:=4.8}
 : ${gawk_ver:=5.1.0}
 : ${gnulib_ver:=git}
-: ${make_ver:=4.3}
+: ${make_ver:=4.4}
 : ${binutils_ver:=2.38}
 : ${elfutils_ver:=0.187}
 : ${systemtap_ver:=4.7}
