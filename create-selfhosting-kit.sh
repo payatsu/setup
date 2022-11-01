@@ -144,7 +144,7 @@ EOF
 : ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=12.1}
 : ${crash_ver:=8.0.1}
-: ${strace_ver:=5.19}
+: ${strace_ver:=6.0}
 : ${systemtap_ver:=4.7}
 : ${linux_ver:=6.0}
 : ${perf_ver:=${linux_ver}}
