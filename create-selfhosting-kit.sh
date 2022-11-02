@@ -111,7 +111,7 @@ EOF
 : ${lzop_ver:=1.04}
 : ${lz4_ver:=1.9.4}
 : ${zstd_ver:=1.5.2}
-: ${openssl_ver:=3.0.5}
+: ${openssl_ver:=3.0.7}
 : ${libunistring_ver:=1.0}
 : ${libidn2_ver:=2.3.4}
 : ${nghttp2_ver:=1.50.0}
