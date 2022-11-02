@@ -88,7 +88,7 @@
 : ${strace_ver:=6.0}
 : ${ltrace_ver:=0.7.3}
 : ${valgrind_ver:=3.18.1}
-: ${zlib_ver:=1.2.12}
+: ${zlib_ver:=1.2.13}
 : ${pigz_ver:=2.7}
 : ${libpng_ver:=1.6.37}
 : ${tiff_ver:=4.2.0}
