@@ -145,7 +145,7 @@ EOF
 : ${gdb_ver:=12.1}
 : ${crash_ver:=8.0.1}
 : ${strace_ver:=6.0}
-: ${systemtap_ver:=4.7}
+: ${systemtap_ver:=4.8}
 : ${linux_ver:=6.0}
 : ${perf_ver:=${linux_ver}}
 : ${libcap_ver:=2.49}
