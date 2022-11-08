@@ -219,7 +219,7 @@
 : ${gflags_ver:=2.2.2}
 : ${glog_ver:=0.6.0}
 : ${openjpeg_ver:=2.5.0}
-: ${Imath_ver:=3.1.5}
+: ${Imath_ver:=3.1.6}
 : ${openexr_ver:=3.1.3}
 : ${eigen_ver:=3.4.0}
 : ${hdf5_ver:=1.12.1}
