@@ -41,7 +41,7 @@
 : ${automake_ver:=1.16.5}
 : ${autogen_ver:=5.18.16}
 : ${libtool_ver:=2.4.7}
-: ${sed_ver:=4.8}
+: ${sed_ver:=4.9}
 : ${gawk_ver:=5.1.0}
 : ${gnulib_ver:=git}
 : ${make_ver:=4.4}

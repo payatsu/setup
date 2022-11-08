@@ -180,7 +180,7 @@ EOF
 : ${flex_ver:=2.6.4}
 : ${libtool_ver:=2.4.7}
 : ${pkg_config_ver:=0.29.2}
-: ${sed_ver:=4.8}
+: ${sed_ver:=4.9}
 : ${gawk_ver:=5.1.0}
 : ${gettext_ver:=0.21}
 : ${git_ver:=2.38.1}
