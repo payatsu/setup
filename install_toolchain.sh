@@ -242,7 +242,7 @@
 : ${LibRaw_ver:=0.20.2}
 : ${ImageMagick_ver:=7.1.0-51}
 : ${googletest_ver:=1.12.1}
-: ${fzf_ver:=0.34.0}
+: ${fzf_ver:=0.35.0}
 : ${bat_ver:=0.22.1}
 : ${jq_ver:=1.6}
 : ${libpcap_ver:=1.10.1}
