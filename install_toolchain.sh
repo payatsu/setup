@@ -99,7 +99,7 @@
 : ${vim_ver:=9.0.0814}
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
-: ${neovim_ver:=0.8.0}
+: ${neovim_ver:=0.8.1}
 : ${nano_ver:=6.4}
 : ${grep_ver:=3.8}
 : ${global_ver:=6.6.6}
