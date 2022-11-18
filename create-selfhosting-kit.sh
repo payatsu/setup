@@ -143,7 +143,7 @@ EOF
 : ${glib_ver:=2.70.1}
 : ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=12.1}
-: ${crash_ver:=8.0.1}
+: ${crash_ver:=8.0.2}
 : ${strace_ver:=6.0}
 : ${systemtap_ver:=4.8}
 : ${linux_ver:=6.0}

@@ -83,7 +83,7 @@
 : ${popt_ver:=1.18}
 : ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=12.1}
-: ${crash_ver:=8.0.1}
+: ${crash_ver:=8.0.2}
 : ${lcov_ver:=1.16}
 : ${strace_ver:=6.0}
 : ${ltrace_ver:=0.7.3}
