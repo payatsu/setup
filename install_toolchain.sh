@@ -174,7 +174,7 @@
 : ${fmt_ver:=9.1.0}
 : ${spdlog_ver:=1.11.0}
 : ${Bear_ver:=3.0.20}
-: ${ccache_ver:=4.7.3}
+: ${ccache_ver:=4.7.4}
 : ${distcc_ver:=3.4}
 : ${libedit_ver:=20210910-3.1}
 : ${swig_ver:=4.0.2}
