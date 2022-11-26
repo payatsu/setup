@@ -295,8 +295,8 @@
 : ${libpciaccess_ver:=0.16}
 : ${libdrm_ver:=2.4.110}
 : ${libxshmfence_ver:=1.3}
-: ${wayland_ver:=1.20.0}
-: ${wayland_protocols_ver:=1.26}
+: ${wayland_ver:=1.21.0}
+: ${wayland_protocols_ver:=1.30}
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
 : ${dri3proto_ver:=1.0}
@@ -1020,7 +1020,7 @@ fetch()
 				https://dri.freedesktop.org/libdrm/${libdrm_name}.tar.xz || return;;
 		wayland|wayland-protocols)
 			eval wget -O \${${_p}_src_dir}.tar.xz \
-				https://wayland.freedesktop.org/releases/\${${_p:-wayland}_name}.tar.xz || return;;
+				https://gitlab.freedesktop.org/wayland/${p:-wayland}/-/releases/\${${_p:-wayland}_ver}/downloads/\${${_p:-wayland}_name}.tar.xz || return;;
 		libglvnd)
 			wget -O ${libglvnd_src_dir}.tar.bz2 \
 				https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/v${libglvnd_ver}/libglvnd-v${libglvnd_ver}.tar.bz2 || return;;
