@@ -225,7 +225,7 @@ EOF
 : ${jq_ver:=1.6}
 
 : ${help2man_ver:=1.47.16}
-: ${texinfo_ver:=7.0}
+: ${texinfo_ver:=7.0.1}
 : ${coreutils_ver:=9.1}
 : ${file_ver:=5.41}
 : ${gperf_ver:=3.1}
