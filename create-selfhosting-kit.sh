@@ -106,7 +106,7 @@ EOF
 
 : ${zlib_ver:=1.2.13}
 : ${bzip2_ver:=1.0.8}
-: ${xz_ver:=5.2.8}
+: ${xz_ver:=5.2.9}
 : ${lzo_ver:=2.10}
 : ${lzop_ver:=1.04}
 : ${lz4_ver:=1.9.4}
