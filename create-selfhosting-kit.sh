@@ -137,7 +137,7 @@ EOF
 : ${boost_ver:=1_80_0}
 : ${source_highlight_ver:=3.1.9}
 : ${pcre_ver:=8.45}
-: ${pcre2_ver:=10.40}
+: ${pcre2_ver:=10.41}
 : ${util_linux_ver:=2.37.2}
 : ${popt_ver:=1.18}
 : ${glib_ver:=2.70.1}
