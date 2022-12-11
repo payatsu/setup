@@ -75,7 +75,7 @@
 : ${mingw_w64_ver:=9.0.0}
 : ${gmp_ver:=6.2.1}
 : ${mpfr_ver:=4.1.1}
-: ${mpc_ver:=1.2.1}
+: ${mpc_ver:=1.3.0}
 : ${isl_ver:=0.20}
 : ${gcc_ver:=12.2.0}
 : ${readline_ver:=8.1}
