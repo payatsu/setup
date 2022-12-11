@@ -125,7 +125,7 @@ EOF
 : ${mpc_ver:=1.2.1}
 : ${isl_ver:=0.20}
 : ${gcc_ver:=12.2.0}
-: ${make_ver:=4.4}
+: ${make_ver:=4.3}
 : ${ccache_ver:=4.7.4}
 
 : ${ncurses_ver:=6.3}
