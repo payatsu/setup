@@ -350,7 +350,7 @@ EOF
 : ${liblqr_ver:=0.4.2}
 : ${fftw_ver:=3.3.10}
 : ${LibRaw_ver:=0.20.2}
-: ${ImageMagick_ver:=7.1.0-53}
+: ${ImageMagick_ver:=7.1.0-54}
 
 : ${prefix:=${default_prefix}}
 : ${host:=${default_host}}
