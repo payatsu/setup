@@ -100,7 +100,7 @@
 : ${vimdoc_ja_ver:=master}
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.8.1}
-: ${nano_ver:=7.0}
+: ${nano_ver:=7.1}
 : ${grep_ver:=3.8}
 : ${global_ver:=6.6.6}
 : ${pcre2_ver:=10.42}
