@@ -134,7 +134,7 @@ EOF
 : ${libffi_ver:=3.4.4}
 : ${sqlite_ver:=3390200}
 : ${Python_ver:=3.10.8}
-: ${boost_ver:=1_80_0}
+: ${boost_ver:=1_81_0}
 : ${source_highlight_ver:=3.1.9}
 : ${pcre_ver:=8.45}
 : ${pcre2_ver:=10.42}
