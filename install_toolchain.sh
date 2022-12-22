@@ -249,11 +249,11 @@
 : ${tcpdump_ver:=4.99.1}
 : ${nmap_ver:=7.90}
 : ${npth_ver:=1.6}
-: ${libgpg_error_ver:=1.45}
+: ${libgpg_error_ver:=1.46}
 : ${libgcrypt_ver:=1.10.1}
-: ${libksba_ver:=1.6.0}
+: ${libksba_ver:=1.6.3}
 : ${libassuan_ver:=2.5.5}
-: ${gnupg_ver:=2.3.8}
+: ${gnupg_ver:=2.4.0}
 : ${protobuf_ver:=3.20.3}
 : ${cares_ver:=1.18.1}
 : ${re2_ver:=2022-12-01}
