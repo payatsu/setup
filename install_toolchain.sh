@@ -58,8 +58,8 @@
 : ${OpenCSD_ver:=1.2.1}
 : ${libunwindnongnu_ver:=1.6.2}
 : ${libpfm_ver:=4.11.0}
-: ${libbpf_ver:=1.0.1}
-: ${bcc_ver:=0.25.0}
+: ${libbpf_ver:=1.1.0}
+: ${bcc_ver:=0.26.0}
 : ${cereal_ver:=1.3.2}
 : ${bpftrace_ver:=0.16.0}
 : ${libtraceevent_ver:=1.6.0}
