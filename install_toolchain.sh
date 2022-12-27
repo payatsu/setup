@@ -110,7 +110,7 @@
 : ${ripgrep_ver:=13.0.0}
 : ${ghostscript_ver:=9.52}
 : ${graphviz_ver:=2.44.1}
-: ${doxygen_ver:=1.9.2}
+: ${doxygen_ver:=1.9.5}
 : ${freetype_ver:=2.11.0}
 : ${fontconfig_ver:=2.13.1}
 : ${plantuml_ver:=1.2021.1}
