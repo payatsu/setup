@@ -224,7 +224,7 @@
 : ${eigen_ver:=3.4.0}
 : ${hdf5_ver:=1.12.1}
 : ${VTK_ver:=9.1.0}
-: ${opencv_ver:=4.6.0}
+: ${opencv_ver:=4.7.0}
 : ${opencv_contrib_ver:=${opencv_ver}}
 : ${v4l_utils_ver:=1.22.1}
 : ${yavta_ver:=git}
