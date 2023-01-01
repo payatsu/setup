@@ -128,7 +128,7 @@ EOF
 : ${make_ver:=4.3}
 : ${ccache_ver:=4.7.4}
 
-: ${ncurses_ver:=6.3}
+: ${ncurses_ver:=6.4}
 : ${readline_ver:=8.1}
 : ${expat_ver:=2.4.7}
 : ${libffi_ver:=3.4.4}
@@ -1613,8 +1613,7 @@ EOF
 					s!\( --strip-program=[[:graph:]]\+\)\?\$! --strip-program=${host:+${host}-}strip!
 				}" ${ncurses_src_dir}/progs/Makefile.in || return
 			${ncurses_src_dir}/configure --prefix=${prefix} --host=${host} \
-				--with-pkg-config-libdir=/no-such-dir --enable-pc-files \
-				--with-shared --with-cxx-shared --with-termlib \
+				--enable-pc-files --with-shared --with-cxx-shared --with-termlib \
 				--with-versioned-syms --enable-termcap --enable-colors \
 				PKG_CONFIG_LIBDIR=${prefix}/lib/${host}/pkgconfig \
 				) || return
@@ -1624,8 +1623,7 @@ EOF
 		[ -f ${ncurses_bld_dir}/Makefile ] ||
 			(cd ${ncurses_bld_dir}
 			${ncurses_src_dir}/configure --prefix=${prefix} --host=${host} \
-				--with-pkg-config-libdir=/no-such-dir --enable-pc-files \
-				--with-shared --with-cxx-shared --with-termlib \
+				--enable-pc-files --with-shared --with-cxx-shared --with-termlib \
 				--with-versioned-syms --enable-termcap --enable-widec --enable-colors \
 				PKG_CONFIG_LIBDIR=${prefix}/lib/${host}/pkgconfig \
 				) || return

@@ -79,7 +79,7 @@
 : ${isl_ver:=0.20}
 : ${gcc_ver:=12.2.0}
 : ${readline_ver:=8.1}
-: ${ncurses_ver:=6.3}
+: ${ncurses_ver:=6.4}
 : ${popt_ver:=1.18}
 : ${babeltrace_ver:=1.5.8}
 : ${gdb_ver:=12.1}
@@ -3044,8 +3044,7 @@ EOF
 	[ -f ${ncurses_bld_dir}/Makefile ] ||
 		(cd ${ncurses_bld_dir}
 		${ncurses_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-			--with-pkg-config-libdir=/no-such-dir --enable-pc-files \
-			--with-shared --with-cxx-shared --with-termlib \
+			--enable-pc-files --with-shared --with-cxx-shared --with-termlib \
 			--with-versioned-syms --enable-termcap --enable-colors \
 			PKG_CONFIG_LIBDIR=${prefix}/lib/${host}/pkgconfig \
 			) || return
@@ -3055,8 +3054,7 @@ EOF
 	[ -f ${ncurses_bld_dir}/Makefile ] ||
 		(cd ${ncurses_bld_dir}
 		${ncurses_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} \
-			--with-pkg-config-libdir=/no-such-dir --enable-pc-files \
-			--with-shared --with-cxx-shared --with-termlib \
+			--enable-pc-files --with-shared --with-cxx-shared --with-termlib \
 			--with-versioned-syms --enable-termcap --enable-widec --enable-colors --with-pthread --enable-reentrant \
 			PKG_CONFIG_LIBDIR=${prefix}/lib/${host}/pkgconfig \
 			) || return
