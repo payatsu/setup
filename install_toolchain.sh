@@ -239,7 +239,7 @@
 : ${lcms2_ver:=2.14}
 : ${liblqr_ver:=0.4.2}
 : ${fftw_ver:=3.3.10}
-: ${LibRaw_ver:=0.21.0}
+: ${LibRaw_ver:=0.21.1}
 : ${ImageMagick_ver:=7.1.0-55}
 : ${googletest_ver:=1.12.1}
 : ${fzf_ver:=0.35.1}
