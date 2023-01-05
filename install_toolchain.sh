@@ -202,7 +202,7 @@
 : ${perl_ver:=5.36.0}
 : ${tcl_ver:=8.6.11}
 : ${tk_ver:=8.6.11}
-: ${libunistring_ver:=1.0}
+: ${libunistring_ver:=1.1}
 : ${libidn2_ver:=2.3.4}
 : ${libpsl_ver:=0.21.2}
 : ${libatomic_ops_ver:=7.6.14}
