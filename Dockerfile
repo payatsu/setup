@@ -20,7 +20,7 @@ libXrender randrproto libXrandr libXcursor xineramaproto libXinerama \
 libxkbcommon libpciaccess libdrm libxshmfence wayland wayland-protocols \
 glproto dri2proto dri3proto libglvnd mesa glu libepoxy tcl tk git cpio zip \
 unzip lzip lunzip lzo lzop lz4 file groff libpipeline man-db ed bc patch \
-json fmt spdlog cares re2 protobuf abseil grpc Bear ccache ruby libatomic_ops gc guile \
+json fmt spdlog cares re2 protobuf abseil grpc Bear ccache libyaml ruby libatomic_ops gc guile \
 boost source-highlight util-linux popt babeltrace gdb make autogen openssh go rustc \
 zsh bash screen libevent tmux lua vim neovim global the_silver_searcher \
 the_platinum_searcher gperf highway ripgrep fzf jq rsync dtc strace sysstat procps systemtap \

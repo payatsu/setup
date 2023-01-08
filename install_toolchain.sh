@@ -198,7 +198,7 @@
 : ${rustc_ver:=1.66.0}
 : ${rustup_ver:=1.25.1}
 : ${libyaml_ver:=0.2.5}
-: ${ruby_ver:=3.1.2}
+: ${ruby_ver:=3.2.0}
 : ${go_ver:=1.19.3}
 : ${perl_ver:=5.36.0}
 : ${tcl_ver:=8.6.11}
@@ -6441,6 +6441,7 @@ install_native_libyaml()
 install_native_ruby()
 {
 	[ -x ${prefix}/bin/ruby -a "${force_install}" != yes ] && return
+	print_header_path yaml.h > /dev/null || install_native_libyaml || return
 	fetch ruby || return
 	unpack ruby || return
 	[ -f ${ruby_bld_dir}/Makefile ] ||
