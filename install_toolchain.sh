@@ -197,6 +197,7 @@
 : ${numpy_ver:=1.24.1}
 : ${rustc_ver:=1.66.0}
 : ${rustup_ver:=1.25.1}
+: ${libyaml_ver:=0.2.5}
 : ${ruby_ver:=3.1.2}
 : ${go_ver:=1.19.3}
 : ${perl_ver:=5.36.0}
@@ -858,6 +859,9 @@ fetch()
 		rustup)
 			wget -O ${rustup_src_dir}.tar.gz \
 				https://github.com/rust-lang/rustup/archive/${rustup_ver}.tar.gz || return;;
+		libyaml)
+			wget -O ${libyaml_src_dir}.tar.gz \
+				https://github.com/yaml/libyaml/releases/download/${libyaml_ver}/${libyaml_name}.tar.gz || return;;
 		ruby)
 			wget -O ${ruby_src_dir}.tar.xz \
 				https://cache.ruby-lang.org/pub/ruby/`print_version ruby`/${ruby_name}.tar.xz || return;;
@@ -1269,6 +1273,8 @@ set_src_directory()
 		eval ${_1}_name=${1}_\${${_1}_ver};;
 	rustc)
 		eval ${_1}_name=${1}-\${${_1}_ver}-src;;
+	libyaml)
+		eval ${_1}_name=yaml-\${${_1}_ver};;
 	procps|node|mingw-w64|libglvnd)
 		eval ${_1}_name=${1}-v\${${_1}_ver};;
 	squashfs|expect|tcl|tk)
@@ -6415,6 +6421,21 @@ install_native_rustup()
 	unpack rustup || return
 	(cd ${rustup_src_dir}
 	cargo run -j ${jobs} -v --release -- -v -y --no-modify-path) || return
+}
+
+install_native_libyaml()
+{
+	[ -f ${prefix}/include/yaml.h -a "${force_install}" != yes ] && return
+	fetch libyaml || return
+	unpack libyaml || return
+	[ -f ${libyaml_bld_dir}/Makefile ] ||
+		(cd ${libyaml_bld_dir}
+		${libyaml_src_dir}/configure --prefix=${prefix} --build=${build} --host=${host} --disable-silent-rules) || return
+	make -C ${libyaml_bld_dir} -j ${jobs} || return
+	[ "${enable_check}" != yes ] ||
+		make -C ${libyaml_bld_dir} -j ${jobs} -k check || return
+	make -C ${libyaml_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_ruby()
