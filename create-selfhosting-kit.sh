@@ -186,7 +186,7 @@ EOF
 : ${git_ver:=2.39.0}
 : ${openssh_ver:=9.1p1}
 : ${lzip_ver:=1.22}
-: ${ed_ver:=1.18}
+: ${ed_ver:=1.19}
 : ${bc_ver:=1.07.1}
 : ${rsync_ver:=3.2.7}
 : ${dtc_ver:=1.6.0}
