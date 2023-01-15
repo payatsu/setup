@@ -118,7 +118,7 @@ EOF
 : ${libssh_ver:=0.9.6}
 : ${curl_ver:=7.84.0}
 : ${elfutils_ver:=0.188}
-: ${binutils_ver:=2.38}
+: ${binutils_ver:=2.40}
 : ${glibc_ver:=2.36}
 : ${gmp_ver:=6.2.1}
 : ${mpfr_ver:=4.2.0}
