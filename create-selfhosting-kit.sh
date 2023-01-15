@@ -121,7 +121,7 @@ EOF
 : ${binutils_ver:=2.38}
 : ${glibc_ver:=2.36}
 : ${gmp_ver:=6.2.1}
-: ${mpfr_ver:=4.1.1}
+: ${mpfr_ver:=4.2.0}
 : ${mpc_ver:=1.3.1}
 : ${isl_ver:=0.20}
 : ${gcc_ver:=12.2.0}
