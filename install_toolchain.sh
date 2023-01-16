@@ -114,7 +114,7 @@
 : ${freetype_ver:=2.11.0}
 : ${fontconfig_ver:=2.13.1}
 : ${plantuml_ver:=1.2021.1}
-: ${diffutils_ver:=3.8}
+: ${diffutils_ver:=3.9}
 : ${patch_ver:=2.7.6}
 : ${findutils_ver:=4.9.0}
 : ${procps_ver:=3.3.17}

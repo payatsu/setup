@@ -215,7 +215,7 @@ EOF
 : ${nano_ver:=7.1}
 : ${ctags_ver:=git}
 : ${grep_ver:=3.8}
-: ${diffutils_ver:=3.8}
+: ${diffutils_ver:=3.9}
 : ${patch_ver:=2.7.6}
 : ${global_ver:=6.6.6}
 : ${findutils_ver:=4.9.0}
