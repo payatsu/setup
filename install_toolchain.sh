@@ -229,7 +229,7 @@
 : ${opencv_contrib_ver:=${opencv_ver}}
 : ${v4l_utils_ver:=1.22.1}
 : ${yavta_ver:=git}
-: ${gstreamer_ver:=1.20.5}
+: ${gstreamer_ver:=1.22.0}
 : ${gst_plugins_base_ver:=${gstreamer_ver}}
 : ${gst_plugins_good_ver:=${gstreamer_ver}}
 : ${gst_editing_services_ver:=${gstreamer_ver}}
