@@ -198,7 +198,7 @@
 : ${rustc_ver:=1.67.1}
 : ${rustup_ver:=1.25.1}
 : ${libyaml_ver:=0.2.5}
-: ${ruby_ver:=3.2.0}
+: ${ruby_ver:=3.2.1}
 : ${go_ver:=1.19.5}
 : ${perl_ver:=5.36.0}
 : ${tcl_ver:=8.6.11}
