@@ -110,7 +110,7 @@ EOF
 : ${lzo_ver:=2.10}
 : ${lzop_ver:=1.04}
 : ${lz4_ver:=1.9.4}
-: ${zstd_ver:=1.5.2}
+: ${zstd_ver:=1.5.4}
 : ${openssl_ver:=3.0.7}
 : ${libunistring_ver:=1.1}
 : ${libidn2_ver:=2.3.4}
