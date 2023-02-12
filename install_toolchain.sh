@@ -195,7 +195,7 @@
 : ${cython_ver:=0.29.33}
 : ${OpenBLAS_ver:=0.3.21}
 : ${numpy_ver:=1.24.1}
-: ${rustc_ver:=1.67.0}
+: ${rustc_ver:=1.67.1}
 : ${rustup_ver:=1.25.1}
 : ${libyaml_ver:=0.2.5}
 : ${ruby_ver:=3.2.0}
