@@ -145,7 +145,7 @@
 : ${e2fsprogs_ver:=1.46.2}
 : ${btrfs_progs_ver:=5.19.1}
 : ${squashfs_ver:=4.4}
-: ${openssl_ver:=3.0.7}
+: ${openssl_ver:=3.0.8}
 : ${openssh_ver:=9.1p1}
 : ${nghttp2_ver:=1.51.0}
 : ${brotli_ver:=1.0.9}
