@@ -129,7 +129,7 @@ EOF
 : ${ccache_ver:=4.7.4}
 
 : ${ncurses_ver:=6.4}
-: ${readline_ver:=8.1}
+: ${readline_ver:=8.2}
 : ${expat_ver:=2.4.7}
 : ${libffi_ver:=3.4.4}
 : ${sqlite_ver:=3390200}
@@ -142,7 +142,7 @@ EOF
 : ${popt_ver:=1.18}
 : ${glib_ver:=2.70.1}
 : ${babeltrace_ver:=1.5.8}
-: ${gdb_ver:=12.1}
+: ${gdb_ver:=13.1}
 : ${crash_ver:=8.0.2}
 : ${strace_ver:=6.1}
 : ${systemtap_ver:=4.8}

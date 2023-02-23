@@ -78,11 +78,11 @@
 : ${mpc_ver:=1.3.1}
 : ${isl_ver:=0.20}
 : ${gcc_ver:=12.2.0}
-: ${readline_ver:=8.1}
+: ${readline_ver:=8.2}
 : ${ncurses_ver:=6.4}
 : ${popt_ver:=1.18}
 : ${babeltrace_ver:=1.5.8}
-: ${gdb_ver:=12.1}
+: ${gdb_ver:=13.1}
 : ${crash_ver:=8.0.2}
 : ${lcov_ver:=1.16}
 : ${strace_ver:=6.1}
