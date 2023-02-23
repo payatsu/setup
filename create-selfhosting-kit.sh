@@ -174,7 +174,7 @@ EOF
 : ${m4_ver:=1.4.19}
 : ${perl_ver:=5.36.0}
 : ${autoconf_ver:=2.71}
-: ${autoconf_archive_ver:=2022.09.03}
+: ${autoconf_archive_ver:=2023.02.20}
 : ${automake_ver:=1.16.5}
 : ${bison_ver:=3.8.1}
 : ${flex_ver:=2.6.4}

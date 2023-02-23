@@ -37,7 +37,7 @@
 : ${flex_ver:=2.6.4}
 : ${m4_ver:=1.4.19}
 : ${autoconf_ver:=2.71}
-: ${autoconf_archive_ver:=2022.09.03}
+: ${autoconf_archive_ver:=2023.02.20}
 : ${automake_ver:=1.16.5}
 : ${autogen_ver:=5.18.16}
 : ${libtool_ver:=2.4.7}
