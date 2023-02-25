@@ -492,7 +492,7 @@ fetch()
 				https://sourceware.org/elfutils/ftp/${elfutils_ver}/${elfutils_name}.tar.bz2 || return;;
 		systemtap)
 			wget -O ${systemtap_src_dir}.tar.gz \
-				https://sourceware.org/systemtap/ftp/releases/${systemtap_name}.tar.gz || return;;
+				https://sourceware.org/ftp/systemtap/releases/${systemtap_name}.tar.gz || return;;
 		rsync)
 			wget -O ${rsync_src_dir}.tar.gz \
 				https://download.samba.org/pub/rsync/src/${rsync_name}.tar.gz || return;;

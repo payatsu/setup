@@ -534,7 +534,7 @@ fetch()
 			https://github.com/strace/strace/releases/download/v${strace_ver}/${strace_name}.tar.xz || return;;
 	systemtap)
 		wget -O ${systemtap_src_dir}.tar.gz \
-			https://sourceware.org/systemtap/ftp/releases/${systemtap_name}.tar.gz || return;;
+			https://sourceware.org/ftp/systemtap/releases/${systemtap_name}.tar.gz || return;;
 	linux|perf)
 		wget -O ${linux_src_dir}.tar.xz \
 			https://www.kernel.org/pub/linux/kernel/v`print_version ${_1} 1`.x/${linux_name}.tar.xz || return;;
