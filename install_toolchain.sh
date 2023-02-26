@@ -1799,6 +1799,7 @@ install_native_xz()
 	[ "${enable_check}" != yes ] ||
 		make -C ${xz_bld_dir} -j ${jobs} -k check || return
 	make -C ${xz_bld_dir} -j ${jobs} install${strip:+-${strip}} || return
+	update_path || return
 }
 
 install_native_bzip2()
