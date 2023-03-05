@@ -181,7 +181,7 @@ EOF
 : ${libtool_ver:=2.4.7}
 : ${pkg_config_ver:=0.29.2}
 : ${sed_ver:=4.9}
-: ${gawk_ver:=5.1.0}
+: ${gawk_ver:=5.2.1}
 : ${gettext_ver:=0.21}
 : ${git_ver:=2.39.2}
 : ${openssh_ver:=9.1p1}

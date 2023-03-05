@@ -42,7 +42,7 @@
 : ${autogen_ver:=5.18.16}
 : ${libtool_ver:=2.4.7}
 : ${sed_ver:=4.9}
-: ${gawk_ver:=5.1.0}
+: ${gawk_ver:=5.2.1}
 : ${gnulib_ver:=git}
 : ${make_ver:=4.3}
 : ${binutils_ver:=2.39}
