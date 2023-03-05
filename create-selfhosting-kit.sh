@@ -333,7 +333,7 @@ EOF
 : ${gtk_ver:=3.24.34}
 : ${xauth_ver:=1.1.2}
 
-: ${gstreamer_ver:=1.22.0}
+: ${gstreamer_ver:=1.22.1}
 : ${gst_plugins_base_ver:=${gstreamer_ver}}
 : ${gst_plugins_good_ver:=${gstreamer_ver}}
 : ${gst_editing_services_ver:=${gstreamer_ver}}
