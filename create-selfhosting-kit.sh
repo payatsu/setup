@@ -117,7 +117,7 @@ EOF
 : ${nghttp2_ver:=1.52.0}
 : ${libssh_ver:=0.9.6}
 : ${curl_ver:=7.84.0}
-: ${elfutils_ver:=0.188}
+: ${elfutils_ver:=0.189}
 : ${binutils_ver:=2.39}
 : ${glibc_ver:=2.37}
 : ${gmp_ver:=6.2.1}

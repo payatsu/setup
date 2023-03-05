@@ -46,7 +46,7 @@
 : ${gnulib_ver:=git}
 : ${make_ver:=4.3}
 : ${binutils_ver:=2.39}
-: ${elfutils_ver:=0.188}
+: ${elfutils_ver:=0.189}
 : ${systemtap_ver:=4.8}
 : ${ed_ver:=1.19}
 : ${bc_ver:=1.07.1}
