@@ -346,7 +346,7 @@ EOF
 : ${opencv_ver:=4.7.0}
 : ${opencv_contrib_ver:=${opencv_ver}}
 
-: ${lcms2_ver:=2.14}
+: ${lcms2_ver:=2.15}
 : ${liblqr_ver:=0.4.2}
 : ${fftw_ver:=3.3.10}
 : ${LibRaw_ver:=0.21.1}
