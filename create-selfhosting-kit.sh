@@ -3451,6 +3451,8 @@ EOF
 			remove_rpath_option ${1} || return
 			${poke_src_dir}/configure --prefix=${prefix} --host=${host} --disable-rpath --disable-gui \
 				--with-libreadline-prefix=`print_prefix readline.h readline` \
+				--with-libncurses-prefix=`print_prefix ncurses.h` \
+				--with-libtextstyle-prefix=`print_prefix textstyle.h` \
 				LIBS="${LIBS} `l tinfo`" \
 				PKG_CONFIG_SYSROOT_DIR=${DESTDIR} \
 				|| return
