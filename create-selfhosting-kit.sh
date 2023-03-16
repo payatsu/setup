@@ -183,7 +183,7 @@ EOF
 : ${sed_ver:=4.9}
 : ${gawk_ver:=5.2.1}
 : ${gettext_ver:=0.21}
-: ${git_ver:=2.39.2}
+: ${git_ver:=2.40.0}
 : ${openssh_ver:=9.1p1}
 : ${lzip_ver:=1.22}
 : ${ed_ver:=1.19}
