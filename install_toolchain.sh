@@ -101,7 +101,7 @@
 : ${ctags_ver:=git}
 : ${neovim_ver:=0.8.3}
 : ${nano_ver:=7.2}
-: ${grep_ver:=3.8}
+: ${grep_ver:=3.10}
 : ${global_ver:=6.6.6}
 : ${pcre2_ver:=10.42}
 : ${the_silver_searcher_ver:=2.2.0}
