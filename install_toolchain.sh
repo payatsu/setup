@@ -169,7 +169,7 @@
 : ${ninja_ver:=1.11.1}
 : ${meson_ver:=1.0.1}
 : ${cmake_ver:=3.26.0}
-: ${bazel_ver:=5.4.0}
+: ${bazel_ver:=6.1.1}
 : ${json_ver:=3.11.2}
 : ${fmt_ver:=9.1.0}
 : ${spdlog_ver:=1.11.0}
