@@ -244,7 +244,7 @@
 : ${ImageMagick_ver:=7.1.1-4}
 : ${googletest_ver:=1.12.1}
 : ${fzf_ver:=0.38.0}
-: ${bat_ver:=0.22.1}
+: ${bat_ver:=0.23.0}
 : ${jq_ver:=1.6}
 : ${libpcap_ver:=1.10.1}
 : ${tcpdump_ver:=4.99.1}
