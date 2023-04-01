@@ -265,7 +265,7 @@ EOF
 : ${protobuf_ver:=3.20.3}
 
 : ${cython_ver:=0.29.33}
-: ${OpenBLAS_ver:=0.3.21}
+: ${OpenBLAS_ver:=0.3.22}
 : ${numpy_ver:=1.24.2}
 
 : ${util_macros_ver:=1.19.3}
