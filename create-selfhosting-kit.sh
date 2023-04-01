@@ -219,7 +219,7 @@ EOF
 : ${patch_ver:=2.7.6}
 : ${global_ver:=6.6.6}
 : ${findutils_ver:=4.9.0}
-: ${libatomic_ops_ver:=7.6.14}
+: ${libatomic_ops_ver:=7.8.0}
 : ${gc_ver:=8.2.2}
 : ${poke_ver:=2.4}
 : ${jq_ver:=1.6}
