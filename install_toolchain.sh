@@ -30,7 +30,7 @@
 : ${glib_ver:=2.70.1}
 : ${pkg_config_ver:=0.29.2}
 : ${help2man_ver:=1.47.16}
-: ${texinfo_ver:=7.0.2}
+: ${texinfo_ver:=7.0.3}
 : ${coreutils_ver:=9.2}
 : ${busybox_ver:=1.34.1}
 : ${bison_ver:=3.8.1}
