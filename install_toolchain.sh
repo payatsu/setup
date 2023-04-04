@@ -61,7 +61,7 @@
 : ${libbpf_ver:=1.1.0}
 : ${bcc_ver:=0.27.0}
 : ${cereal_ver:=1.3.2}
-: ${bpftrace_ver:=0.16.0}
+: ${bpftrace_ver:=0.17.0}
 : ${libtraceevent_ver:=1.6.0}
 : ${libtracefs_ver:=1.4.0}
 : ${trace_cmd_ver:=v3.1}
@@ -2693,6 +2693,7 @@ install_native_bpftrace()
 		-DCMAKE_BUILD_TYPE=${cmake_build_type} -DCMAKE_INSTALL_PREFIX=${DESTDIR}${prefix} \
 		-DCMAKE_C_FLAGS="${CFLAGS} `Wl_rpath_link debuginfod`" \
 		-DCMAKE_CXX_FLAGS="${CXXFLAGS} `I bfd.h libz.h` `I bcc/compat/linux/bpf.h`/bcc/compat `Wl_rpath_link debuginfod curl zstd tinfo`" \
+		-DUSE_SYSTEM_BPF_BCC=ON \
 		-DENABLE_MAN=OFF \
 		-DBUILD_TESTING=OFF \
 		-DKERNEL_INCLUDE_DIRS=`print_header_dir bpf.h bcc/compat/linux`/bcc/compat \
