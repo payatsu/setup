@@ -167,7 +167,7 @@
 : ${utf8proc_ver:=2.8.0}
 : ${subversion_ver:=1.14.2}
 : ${ninja_ver:=1.11.1}
-: ${meson_ver:=1.0.1}
+: ${meson_ver:=1.1.0}
 : ${cmake_ver:=3.26.2}
 : ${bazel_ver:=6.1.1}
 : ${json_ver:=3.11.2}
