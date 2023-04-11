@@ -21,7 +21,7 @@
 : ${lzo_ver:=2.10}
 : ${lzop_ver:=1.04}
 : ${lz4_ver:=1.9.4}
-: ${zstd_ver:=1.5.4}
+: ${zstd_ver:=1.5.5}
 : ${libarchive_ver:=3.5.2}
 : ${wget_ver:=1.21.3}
 : ${libffi_ver:=3.4.4}
