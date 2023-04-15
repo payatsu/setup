@@ -259,7 +259,7 @@
 : ${cares_ver:=1.19.0}
 : ${re2_ver:=2023-02-01}
 : ${abseil_ver:=20220623.1}
-: ${grpc_ver:=1.53.0}
+: ${grpc_ver:=1.54.0}
 : ${libbacktrace_ver:=git}
 : ${poke_ver:=2.4}
 
