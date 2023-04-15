@@ -198,7 +198,7 @@ EOF
 : ${cpio_ver:=2.13}
 : ${parted_ver:=3.5}
 : ${e2fsprogs_ver:=1.46.2}
-: ${btrfs_progs_ver:=5.19.1}
+: ${btrfs_progs_ver:=6.2.2}
 : ${v4l_utils_ver:=1.22.1}
 
 : ${screen_ver:=4.9.0}

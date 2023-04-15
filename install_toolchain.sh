@@ -143,7 +143,7 @@
 : ${lsscsi_ver:=r0.32}
 : ${parted_ver:=3.5}
 : ${e2fsprogs_ver:=1.46.2}
-: ${btrfs_progs_ver:=5.19.1}
+: ${btrfs_progs_ver:=6.2.2}
 : ${squashfs_ver:=4.4}
 : ${openssl_ver:=3.0.8}
 : ${openssh_ver:=9.1p1}
