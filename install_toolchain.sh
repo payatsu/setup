@@ -173,7 +173,7 @@
 : ${json_ver:=3.11.2}
 : ${fmt_ver:=9.1.0}
 : ${spdlog_ver:=1.11.0}
-: ${Bear_ver:=3.1.1}
+: ${Bear_ver:=3.1.2}
 : ${ccache_ver:=4.8}
 : ${distcc_ver:=3.4}
 : ${libedit_ver:=20210910-3.1}
