@@ -61,7 +61,7 @@
 : ${libbpf_ver:=1.1.0}
 : ${bcc_ver:=0.27.0}
 : ${cereal_ver:=1.3.2}
-: ${bpftrace_ver:=0.17.0}
+: ${bpftrace_ver:=0.17.1}
 : ${libtraceevent_ver:=1.6.0}
 : ${libtracefs_ver:=1.4.0}
 : ${trace_cmd_ver:=v3.1}
