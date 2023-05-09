@@ -195,7 +195,7 @@ EOF
 : ${pixman_ver:=0.40.0}
 : ${qemu_ver:=7.0.0}
 : ${tar_ver:=1.34}
-: ${cpio_ver:=2.13}
+: ${cpio_ver:=2.14}
 : ${parted_ver:=3.5}
 : ${e2fsprogs_ver:=1.46.2}
 : ${btrfs_progs_ver:=6.3}
