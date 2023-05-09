@@ -115,7 +115,7 @@ EOF
 : ${libunistring_ver:=1.1}
 : ${libidn2_ver:=2.3.4}
 : ${nghttp2_ver:=1.52.0}
-: ${libssh_ver:=0.9.6}
+: ${libssh_ver:=0.10.5}
 : ${curl_ver:=7.84.0}
 : ${elfutils_ver:=0.189}
 : ${binutils_ver:=2.39}

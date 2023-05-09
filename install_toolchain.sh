@@ -149,7 +149,7 @@
 : ${openssh_ver:=9.1p1}
 : ${nghttp2_ver:=1.52.0}
 : ${brotli_ver:=1.0.9}
-: ${libssh_ver:=0.9.6}
+: ${libssh_ver:=0.10.5}
 : ${curl_ver:=7.84.0}
 : ${expat_ver:=2.4.7}
 : ${asciidoc_ver:=10.1.4}
