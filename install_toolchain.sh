@@ -199,7 +199,7 @@
 : ${rustup_ver:=1.25.1}
 : ${libyaml_ver:=0.2.5}
 : ${ruby_ver:=3.2.2}
-: ${go_ver:=1.20.4}
+: ${go_ver:=1.20.6}
 : ${perl_ver:=5.36.1}
 : ${tcl_ver:=8.6.11}
 : ${tk_ver:=8.6.11}
