@@ -303,7 +303,7 @@ EOF
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
 : ${dri3proto_ver:=1.0}
-: ${wayland_ver:=1.21.0}
+: ${wayland_ver:=1.22.0}
 : ${wayland_protocols_ver:=1.31}
 : ${libglvnd_ver:=1.4.0}
 : ${libdrm_ver:=2.4.110}

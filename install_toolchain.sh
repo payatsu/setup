@@ -296,7 +296,7 @@
 : ${libpciaccess_ver:=0.16}
 : ${libdrm_ver:=2.4.110}
 : ${libxshmfence_ver:=1.3}
-: ${wayland_ver:=1.21.0}
+: ${wayland_ver:=1.22.0}
 : ${wayland_protocols_ver:=1.31}
 : ${glproto_ver:=1.4.17}
 : ${dri2proto_ver:=2.8}
