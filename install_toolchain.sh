@@ -261,7 +261,7 @@
 : ${abseil_ver:=20220623.1}
 : ${grpc_ver:=1.54.1}
 : ${libbacktrace_ver:=git}
-: ${poke_ver:=3.1}
+: ${poke_ver:=3.2}
 
 : ${xproto_ver:=7.0.31}
 : ${libXau_ver:=1.0.9}
