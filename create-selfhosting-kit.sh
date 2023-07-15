@@ -184,7 +184,7 @@ EOF
 : ${gawk_ver:=5.2.2}
 : ${gettext_ver:=0.22}
 : ${git_ver:=2.40.0}
-: ${openssh_ver:=9.1p1}
+: ${openssh_ver:=9.3p1}
 : ${lzip_ver:=1.22}
 : ${ed_ver:=1.19}
 : ${bc_ver:=1.07.1}
