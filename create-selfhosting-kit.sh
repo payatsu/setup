@@ -151,7 +151,7 @@ EOF
 : ${libcap_ver:=2.49}
 : ${numactl_ver:=2.0.16}
 : ${OpenCSD_ver:=1.2.1}
-: ${libunwindnongnu_ver:=1.6.2}
+: ${libunwindnongnu_ver:=1.7.0}
 : ${libpfm_ver:=4.11.0}
 : ${libbpf_ver:=1.1.0}
 : ${bcc_ver:=0.27.0}
@@ -549,7 +549,7 @@ fetch()
 			https://github.com/Linaro/OpenCSD/archive/refs/tags/v${OpenCSD_ver}.tar.gz || return;;
 	libunwindnongnu)
 		wget -O ${libunwindnongnu_src_dir}.tar.gz \
-			https://download.savannah.nongnu.org/releases/libunwind/${libunwindnongnu_name}.tar.gz || return;;
+			https://github.com/libunwind/libunwind/archive/refs/tags/v${libunwindnongnu_ver}.tar.gz || return;;
 	libpfm)
 		wget -O ${libpfm_src_dir}.tar.gz \
 			https://sourceforge.net/projects/perfmon2/files/libpfm4/${libpfm_name}.tar.gz/download || return;;
@@ -2155,6 +2155,7 @@ EOF
 		print_header_path lzma.h > /dev/null || ${0} ${cmdopt} xz || return
 		fetch ${1} || return
 		unpack ${1} || return
+		[ -f ${libunwindnongnu_src_dir}/configure ] || autoreconf -fiv ${libunwindnongnu_src_dir} || return
 		[ -f ${libunwindnongnu_bld_dir}/Makefile ] ||
 			(cd ${libunwindnongnu_bld_dir}
 			remove_rpath_option ${1} || return
