@@ -85,7 +85,7 @@
 : ${gdb_ver:=13.1}
 : ${crash_ver:=8.0.3}
 : ${lcov_ver:=1.16}
-: ${strace_ver:=6.3}
+: ${strace_ver:=6.4}
 : ${ltrace_ver:=0.7.3}
 : ${valgrind_ver:=3.18.1}
 : ${zlib_ver:=1.2.13}
