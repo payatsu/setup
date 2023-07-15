@@ -126,7 +126,7 @@ EOF
 : ${isl_ver:=0.20}
 : ${gcc_ver:=13.1.0}
 : ${make_ver:=4.3}
-: ${ccache_ver:=4.8}
+: ${ccache_ver:=4.8.2}
 
 : ${ncurses_ver:=6.4}
 : ${readline_ver:=8.2}
