@@ -81,7 +81,7 @@
 : ${readline_ver:=8.2}
 : ${ncurses_ver:=6.4}
 : ${popt_ver:=1.18}
-: ${babeltrace_ver:=1.5.8}
+: ${babeltrace_ver:=1.5.11}
 : ${gdb_ver:=13.1}
 : ${crash_ver:=8.0.3}
 : ${lcov_ver:=2.0}

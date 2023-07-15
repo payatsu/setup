@@ -141,7 +141,7 @@ EOF
 : ${util_linux_ver:=2.37.2}
 : ${popt_ver:=1.18}
 : ${glib_ver:=2.70.1}
-: ${babeltrace_ver:=1.5.8}
+: ${babeltrace_ver:=1.5.11}
 : ${gdb_ver:=13.1}
 : ${crash_ver:=8.0.3}
 : ${strace_ver:=6.4}
