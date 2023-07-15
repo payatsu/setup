@@ -256,7 +256,7 @@
 : ${libassuan_ver:=2.5.5}
 : ${gnupg_ver:=2.4.1}
 : ${protobuf_ver:=3.20.3}
-: ${cares_ver:=1.19.0}
+: ${cares_ver:=1.19.1}
 : ${re2_ver:=2023-07-01}
 : ${abseil_ver:=20220623.1}
 : ${grpc_ver:=1.54.1}
