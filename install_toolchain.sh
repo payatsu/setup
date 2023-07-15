@@ -172,7 +172,7 @@
 : ${bazel_ver:=6.1.2}
 : ${json_ver:=3.11.2}
 : ${fmt_ver:=9.1.0}
-: ${spdlog_ver:=1.11.0}
+: ${spdlog_ver:=1.12.0}
 : ${Bear_ver:=3.1.2}
 : ${ccache_ver:=4.8}
 : ${distcc_ver:=3.4}
