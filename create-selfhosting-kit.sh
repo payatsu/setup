@@ -220,7 +220,7 @@ EOF
 : ${global_ver:=6.6.6}
 : ${findutils_ver:=4.9.0}
 : ${libatomic_ops_ver:=7.8.0}
-: ${gc_ver:=8.2.2}
+: ${gc_ver:=8.2.4}
 : ${poke_ver:=3.1}
 : ${jq_ver:=1.6}
 

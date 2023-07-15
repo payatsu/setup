@@ -207,7 +207,7 @@
 : ${libidn2_ver:=2.3.4}
 : ${libpsl_ver:=0.21.2}
 : ${libatomic_ops_ver:=7.8.0}
-: ${gc_ver:=8.2.2}
+: ${gc_ver:=8.2.4}
 : ${guile_ver:=3.0.9}
 : ${lua_ver:=5.4.3}
 : ${node_ver:=16.13.0}
