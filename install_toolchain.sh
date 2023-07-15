@@ -3118,7 +3118,8 @@ install_native_babeltrace()
 		autoreconf -fiv -I `print_prefix glib.h glib-2.0`/share/aclocal ${babeltrace_src_dir} || return
 	[ -f ${babeltrace_bld_dir}/Makefile ] ||
 		(cd ${babeltrace_bld_dir}
-		${babeltrace_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules) || return
+		${babeltrace_src_dir}/configure --prefix=${prefix} --build=${build} --disable-silent-rules \
+			CPPFLAGS="${CPPFLAGS} `I popt.h`") || return
 	make -C ${babeltrace_bld_dir} -j ${jobs} || return
 	[ "${enable_check}" != yes ] ||
 		make -C ${babeltrace_bld_dir} -j ${jobs} -k check || return
