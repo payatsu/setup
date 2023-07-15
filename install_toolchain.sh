@@ -82,7 +82,7 @@
 : ${ncurses_ver:=6.4}
 : ${popt_ver:=1.18}
 : ${babeltrace_ver:=1.5.11}
-: ${gdb_ver:=13.1}
+: ${gdb_ver:=13.2}
 : ${crash_ver:=8.0.3}
 : ${lcov_ver:=2.0}
 : ${strace_ver:=6.4}
@@ -3149,6 +3149,7 @@ install_native_gdb()
 			--enable-targets=all --enable-64-bit-bfd --enable-tui --enable-source-highlight \
 			--with-auto-load-dir='$debugdir:$datadir/auto-load:'${prefix}/lib/gcc/${target} --with-python=python3 \
 			--with-debuginfod --with-system-zlib --with-system-readline \
+			CPPFLAGS="${CPPFLAGS} `I curses.h`" \
 			LDFLAGS="${LDFLAGS} `L z ncurses`" \
 			host_configargs='--disable-rpath 'CFLAGS=\'"${CFLAGS} `I zlib.h curses.h`"\') || return
 	make -C ${gdb_bld_dir} -j ${jobs} V=1 || return
