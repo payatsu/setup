@@ -341,7 +341,7 @@ EOF
 : ${gst_omx_ver:=${gstreamer_ver}}
 : ${pygobject_ver:=3.42.1}
 : ${gst_python_ver:=${gstreamer_ver}}
-: ${orc_ver:=0.4.33}
+: ${orc_ver:=0.4.34}
 
 : ${opencv_ver:=4.7.0}
 : ${opencv_contrib_ver:=${opencv_ver}}
