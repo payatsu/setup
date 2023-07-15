@@ -314,7 +314,7 @@ EOF
 : ${freetype_ver:=2.11.0}
 : ${fontconfig_ver:=2.13.1}
 : ${cairo_ver:=1.16.0}
-: ${fribidi_ver:=1.0.12}
+: ${fribidi_ver:=1.0.13}
 : ${harfbuzz_ver:=7.2.0}
 : ${pango_ver:=1.50.7}
 : ${itstool_ver:=2.0.7}
