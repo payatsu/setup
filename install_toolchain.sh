@@ -252,9 +252,9 @@
 : ${npth_ver:=1.6}
 : ${libgpg_error_ver:=1.47}
 : ${libgcrypt_ver:=1.10.2}
-: ${libksba_ver:=1.6.3}
-: ${libassuan_ver:=2.5.5}
-: ${gnupg_ver:=2.4.1}
+: ${libksba_ver:=1.6.4}
+: ${libassuan_ver:=2.5.6}
+: ${gnupg_ver:=2.4.3}
 : ${protobuf_ver:=3.20.3}
 : ${cares_ver:=1.19.1}
 : ${re2_ver:=2023-07-01}
