@@ -23,7 +23,7 @@
 : ${lz4_ver:=1.9.4}
 : ${zstd_ver:=1.5.5}
 : ${libarchive_ver:=3.5.2}
-: ${wget_ver:=1.21.3}
+: ${wget_ver:=1.21.4}
 : ${libffi_ver:=3.4.4}
 : ${libiconv_ver:=1.16}
 : ${pcre_ver:=8.45}
