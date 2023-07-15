@@ -156,7 +156,7 @@
 : ${libxml2_ver:=2.9.11}
 : ${libxslt_ver:=1.1.34}
 : ${xmlto_ver:=0.0.28}
-: ${gettext_ver:=0.21}
+: ${gettext_ver:=0.22}
 : ${git_ver:=2.40.0}
 : ${git_manpages_ver:=${git_ver}}
 : ${git_lfs_ver:=3.3.0}
